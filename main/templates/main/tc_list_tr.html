@@ -1,0 +1,17 @@
+{% for case in cases %}
+    <tr data_id="{{ case.id }}">
+        <td col_name='id' class="center"><a href="/case?id={{ case.id }}">{{ case.id }}</a></td>
+        <td quick_update col_name='name'>{{ case.name }}</td>
+        <td quick_update col_name='keyword'>{{ case.keyword }}</td>
+        <td class="center">
+            <a href="/">修改</a>
+            &nbsp;
+            <button name="delete_button">删除</button>
+{#                    <a a_name='tc_delete' data_id={{ case.id }} href="javascript:void(0);">删除</a>#}
+        </td>
+    </tr>
+{% empty %}
+    <tr>
+        <td colspan="4">no data</td>
+    </tr>
+{% endfor %}

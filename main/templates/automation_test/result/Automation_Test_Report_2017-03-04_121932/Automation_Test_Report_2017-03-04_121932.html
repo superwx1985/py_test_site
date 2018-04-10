@@ -1,0 +1,320 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>Automation Test Report</title>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"><style id="css0" media="screen" type="text/css">
+    body {
+        font-family: verdana, arial, helvetica, sans-serif;
+        font-size: 80%;
+        width: 99%;}
+    table {font-size: 100%; }
+    a:visited {color:#800080; }
+    a:hover {color:red; }
+    
+    /* -- heading ---------------------------------------------------------------------- */
+    
+    .heading {
+        margin-top: 0ex;
+        font-size: 16pt;
+        color: gray;
+        font-weight: bold;
+    }
+    #time { width:100%; }
+    #time div {
+        white-space: nowrap;
+        width: 300px;
+        display: table-cell;
+        /*border: 1px solid red;*/
+    }
+    #summary { width:100%;}
+    #summary div {
+        white-space: nowrap;;
+        display: table-cell;
+        /*border: 1px solid red;*/
+    }
+    
+    /* -- report ------------------------------------------------------------------------ */
+    td {
+        word-wrap:break-word;
+        overflow:hidden;
+    }
+    #result_table {
+        table-layout:fixed;
+        width: 100%;
+        border-collapse: collapse;
+        border: 1px solid #AAAAAA;
+    }
+    #header_row {
+        font-weight: bold;
+        color: white;
+        background-color: #777777;
+        text-shadow: black 2px 2px 2px;
+    }
+    #result_table td {
+        padding: 2px;
+        border: 1px solid #AAAAAA;
+    }
+    .case  { font-weight: bold; }
+    .runCase { background-color: #DDDDDD; }
+    .passCase { background-color: limegreen; }
+    .skipCase { background-color: #CCFF99; }
+    .failCase { background-color: #FFCC22; }
+    .errorCase { background-color: #FF3333; }
+    .runStep { background-color: #DDDDDD; }
+    .passStep { background-color: limegreen; }
+    .skipStep { background-color: #CCFF99; }
+    .failStep { background-color: #FFCC22; font-weight: bold; }
+    .errorStep { background-color: #FF3333; font-weight: bold;}
+    .operateStep { background-color: #CCFF99; }
+    td[type='state_column'] a {color: black;}
+    td[type='state_column'] a:hover {color: white;}
+    td[type='id_column'] a {color: black;}
+    td[type='id_column'] a:hover {color: white;}
+    td[type='state_column'] {text-align:center;}
+    td[type='id_column'] {text-align:center;}
+
+    .testStep { margin-left: 2em; }
+    .blodFont { font-weight: bold; }
+    tr[type='tr_step'] {display: none;}
+    tr[type='tr_detail'] {display: none;}
+    tr[trcls='passStep'] { background-color: #6c6; }
+    tr[trcls='skipStep'] { background-color: #DDDDDD; }
+    tr[trcls='failStep'] { background-color: #c60; font-weight: bold; }
+    tr[trcls='errorStep'] { background-color: #c00; font-weight: bold; }
+    tr[trcls='operateStep'] { background-color: #DDDDDD; }
+
+    /* -- ending ---------------------------------------------------------------------- */
+</style><style id="css_step_1" media="screen" type="text/css">tr[cid='1'][type='tr_step'] {display: none;}</style><style id="css_step_detail_show_1" media="screen" type="text/css">tr.show[cid='1'][type='tr_detail'] {display: none;}</style><style id="css_step_filter_1" media="screen" type="text/css"></style><script>
+var show = []
+var show_case = []
+var show_detail = []
+
+function arrContainsObj(arr, obj) {
+    var i = arr.length;
+    while (i--) {
+        if (arr[i] === obj) {
+            return true;
+        }
+    }
+    return false;
+}
+
+function arrRemoveObj(arr, obj) {
+    var i = arr.length;
+    while (i--) {
+        if(arr[i] == obj) {
+            arr.splice(i, 1);
+            break;
+        }
+    }
+}
+
+function hideAllSteps(run_count) {
+    for (var i = 1; i <= run_count; i++) {
+        document.getElementById('css_step_'+i).innerHTML='tr[cid="'+i+'"][type="tr_step"] {display:none;}'
+        document.getElementById('css_step_detail_show_'+i).innerHTML='tr.show[cid="'+i+'"][type="tr_detail"] {display:none;}'
+    }
+    show = []
+    show_case = []
+}
+
+function showTC(cid) {
+    cid = cid.toString()
+    if (arrContainsObj(show, cid)) {
+        arrRemoveObj(show, cid)
+        document.getElementById('css_step_'+cid).innerHTML=''
+        document.getElementById('css_step_detail_show_'+cid).innerHTML=''
+        var temp = []
+        for (var i = 0; i < show_case.length; i++) {
+            if (show_case[i].substr(0,cid.length) != cid) {
+                temp.push(show_case[i])
+            }
+        }
+        show_case = temp.slice(0)
+    }
+    else {
+        show.push(cid)
+        document.getElementById('css_step_'+cid).innerHTML='tr[cid="'+cid+'"][lid="'+cid+'"][type="tr_step"] {display:table-row;}'
+        document.getElementById('css_step_detail_show_'+cid).innerHTML='tr.show[cid="'+cid+'"][lid="'+cid+'"][type="tr_detail"] {display:table-row;}'
+        document.getElementById('css_step_filter_'+cid).innerHTML=''
+    }
+}
+
+function showShareSteps(cid, lid) {
+    if (arrContainsObj(show_case, lid)) {//把lid和lid下属的所有share step找出来
+        var temp = []
+        for (var i = 0; i < show_case.length; i++) {
+            if (show_case[i].substr(0,lid.length) != lid) {
+                temp.push(show_case[i])
+            }
+        }
+        show_case = temp.slice(0)
+        var css = 'tr[cid="'+cid+'"][lid="'+cid+'"][type="tr_step"] {display:table-row;}'
+        var css2 = 'tr.show[cid="'+cid+'"][lid="'+cid+'"][type="tr_detail"] {display:table-row;}'
+        for (var i = 0; i < show_case.length; i++) {
+            css = css + 'tr[cid="'+cid+'"][lid="'+show_case[i]+'"][type="tr_step"] {display:table-row;}'
+            css2 = css2 + 'tr.show[cid="'+cid+'"][lid="'+show_case[i]+'"][type="tr_detail"] {display:table-row;}'
+        }
+        document.getElementById('css_step_'+cid).innerHTML=css
+        document.getElementById('css_step_detail_show_'+cid).innerHTML=css2
+    }
+    else {
+        show_case.push(lid)
+        document.getElementById('css_step_'+cid).innerHTML = document.getElementById('css_step_'+cid).innerHTML + 'tr[cid="'+cid+'"][lid="'+lid+'"][type="tr_step"] {display:table-row;}'
+        document.getElementById('css_step_detail_show_'+cid).innerHTML = document.getElementById('css_step_detail_show_'+cid).innerHTML + 'tr.show[cid="'+cid+'"][lid="'+lid+'"][type="tr_detail"] {display:table-row;}'
+    }
+}
+
+function showStateSteps(cid, state) {
+    cid = cid.toString()
+    if (!arrContainsObj(show, cid)) {
+        showTC(cid)
+    }
+    var state_=[]
+    if (state.indexOf(',') > 0) {
+        state_ = state.split(',');
+    }
+    else {
+        state_=[state]
+    }
+    states=['p','f','e','o','s']
+    css = ''
+    for (var i = 0; i < states.length; i++) {
+        if (arrContainsObj(state_,states[i])) {
+            continue
+        }
+        css = css + 'tr[cid="'+cid+'"][type="tr_step"][state="'+states[i]+'"] {display:none;}'
+        css = css + 'tr[cid="'+cid+'"][type="tr_detail"][state="'+states[i]+'"] {display:none;}'
+    }
+    document.getElementById('css_step_filter_'+cid).innerHTML=css
+    var temp = []
+    for (var i = 0; i < show_detail.length; i++) {
+        if (show_detail[i].substr(0,cid.length) == cid) {
+            temp.push(show_detail[i])
+        }
+    }
+    for (var i = 0; i < temp.length; i++) {
+        showStepDetail(temp[i])
+    }
+}
+
+function showStepDetail(id) {
+    var e1 = document.getElementById('step_detail_1_'+id)
+    var e2 = document.getElementById('step_detail_2_'+id)
+    var e3 = document.getElementById('step_id_column_'+id)
+    var e4 = document.getElementById('step_step_column_'+id)
+    var e5 = document.getElementById('step_state_column_'+id)
+    var e6 = document.getElementById('step_detail_3_'+id)
+    if (arrContainsObj(show_detail, id)) {
+        arrRemoveObj(show_detail, id)
+        e1.className = '';
+        e2.className = '';
+        e6.className = '';
+        e3.setAttribute('rowspan',1);
+        e4.style.borderBottom='2px solid #AAAAAA';
+        e5.style.borderBottom='2px solid #AAAAAA';
+    }
+    else {
+        show_detail.push(id)
+        e1.className = 'show';
+        e2.className = 'show';
+        e6.className = 'show';
+        e3.setAttribute('rowspan',4);
+        e4.style.borderBottom='';
+        e5.style.borderBottom='';
+    }
+}</script></head>
+  <body>
+    <div class="heading">Automation Test Report</div>
+    <div id="time">
+      <div class="blodFont" style="width:100px;">Start Time</div>
+      <div>2017-03-04 12:19:32.031920</div>
+      <div class="blodFont" style="width:100px;">End Time</div>
+      <div>2017-03-04 12:19:33.061979</div>
+      <div class="blodFont" style="width:100px;">Duration</div>
+      <div>0:00:01.030059</div>
+    </div>
+    <div id="summary">
+      <div style="width:100px; font-weight:bold;">TC Status:</div>
+      <div class="runCase" style="text-align:center; width:150px; font-weight:normal; white-space:pre;">Run	1</div>
+      <div class="passCase" style="text-align:center; width:150px; font-weight:normal; white-space:pre;">Pass	0</div>
+      <div class="failCase" style="text-align:center; width:150px; font-weight:normal; white-space:pre;">Fail	0</div>
+      <div class="errorCase" style="text-align:center; width:150px; font-weight:normal; white-space:pre;">Error	1</div>
+    </div>
+    <div style="text-align:right;">
+      <button id="hide_all_details_button_1" onclick="hideAllSteps(1)">Hide All Steps</button>
+    </div>
+    <table id="result_table">
+      <tr id="header_row" style="text-align:center;" type="tr_header">
+        <td style="white-space:nowrap;width:60px">ID</td>
+        <td style="white-space:nowrap">Test case/Step</td>
+        <td class="runCase" style="white-space:nowrap;width:9%">Run</td>
+        <td class="passCase" style="white-space:nowrap;width:9%">Pass</td>
+        <td class="failCase" style="white-space:nowrap;width:9%">Fail</td>
+        <td class="errorCase" style="white-space:nowrap;width:9%">Error</td>
+        <td class="skipCase" style="white-space:nowrap;width:9%">Skip</td>
+      </tr>
+      <tr class="case" id="case_1" name="gongzuoshi.xlsx" type="tr_case">
+        <td class="errorCase" style="white-space:nowrap;border-bottom: 2px solid #AAAAAA;" type="id_column">
+          <a href="javascript:;" onclick="this.style.color='#800080';showTC(1)">1</a>
+        </td>
+        <td style="border-bottom: 2px solid #AAAAAA;">
+          <a href="javascript:;" onclick="this.style.color='#800080';showTC(1)">gongzuoshi.xlsx</a>
+        </td>
+        <td class="runStep" style="border-bottom: 2px solid #AAAAAA;" type="state_column">
+          <a href="javascript:;" onclick="this.style.color='#800080';showStateSteps(1,'p,f,e')">1</a>
+        </td>
+        <td class="passStep" style="border-bottom: 2px solid #AAAAAA;" type="state_column">
+          <a href="javascript:;" onclick="this.style.color='#800080';showStateSteps(1,'p')">0</a>
+        </td>
+        <td class="failStep" style="border-bottom: 2px solid #AAAAAA;" type="state_column">
+          <a href="javascript:;" onclick="this.style.color='#800080';showStateSteps(1,'f')">0</a>
+        </td>
+        <td class="errorStep" style="border-bottom: 2px solid #AAAAAA;" type="state_column">
+          <a href="javascript:;" onclick="this.style.color='#800080';showStateSteps(1,'e')">1</a>
+        </td>
+        <td class="skipStep" style="border-bottom: 2px solid #AAAAAA;" type="state_column">
+          <a href="javascript:;" onclick="this.style.color='#800080';showStateSteps(1,'s')">0</a>
+        </td>
+      </tr>
+      <tr cid="1" id="step_1-1" lid="1" name="step_1-1" sid="1" state="e" type="tr_step">
+        <td class="errorStep" id="step_id_column_1-1" style="white-space:nowrap;border-bottom: 2px solid #AAAAAA;" type="id_column">
+          <a href="javascript:;" onclick="this.style.color='#800080';showStepDetail('1-1')">1-1</a>
+        </td>
+        <td id="step_step_column_1-1" style="border-bottom: 2px solid #AAAAAA;"><br/>[Initialize]</td>
+        <td class="errorStep" colspan="5" id="step_state_column_1-1" style="border-bottom: 2px solid #AAAAAA;" type="state_column">
+          <a href="javascript:;" onclick="this.style.color='#800080';showStepDetail('1-1')">ERROR</a>
+        </td>
+      </tr>
+      <tr cid="1" id="step_detail_1_1-1" lid="1" sid="1" state="e" type="tr_detail">
+        <td>
+          <span class="blodFont">URL:<br/> </span>
+          <span>d:\site\test\automation_test\run\gongzuoshi.xlsx</span>
+        </td>
+        <td colspan="5">
+          <span class="blodFont">Data:<br/></span>
+          <span></span>
+        </td>
+      </tr>
+      <tr cid="1" id="step_detail_2_1-1" lid="1" sid="1" state="e" type="tr_detail">
+        <td>
+          <span class="blodFont">Headers:<br/></span>
+          <span>API</span>
+        </td>
+        <td colspan="5">
+          <span class="blodFont">Body:<br/></span>
+          <span></span>
+        </td>
+      </tr>
+      <tr cid="1" id="step_detail_3_1-1" lid="1" sid="1" state="e" type="tr_detail">
+        <td colspan="6" style="border-bottom: 2px solid #AAAAAA;">Missing colnum &quot;url&quot; in &quot;d:\site\test\automation_test\run\gongzuoshi.xlsx&quot;
+          <a href="javascript:;" onclick="this.style.color='#800080';showStepDetail('1-1')"><br/>^ hide detail ^</a>
+        </td>
+      </tr>
+    </table>
+    <div style="text-align:right;">
+      <button id="hide_all_details_button_2" onclick="hideAllSteps(1)">Hide All Steps</button>
+    </div>
+    <br>
+  </body>
+</html>
