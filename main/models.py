@@ -1,116 +1,43 @@
 from django.db import models
-
-
-class ActionType(models.Model):
-    name = models.CharField(max_length=256)
-    description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=256, blank=True, default='')
-    creator = models.CharField('创建人', max_length=256, editable=False, default='')
-    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.CharField('修改人', max_length=256, editable=False, default='')
-    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_valid = models.BooleanField(default=True)
-
-    def natural_key(self):  # 序列化时，可以用此值代替外键ID
-        return self.name
-
-    def __str__(self):
-        return self.name
-
-
-class Config(models.Model):
-    name = models.CharField(max_length=256)
-    description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=256, blank=True, default='')
-    creator = models.CharField('创建人', max_length=256, editable=False, default='')
-    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.CharField('修改人', max_length=256, editable=False, default='')
-    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_valid = models.BooleanField(default=True)
-
-    def natural_key(self):  # 序列化时，可以用此值代替外键ID
-        return self.name
-
-    def __str__(self):
-        return self.name
-
-
-# ===============================================================================
-# class TcGroupManager(models.Manager):
-#     def get_by_natural_key(self, name):
-#         return self.get(name=name)
-# ===============================================================================
-
-
-class Group(models.Model):
-    # objects = TcGroupManager()
-    name = models.CharField(max_length=256)
-    description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=256, blank=True, default='')
-    creator = models.CharField('创建人', max_length=256, editable=False, default='')
-    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.CharField('修改人', max_length=256, editable=False, default='')
-    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_valid = models.BooleanField(default=True)
-
-    def natural_key(self):  # 序列化时，可以用此值代替外键ID
-        return self.name
-
-    def __str__(self):
-        return self.name
+from django.contrib.auth.models import User
 
 
 class Case(models.Model):
     name = models.CharField(max_length=256)
     description = models.TextField(blank=True)
     keyword = models.CharField(max_length=256, blank=True, default='')
-    creator = models.CharField('创建人', max_length=256, editable=False, default='')
+    # creator = models.CharField('创建人', max_length=256, editable=False, default='')
+    creator = models.ForeignKey(User, verbose_name='创建人', related_name='case_creator', on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.CharField('修改人', max_length=256, editable=False, default='')
+    # modifier = models.CharField('修改人', max_length=256, editable=False, default='')
+    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='case_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_valid = models.BooleanField(default=True)
-    config = models.ForeignKey(Config)
+    config = models.ForeignKey('main.Config', on_delete=models.DO_NOTHING)
+    step = models.ManyToManyField('Step', through='CaseVsStep', through_fields=('case', 'step'))
 
     # tcg = models.ForeignKey(TcGroup, related_name='tcg')
     # type = models.ForeignKey(Type)
 
     class Meta:
+        pass
+        # db_table = 'test_case_step'
         ordering = ['name']  # 这个字段是告诉Django模型对象返回的记录结果集是按照哪个字段排序的,-xxx表示降序，?xxx表示随机
 
     def __str__(self):
         return self.name
 
 
-class Action(models.Model):
-    name = models.CharField(max_length=256)
-    description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=256, blank=True, default='')
-    # order = models.DecimalField(max_digits=10, decimal_places=2, default=1)
-    creator = models.CharField('创建人', max_length=256, editable=False, default='')
-    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.CharField('修改人', max_length=256, editable=False, default='')
-    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_valid = models.BooleanField(default=True)
-    type = models.ForeignKey(ActionType)
-
-    class Meta:
-        unique_together = ('name', 'type')
-        ordering = ['name', 'type']
-
-    def __str__(self):
-        return '{}-{}'.format(self.type, self.name)
-
-
 class Step(models.Model):
     name = models.CharField(max_length=256)
     description = models.TextField(blank=True)
     keyword = models.CharField(max_length=256, blank=True, default='')
-    creator = models.CharField('创建人', max_length=256, editable=False, default='')
+    creator = models.ForeignKey(User, verbose_name='创建人', related_name='step_creator', on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.CharField('修改人', max_length=256, editable=False, default='')
+    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='step_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_valid = models.BooleanField(default=True)
-    action = models.ForeignKey(Action)
+    action = models.ForeignKey('main.Action')
     timeout = models.FloatField(blank=True, null=True)
     save_as = models.CharField(blank=True, max_length=256)
     ui_by_list = (
@@ -160,25 +87,28 @@ class Step(models.Model):
     api_headers = models.TextField(blank=True)
     api_body = models.TextField(blank=True)
     api_data = models.TextField(blank=True)
-    # skip = models.BooleanField(default=False)
 
     class Meta:
         # db_table = 'test_case_step'
         ordering = ['name']
+        pass
 
     def __str__(self):
         return self.name
 
 
 class CaseVsStep(models.Model):
-    case = models.ForeignKey(Case)
-    step = models.ForeignKey(Step)
-    creator = models.CharField('创建人', max_length=256, editable=False, default='')
+    case = models.ForeignKey('main.Case')
+    step = models.ForeignKey('main.Step')
+    creator = models.ForeignKey(User, verbose_name='创建人', related_name='case_vs_step_creator',
+                                on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.CharField('修改人', max_length=256, editable=False, default='')
+    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='case_vs_step_modifier',
+                                 on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_valid = models.BooleanField(default=True)
     order = models.DecimalField(max_digits=10, decimal_places=2, default=1)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         unique_together = ('case', 'step')
@@ -192,3 +122,74 @@ class CaseVsStep(models.Model):
 
     def __str__(self):
         return '{} [{}]<===>{} [{}]'.format(self.case.id, self.case.name, self.step.id, self.step.name)
+
+
+class Action(models.Model):
+    name = models.CharField(max_length=256)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(max_length=256, blank=True, default='')
+    creator = models.ForeignKey(User, verbose_name='创建人', related_name='action_creator', on_delete=models.DO_NOTHING)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='action_modifier', on_delete=models.DO_NOTHING)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_valid = models.BooleanField(default=True)
+    type = models.ForeignKey('main.ActionType')
+
+    class Meta:
+        unique_together = ('name', 'type')
+
+    def __str__(self):
+        return '{}-{}'.format(self.type, self.name)
+
+
+class ActionType(models.Model):
+    name = models.CharField(max_length=256)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(max_length=256, blank=True, default='')
+    creator = models.ForeignKey(User, verbose_name='创建人', related_name='action_type_creator',
+                                on_delete=models.DO_NOTHING)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='action_type_modifier',
+                                 on_delete=models.DO_NOTHING)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_valid = models.BooleanField(default=True)
+
+    def natural_key(self):  # 序列化时，可以用此值代替外键ID
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+
+class Config(models.Model):
+    name = models.CharField(max_length=256)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(max_length=256, blank=True, default='')
+    creator = models.ForeignKey(User, verbose_name='创建人', related_name='config_creator', on_delete=models.DO_NOTHING)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='config_modifier', on_delete=models.DO_NOTHING)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_valid = models.BooleanField(default=True)
+
+    def natural_key(self):  # 序列化时，可以用此值代替外键ID
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+
+class Group(models.Model):
+    name = models.CharField(max_length=256)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(max_length=256, blank=True, default='')
+    creator = models.ForeignKey(User, verbose_name='创建人', related_name='group_creator', on_delete=models.DO_NOTHING)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='group_modifier', on_delete=models.DO_NOTHING)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_valid = models.BooleanField(default=True)
+
+    def natural_key(self):  # 序列化时，可以用此值代替外键ID
+        return self.name
+
+    def __str__(self):
+        return self.name

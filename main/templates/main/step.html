@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        {% if  pd.object %}
+            <title>步骤详情 - {{ pd.object.name }}</title>
+        {% else %}
+            <title>步骤详情 - 添加</title>
+        {% endif %}
+        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'/>
+        <link rel="stylesheet" href='{% static "main/css/main.css" %}'/>
+        <link rel="stylesheet" href='{% static "main/css/jquery.dropdown.css" %}'/>
+        <script src="{% static 'main/js/jquery-3.1.1.min.js' %}"></script>
+        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+        <script src="{% static 'main/js/main.js' %}"></script>
+        <script src="{% static 'main/js/detail.js' %}"></script>
+        <script src="{% static 'main/js/jquery.dropdown.js' %}"></script>
+        <script>
+            $(function () {
+                // 获取action
+                get_foreign_key_list({% url 'action_list' %}, '[{{ pd.object.action.id }}]', update_dropdown_single, 'action')
+            });
+
+            function debug(success, para, data) {
+                console.log(success);
+                console.log(para);
+                console.log(data);
+                window.ajax_data = data;
+            }
+        </script>
+    </head>
+    <body>
+        {% if errors %}
+            <ul>
+                {% for error in errors %}
+                    <li style="color: red;">error: {{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form action="{% url 'step_update_all' %}" method="post" id="object_form">
+            {% csrf_token %}
+            <input name="object_id" id="object_id" type="hidden" value="{{ pd.object.id }}" />
+            <table id='detail_table' class="detail_table">
+                <colgroup>
+                    <col style='width:100px;'>
+                    <col>
+                </colgroup>
+                <tbody id='tbody1'>
+                    <tr id="name">
+                        <th class="center">名称</th>
+                        <td type="value">
+                            <textarea class='input_area' name="name">{{ pd.object.name }}</textarea>
+                        </td>
+                    </tr>
+                    <tr id="description">
+                        <th class="center">描述</th>
+                        <td type="value">
+                            <textarea class='input_area' name="description">{{ pd.object.description }}</textarea>
+                        </td>
+                    </tr>
+                    <tr id="keyword">
+                        <th class="center">关键字</th>
+                        <td type="value">
+                            <textarea class='input_area' name="keyword">{{ pd.object.keyword }}</textarea>
+                        </td>
+                    </tr>
+                    <tr id="action">
+                        <th class="center">Action</th>
+                        <td type="value">
+                                <textarea class='input_area' style="display: none" >{{ pd.object.action.id }}</textarea>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <br/>
+            <div class="save_button_group">
+                <table>
+                    <tr>
+                        <td><button>保存</button></td>
+                        <td><button>取消</button></td>
+                    </tr>
+                </table>
+            </div>
+        </form>
+
+        <br/>
+        <br/>
+        {{ pd }}
+    </body>
+</html>

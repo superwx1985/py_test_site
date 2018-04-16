@@ -181,3 +181,97 @@ function create_operate_div() {
 		$(this).replaceWith(div.clone());
 	})
 }
+
+// 获取外键内容
+// 参数：ajax_url=请求地址，ajax_data=请求参数，call_back=回调函数，call_back_para=回调函数参数
+function get_foreign_key_list(ajax_url, ajax_data, call_back, call_back_para) {
+	var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
+	$.ajax({
+		url: ajax_url,
+		type: "POST",
+		data: {csrfmiddlewaretoken: csrf_token, "data": ajax_data},
+		dataType: "html",
+		success: function(data, textStatus) {
+			// console.log("textStatus: "+textStatus);
+			// console.log("data: "+data);
+			// console.log("data's lenth: " + $.Object.count.call(data));
+			call_back(true, call_back_para, data);
+		},
+		error: function (XMLHttpRequest, textStatus, errorThrown) {
+			console.log('error');
+			console.log("textStatus: " + textStatus);
+			console.log("errorThrown: " + errorThrown);
+			console.log("XMLHttpRequest: " + XMLHttpRequest);
+			console.log("XMLHttpRequest.status: " + XMLHttpRequest.status);
+			console.log("XMLHttpRequest.statusText: " + XMLHttpRequest.statusText);
+			console.log("XMLHttpRequest.responseText: " + XMLHttpRequest.responseText);
+			// console.log("XMLHttpRequest.responseXML: "+XMLHttpRequest.responseXML);
+			call_back(false, call_back_para, data);
+		}
+	})
+}
+
+// 更新下拉列表_单选
+// 参数：tr_id=行id，ajax_data=请求参数，call_back=回调函数，call_back_para=回调函数参数
+function update_dropdown_single(success, tr_id, data) {
+	window.tr = $("tr#" + tr_id);
+	var data_obj = $.parseJSON(data);
+	var td_value = tr.children("td[type=value]");
+	td_value.find("div#div_" + tr_id).remove();
+	var div = $("<div id='div_' + tr_id></div>");
+	// td_value.find("div#dropdown_" + tr_id).remove();
+	var div_dropdown = $('<div id="dropdown_' + tr_id + '"><select id="select_' + tr_id + '" style="display: none" placeholder="请选择"></select></div>');
+	div.append(div_dropdown);
+	td_value.append(div);
+	// td_value.find("#div_" + tr_id).append(div_dropdown);
+	$("#dropdown_" + tr_id).dropdown({
+		data: data_obj.data,
+		// multipleMode: 'label',
+		// limitCount: 1,
+		input: '<input type="text" maxLength="20" placeholder="请输入名称搜索">',
+		choice: function() {
+			// console.log(this.selectId);
+			// var selected_value = JSON.stringify(this.selectId);
+			td_value.find("textarea").val(selectId_to_select_id_string(this.selectId));
+		}
+	});
+}
+
+// 更新下拉列表_多选
+// 参数：tr_id=行id，ajax_data=请求参数，call_back=回调函数，call_back_para=回调函数参数
+function update_dropdown_multiple(success, tr_id, data) {
+	window.tr = $("tr#" + tr_id);
+	var data_obj = $.parseJSON(data);
+	var td_value = tr.children("td[type=value]");
+	td_value.find("div#div_" + tr_id).remove();
+	var div = $("<div id='div_' + tr_id></div>");
+	// td_value.find("div#dropdown_" + tr_id).remove();
+	var div_dropdown = $('<div id="dropdown_' + tr_id + '"><select id="select_' + tr_id + '" style="display: none" multiple placeholder="请选择"></select></div>');
+	div.append(div_dropdown);
+	td_value.append(div);
+	// td_value.find("#div_" + tr_id).append(div_dropdown);
+	$("#dropdown_" + tr_id).dropdown({
+		data: data_obj.data,
+		multipleMode: 'label',
+		// limitCount: 1,
+		input: '<input type="text" maxLength="20" placeholder="请输入名称搜索">',
+		choice: function() {
+			// console.log(this.selectId);
+			// var selected_value = JSON.stringify(this.selectId);
+			td_value.find("textarea").val(selectId_to_select_id_string(this.selectId));
+		}
+	});
+}
+
+// dropdown的selectId对象转字符串
+function selectId_to_select_id_string(selectId){
+	var select_id = new Array;
+	$.each(selectId, function(key) {
+		select_id.push(key);
+	})
+	var select_id_string = "";
+	if (0<select_id.length) {
+		select_id_string = select_id.join(",")
+	}
+	return select_id_string
+}

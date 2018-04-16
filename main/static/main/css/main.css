@@ -52,6 +52,7 @@ td {
 .result_table td {
 	border: 1px solid #999999;
 	padding: 2px;
+	height: 2em;
 }
 .result_table div.scroll {
 	overflow: auto;
@@ -170,4 +171,13 @@ td {
 	min-width: 1024px;
 	min-height: 700px;
 	overflow: auto;
+}
+.save_button_group {
+	width: 100%;
+	text-align: center;
+}
+.save_button_group>table {
+	width: 200px;
+	text-align: center;
+	margin: auto;
 }

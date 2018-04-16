@@ -1,0 +1,81 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        {% if  pd.object %}
+            <title>用例详情 - {{ pd.object.name }}</title>
+        {% else %}
+            <title>用例详情 - 添加</title>
+        {% endif %}
+        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'/>
+        <link rel="stylesheet" href='{% static "main/css/main.css" %}'/>
+        <script src="{% static 'main/js/jquery-3.1.1.min.js' %}"></script>
+        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+        <script src="{% static 'main/js/main.js' %}"></script>
+        <script>
+            $(function () {
+
+            })
+        </script>
+    </head>
+    <body>
+        {% if errors %}
+            <ul>
+                {% for error in errors %}
+                    <li style="color: red;">error: {{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form action="" method="post" id="object_form">
+            {% csrf_token %}
+
+
+            <table id='detail_table' class="detail_table">
+                <colgroup>
+                    <col style='width:100px;'>
+                    <col style='width:60px;'>
+                    <col>
+                </colgroup>
+                <tbody id='tbody1'>
+                    <tr id="name">
+                        <th class="center">名称</th>
+                        <td><button type='button' name='reset_button'>还原</button></td>
+                        <td type="value">
+                            <textarea class='input_area'>{{ pd.object.name }}</textarea>
+                        </td>
+                    </tr>
+                    <tr id="description">
+                        <th class="center">描述</th>
+                        <td><button type='button' name='reset_button'>还原</button></td>
+                        <td type="value">
+                            <textarea class='input_area'>{{ pd.object.description }}</textarea>
+                        </td>
+                    </tr>
+                    <tr id="keyword">
+                        <th class="center">关键字</th>
+                        <td><button type='button' name='reset_button'>还原</button></td>
+                        <td type="value">
+                            <textarea class='input_area'>{{ pd.object.keyword }}</textarea>
+                        </td>
+                    </tr>
+                    <tr id="config">
+                        <th class="center">配置项</th>
+                        <td><button type='button' name='reset_button'>还原</button></td>
+                        <td type="value">
+                            <textarea class='input_area'>{{ pd.object.config }}</textarea>
+                        </td>
+                    </tr>
+
+
+                </tbody>
+            </table>
+            <input type="submit" value="提交">
+        </form>
+
+        <br/>
+        <br/>
+        {{ pd }}
+    </body>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <title>步骤列表</title>
+        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'/>
+        <link rel="stylesheet" href='{% static "main/css/main.css" %}'/>
+        <script src="{% static 'main/js/jquery-3.1.1.min.js' %}"></script>
+        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+        <script src="{% static 'main/js/main.js' %}"></script>
+        <script>
+            $(function () {
+                // 注册快速更新事件
+                var tds = $('#tbody1 td[quick_update]');
+                quick_update("{% url 'step_update' %}", tds, update_single_column, refresh_single_column);
+
+                // 绑定删除按钮事件
+                bind_delete_button("{% url 'step_delete' %}");
+            })
+        </script>
+    </head>
+    <body>
+        {% if errors %}
+            <ul>
+                {% for error in errors %}
+                    <li style="color: red;">error: {{ error }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form action="" method="post" id="objects_form">
+            {% csrf_token %}
+            <table>
+                <tr>
+                    <td>
+                        <input type="text" id="search_input" name="search_input" value="{{ pd.search_input }}">
+                        <button type="submit" id='search_button'>搜索</button>
+                    </td>
+                </tr>
+            </table>
+
+            <br/>
+            <br/>
+
+            <table id='result_table' class="result_table">
+                <colgroup>
+                    <col style='width: 60px;'>
+                    <col>
+                    <col style='width: 20%;'>
+                    <col style='width: 20%;'>
+                    <col style='width: 50px;'>
+                </colgroup>
+                <thead>
+                    <tr id='header_tr'>
+                        <th>ID</th>
+                        <th>名称</th>
+                        <th>关键字</th>
+                        <th>Action</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id='tbody1'>
+                    {% for object in pd.objects %}
+                        <tr object_id="{{ object.id }}">
+                            <td col_name='id' class="center"><a target="_blank" href="/step?id={{ object.id }}">{{ object.id }}</a></td>
+                            <td quick_update col_name='name'>{{ object.name }}</td>
+                            <td quick_update col_name='keyword'>{{ object.keyword }}</td>
+                            <td col_name='action'>{{ object.action }}</td>
+                            <td class="center">
+                                <button type="button" id="delete_button" name="delete_button">删除</button>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4">no data</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <br/>
+            页数: <input type="text" id="page" name="page" value="{{ pd.page }}">
+            每页: <input type="text" id="size" name="size" value="{{ pd.size }}">
+        </form>
+        <br/>
+        <br/>
+        {{ pd }}
+    </body>
+</html>

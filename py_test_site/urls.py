@@ -14,17 +14,25 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
-from django.contrib import admin
-import main.views as mvs
+from django.contrib import admin, auth
+import main.views as mv
+
 
 urlpatterns = [
-    url('^admin/', admin.site.urls),
-    url('^run/$', mvs.run, name='run'),
-    url('^list_case/$', mvs.list_case, name='list_case'),
-    # url('^tc_list/delete/$', mvs.tc_del, name='tc_del'),
-    url('^case/delete/$', mvs.delete_case, name='delete_case'),
-    # url('^case/del/$', mvs.tc_del, name='tc_del'),
-    url('^case/update/$', mvs.update_case, name='update_case'),
-    url('^tc_list/get_tc_list/$', mvs.get_tc_list, name='tc_get_tc_list'),
-    url('^tc_list/tc_pagination/$', mvs.tc_pagination, name='tc_pagination'),
+    url('^admin/', admin.site.urls, name='admin'),
+    url('^run/$', mv.run, name='run'),
+    url('^cases/$', mv.cases, name='cases'),
+    url('^case/$', mv.case, name='case'),
+    url('^case/delete/$', mv.case_delete, name='case_delete'),
+    url('^case/update/$', mv.case_update, name='case_update'),
+
+    url('^steps/$', mv.steps, name='steps'),
+    url('^step/$', mv.step, name='step'),
+    url('^step/delete/$', mv.step_delete, name='step_delete'),
+    url('^step/update/$', mv.step_update, name='step_update'),
+    url('^step/update_all/$', mv.step_update_all, name='step_update_all'),
+
+    url('^action_list/$', mv.action_list, name='action_list'),
+
 ]
+

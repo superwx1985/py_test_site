@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+from django.urls import reverse
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -126,7 +127,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-LOGGING = {#让Django打印出在数据库中执行的语句
+# 登陆页面
+LOGIN_URL = '/admin/login/'
+
+# 让Django打印出在数据库中执行的语句
+LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
