@@ -139,7 +139,7 @@ class Action(models.Model):
         unique_together = ('name', 'type')
 
     def __str__(self):
-        return '{}-{}'.format(self.type, self.name)
+        return '{} - {}'.format(self.type, self.name)
 
 
 class ActionType(models.Model):

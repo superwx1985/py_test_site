@@ -82,7 +82,7 @@ def case_update(request):
             raise ValueError('invalid col_name')
     except Exception as e:
         print(traceback.format_exc())
-        return HttpResponseBadRequest(str(e))
+        return HttpResponseBadRequest(traceback.format_exc())
     return JsonResponse(response_)
 
 
@@ -163,7 +163,7 @@ def step_delete(request):
         object_id = request.POST.get('object_id')
         if object_id:
             Step.objects.filter(id=object_id).update(is_valid=0, modifier=request.user, modified_date=timezone.now())
-        return HttpResponse('success')
+        return HttpResponse('成功')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
 
@@ -183,7 +183,7 @@ def step_update(request):
             raise ValueError('invalid col_name')
     except Exception as e:
         print(traceback.format_exc())
-        return HttpResponseBadRequest(str(e))
+        return HttpResponseBadRequest(traceback.format_exc())
     return JsonResponse(response_)
 
 
@@ -193,11 +193,24 @@ def step_update_all(request):
         name = request.POST.get('name')
         description = request.POST.get('description')
         keyword = request.POST.get('keyword')
+        timeout = request.POST.get('timeout', '')
+        if timeout == '':
+            timeout = None
+        save_as = request.POST.get('save_as')
+        ui_by = request.POST.get('ui_by', 0)
 
-        Step.objects.filter(id=object_id).update(name=name, description=description, keyword=keyword, modifier=request.user, modified_date=timezone.now())
+        Step.objects.filter(id=object_id).update(
+            name=name,
+            description=description,
+            keyword=keyword,
+            timeout=timeout,
+            save_as=save_as,
+            ui_by=ui_by,
+            modifier=request.user, modified_date=timezone.now())
 
     except Exception as e:
-        return HttpResponseBadRequest(str(e))
+        print(traceback.format_exc())
+        return HttpResponseBadRequest(traceback.format_exc())
     return HttpResponseRedirect('{}?id={}'.format(reverse('step'), object_id))
 
 
@@ -207,7 +220,7 @@ def action_list(request):
     data = json.loads(request.POST['data'])
     objects = Action.objects.filter(is_valid=1).order_by('type__id', 'name', 'id').values('id', 'name', 'type__name', 'keyword')
     for o in objects:
-        o['name'] = '{} | {}'.format(o['name'], o['keyword'])
+        o['name'] = '{} - {} - {}'.format(o['type__name'], o['name'], o['keyword'])
         if o['id'] in data:
             o['selected'] = True
 

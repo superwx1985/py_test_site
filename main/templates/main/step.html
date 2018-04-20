@@ -69,7 +69,27 @@
                     <tr id="action">
                         <th class="center">Action</th>
                         <td type="value">
-                                <textarea class='input_area' style="display: none" >{{ pd.object.action.id }}</textarea>
+                            <textarea class='input_area' style="display: none" >{{ pd.object.action.id }}</textarea>
+                            <div>111{{ pd.object.bar }}</div>
+                        </td>
+                    </tr>
+                    <tr id="timeout">
+                        <th class="center">超时</th>
+                        <td type="value">
+                            <textarea class='input_area' name="timeout">{{ pd.object.timeout|default:'' }}</textarea>
+                        </td>
+                    </tr>
+                    <tr id="save_as">
+                        <th class="center">结果另存</th>
+                        <td type="value">
+                            <textarea class='input_area' name="save_as">{{ pd.object.save_as }}</textarea>
+                        </td>
+                    </tr>
+                    <tr id="ui_by">
+                        <th class="center">定位方式</th>
+                        <td type="value">
+                            <textarea class='input_area' name="ui_by">{{ pd.object.ui_by }}</textarea>
+                            <div>{{ pd.object.get_ui_by_display }}|{{ pd.object.ui_by_list }}</div>
                         </td>
                     </tr>
                 </tbody>
