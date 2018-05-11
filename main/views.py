@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpRe
 from django.shortcuts import render
 from django.core.serializers import serialize
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import connection
 from django.db.models import Q
 from django.utils import timezone
@@ -75,9 +75,11 @@ def case_update(request):
         new_value = request.POST['new_value']
         response_['new_value'] = new_value
         if col_name == 'name':
-            Case.objects.filter(id=object_id).update(name=new_value, modifier=request.user, modified_date=timezone.now())
+            Case.objects.filter(id=object_id).update(name=new_value, modifier=request.user,
+                                                     modified_date=timezone.now())
         elif col_name == 'keyword':
-            Case.objects.filter(id=object_id).update(keyword=new_value, modifier=request.user, modified_date=timezone.now())
+            Case.objects.filter(id=object_id).update(keyword=new_value, modifier=request.user,
+                                                     modified_date=timezone.now())
         else:
             raise ValueError('invalid col_name')
     except Exception as e:
@@ -144,18 +146,58 @@ def steps(request):
 
 
 @login_required
-def step(request):
-    pd = dict()
-    pd['id'] = str(request.GET.get('id', 0))
-    if pd['id'].isdigit():
-        pd['id'] = int(float(pd['id']))
+def step(request, object_id):
+    from .forms import StepForm
+
+    if request.method == 'POST':
+        try:
+            form = StepForm(request.POST)
+            if not form.is_valid():
+                return render(request, 'main/step.html', locals())
+            # object_id = form.data.get('object_id')
+            name = form.data.get('name')
+            description = form.data.get('description')
+            keyword = form.data.get('keyword')
+            timeout = form.data.get('timeout')
+            if timeout == '':
+                timeout = None
+            save_as = form.data.get('save_as')
+            ui_by = form.data.get('ui_by')
+
+            Step.objects.filter(id=object_id).update(
+                name=name,
+                description=description,
+                keyword=keyword,
+                timeout=timeout,
+                save_as=save_as,
+                ui_by=ui_by,
+                modifier=request.user, modified_date=timezone.now())
+
+        except Exception as e:
+            print(traceback.format_exc())
+            return HttpResponseBadRequest(traceback.format_exc())
+        return HttpResponseRedirect('{}?id={}'.format(reverse('step'), object_id))
     else:
-        pd['id'] = 0
-    pd['object'] = None
-    objects = Step.objects.filter(id=pd['id'])
-    if objects:
-        pd['object'] = objects[0]
-    return render(request, 'main/step.html', {'pd': pd})
+        # object_id = str(request.GET.get('id', 0))
+        # if object_id.isdigit():
+        #     object_id = int(float(object_id))
+        # else:
+        #     object_id = 0
+        object_ = dict()
+        objects = Step.objects.filter(id=object_id)
+        if objects:
+            object_ = objects[0]
+            form = StepForm(initial={
+                'name': object_.name,
+                'description': object_.description,
+                'keyword': object_.keyword,
+                'timeout': object_.timeout,
+                'save_as': object_.save_as,
+                'ui_by': object_.ui_by
+            })
+            return render(request, 'main/step.html', locals())
+        else:
+            return HttpResponseBadRequest('404')
 
 
 def step_delete(request):
@@ -176,9 +218,11 @@ def step_update(request):
         new_value = request.POST['new_value']
         response_['new_value'] = new_value
         if col_name == 'name':
-            Step.objects.filter(id=object_id).update(name=new_value, modifier=request.user, modified_date=timezone.now())
+            Step.objects.filter(id=object_id).update(name=new_value, modifier=request.user,
+                                                     modified_date=timezone.now())
         elif col_name == 'keyword':
-            Step.objects.filter(id=object_id).update(keyword=new_value, modifier=request.user, modified_date=timezone.now())
+            Step.objects.filter(id=object_id).update(keyword=new_value, modifier=request.user,
+                                                     modified_date=timezone.now())
         else:
             raise ValueError('invalid col_name')
     except Exception as e:
@@ -218,7 +262,8 @@ def step_update_all(request):
 @login_required
 def action_list(request):
     data = json.loads(request.POST['data'])
-    objects = Action.objects.filter(is_valid=1).order_by('type__id', 'name', 'id').values('id', 'name', 'type__name', 'keyword')
+    objects = Action.objects.filter(is_valid=1).order_by('type__id', 'name', 'id').values('id', 'name', 'type__name',
+                                                                                          'keyword')
     for o in objects:
         o['name'] = '{} - {} - {}'.format(o['type__name'], o['name'], o['keyword'])
         if o['id'] in data:

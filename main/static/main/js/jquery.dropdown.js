@@ -76,7 +76,7 @@
 		var searchable = this.config.searchable;
 		var templateSearch = searchable ? '<span class="dropdown-search">' + this.config.input + '</span>' : '';
 
-		return isLabelMode ? '<div class="dropdown-display-label">\n            <div class="dropdown-chose-list">' + templateSearch + '</div><button class="dropdown-clear-all">\xD7</button>\n        </div><div class="dropdown-main">{{ul}}</div>' : '<a href="javascript:;" class="dropdown-display">\n            <span class="dropdown-chose-list"></span><button class="dropdown-clear-all">\xD7</button>\n            </a><div class="dropdown-main">' + templateSearch + '{{ul}}</div>';
+		return isLabelMode ? '<div class="dropdown-display-label">\n            <div class="dropdown-chose-list">' + templateSearch + '</div><button type="button" class="dropdown-clear-all">\xD7</button>\n        </div><div class="dropdown-main">{{ul}}</div>' : '<a href="javascript:;" class="dropdown-display">\n            <span class="dropdown-chose-list"></span><button type="button" class="dropdown-clear-all">\xD7</button>\n            </a><div class="dropdown-main">' + templateSearch + '{{ul}}</div>';
 	}
 
 	// 超出限制提示

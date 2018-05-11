@@ -13,26 +13,27 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
-from django.conf.urls import url, include
+
 from django.contrib import admin, auth
+from django.urls import path
 import main.views as mv
 
 
 urlpatterns = [
-    url('^admin/', admin.site.urls, name='admin'),
-    url('^run/$', mv.run, name='run'),
-    url('^cases/$', mv.cases, name='cases'),
-    url('^case/$', mv.case, name='case'),
-    url('^case/delete/$', mv.case_delete, name='case_delete'),
-    url('^case/update/$', mv.case_update, name='case_update'),
+    path('^admin/', admin.site.urls, name='admin'),
+    path('^run/$', mv.run, name='run'),
+    path('^cases/$', mv.cases, name='cases'),
+    path('^case/$', mv.case, name='case'),
+    path('^case/delete/$', mv.case_delete, name='case_delete'),
+    path('^case/update/$', mv.case_update, name='case_update'),
 
-    url('^steps/$', mv.steps, name='steps'),
-    url('^step/$', mv.step, name='step'),
-    url('^step/delete/$', mv.step_delete, name='step_delete'),
-    url('^step/update/$', mv.step_update, name='step_update'),
-    url('^step/update_all/$', mv.step_update_all, name='step_update_all'),
+    path('^steps/$', mv.steps, name='steps'),
+    path('step/<int:object_id>/', mv.step, name='step'),
+    path('^step/delete/$', mv.step_delete, name='step_delete'),
+    path('^step/update/$', mv.step_update, name='step_update'),
+    path('^step/update_all/$', mv.step_update_all, name='step_update_all'),
 
-    url('^action_list/$', mv.action_list, name='action_list'),
+    path('action_list/', mv.action_list, name='action_list'),
 
 ]
 

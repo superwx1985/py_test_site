@@ -3,21 +3,18 @@ from django.contrib.auth.models import User
 
 
 class Case(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=256, blank=True, default='')
-    # creator = models.CharField('创建人', max_length=256, editable=False, default='')
+    keyword = models.CharField(max_length=100, blank=True, default='')
+    # creator = models.CharField('创建人', max_length=100, editable=False, default='')
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='case_creator', on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    # modifier = models.CharField('修改人', max_length=256, editable=False, default='')
+    # modifier = models.CharField('修改人', max_length=100, editable=False, default='')
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='case_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_valid = models.BooleanField(default=True)
     config = models.ForeignKey('main.Config', on_delete=models.DO_NOTHING)
     step = models.ManyToManyField('Step', through='CaseVsStep', through_fields=('case', 'step'))
-
-    # tcg = models.ForeignKey(TcGroup, related_name='tcg')
-    # type = models.ForeignKey(Type)
 
     class Meta:
         pass
@@ -29,17 +26,17 @@ class Case(models.Model):
 
 
 class Step(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=256, blank=True, default='')
+    keyword = models.CharField(max_length=100, blank=True, default='')
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='step_creator', on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='step_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_valid = models.BooleanField(default=True)
-    action = models.ForeignKey('main.Action')
+    action = models.ForeignKey('main.Action', on_delete=models.DO_NOTHING)
     timeout = models.FloatField(blank=True, null=True)
-    save_as = models.CharField(blank=True, max_length=256)
+    save_as = models.CharField(blank=True, max_length=100)
     ui_by_list = (
         (0, ''),
         (1, 'id'),
@@ -98,8 +95,8 @@ class Step(models.Model):
 
 
 class CaseVsStep(models.Model):
-    case = models.ForeignKey('main.Case')
-    step = models.ForeignKey('main.Step')
+    case = models.ForeignKey('main.Case', on_delete=models.DO_NOTHING)
+    step = models.ForeignKey('main.Step', on_delete=models.DO_NOTHING)
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='case_vs_step_creator',
                                 on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
@@ -125,15 +122,15 @@ class CaseVsStep(models.Model):
 
 
 class Action(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=256, blank=True, default='')
+    keyword = models.CharField(max_length=100, blank=True, default='')
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='action_creator', on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='action_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_valid = models.BooleanField(default=True)
-    type = models.ForeignKey('main.ActionType')
+    type = models.ForeignKey('main.ActionType', on_delete=models.DO_NOTHING)
 
     class Meta:
         unique_together = ('name', 'type')
@@ -143,9 +140,9 @@ class Action(models.Model):
 
 
 class ActionType(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=256, blank=True, default='')
+    keyword = models.CharField(max_length=100, blank=True, default='')
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='action_type_creator',
                                 on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
@@ -162,9 +159,9 @@ class ActionType(models.Model):
 
 
 class Config(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=256, blank=True, default='')
+    keyword = models.CharField(max_length=100, blank=True, default='')
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='config_creator', on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='config_modifier', on_delete=models.DO_NOTHING)
@@ -179,9 +176,9 @@ class Config(models.Model):
 
 
 class Group(models.Model):
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=256, blank=True, default='')
+    keyword = models.CharField(max_length=100, blank=True, default='')
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='group_creator', on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='group_modifier', on_delete=models.DO_NOTHING)
