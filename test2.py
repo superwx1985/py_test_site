@@ -6,8 +6,8 @@ file_path = '''
 D:/vic/性能测试数据/sqs_log/sqs.log
 '''
 time_reg = '\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}'
-start_time_str = '2018-05-10 16:20:00'
-end_time_str = '2018-05-10 16:21:30'
+start_time_str = '2018-05-11 11:09:00'
+end_time_str = '2018-05-11 23:00:00'
 
 
 class LogObject:
@@ -25,13 +25,21 @@ class LogObject:
         return sum_
 
     def get_avg(self):
+        if self.get_count() == 0:
+            return -1
         return self.get_sum()/self.get_count()
 
     def get_min(self):
-        return self.sorted_list[0][1]
+        if self.sorted_list:
+            return self.sorted_list[0][1]
+        else:
+            return -1
 
     def get_max(self):
-        return self.sorted_list[-1][1]
+        if self.sorted_list:
+            return self.sorted_list[-1][1]
+        else:
+            return -1
 
     def get_percent(self, percent):
         return self.sorted_list[round(self.get_count() * percent / 100) - 1][1]
