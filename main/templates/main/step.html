@@ -3,8 +3,12 @@
 <html>
     <head>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-        {% if  object_ %}
-            <title>步骤详情 - {{ object_.name }}</title>
+        {% if form %}
+            {% if form.initial %}
+                <title>步骤详情 - {{ form.initial.name }}</title>
+            {% else %}
+                <title>步骤详情 - {{ form.data.name }}</title>
+            {% endif %}
         {% else %}
             <title>步骤详情 - 添加</title>
         {% endif %}
@@ -18,9 +22,32 @@
         <script src="{% static 'main/js/jquery.dropdown.js' %}"></script>
         <script>
             $(function () {
-                // 获取action
-                get_foreign_key_list({% url 'action_list' %}, '[{{ object_.action.id }}]', update_dropdown_single, 'action')
+                // 触发展示Action相关内容
+                showActionField($('#id_action'));
+                // 注册Action变更
+                $('#id_action').off('change').change(function () {
+                    showActionField($(this));
+                })
             });
+            // 展示Action相关内容
+            function showActionField($actionSelect) {
+                if ($actionSelect.find('option:selected').text().indexOf('UI') == 0) {
+                    console.log('UI');
+                    $('tr[action_type="UI"]').show()
+                    $('tr[action_type="API"]').hide()
+                    $('tr[action_type="DB"]').hide()
+                } else if ($actionSelect.find('option:selected').text().indexOf('API') == 0) {
+                    console.log('API');
+                    $('tr[action_type="UI"]').hide()
+                    $('tr[action_type="API"]').show()
+                    $('tr[action_type="DB"]').hide()
+                } else if ($actionSelect.find('option:selected').text().indexOf('DB') == 0) {
+                    console.log('DB');
+                    $('tr[action_type="UI"]').hide()
+                    $('tr[action_type="API"]').hide()
+                    $('tr[action_type="DB"]').show()
+                }
+            }
 
             function debug(success, para, data) {
                 console.log(success);
@@ -39,12 +66,12 @@
             </ul>
         {% endif %}
 
-        <form action="{% url 'step' object_.id %}" method="post" id="object_form" novalidate>
+        <form action="{% url 'step' object_id %}" method="post" id="object_form" novalidate>
             {% csrf_token %}
-            <input name="object_id" id="object_id" type="hidden" value="{{ object_.id }}" />
+            <input name="object_id" id="object_id" type="hidden" value="{{ object_id }}" />
             <table id='detail_table' class="detail_table">
                 <colgroup>
-                    <col style='width:100px;'>
+                    <col style='width:200px;'>
                     <col>
                 </colgroup>
                 <tbody id='tbody1'>
@@ -53,7 +80,7 @@
                         <td type="value">
                             {{ form.name }}
                             {% if form.errors.name.0 %}
-                                <div>{{ form.errors.name.0 }}</div>
+                                <div class="errornote">{{ form.errors.name.0 }}</div>
                             {% endif %}
                         </td>
                     </tr>
@@ -62,7 +89,7 @@
                         <td type="value">
                             {{ form.description }}
                             {% if form.errors.description.0 %}
-                                <div>{{ form.errors.description.0 }}</div>
+                                <div class="errornote">{{ form.errors.description.0 }}</div>
                             {% endif %}
                         </td>
                     </tr>
@@ -71,7 +98,7 @@
                         <td type="value">
                             {{ form.keyword }}
                             {% if form.errors.keyword.0 %}
-                                <div>{{ form.errors.keyword.0 }}</div>
+                                <div class="errornote">{{ form.errors.keyword.0 }}</div>
                             {% endif %}
                         </td>
                     </tr>
@@ -80,17 +107,17 @@
                         <td type="value">
                             {{ form.action }}
                             {% if form.errors.action.0 %}
-                                <div>{{ form.errors.action.0 }}</div>
+                                <div class="errornote">{{ form.errors.action.0 }}</div>
                             {% endif %}
                         </td>
                     </tr>
                     <tr id="timeout">
                         <th class="center">超时</th>
                         <td type="value">
-{#                            <textarea class='input_area' name="timeout">{{ object_.timeout|default:'' }}</textarea>#}
+{#                            <textarea class='input_area' name="timeout">{{ form.timeout|default:'' }}</textarea>#}
                             {{ form.timeout }}
                             {% if form.errors.timeout.0 %}
-                                <div>{{ form.errors.timeout.0 }}</div>
+                                <div class="errornote">{{ form.errors.timeout.0 }}</div>
                             {% endif %}
                         </td>
                     </tr>
@@ -99,17 +126,110 @@
                         <td type="value">
                             {{ form.save_as }}
                             {% if form.errors.save_as.0 %}
-                                <div>{{ form.errors.save_as.0 }}</div>
+                                <div class="errornote">{{ form.errors.save_as.0 }}</div>
                             {% endif %}
                         </td>
                     </tr>
-                    <tr id="ui_by">
+                    <tr id="ui_by" action_type="UI" style="display: none">
                         <th class="center">定位方式</th>
                         <td type="value">
-                            <textarea class='input_area' name="ui_by">{{ object_.ui_by }}</textarea>
-                            <div>{{ object_.get_ui_by_display }}|{{ object_.ui_by_list }}</div>
+                            {{ form.ui_by }}
+                            {% if form.errors.ui_by.0 %}
+                                <div class="errornote">{{ form.errors.ui_by.0 }}</div>
+                            {% endif %}
                         </td>
                     </tr>
+                    <tr id="ui_locator" action_type="UI" style="display: none">
+                        <th class="center">定位值</th>
+                        <td type="value">
+                            {{ form.ui_locator }}
+                            {% if form.errors.ui_locator.0 %}
+                                <div class="errornote">{{ form.errors.ui_locator.0 }}</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr id="ui_index" action_type="UI" style="display: none">
+                        <th class="center">索引</th>
+                        <td type="value">
+                            {{ form.ui_index }}
+                            {% if form.errors.ui_index.0 %}
+                                <div class="errornote">{{ form.errors.ui_index.0 }}</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr id="ui_base_element" action_type="UI" style="display: none">
+                        <th class="center">基元素</th>
+                        <td type="value">
+                            {{ form.ui_base_element }}
+                            {% if form.errors.ui_base_element.0 %}
+                                <div class="errornote">{{ form.errors.ui_base_element.0 }}</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr id="ui_data" action_type="UI" style="display: none">
+                        <th class="center">数据</th>
+                        <td type="value">
+                            {{ form.ui_data }}
+                            {% if form.errors.ui_data.0 %}
+                                <div class="errornote">{{ form.errors.ui_data.0 }}</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr id="ui_special_action" action_type="UI" style="display: none">
+                        <th class="center">特殊动作</th>
+                        <td type="value">
+                            {{ form.ui_special_action }}
+                            {% if form.errors.ui_special_action.0 %}
+                                <div class="errornote">{{ form.errors.ui_special_action.0 }}</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr id="ui_alert_handle" action_type="UI" style="display: none">
+                        <th class="center">浏览器弹出处理</th>
+                        <td type="value">
+                            {{ form.ui_alert_handle }}
+                            {% if form.errors.ui_alert_handle.0 %}
+                                <div class="errornote">{{ form.errors.ui_alert_handle.0 }}</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr id="api_url" action_type="API" style="display: none">
+                        <th class="center">请求地址</th>
+                        <td type="value">
+                            {{ form.api_url }}
+                            {% if form.errors.api_url.0 %}
+                                <div class="errornote">{{ form.errors.api_url.0 }}</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr id="api_headers" action_type="API" style="display: none">
+                        <th class="center">请求header</th>
+                        <td type="value">
+                            {{ form.api_headers }}
+                            {% if form.errors.api_headers.0 %}
+                                <div class="errornote">{{ form.errors.api_headers.0 }}</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr id="api_body" action_type="API" style="display: none">
+                        <th class="center">请求body</th>
+                        <td type="value">
+                            {{ form.api_body }}
+                            {% if form.errors.api_body.0 %}
+                                <div class="errornote">{{ form.errors.api_body.0 }}</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr id="api_data" action_type="API" style="display: none">
+                        <th class="center">验证内容</th>
+                        <td type="value">
+                            {{ form.api_data }}
+                            {% if form.errors.api_data.0 %}
+                                <div class="errornote">{{ form.errors.api_data.0 }}</div>
+                            {% endif %}
+                        </td>
+                    </tr>
+
                 </tbody>
             </table>
             <br/>
@@ -120,6 +240,8 @@
                         <td><input type="submit" value="提交"></td>
                         <td><input type="reset" value="还原"></td>
                     </tr>
+                    {% if is_success == True %}<tr><td colspan="2" style="color: green">保存成功</td></tr>{% endif %}
+                    {% if is_success == False %}<tr><td colspan="2" style="color: red">请更正错误项</td></tr>{% endif %}
                 </table>
             </div>
         </form>

@@ -125,7 +125,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
+# 静态文件地址
 STATIC_URL = '/static/'
+
+# 默认上传位置
+MEDIA_URL = '/upload/'
 
 # 登陆页面
 LOGIN_URL = '/admin/login/'

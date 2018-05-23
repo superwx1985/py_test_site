@@ -1,7 +1,9 @@
-import datetime
+import math
 import sys
 import os
 
-print(sys.path)
-print(os.environ['path'])
+class W:
+    pass
 
+w = type
+print(isinstance(w, type))

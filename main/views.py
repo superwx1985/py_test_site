@@ -146,56 +146,95 @@ def steps(request):
 
 
 @login_required
-def step(request, object_id):
+def step(request, object_id, is_success=None):
     from .forms import StepForm
-
+    # 当post时，提交表单
     if request.method == 'POST':
+        form = StepForm(request.POST)
         try:
-            form = StepForm(request.POST)
             if not form.is_valid():
+                is_success = False
                 return render(request, 'main/step.html', locals())
-            # object_id = form.data.get('object_id')
+                # return render(request, reverse('step', args=(object_id,)), locals())
             name = form.data.get('name')
             description = form.data.get('description')
             keyword = form.data.get('keyword')
+            action = form.data.get('action')
             timeout = form.data.get('timeout')
             if timeout == '':
                 timeout = None
             save_as = form.data.get('save_as')
             ui_by = form.data.get('ui_by')
+            ui_locator = form.data.get('ui_locator')
+            ui_index = form.data.get('ui_index')
+            if ui_index == '':
+                ui_index = None
+            ui_base_element = form.data.get('ui_base_element')
+            ui_data = form.data.get('ui_data')
+            ui_special_action = form.data.get('ui_special_action')
+            ui_alert_handle = form.data.get('ui_alert_handle')
+            api_url = form.data.get('api_url')
+            api_headers = form.data.get('api_headers')
+            api_body = form.data.get('api_body')
+            api_data = form.data.get('api_data')
 
             Step.objects.filter(id=object_id).update(
                 name=name,
                 description=description,
                 keyword=keyword,
+                action=action,
                 timeout=timeout,
                 save_as=save_as,
                 ui_by=ui_by,
+                ui_locator=ui_locator,
+                ui_index=ui_index,
+                ui_base_element=ui_base_element,
+                ui_data=ui_data,
+                ui_special_action=ui_special_action,
+                ui_alert_handle=ui_alert_handle,
+                api_url=api_url,
+                api_headers=api_headers,
+                api_body=api_body,
+                api_data=api_data,
                 modifier=request.user, modified_date=timezone.now())
 
         except Exception as e:
             print(traceback.format_exc())
             return HttpResponseBadRequest(traceback.format_exc())
-        return HttpResponseRedirect('{}?id={}'.format(reverse('step'), object_id))
+        # return render(request, 'main/step.html', locals())
+        # 为保证数据一致，重新取一次数据库中的值
+        request.method = 'GET'
+        return step(request, object_id, is_success=True)
+    # 当不是post时，展示数据
     else:
-        # object_id = str(request.GET.get('id', 0))
-        # if object_id.isdigit():
-        #     object_id = int(float(object_id))
-        # else:
-        #     object_id = 0
         object_ = dict()
         objects = Step.objects.filter(id=object_id)
+        # 如果id存在
         if objects:
             object_ = objects[0]
             form = StepForm(initial={
+                'id': object_id,
                 'name': object_.name,
                 'description': object_.description,
                 'keyword': object_.keyword,
+                # 'action_id': object_.action_id,
+                'action': object_.action,
                 'timeout': object_.timeout,
                 'save_as': object_.save_as,
-                'ui_by': object_.ui_by
+                'ui_by': object_.ui_by,
+                'ui_locator': object_.ui_locator,
+                'ui_index': object_.ui_index,
+                'ui_base_element': object_.ui_base_element,
+                'ui_data': object_.ui_data,
+                'ui_special_action': object_.ui_special_action,
+                'ui_alert_handle': object_.ui_alert_handle,
+                'api_url': object_.api_url,
+                'api_headers': object_.api_headers,
+                'api_body': object_.api_body,
+                'api_data': object_.api_data,
             })
             return render(request, 'main/step.html', locals())
+        # 如果id不存在则返回404
         else:
             return HttpResponseBadRequest('404')
 

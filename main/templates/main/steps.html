@@ -63,7 +63,7 @@
                 <tbody id='tbody1'>
                     {% for object in pd.objects %}
                         <tr object_id="{{ object.id }}">
-                            <td col_name='id' class="center"><a target="_blank" href="/step?id={{ object.id }}">{{ object.id }}</a></td>
+                            <td col_name='id' class="center"><a target="_blank" href="/step/{{ object.id }}">{{ object.id }}</a></td>
                             <td quick_update col_name='name'>{{ object.name }}</td>
                             <td quick_update col_name='keyword'>{{ object.keyword }}</td>
                             <td col_name='action'>{{ object.action }}</td>

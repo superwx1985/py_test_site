@@ -20,18 +20,18 @@ import main.views as mv
 
 
 urlpatterns = [
-    path('^admin/', admin.site.urls, name='admin'),
-    path('^run/$', mv.run, name='run'),
-    path('^cases/$', mv.cases, name='cases'),
-    path('^case/$', mv.case, name='case'),
-    path('^case/delete/$', mv.case_delete, name='case_delete'),
-    path('^case/update/$', mv.case_update, name='case_update'),
+    path('admin/', admin.site.urls, name='admin'),
+    path('run/', mv.run, name='run'),
+    path('cases/', mv.cases, name='cases'),
+    path('case/', mv.case, name='case'),
+    path('case/delete/', mv.case_delete, name='case_delete'),
+    path('case/update/', mv.case_update, name='case_update'),
 
-    path('^steps/$', mv.steps, name='steps'),
+    path('steps/', mv.steps, name='steps'),
     path('step/<int:object_id>/', mv.step, name='step'),
-    path('^step/delete/$', mv.step_delete, name='step_delete'),
-    path('^step/update/$', mv.step_update, name='step_update'),
-    path('^step/update_all/$', mv.step_update_all, name='step_update_all'),
+    path('step/delete/', mv.step_delete, name='step_delete'),
+    path('step/update/', mv.step_update, name='step_update'),
+    path('step/update_all/', mv.step_update_all, name='step_update_all'),
 
     path('action_list/', mv.action_list, name='action_list'),
 

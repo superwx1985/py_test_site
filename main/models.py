@@ -73,13 +73,13 @@ class Step(models.Model):
         (14, 'send_keys_to_element'),
     )
     ui_special_action = models.IntegerField(choices=ui_special_action_list, default=0)
-    ui_ui_alert_handle_list = (
+    ui_alert_handle_list = (
         (0, ''),
         (1, 'accept'),
         (2, 'dismiss'),
         (3, 'ignore'),
     )
-    ui_alert_handle = models.IntegerField(choices=ui_ui_alert_handle_list, default=0)
+    ui_alert_handle = models.IntegerField(choices=ui_alert_handle_list, default=0)
     api_url = models.TextField(blank=True)
     api_headers = models.TextField(blank=True)
     api_body = models.TextField(blank=True)
