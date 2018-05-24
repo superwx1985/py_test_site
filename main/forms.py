@@ -3,7 +3,7 @@ from .models import Action, Step
 from django.contrib.admin.widgets import FilteredSelectMultiple
 
 
-class StepForm(forms.Form):
+class StepForm0(forms.Form):
     name = forms.CharField(max_length=10, widget=forms.Textarea(attrs={'rows': ''}))
     description = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
     keyword = forms.CharField(max_length=100, required=False, widget=forms.Textarea(attrs={'rows': ''}))
@@ -25,8 +25,28 @@ class StepForm(forms.Form):
     api_body = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
     api_data = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
 
+
+class PaginatorForm(forms.Form):
+    page = forms.IntegerField(min_value=1, required=False)
+    size = forms.IntegerField(min_value=1, max_value=10000, required=False)
+
+
+class StepForm(forms.ModelForm):
+    error_css_class = 'errornote'
+
     class Meta:
         model = Step
-        fields = ['name', 'action']
+        fields = '__all__'
+        widgets = {
+            'name': forms.Textarea(),
+            'keyword': forms.Textarea(),
+            'save_as': forms.Textarea(),
+        }
 
+    def __init__(self, *args, **kwargs):
+        super(StepForm, self).__init__(*args, **kwargs)
 
+        for k, v in self.fields.items():
+            # 如果widget是Textarea，rows属性设置为空
+            if isinstance(v.widget, forms.Textarea):
+                v.widget.attrs.update({'rows': ''})

@@ -3,12 +3,8 @@
 <html>
     <head>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-        {% if form %}
-            {% if form.initial %}
-                <title>步骤详情 - {{ form.initial.name }}</title>
-            {% else %}
-                <title>步骤详情 - {{ form.data.name }}</title>
-            {% endif %}
+        {% if form.initial %}
+            <title>步骤详情 - {{ form.initial.name }}</title>
         {% else %}
             <title>步骤详情 - 添加</title>
         {% endif %}
@@ -66,9 +62,8 @@
             </ul>
         {% endif %}
 
-        <form action="{% url 'step' object_id %}" method="post" id="object_form" novalidate>
+        <form action="" method="post" id="object_form" novalidate>
             {% csrf_token %}
-            <input name="object_id" id="object_id" type="hidden" value="{{ object_id }}" />
             <table id='detail_table' class="detail_table">
                 <colgroup>
                     <col style='width:200px;'>
@@ -239,9 +234,10 @@
                     <tr>
                         <td><input type="submit" value="提交"></td>
                         <td><input type="reset" value="还原"></td>
+                        <td><input type="button" value="关闭" onclick="window.close();"></td>
                     </tr>
-                    {% if is_success == True %}<tr><td colspan="2" style="color: green">保存成功</td></tr>{% endif %}
-                    {% if is_success == False %}<tr><td colspan="2" style="color: red">请更正错误项</td></tr>{% endif %}
+                    {% if is_success == True %}<tr><td colspan="3" style="color: green">保存成功</td></tr>{% endif %}
+                    {% if form.errors %}<tr><td colspan="3" style="color: red">请更正错误项</td></tr>{% endif %}
                 </table>
             </div>
         </form>

@@ -172,3 +172,19 @@ function update_single_column(url, csrf_token, object_id, new_value, old_value, 
     })
 }
 
+// 设置cookie
+function set_cookie(name, value, seconds) {
+	var exp = new Date();
+	exp.setTime(exp.getTime() + seconds*1000)
+	document.cookie = name + "=" + encodeURI(value) + ";expires=" + exp.toUTCString();
+}
+
+// 获取cookie
+function get_cookie(name) {
+	var arr,reg = new RegExp("(^|)" + name + "=([^;]*)(;|$)");
+	if (arr=document.cookie.match(reg)) {
+		return unescape(arr[2]);
+	} else {
+		return null;
+	}
+}

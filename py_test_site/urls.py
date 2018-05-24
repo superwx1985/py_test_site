@@ -29,6 +29,7 @@ urlpatterns = [
 
     path('steps/', mv.steps, name='steps'),
     path('step/<int:object_id>/', mv.step, name='step'),
+    path('step/add/', mv.step_add, name='step_add'),
     path('step/delete/', mv.step_delete, name='step_delete'),
     path('step/update/', mv.step_update, name='step_update'),
     path('step/update_all/', mv.step_update_all, name='step_update_all'),

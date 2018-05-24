@@ -198,6 +198,7 @@ td {
 	margin: auto;
 }
 
+ /*错误提示*/
 .errornote {
     font-size: 14px;
     font-weight: 700;
@@ -210,3 +211,23 @@ td {
     background-color: #fff;
     background-position: 5px 12px;
 }
+
+/*分页div*/
+div.paginator{
+	width: 550px; margin: 0 auto; text-align: center
+}
+
+/*分页栏td*/
+div.paginator td{
+	text-align: center; font-size: 0.8em
+}
+
+/*分页栏输入框*/
+div.paginator input {
+	font-size: 1em;
+	width: 60px;
+	border: 1px solid rgb(153, 153, 153);
+	resize: vertical;
+	text-align: right;
+}
+

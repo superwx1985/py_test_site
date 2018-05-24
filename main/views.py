@@ -1,6 +1,6 @@
 import json
 import traceback
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
 from django.shortcuts import render
 from django.core.serializers import serialize
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -11,6 +11,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 # from django.views.decorators.csrf import csrf_exempt
 from main.models import Case, Step, Action
+from .forms import PaginatorForm, StepForm
 
 
 # 用例列表
@@ -120,123 +121,82 @@ def run(request):
 # 步骤
 @login_required
 def steps(request):
-    pd = dict()
-    pd['page'] = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
-    pd['size'] = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 5
-    pd['search_input'] = str(request.POST.get('search_input', ''))
-    keyword_list_temp = pd['search_input'].split(' ')
+    if request.method == 'POST':
+        page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
+        size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
+        search_text = str(request.POST.get('search_text', ''))
+    else:
+        page = int(request.COOKIES.get('page', 1))
+        size = int(request.COOKIES.get('size', 10))
+        search_text = ''
+    keyword_list_temp = search_text.split(' ')
     keyword_list = list()
     for keyword in keyword_list_temp:
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = Step.objects.filter(q, is_valid=1).order_by('name', 'id')
-    paginator = Paginator(objects, pd['size'])
-    pd['total_page'] = paginator.num_pages
-    pd['total_object'] = paginator.count
+    objects = Step.objects.filter(q, is_valid=1).order_by('id')
+    paginator = Paginator(objects, size)
+    # pd['total_page'] = paginator.num_pages
+    # pd['total_object'] = paginator.count
     try:
-        pd['objects'] = paginator.page(pd['page'])
+        objects = paginator.page(page)
     except PageNotAnInteger:
-        pd['objects'] = paginator.page(1)
-        pd['page'] = 1
+        objects = paginator.page(1)
+        page = 1
     except EmptyPage:
-        pd['objects'] = paginator.page(paginator.num_pages)
-        pd['page'] = paginator.num_pages
-    return render(request, 'main/steps.html', {'pd': pd})
+        objects = paginator.page(paginator.num_pages)
+        page = paginator.num_pages
+    paginator_form = PaginatorForm(initial={'page': page, 'size': size})
+    return render(request, 'main/steps.html', locals())
 
 
 @login_required
-def step(request, object_id, is_success=None):
-    from .forms import StepForm
-    # 当post时，提交表单
-    if request.method == 'POST':
-        form = StepForm(request.POST)
-        try:
-            if not form.is_valid():
-                is_success = False
-                return render(request, 'main/step.html', locals())
-                # return render(request, reverse('step', args=(object_id,)), locals())
-            name = form.data.get('name')
-            description = form.data.get('description')
-            keyword = form.data.get('keyword')
-            action = form.data.get('action')
-            timeout = form.data.get('timeout')
-            if timeout == '':
-                timeout = None
-            save_as = form.data.get('save_as')
-            ui_by = form.data.get('ui_by')
-            ui_locator = form.data.get('ui_locator')
-            ui_index = form.data.get('ui_index')
-            if ui_index == '':
-                ui_index = None
-            ui_base_element = form.data.get('ui_base_element')
-            ui_data = form.data.get('ui_data')
-            ui_special_action = form.data.get('ui_special_action')
-            ui_alert_handle = form.data.get('ui_alert_handle')
-            api_url = form.data.get('api_url')
-            api_headers = form.data.get('api_headers')
-            api_body = form.data.get('api_body')
-            api_data = form.data.get('api_data')
-
-            Step.objects.filter(id=object_id).update(
-                name=name,
-                description=description,
-                keyword=keyword,
-                action=action,
-                timeout=timeout,
-                save_as=save_as,
-                ui_by=ui_by,
-                ui_locator=ui_locator,
-                ui_index=ui_index,
-                ui_base_element=ui_base_element,
-                ui_data=ui_data,
-                ui_special_action=ui_special_action,
-                ui_alert_handle=ui_alert_handle,
-                api_url=api_url,
-                api_headers=api_headers,
-                api_body=api_body,
-                api_data=api_data,
-                modifier=request.user, modified_date=timezone.now())
-
-        except Exception as e:
-            print(traceback.format_exc())
-            return HttpResponseBadRequest(traceback.format_exc())
-        # return render(request, 'main/step.html', locals())
-        # 为保证数据一致，重新取一次数据库中的值
-        request.method = 'GET'
-        return step(request, object_id, is_success=True)
-    # 当不是post时，展示数据
-    else:
-        object_ = dict()
-        objects = Step.objects.filter(id=object_id)
-        # 如果id存在
-        if objects:
-            object_ = objects[0]
-            form = StepForm(initial={
-                'id': object_id,
-                'name': object_.name,
-                'description': object_.description,
-                'keyword': object_.keyword,
-                # 'action_id': object_.action_id,
-                'action': object_.action,
-                'timeout': object_.timeout,
-                'save_as': object_.save_as,
-                'ui_by': object_.ui_by,
-                'ui_locator': object_.ui_locator,
-                'ui_index': object_.ui_index,
-                'ui_base_element': object_.ui_base_element,
-                'ui_data': object_.ui_data,
-                'ui_special_action': object_.ui_special_action,
-                'ui_alert_handle': object_.ui_alert_handle,
-                'api_url': object_.api_url,
-                'api_headers': object_.api_headers,
-                'api_body': object_.api_body,
-                'api_data': object_.api_data,
-            })
-            return render(request, 'main/step.html', locals())
-        # 如果id不存在则返回404
+def step(request, object_id):
+    try:
+        obj = Step.objects.get(id=object_id)
+    except Step.DoesNotExist:
+        raise Http404('Step does not exist')
+    if request.method == 'GET':
+        form = StepForm(instance=obj)
+        if request.GET.get('success', '') == '1' and request.META.get('HTTP_REFERER'):
+            is_success = True
+        return render(request, 'main/step.html', locals())
+    elif request.method == 'POST':
+        # 使POST内容可以修改
+        # By default QueryDicts are immutable, though the copy() method
+        # will always return a mutable copy.
+        post = request.POST.copy()
+        post['creator'] = str(obj.creator.id)
+        post['modifier'] = str(request.user.id)
+        post['is_valid'] = str(obj.is_valid)
+        form = StepForm(data=post, instance=obj)
+        if form.is_valid():
+            request.method = 'GET'
+            form.save()
+            return HttpResponseRedirect(reverse('step', args=[object_id]) + '?success=1')
         else:
-            return HttpResponseBadRequest('404')
+            is_success = False
+            return render(request, 'main/step.html', locals())
+
+
+@login_required
+def step_add(request):
+    if request.method == 'GET':
+        form = StepForm()
+        return render(request, 'main/step.html', locals())
+    elif request.method == 'POST':
+        post = request.POST.copy()
+        post['creator'] = str(request.user.id)
+        post['modifier'] = str(request.user.id)
+        post['is_valid'] = '1'
+        form = StepForm(data=post)
+        if form.is_valid():
+            request.method = 'GET'
+            object_id = form.save().id
+            return HttpResponseRedirect(reverse('step', args=[object_id]) + '?success=1')
+        else:
+            return render(request, 'main/step.html', locals())
 
 
 def step_delete(request):
