@@ -13,7 +13,7 @@ def save_model_(request, obj, change):
 
 class CaseAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_valid', 'config',)
+        'id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active', 'config',)
     list_display_links = ('id', 'name',)
     list_filter = ('config',)
 
@@ -23,36 +23,36 @@ class CaseAdmin(admin.ModelAdmin):
 
 
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_valid',)
+    list_display = ('id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',)
     list_display_links = ('id', 'name',)
 
 
 class ActionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_valid', 'type')
+    list_display = ('id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active', 'type')
     list_display_links = ('id', 'name',)
     list_filter = ('type',)
 
 
 class StepAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_valid', 'action',)
+        'id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active', 'action',)
     list_display_links = ('id', 'name',)
     list_filter = ('action',)
 
 
 class ActionTypeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_valid',)
+    list_display = ('id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',)
     list_display_links = ('id', 'name',)
 
 
 class ConfigAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_valid',)
+    list_display = ('id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',)
     list_display_links = ('id', 'name',)
 
 
 class CaseVsStepAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'case_id', 'case', 'step_id', 'step', 'creator', 'created_date', 'modifier', 'modified_date', 'is_valid',
+        'id', 'case_id', 'case', 'step_id', 'step', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',
         'order')
     list_display_links = ('id', 'case', 'step')
 

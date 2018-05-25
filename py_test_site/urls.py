@@ -35,6 +35,7 @@ urlpatterns = [
     path('step/update_all/', mv.step_update_all, name='step_update_all'),
 
     path('action_list/', mv.action_list, name='action_list'),
+    path('test/', mv.test, name='test'),
 
 ]
 

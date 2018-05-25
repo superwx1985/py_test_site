@@ -27,7 +27,7 @@ def cases(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = Case.objects.filter(q, is_valid=1).order_by('name', 'id')
+    objects = Case.objects.filter(q, is_active=1).order_by('name', 'id')
     paginator = Paginator(objects, pd['size'])
     pd['total_page'] = paginator.num_pages
     pd['total_object'] = paginator.count
@@ -62,7 +62,7 @@ def case_delete(request):
     if request.method == 'POST':
         object_id = request.POST.get('object_id')
         if object_id:
-            Case.objects.filter(id=object_id).update(is_valid=0, modifier=request.user, modified_date=timezone.now())
+            Case.objects.filter(id=object_id).update(is_active=0, modifier=request.user, modified_date=timezone.now())
         return HttpResponse('success')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
@@ -135,7 +135,7 @@ def steps(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = Step.objects.filter(q, is_valid=1).order_by('id')
+    objects = Step.objects.filter(q, is_active=1).order_by('id')
     paginator = Paginator(objects, size)
     # pd['total_page'] = paginator.num_pages
     # pd['total_object'] = paginator.count
@@ -169,7 +169,7 @@ def step(request, object_id):
         post = request.POST.copy()
         post['creator'] = str(obj.creator.id)
         post['modifier'] = str(request.user.id)
-        post['is_valid'] = str(obj.is_valid)
+        post['is_active'] = str(obj.is_active)
         form = StepForm(data=post, instance=obj)
         if form.is_valid():
             request.method = 'GET'
@@ -189,7 +189,7 @@ def step_add(request):
         post = request.POST.copy()
         post['creator'] = str(request.user.id)
         post['modifier'] = str(request.user.id)
-        post['is_valid'] = '1'
+        post['is_active'] = '1'
         form = StepForm(data=post)
         if form.is_valid():
             request.method = 'GET'
@@ -203,7 +203,7 @@ def step_delete(request):
     if request.method == 'POST':
         object_id = request.POST.get('object_id')
         if object_id:
-            Step.objects.filter(id=object_id).update(is_valid=0, modifier=request.user, modified_date=timezone.now())
+            Step.objects.filter(id=object_id).update(is_active=0, modifier=request.user, modified_date=timezone.now())
         return HttpResponse('成功')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
@@ -216,17 +216,22 @@ def step_update(request):
         col_name = request.POST['col_name']
         new_value = request.POST['new_value']
         response_['new_value'] = new_value
+        obj = Step.objects.get(id=object_id)
+        obj.modifier = request.user
+        obj.modified_date = timezone.now()
         if col_name == 'name':
-            Step.objects.filter(id=object_id).update(name=new_value, modifier=request.user,
-                                                     modified_date=timezone.now())
+            obj.name = new_value
+            obj.clean_fields()
+            obj.save()
         elif col_name == 'keyword':
-            Step.objects.filter(id=object_id).update(keyword=new_value, modifier=request.user,
-                                                     modified_date=timezone.now())
+            obj.keyword = new_value
+            obj.clean_fields()
+            obj.save()
         else:
             raise ValueError('invalid col_name')
     except Exception as e:
         print(traceback.format_exc())
-        return HttpResponseBadRequest(traceback.format_exc())
+        return HttpResponseBadRequest(str(e))
     return JsonResponse(response_)
 
 
@@ -261,7 +266,7 @@ def step_update_all(request):
 @login_required
 def action_list(request):
     data = json.loads(request.POST['data'])
-    objects = Action.objects.filter(is_valid=1).order_by('type__id', 'name', 'id').values('id', 'name', 'type__name',
+    objects = Action.objects.filter(is_active=1).order_by('type__id', 'name', 'id').values('id', 'name', 'type__name',
                                                                                           'keyword')
     for o in objects:
         o['name'] = '{} - {} - {}'.format(o['type__name'], o['name'], o['keyword'])
@@ -271,3 +276,7 @@ def action_list(request):
     data_dict = dict()
     data_dict['data'] = list(objects)
     return JsonResponse(data_dict)
+
+
+def test(request):
+    return render(request, 'main/test.html')

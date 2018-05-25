@@ -12,7 +12,7 @@ class Case(models.Model):
     # modifier = models.CharField('修改人', max_length=100, editable=False, default='')
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='case_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_valid = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
     config = models.ForeignKey('main.Config', on_delete=models.DO_NOTHING)
     step = models.ManyToManyField('Step', through='CaseVsStep', through_fields=('case', 'step'))
 
@@ -33,7 +33,7 @@ class Step(models.Model):
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='step_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_valid = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
     action = models.ForeignKey('main.Action', on_delete=models.DO_NOTHING)
     timeout = models.FloatField(blank=True, null=True)
     save_as = models.CharField(blank=True, max_length=100)
@@ -103,9 +103,8 @@ class CaseVsStep(models.Model):
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='case_vs_step_modifier',
                                  on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_valid = models.BooleanField(default=True)
-    order = models.DecimalField(max_digits=10, decimal_places=2, default=1)
     is_active = models.BooleanField(default=True)
+    order = models.DecimalField(max_digits=10, decimal_places=2, default=1)
 
     class Meta:
         unique_together = ('case', 'step')
@@ -129,7 +128,7 @@ class Action(models.Model):
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='action_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_valid = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
     type = models.ForeignKey('main.ActionType', on_delete=models.DO_NOTHING)
 
     class Meta:
@@ -149,7 +148,7 @@ class ActionType(models.Model):
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='action_type_modifier',
                                  on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_valid = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return self.name
@@ -166,7 +165,7 @@ class Config(models.Model):
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='config_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_valid = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return self.name
@@ -183,7 +182,7 @@ class Group(models.Model):
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='group_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_valid = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return self.name

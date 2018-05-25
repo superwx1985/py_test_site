@@ -3,11 +3,14 @@
 <html>
     <head>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
         <title>步骤列表</title>
-        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'/>
-        <link rel="stylesheet" href='{% static "main/css/main.css" %}'/>
-        <script src="{% static 'main/js/jquery-3.1.1.min.js' %}"></script>
+        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
+        <link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
+        <script src="{% static 'main/js/jquery-3.3.1.min.js' %}"></script>
         <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+        <script src="{% static 'main/js/bootstrap.min.js' %}"></script>
         <script src="{% static 'main/js/main.js' %}"></script>
         <script>
             $(function () {
@@ -42,109 +45,76 @@
         </script>
     </head>
     <body>
-        {% if errors %}
-            <ul>
-                {% for error in errors %}
-                    <li style="color: red;">error: {{ error }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-
-        <form action="" method="post" id="objects_form">
-            {% csrf_token %}
-            <table>
-                <colgroup>
-                    <col style='width:300px;'>
-                    <col>
-                    <col style='width:50px;'>
-                </colgroup>
-                <tr>
-                    <td>
-                        <input type="text" id="search_text" name="search_text" value="{{ search_text }}">
-                        <button type="submit" id='search_button'>搜索</button>
-                    </td>
-                    <td></td>
-                    <td><button type="button" id="add_button" onclick="window.open('{% url "step_add" %}');">添加</button></td>
-                </tr>
-            </table>
-
-            <div name="operate_div" class="paginator">
-                <table>
-                    <colgroup>
-                        <col style="width: 50px;">
-                        <col style="width: 50px;">
-                        <col>
-                        <col style="width: 50px;">
-                        <col style="width: 50px;">
-                        <col>
-                    </colgroup>
-                    <tr>
-                        <td><button name="first_page_button">首页</button></td>
-                        <td><button name="prev_page_button">上页</button></td>
-                        <td><div>{{ paginator_form.page }}&nbsp;/&nbsp;{{ paginator.num_pages }}&nbsp;页</div></td>
-                        <td><button name="next_page_button">下页</button></td>
-                        <td><button name="last_page_button">末页</button></td>
-                        <td><div>每页&nbsp;{{ paginator_form.size }}&nbsp;共&nbsp;{{ paginator.count }}&nbsp;条</div></td>
-                    </tr>
-                </table>
-            </div>
-
-            <table id='result_table' class="result_table">
-                <colgroup>
-                    <col style='width: 60px;'>
-                    <col>
-                    <col style='width: 20%;'>
-                    <col style='width: 200px;'>
-                    <col style='width: 50px;'>
-                </colgroup>
-                <thead>
-                    <tr id='header_tr'>
-                        <th>ID</th>
-                        <th>名称</th>
-                        <th>关键字</th>
-                        <th>Action</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody id='tbody1'>
-                    {% for object in objects %}
-                        <tr object_id="{{ object.id }}">
-                            <td col_name='id' class="center"><a target="_blank" href="{% url 'step' object.id %}">{{ object.id }}</a></td>
-                            <td quick_update col_name='name'>{{ object.name }}</td>
-                            <td quick_update col_name='keyword'>{{ object.keyword }}</td>
-                            <td col_name='action'>{{ object.action }}</td>
-                            <td class="center">
-                                <button type="button" id="delete_button" name="delete_button">删除</button>
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="4">no data</td>
-                        </tr>
+        <div class="container-fluid">
+            <ol class="breadcrumb my-4">
+                <li class="breadcrumb-item active">步骤列表</li>
+            </ol>
+            {% if errors %}
+                <ul>
+                    {% for error in errors %}
+                        <li style="color: red;">error: {{ error }}</li>
                     {% endfor %}
-                </tbody>
-            </table>
+                </ul>
+            {% endif %}
 
-            <div name="operate_div" class="paginator">
+            <form action="" method="post" id="objects_form">
+                {% csrf_token %}
+
+                {% include 'main/paginator.html' %}
                 <table>
                     <colgroup>
-                        <col style="width: 50px;">
-                        <col style="width: 50px;">
+                        <col style='width:300px;'>
                         <col>
-                        <col style="width: 50px;">
-                        <col style="width: 50px;">
-                        <col>
+                        <col style='width:50px;'>
                     </colgroup>
                     <tr>
-                        <td><button name="first_page_button">首页</button></td>
-                        <td><button name="prev_page_button">上页</button></td>
-                        <td><div>{{ paginator_form.page }}&nbsp;/&nbsp;{{ paginator.num_pages }}&nbsp;页</div></td>
-                        <td><button name="next_page_button">下页</button></td>
-                        <td><button name="last_page_button">末页</button></td>
-                        <td><div>每页&nbsp;{{ paginator_form.size }}&nbsp;共&nbsp;{{ paginator.count }}&nbsp;条</div></td>
+                        <td>
+                            <input type="text" id="search_text" name="search_text" value="{{ search_text }}">
+                            <button type="submit" id='search_button'>搜索</button>
+                        </td>
+                        <td></td>
+                        <td><button type="button" id="add_button" onclick="window.open('{% url "step_add" %}');">添加</button></td>
                     </tr>
                 </table>
-            </div>
-        </form>
+                <div class="table-responsive">
+                    <table id='result_table' class="table table-striped table-bordered table-hover">
+                        <colgroup>
+                            <col style='width: 80px;'>
+                            <col>
+                            <col style='width: 200px;'>
+                            <col style='width: 150px;'>
+                            <col style='width: 80px;'>
+                        </colgroup>
+                        <thead class="thead-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>名称</th>
+                                <th>关键字</th>
+                                <th>Action</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id='tbody1'>
+                            {% for object in objects %}
+                                <tr object_id="{{ object.id }}">
+                                    <td col_name='id'><a target="_blank" href="{% url 'step' object.id %}">{{ object.id }}</a></td>
+                                    <td quick_update col_name='name'>{{ object.name }}</td>
+                                    <td quick_update col_name='keyword'>{{ object.keyword }}</td>
+                                    <td col_name='action'>{{ object.action }}</td>
+                                    <td>
+                                        <button type="button" id="delete_button" name="delete_button">删除</button>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="align-c">查无数据</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% include 'main/paginator.html' %}
+            </form>
+        </div>
     </body>
 </html>

@@ -1,0 +1,55 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        <title>TEST</title>
+        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
+        <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
+        <link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
+        <script src="{% static 'main/js/jquery-3.3.1.min.js' %}"></script>
+        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+{#        <script src="{% static 'main/js/bootstrap.min.js' %}"></script>#}
+        <script src="{% static 'main/js/main.js' %}"></script>
+        <script>
+            $(function () {
+
+            })
+        </script>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered table-hover">
+                    <colgroup>
+                        <col style='width: 80px;'>
+                        <col>
+                        <col style='width: 200px;'>
+                        <col style='width: 150px;'>
+                        <col style='width: 80px;'>
+                    </colgroup>
+                    <thead class="thead-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>名称</th>
+                            <th>关键字</th>
+                            <th>Action</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>ID</td>
+                            <td>[25/May/2018 17:10:42] "GET /static/main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js HTTP/1.1" 304 0</td>
+                            <td>keyword</td>
+                            <td>Action</td>
+                            <td>操作</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </body>
+</html>

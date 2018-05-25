@@ -118,9 +118,9 @@ function bind_delete_button(url) {
 
 
 // 刷新字段显示
-function refresh_single_column(is_success, object_id, value, col_name) {
+function refresh_single_column(is_success, object_id, new_value, old_value, col_name) {
     var td = $('tr[object_id="'+object_id+'"]>td[col_name="'+col_name+'"]');
-    td.text(value);
+    td.text(new_value);
     if (is_success) {
         td.css('background-color', 'lightgreen');// 变为浅绿
         td.animate({opacity: 'toggle'}, 300);// 闪烁动画
@@ -135,6 +135,7 @@ function refresh_single_column(is_success, object_id, value, col_name) {
         td.animate({opacity: 'toggle'}, 300);
         setTimeout(function () {
             td.css('background-color', '');
+            td.text(old_value);
         }, 1000);
     }
 }
@@ -156,7 +157,7 @@ function update_single_column(url, csrf_token, object_id, new_value, old_value, 
             // console.log('success');
             // console.log("data['new_value']: " + data['new_value']);
             // console.log("textStatus: " + textStatus);
-            callback_func(true, object_id, new_value, col_name)
+            callback_func(true, object_id, new_value, old_value, col_name)
         },
         error: function (XMLHttpRequest, textStatus, errorThrown) {
             // console.log('error');
@@ -167,7 +168,7 @@ function update_single_column(url, csrf_token, object_id, new_value, old_value, 
             // console.log("XMLHttpRequest.responseXML: "+XMLHttpRequest.responseXML);
             // console.log("textStatus: " + textStatus);
             // console.log("errorThrown: " + errorThrown);
-            callback_func(false, object_id, new_value, col_name)
+            callback_func(false, object_id, new_value, old_value, col_name)
         }
     })
 }

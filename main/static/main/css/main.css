@@ -1,7 +1,7 @@
 body {
 	font-family: Arial, Microsoft YaHei, SimHei;
-	font-size: 14pt;
-	width: 99%;
+	/*font-size: 14pt;*/
+	/*width: 99%;*/
 }
 a {text-decoration: none;}
 a:visited {color: #0000ee;}
@@ -212,17 +212,17 @@ td {
     background-position: 5px 12px;
 }
 
-/*分页div*/
+/*分页工具栏div*/
 div.paginator{
 	width: 550px; margin: 0 auto; text-align: center
 }
 
-/*分页栏td*/
+/*分页工具栏td*/
 div.paginator td{
 	text-align: center; font-size: 0.8em
 }
 
-/*分页栏输入框*/
+/*分页工具栏输入框*/
 div.paginator input {
 	font-size: 1em;
 	width: 60px;
