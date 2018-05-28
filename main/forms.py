@@ -44,9 +44,10 @@ class StepForm(forms.ModelForm):
         model = Step
         fields = '__all__'
         widgets = {
-            'name': forms.Textarea(),
-            'keyword': forms.Textarea(),
-            'save_as': forms.Textarea(),
+            # 'name': forms.Textarea(),
+            # 'keyword': forms.Textarea(),
+            # 'save_as': forms.Textarea(),
+            # 'ui_alert_handle': forms.RadioSelect,
         }
 
     def __init__(self, *args, **kwargs):
@@ -55,4 +56,6 @@ class StepForm(forms.ModelForm):
         for k, v in self.fields.items():
             # 如果widget是Textarea，rows属性设置为空
             if isinstance(v.widget, forms.Textarea):
-                v.widget.attrs.update({'rows': ''})
+                v.widget.attrs.update({'rows': '', 'class': 'form-control'})
+            else:
+                v.widget.attrs.update({'class': 'form-control'})

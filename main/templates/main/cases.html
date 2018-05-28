@@ -3,20 +3,44 @@
 <html>
     <head>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
         <title>用例列表</title>
-        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'/>
-        <link rel="stylesheet" href='{% static "main/css/main.css" %}'/>
-        <script src="{% static 'main/js/jquery-3.1.1.min.js' %}"></script>
+        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
+        <link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
+        <script src="{% static 'main/js/jquery-3.3.1.min.js' %}"></script>
         <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+        <script src="{% static 'main/js/bootstrap.min.js' %}"></script>
         <script src="{% static 'main/js/main.js' %}"></script>
         <script>
             $(function () {
                 // 注册快速更新事件
                 var tds = $('#tbody1 td[quick_update]');
-                quick_update("{% url 'case_update' %}", tds, update_single_column, refresh_single_column);
-
-                // 绑定删除按钮事件
-                bind_delete_button("{% url 'case_delete' %}");
+                quick_update("{% url 'step_update' %}", tds, update_single_column, refresh_single_column);
+                // 注册删除按钮事件
+                bind_delete_button("{% url 'step_delete' %}");
+                // 更新cookie
+                set_cookie('page', {{ page }});
+                set_cookie('size', {{ size }});
+                // 注册翻页工具条
+                $("button[name=first_page_button]").click(function () {
+                    $('input[name=page]').val(1);
+                })
+                $("button[name=last_page_button]").click(function () {
+                    $('input[name=page]').val({{ paginator.num_pages }});
+                })
+                $("button[name=prev_page_button]").click(function () {
+                    $('input[name=page]').val({{ page }}-1);
+                })
+                $("button[name=next_page_button]").click(function () {
+                    $('input[name=page]').val({{ page }}+1);
+                })
+                $("input[name=page]").change(function () {
+                    $("input[name=page]").val($(this).val());
+                })
+                $("input[name=size]").change(function () {
+                    $("input[name=size]").val($(this).val());
+                })
             })
         </script>
     </head>

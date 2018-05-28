@@ -45,10 +45,36 @@
         </script>
     </head>
     <body>
-        <div class="container-fluid">
-            <ol class="breadcrumb my-4">
-                <li class="breadcrumb-item active">步骤列表</li>
-            </ol>
+        <nav class="navbar navbar-expand bg-dark navbar-dark fixed-top">
+{#                <a class="navbar-brand text-white">自动化测试</a>#}
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/cases">用例维护</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="/steps">步骤维护</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/steps">aaaa</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/steps">bbbb</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/steps">cccc</a>
+                </li>
+            </ul>
+
+            <form class="form-inline">
+                <span class="navbar-text text-white">当前用户</span>
+                <span class="navbar-text" style="color: yellow; padding: 0 0.5em">{{ request.user }}</span>
+                <button class="btn btn-secondary" type="button">登出</button>
+            </form>
+        </nav>
+        <div class="container-fluid" style="margin-top: 60px;">
+{#            <ol class="breadcrumb my-4">#}
+{#                <li class="breadcrumb-item active">步骤列表</li>#}
+{#            </ol>#}
             {% if errors %}
                 <ul>
                     {% for error in errors %}
@@ -61,21 +87,23 @@
                 {% csrf_token %}
 
                 {% include 'main/paginator.html' %}
-                <table>
-                    <colgroup>
-                        <col style='width:300px;'>
-                        <col>
-                        <col style='width:50px;'>
-                    </colgroup>
-                    <tr>
-                        <td>
-                            <input type="text" id="search_text" name="search_text" value="{{ search_text }}">
-                            <button type="submit" id='search_button' class="btn btn-primary" >搜索</button>
-                        </td>
-                        <td></td>
-                        <td><button type="button" id="add_button" class="btn btn-primary" onclick="window.open('{% url "step_add" %}');">添加</button></td>
-                    </tr>
-                </table>
+                <div class="table-responsive" style="padding: 5px 0px">
+                    <table >
+                        <colgroup>
+                            <col style='width:300px;'>
+                            <col>
+                            <col style='width:50px;'>
+                        </colgroup>
+                        <tr>
+                            <td>
+                                <input type="text" id="search_text" name="search_text" value="{{ search_text }}">
+                                <button type="submit" id='search_button' class="btn btn-primary">搜索</button>
+                            </td>
+                            <td></td>
+                            <td><button type="button" id="add_button" class="btn btn-success" onclick="window.open('{% url "step_add" %}');">添加</button></td>
+                        </tr>
+                    </table>
+                </div>
                 <div class="table-responsive">
                     <table id='result_table' class="table table-striped table-bordered table-hover">
                         <colgroup>
@@ -107,7 +135,7 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td colspan="4" class="align-c">查无数据</td>
+                                    <td colspan="5" class="text-center">查无数据</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

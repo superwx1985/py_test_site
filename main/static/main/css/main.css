@@ -122,6 +122,11 @@ td {
 	white-space: pre;
 	word-wrap: normal;
 }
+[form_data] textarea{
+	overflow: auto;
+	white-space: pre;
+	word-wrap: normal;
+}
 .input_area {
 	overflow: auto;
 	width: 100%;
@@ -232,3 +237,15 @@ div.paginator input {
 	text-align: right;
 }
 
+/*提示信息*/
+.info_div {
+	width: 100%;
+	top: 0px;
+	left: 0px;
+	position: fixed;
+	z-index: 101;
+	background-color: #eee;
+	opacity: 0.95;
+	text-align: center;
+	display: none;
+}

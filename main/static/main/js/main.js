@@ -189,3 +189,16 @@ function get_cookie(name) {
 		return null;
 	}
 }
+
+// 输出返回消息
+function show_info(text, color, time) {
+	// 首先停止上次的setTimeout任务
+	if ("undefined"!==typeof(_show_info_timeout_id)) {
+		clearTimeout(_show_info_timeout_id);
+	}
+	var $elements = $("#info_div");
+	$elements.text(text);
+	$elements.css("color", color);
+	$elements.fadeIn(0);// 淡入
+	window._show_info_timeout_id = setTimeout(function(){$elements.fadeOut(500)}, time);// 停留{time}毫秒之后淡出
+}

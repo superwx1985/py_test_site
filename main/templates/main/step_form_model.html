@@ -1,0 +1,257 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        {% if form.initial %}
+            <title>步骤详情 - {{ form.initial.name }}</title>
+        {% else %}
+            <title>步骤详情 - 添加</title>
+        {% endif %}
+        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
+        <link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href='{% static "main/css/jquery.dropdown.css" %}'>
+        <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
+        <script src="{% static 'main/js/jquery-3.3.1.min.js' %}"></script>
+        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+        <script src="{% static 'main/js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'main/js/jquery.dropdown.js' %}"></script>
+        <script src="{% static 'main/js/main.js' %}"></script>
+        <script src="{% static 'main/js/detail.js' %}"></script>
+        <script>
+            $(function () {
+                // 触发展示Action相关内容
+                showActionField($('#id_action'));
+                // 注册Action变更
+                $('#id_action').off('change').change(function () {
+                    showActionField($(this));
+                })
+            });
+            // 展示Action相关内容
+            function showActionField($actionSelect) {
+                if ($actionSelect.find('option:selected').text().indexOf('UI') == 0) {
+                    $('tr[action_type="ui"]').show()
+                    $('tr[action_type="api"]').hide()
+                    $('tr[action_type="db"]').hide()
+                } else if ($actionSelect.find('option:selected').text().indexOf('API') == 0) {
+                    $('tr[action_type="ui"]').hide()
+                    $('tr[action_type="api"]').show()
+                    $('tr[action_type="db"]').hide()
+                } else if ($actionSelect.find('option:selected').text().indexOf('DB') == 0) {
+                    $('tr[action_type="ui"]').hide()
+                    $('tr[action_type="api"]').hide()
+                    $('tr[action_type="db"]').show()
+                } else {
+                    $('tr[action_type="ui"]').hide()
+                    $('tr[action_type="api"]').hide()
+                    $('tr[action_type="db"]').hide()
+                }
+            }
+
+            function debug(success, para, data) {
+                console.log(success);
+                console.log(para);
+                console.log(data);
+                window.ajax_data = data;
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container-fluid">
+            {% if errors %}
+                <ul>
+                    {% for error in errors %}
+                        <li style="color: red;">error: {{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <form action="" method="post" id="object_form" novalidate>
+                {% csrf_token %}
+                <table id='detail_table' class="detail_table">
+                    <colgroup>
+                        <col style='width:200px;'>
+                        <col>
+                    </colgroup>
+                    <tbody id='tbody1'>
+                        <tr id="name">
+                            <th class="center">名称</th>
+                            <td type="value">
+                                {{ form.name }}
+                                {% if form.errors.name.0 %}
+                                    <div class="text-warning">{{ form.errors.name.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="description">
+                            <th class="center">描述</th>
+                            <td type="value">
+                                {{ form.description }}
+                                {% if form.errors.description.0 %}
+                                    <div class="text-warning">{{ form.errors.description.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="keyword">
+                            <th class="center">关键字</th>
+                            <td type="value">
+                                {{ form.keyword }}
+                                {% if form.errors.keyword.0 %}
+                                    <div class="text-warning">{{ form.errors.keyword.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="action">
+                            <th class="center">Action</th>
+                            <td type="value">
+                                {{ form.action }}
+                                {% if form.errors.action.0 %}
+                                    <div class="text-warning">{{ form.errors.action.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="timeout">
+                            <th class="center">超时&nbsp;<abbr title="如果留空，则表示使用全局超时设置">[说明]</abbr></th>
+                            <td type="value">
+    {#                            <textarea class='input_area' name="timeout">{{ form.timeout|default:'' }}</textarea>#}
+                                {{ form.timeout }}
+                                {% if form.errors.timeout.0 %}
+                                    <div class="text-warning">{{ form.errors.timeout.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="save_as">
+                            <th class="center">结果另存</th>
+                            <td type="value">
+                                {{ form.save_as }}
+                                {% if form.errors.save_as.0 %}
+                                    <div class="text-warning">{{ form.errors.save_as.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="ui_by" action_type="ui">
+                            <th class="center">定位方式</th>
+                            <td type="value">
+                                {{ form.ui_by }}
+                                {% if form.errors.ui_by.0 %}
+                                    <div class="text-warning">{{ form.errors.ui_by.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="ui_locator" action_type="ui">
+                            <th class="center">定位值</th>
+                            <td type="value">
+                                {{ form.ui_locator }}
+                                {% if form.errors.ui_locator.0 %}
+                                    <div class="text-warning">{{ form.errors.ui_locator.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="ui_index" action_type="ui">
+                            <th class="center">索引</th>
+                            <td type="value">
+                                {{ form.ui_index }}
+                                {% if form.errors.ui_index.0 %}
+                                    <div class="text-warning">{{ form.errors.ui_index.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="ui_base_element" action_type="ui">
+                            <th class="center">基元素</th>
+                            <td type="value">
+                                {{ form.ui_base_element }}
+                                {% if form.errors.ui_base_element.0 %}
+                                    <div class="text-warning">{{ form.errors.ui_base_element.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="ui_data" action_type="ui">
+                            <th class="center">数据</th>
+                            <td type="value">
+                                {{ form.ui_data }}
+                                {% if form.errors.ui_data.0 %}
+                                    <div class="text-warning">{{ form.errors.ui_data.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="ui_special_action" action_type="ui">
+                            <th class="center">特殊动作</th>
+                            <td type="value">
+                                {{ form.ui_special_action }}
+                                {% if form.errors.ui_special_action.0 %}
+                                    <div class="text-warning">{{ form.errors.ui_special_action.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="ui_alert_handle" action_type="ui">
+                            <th class="center">浏览器弹出处理</th>
+                            <td type="value">
+                                {{ form.ui_alert_handle }}
+                                {% if form.errors.ui_alert_handle.0 %}
+                                    <div class="text-warning">{{ form.errors.ui_alert_handle.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="api_url" action_type="api">
+                            <th class="center">请求地址</th>
+                            <td type="value">
+                                {{ form.api_url }}
+                                {% if form.errors.api_url.0 %}
+                                    <div class="text-warning">{{ form.errors.api_url.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="api_headers" action_type="api">
+                            <th class="center">请求header</th>
+                            <td type="value">
+                                {{ form.api_headers }}
+                                {% if form.errors.api_headers.0 %}
+                                    <div class="text-warning">{{ form.errors.api_headers.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="api_body" action_type="api">
+                            <th class="center">请求body</th>
+                            <td type="value">
+                                {{ form.api_body }}
+                                {% if form.errors.api_body.0 %}
+                                    <div class="text-warning">{{ form.errors.api_body.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr id="api_data" action_type="api">
+                            <th class="center">验证内容</th>
+                            <td type="value">
+                                {{ form.api_data }}
+                                {% if form.errors.api_data.0 %}
+                                    <div class="text-warning">{{ form.errors.api_data.0 }}</div>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+                <br/>
+    {#            <div>{{ form }}</div>#}
+                <div class="save_button_group">
+                    <table>
+                        <tr>
+                            <td><input type="submit" value="提交" class="btn btn-primary"></td>
+                            <td><input type="reset" value="还原" class="btn btn-secondary"></td>
+                            <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
+                        </tr>
+{#                        {% if is_success == True %}<tr><td colspan="3" class="text-success">保存成功</td></tr>{% endif %}#}
+{#                        {% if form.errors %}<tr><td colspan="3" class="text-warning">请更正错误项</td></tr>{% endif %}#}
+                    </table>
+                </div>
+                <br>
+                {% if is_success == True %}<div class="alert alert-success text-center">保存成功</div>{% endif %}
+                {% if form.errors %}<div class="alert alert-warning text-center">请更正错误项</div>{% endif %}
+            </form>
+
+            <br/>
+            <br/>
+        </div>
+    </body>
+</html>

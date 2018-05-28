@@ -165,6 +165,7 @@ def step(request, object_id):
         raise Http404('Step does not exist')
     if request.method == 'GET':
         form = StepForm(instance=obj)
+        related_objects = obj.case_set.filter(is_active=True)
         if request.GET.get('success', '') == '1' and request.META.get('HTTP_REFERER'):
             is_success = True
         return render(request, 'main/step.html', locals())
@@ -188,7 +189,7 @@ def step(request, object_id):
 def step_add(request):
     if request.method == 'GET':
         form = StepForm()
-        return render(request, 'main/step.html', locals())
+        return render(request, 'main/step_form_model.html', locals())
     elif request.method == 'POST':
         post = request.POST.copy()
         post['creator'] = str(request.user.id)
@@ -205,7 +206,7 @@ def step_add(request):
             object_id = form_.id
             return HttpResponseRedirect(reverse('step', args=[object_id]) + '?success=1')
         else:
-            return render(request, 'main/step.html', locals())
+            return render(request, 'main/step_form_model.html', locals())
 
 
 def step_delete(request):
