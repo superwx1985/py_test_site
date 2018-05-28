@@ -244,33 +244,6 @@ def step_update(request):
     return JsonResponse(response_)
 
 
-def step_update_all(request):
-    try:
-        object_id = request.POST.get('object_id')
-        name = request.POST.get('name')
-        description = request.POST.get('description')
-        keyword = request.POST.get('keyword')
-        timeout = request.POST.get('timeout', '')
-        if timeout == '':
-            timeout = None
-        save_as = request.POST.get('save_as')
-        ui_by = request.POST.get('ui_by', 0)
-
-        Step.objects.filter(id=object_id).update(
-            name=name,
-            description=description,
-            keyword=keyword,
-            timeout=timeout,
-            save_as=save_as,
-            ui_by=ui_by,
-            modifier=request.user, modified_date=timezone.now())
-
-    except Exception as e:
-        print(traceback.format_exc())
-        return HttpResponseBadRequest(traceback.format_exc())
-    return HttpResponseRedirect('{}?id={}'.format(reverse('step'), object_id))
-
-
 # 获取action
 @login_required
 def action_list(request):

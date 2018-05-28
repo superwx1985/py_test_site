@@ -32,7 +32,6 @@ urlpatterns = [
     path('step/add/', mv.step_add, name='step_add'),
     path('step/delete/', mv.step_delete, name='step_delete'),
     path('step/update/', mv.step_update, name='step_update'),
-    path('step/update_all/', mv.step_update_all, name='step_update_all'),
 
     path('action_list/', mv.action_list, name='action_list'),
     path('test/', mv.test, name='test'),
