@@ -1,5 +1,6 @@
 from django import forms
 from .models import Action, Step
+from django.contrib.auth.models import User
 from django.contrib.admin.widgets import FilteredSelectMultiple
 
 
@@ -32,7 +33,12 @@ class PaginatorForm(forms.Form):
 
 
 class StepForm(forms.ModelForm):
-    error_css_class = 'errornote'
+    # 优化查询数量，防止对action type查询多次
+    action = forms.ModelChoiceField(queryset=Action.objects.prefetch_related('type'))
+    # 不验证某些字段
+    creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+    modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+    is_active = forms.CharField(required=False)
 
     class Meta:
         model = Step

@@ -219,12 +219,13 @@ div.paginator{
 
 /*分页工具栏td*/
 div.paginator td{
-	text-align: center; font-size: 0.8em
+	text-align: center;
+	/*font-size: 0.8em*/
 }
 
 /*分页工具栏输入框*/
 div.paginator input {
-	font-size: 1em;
+	/*font-size: 1em;*/
 	width: 60px;
 	border: 1px solid rgb(153, 153, 153);
 	resize: vertical;

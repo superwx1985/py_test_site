@@ -135,7 +135,13 @@ def steps(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = Step.objects.filter(q, is_active=1).order_by('id')
+    # 使用join的方式把多个model结合起来
+    objects = Step.objects.filter(q, is_active=1).order_by('id').select_related('action__type')
+    # 分割为多条SQL，然后把结果集用python结合起来
+    # objects = Step.objects.filter(q, is_active=1).order_by('id').prefetch_related('action__type')
+    # 两者结合使用
+    # objects = Step.objects.filter(q, is_active=1).order_by('id').select_related('action').prefetch_related(
+    #     'action__type')
     paginator = Paginator(objects, size)
     # pd['total_page'] = paginator.num_pages
     # pd['total_object'] = paginator.count
@@ -163,17 +169,15 @@ def step(request, object_id):
             is_success = True
         return render(request, 'main/step.html', locals())
     elif request.method == 'POST':
-        # 使POST内容可以修改
-        # By default QueryDicts are immutable, though the copy() method
-        # will always return a mutable copy.
-        post = request.POST.copy()
-        post['creator'] = str(obj.creator.id)
-        post['modifier'] = str(request.user.id)
-        post['is_active'] = str(obj.is_active)
-        form = StepForm(data=post, instance=obj)
+        creator = obj.creator
+        form = StepForm(data=request.POST, instance=obj)
         if form.is_valid():
-            request.method = 'GET'
-            form.save()
+            form_ = form.save(commit=False)
+            form_.creator = creator
+            form_.modifier = request.user
+            form_.is_active = obj.is_active
+            form_.save()
+            form.save_m2m()
             return HttpResponseRedirect(reverse('step', args=[object_id]) + '?success=1')
         else:
             is_success = False
@@ -192,8 +196,13 @@ def step_add(request):
         post['is_active'] = '1'
         form = StepForm(data=post)
         if form.is_valid():
-            request.method = 'GET'
-            object_id = form.save().id
+            form_ = form.save(commit=False)
+            form_.creator = request.user
+            form_.modifier = request.user
+            form_.is_active = True
+            form_.save()
+            form.save_m2m()
+            object_id = form_.id
             return HttpResponseRedirect(reverse('step', args=[object_id]) + '?success=1')
         else:
             return render(request, 'main/step.html', locals())
@@ -266,8 +275,7 @@ def step_update_all(request):
 @login_required
 def action_list(request):
     data = json.loads(request.POST['data'])
-    objects = Action.objects.filter(is_active=1).order_by('type__id', 'name', 'id').values('id', 'name', 'type__name',
-                                                                                          'keyword')
+    objects = Action.objects.filter(is_active=1).order_by('type__id', 'name', 'id').values('id', 'name', 'type__name', 'keyword').select_related()
     for o in objects:
         o['name'] = '{} - {} - {}'.format(o['type__name'], o['name'], o['keyword'])
         if o['id'] in data:

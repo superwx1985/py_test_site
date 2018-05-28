@@ -70,10 +70,10 @@
                     <tr>
                         <td>
                             <input type="text" id="search_text" name="search_text" value="{{ search_text }}">
-                            <button type="submit" id='search_button'>搜索</button>
+                            <button type="submit" id='search_button' class="btn btn-primary" >搜索</button>
                         </td>
                         <td></td>
-                        <td><button type="button" id="add_button" onclick="window.open('{% url "step_add" %}');">添加</button></td>
+                        <td><button type="button" id="add_button" class="btn btn-primary" onclick="window.open('{% url "step_add" %}');">添加</button></td>
                     </tr>
                 </table>
                 <div class="table-responsive">
@@ -102,7 +102,7 @@
                                     <td quick_update col_name='keyword'>{{ object.keyword }}</td>
                                     <td col_name='action'>{{ object.action }}</td>
                                     <td>
-                                        <button type="button" id="delete_button" name="delete_button">删除</button>
+                                        <button type="button" id="delete_button" name="delete_button" class="btn btn-danger">删除</button>
                                     </td>
                                 </tr>
                             {% empty %}
