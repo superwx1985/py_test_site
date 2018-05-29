@@ -23,7 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
     path('run/', mv.run, name='run'),
     path('cases/', mv.cases, name='cases'),
-    path('case/', mv.case, name='case'),
+    path('case/<int:object_id>/', mv.step, name='case'),
     path('case/add/', mv.step_add, name='case_add'),
     path('case/delete/', mv.case_delete, name='case_delete'),
     path('case/update/', mv.case_update, name='case_update'),
@@ -36,6 +36,7 @@ urlpatterns = [
 
     path('action_list/', mv.action_list, name='action_list'),
     path('test/', mv.test, name='test'),
+    path('logout/', mv.logout, name='logout'),
 
 ]
 

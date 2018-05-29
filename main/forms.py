@@ -31,6 +31,11 @@ class PaginatorForm(forms.Form):
     page = forms.IntegerField(min_value=1, required=False)
     size = forms.IntegerField(min_value=1, max_value=10000, required=False)
 
+    def __init__(self, page_max_value, *args, **kwargs):
+        super(PaginatorForm, self).__init__(*args, **kwargs)
+
+        self.fields['page'] = forms.IntegerField(min_value=1, max_value=page_max_value, required=False)
+
 
 class StepForm(forms.ModelForm):
     # 优化查询数量，防止对action type查询多次

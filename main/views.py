@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.db import connection
 from django.db.models import Q
 from django.utils import timezone
+from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 # from django.views.decorators.csrf import csrf_exempt
 from main.models import Case, Step, Action
@@ -17,29 +18,32 @@ from .forms import PaginatorForm, StepForm
 # 用例列表
 @login_required
 def cases(request):
-    pd = dict()
-    pd['page'] = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
-    pd['size'] = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 5
-    pd['search_input'] = str(request.POST.get('search_input', ''))
-    keyword_list_temp = pd['search_input'].split(' ')
+    if request.method == 'POST':
+        page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
+        size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
+        search_text = str(request.POST.get('search_text', ''))
+    else:
+        page = int(request.COOKIES.get('page', 1))
+        size = int(request.COOKIES.get('size', 10))
+        search_text = ''
+    keyword_list_temp = search_text.split(' ')
     keyword_list = list()
     for keyword in keyword_list_temp:
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = Case.objects.filter(q, is_active=1).order_by('name', 'id')
-    paginator = Paginator(objects, pd['size'])
-    pd['total_page'] = paginator.num_pages
-    pd['total_object'] = paginator.count
+    objects = Case.objects.filter(q, is_active=1).order_by('id')
+    paginator = Paginator(objects, size)
     try:
-        pd['objects'] = paginator.page(pd['page'])
+        objects = paginator.page(page)
     except PageNotAnInteger:
-        pd['objects'] = paginator.page(1)
-        pd['page'] = 1
+        objects = paginator.page(1)
+        page = 1
     except EmptyPage:
-        pd['objects'] = paginator.page(paginator.num_pages)
-        pd['page'] = paginator.num_pages
-    return render(request, 'main/cases.html', {'pd': pd})
+        objects = paginator.page(paginator.num_pages)
+        page = paginator.num_pages
+    paginator_form = PaginatorForm(initial={'page': page, 'size': size}, page_max_value=paginator.num_pages)
+    return render(request, 'main/cases.html', locals())
 
 
 # 用例详情
@@ -118,7 +122,7 @@ def run(request):
                   'automation_test/result/Automation_Test_Report_2017-02-14_115725/Automation_Test_Report_2017-02-14_115725.html')
 
 
-# 步骤
+# 步骤列表
 @login_required
 def steps(request):
     if request.method == 'POST':
@@ -143,8 +147,6 @@ def steps(request):
     # objects = Step.objects.filter(q, is_active=1).order_by('id').select_related('action').prefetch_related(
     #     'action__type')
     paginator = Paginator(objects, size)
-    # pd['total_page'] = paginator.num_pages
-    # pd['total_object'] = paginator.count
     try:
         objects = paginator.page(page)
     except PageNotAnInteger:
@@ -153,7 +155,7 @@ def steps(request):
     except EmptyPage:
         objects = paginator.page(paginator.num_pages)
         page = paginator.num_pages
-    paginator_form = PaginatorForm(initial={'page': page, 'size': size})
+    paginator_form = PaginatorForm(initial={'page': page, 'size': size}, page_max_value=paginator.num_pages)
     return render(request, 'main/steps.html', locals())
 
 
@@ -262,3 +264,9 @@ def action_list(request):
 
 def test(request):
     return render(request, 'main/test.html')
+
+
+@login_required
+def logout(request):
+    auth.logout(request)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/cases'))

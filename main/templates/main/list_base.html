@@ -16,27 +16,36 @@
         {% endblock %}
         {% block general_script %}
         <script>
-            // 更新cookie
-            set_cookie('page', {{ paginator_form.page|default:"1" }});
-            set_cookie('size', {{ paginator_form.size|default:"10" }});
-            // 注册翻页工具条
-            $("button[name=first_page_button]").click(function () {
-                $('input[name=page]').val(1);
-            })
-            $("button[name=last_page_button]").click(function () {
-                $('input[name=page]').val({{ paginator.num_pages }});
-            })
-            $("button[name=prev_page_button]").click(function () {
-                $('input[name=page]').val({{ page }}-1);
-            })
-            $("button[name=next_page_button]").click(function () {
-                $('input[name=page]').val({{ page }}+1);
-            })
-            $("input[name=page]").change(function () {
-                $("input[name=page]").val($(this).val());
-            })
-            $("input[name=size]").change(function () {
-                $("input[name=size]").val($(this).val());
+            $(function () {
+                // 保存页码及页数
+                window.page = {{ paginator_form.page.value|default:1 }}
+                window.size = {{ paginator_form.size.value|default:10 }}
+                // 更新cookie
+                set_cookie('page', window.page);
+                set_cookie('size', window.size);
+                // 注册翻页工具条
+                $("button[name=first_page_button]").click(function () {
+                    $('input[name=page]').val(1);
+                });
+                $("button[name=last_page_button]").click(function () {
+                    $('input[name=page]').val(window.page);
+                });
+                $("button[name=prev_page_button]").click(function () {
+                    $('input[name=page]').val({{ page }}-1);
+                });
+                $("button[name=next_page_button]").click(function () {
+                    $('input[name=page]').val({{ page }}+1);
+                });
+                $("input[name=page]").change(function () {
+                    $("input[name=page]").val($(this).val());
+                });
+                $("input[name=size]").change(function () {
+                    $("input[name=size]").val($(this).val());
+                });
+                // 注册注销按钮
+                $("#logout_btn").click(function () {
+                    window.open('/logout/', '_self');
+                });
             })
         </script>
         {% endblock %}
