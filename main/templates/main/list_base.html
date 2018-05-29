@@ -1,0 +1,68 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        <title>{% block title %}标题{% endblock %}</title>
+        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
+        <link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
+        <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
+        <script src="{% static 'main/js/jquery-3.3.1.min.js' %}"></script>
+        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+        <script src="{% static 'main/js/bootstrap.min.js' %}"></script>
+        <script src="{% static 'main/js/main.js' %}"></script>
+        {% block style %}
+        {% endblock %}
+        {% block general_script %}
+        <script>
+            // 更新cookie
+            set_cookie('page', {{ paginator_form.page|default:"1" }});
+            set_cookie('size', {{ paginator_form.size|default:"10" }});
+            // 注册翻页工具条
+            $("button[name=first_page_button]").click(function () {
+                $('input[name=page]').val(1);
+            })
+            $("button[name=last_page_button]").click(function () {
+                $('input[name=page]').val({{ paginator.num_pages }});
+            })
+            $("button[name=prev_page_button]").click(function () {
+                $('input[name=page]').val({{ page }}-1);
+            })
+            $("button[name=next_page_button]").click(function () {
+                $('input[name=page]').val({{ page }}+1);
+            })
+            $("input[name=page]").change(function () {
+                $("input[name=page]").val($(this).val());
+            })
+            $("input[name=size]").change(function () {
+                $("input[name=size]").val($(this).val());
+            })
+        </script>
+        {% endblock %}
+        {% block script %}
+        {% endblock %}
+    </head>
+    <body>
+        {% include 'main/navbar.html' %}
+        <div class="container-fluid" style="margin-top: 60px;">
+            {% if errors %}
+                <ul>
+                    {% for error in errors %}
+                        <li style="color: red;">error: {{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <div id="show_info"></div>
+            <form action="" method="post" id="objects_form">
+                {% csrf_token %}
+                {% include 'main/paginator.html' %}
+                {% block search_tools %}
+                {% endblock %}
+                {% block result_table %}
+                {% endblock %}
+                {% include 'main/paginator.html' %}
+            </form>
+        </div>
+    </body>
+</html>

@@ -118,7 +118,7 @@ function bind_delete_button(url) {
 
 
 // 刷新字段显示
-function refresh_single_column(is_success, object_id, new_value, old_value, col_name) {
+function refresh_single_column(is_success, object_id, new_value, old_value, col_name, msg) {
     var td = $('tr[object_id="'+object_id+'"]>td[col_name="'+col_name+'"]');
     td.text(new_value);
     if (is_success) {
@@ -130,6 +130,7 @@ function refresh_single_column(is_success, object_id, new_value, old_value, col_
             td.css('background-color', '');
         }, 1000);
     } else {
+        show_info(msg, 'alert alert-warning', 5000)
         td.css('background-color', 'red');// 变为红色
         td.animate({opacity: 'toggle'}, 300);// 闪烁动画
         td.animate({opacity: 'toggle'}, 300);
@@ -168,7 +169,7 @@ function update_single_column(url, csrf_token, object_id, new_value, old_value, 
             // console.log("XMLHttpRequest.responseXML: "+XMLHttpRequest.responseXML);
             // console.log("textStatus: " + textStatus);
             // console.log("errorThrown: " + errorThrown);
-            callback_func(false, object_id, new_value, old_value, col_name)
+            callback_func(false, object_id, new_value, old_value, col_name, XMLHttpRequest.responseText)
         }
     })
 }
@@ -191,14 +192,19 @@ function get_cookie(name) {
 }
 
 // 输出返回消息
-function show_info(text, color, time) {
+function show_info(msg, class_list, time) {
 	// 首先停止上次的setTimeout任务
 	if ("undefined"!==typeof(_show_info_timeout_id)) {
 		clearTimeout(_show_info_timeout_id);
 	}
-	var $elements = $("#info_div");
-	$elements.text(text);
-	$elements.css("color", color);
-	$elements.fadeIn(0);// 淡入
-	window._show_info_timeout_id = setTimeout(function(){$elements.fadeOut(500)}, time);// 停留{time}毫秒之后淡出
+	var show_info = $("#show_info");
+	show_info.empty()
+	var show_info_wrap = $('<div></div>');
+	var show_info_inner = $('<div></div>');
+	show_info_wrap.append(show_info_inner);
+	show_info.append(show_info_wrap);
+	show_info_inner.text(msg);
+	show_info_inner.addClass(class_list);
+	show_info.show();
+	window._show_info_timeout_id = setTimeout(function(){show_info.fadeOut(500)}, time);// 停留{time}毫秒之后淡出
 }

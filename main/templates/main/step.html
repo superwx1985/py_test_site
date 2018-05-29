@@ -38,10 +38,13 @@
                 // 注册Action变更
                 $('#id_action').off('change').change(function () {
                     showActionField($(this));
-                })
+                });
                 // 触发操作提示
-                {% if is_success == True %}<div class="alert alert-success text-center">保存成功</div>{% endif %}
-                {% if form.errors %}<div class="alert alert-warning text-center">请更正错误项</div>{% endif %}
+                {% if form.errors %}
+                    show_info('请更正错误项', 'alert alert-warning', 2000)
+                {% elif is_success is True %}
+                    show_info('保存成功', 'alert alert-success', 2000)
+                {% endif %}
             });
             // 展示Action相关内容
             function showActionField($actionSelect) {
@@ -77,7 +80,7 @@
                     {% endfor %}
                 </ul>
             {% endif %}
-            <div id="info_div" style="display: none"></div>
+            <div id="show_info"></div>
             <ol class="breadcrumb my-4">
                 <li class="breadcrumb-item active">
                     该步骤目前被<abbr title="{% for o in related_objects %}【{{ o }}】{% if not forloop.last %}，{% endif %}{% endfor %}">{{ related_objects|length }}个用例</abbr>调用，创建时间：{{ obj.created_date }}，创建人：{{ obj.creator }}，上次修改时间：{{ obj.modified_date }}，修改人：{{ obj.modifier }}

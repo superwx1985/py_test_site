@@ -144,16 +144,22 @@ td {
 	word-wrap: normal;
 }
 /*提示信息*/
-.info_div {
-	width: 100%;
-	top: 0;
-	left: 0;
-	position: fixed;
-	z-index: 101;
-	background-color: #eee;
-	opacity: 0.95;
-	text-align: center;
-	display: none;
+#show_info {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 1030;
+}
+#show_info>div {
+    float: left;
+    position: relative;
+    left: 50%
+}
+#show_info>div>div {
+    position: relative;
+    left: -50%;
+    opacity: 0.75;
 }
 
 /*顶部导航*/
@@ -235,17 +241,4 @@ div.paginator input {
 	border: 1px solid rgb(153, 153, 153);
 	resize: vertical;
 	text-align: right;
-}
-
-/*提示信息*/
-.info_div {
-	width: 100%;
-	top: 0px;
-	left: 0px;
-	position: fixed;
-	z-index: 101;
-	background-color: #eee;
-	opacity: 0.95;
-	text-align: center;
-	display: none;
 }

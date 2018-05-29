@@ -12,6 +12,28 @@
         <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
 {#        <script src="{% static 'main/js/bootstrap.min.js' %}"></script>#}
         <script src="{% static 'main/js/main.js' %}"></script>
+        <style>
+            .info_div {
+	width: 100%;
+	top: 0px;
+	left: 0px;
+	position: fixed;
+	z-index: 101;
+	background-color: #eee;
+	opacity: 0.95;
+	text-align: center;
+	{#display: none;#}
+}
+            .show_info_wrap {
+                float: left;
+                position: relative;
+                left: 50%
+            }
+            .show_info_inner {
+                position: relative;
+                left: -50%;
+            }
+        </style>
         <script>
             $(function () {
 
@@ -20,36 +42,9 @@
     </head>
     <body>
         <div class="container-fluid">
-            <div class="table-responsive">
-                <table class="table table-striped table-bordered table-hover">
-                    <colgroup>
-                        <col style='width: 80px;'>
-                        <col>
-                        <col style='width: 200px;'>
-                        <col style='width: 150px;'>
-                        <col style='width: 80px;'>
-                    </colgroup>
-                    <thead class="thead-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>名称</th>
-                            <th>关键字</th>
-                            <th>Action</th>
-                            <th>操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>ID</td>
-                            <td>[25/May/2018 17:10:42] "GET /static/main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js HTTP/1.1" 304 0</td>
-                            <td>keyword</td>
-                            <td>Action</td>
-                            <td>操作</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <div id="show_info"><div><div class="alert alert-success">保存成功</div></div></div>
 
+{#            <div class="alert alert-success text-center fixed-top">保存成功</div>#}
         </div>
     </body>
 </html>

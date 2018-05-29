@@ -1,148 +1,73 @@
-<!DOCTYPE HTML>
-{% load staticfiles %}
-<html>
-    <head>
-        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-        <title>步骤列表</title>
-        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
-        <link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
-        <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
-        <script src="{% static 'main/js/jquery-3.3.1.min.js' %}"></script>
-        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
-        <script src="{% static 'main/js/bootstrap.min.js' %}"></script>
-        <script src="{% static 'main/js/main.js' %}"></script>
-        <script>
-            $(function () {
-                // 注册快速更新事件
-                var tds = $('#tbody1 td[quick_update]');
-                quick_update("{% url 'step_update' %}", tds, update_single_column, refresh_single_column);
-                // 注册删除按钮事件
-                bind_delete_button("{% url 'step_delete' %}");
-                // 更新cookie
-                set_cookie('page', {{ page }});
-                set_cookie('size', {{ size }});
-                // 注册翻页工具条
-                $("button[name=first_page_button]").click(function () {
-                    $('input[name=page]').val(1);
-                })
-                $("button[name=last_page_button]").click(function () {
-                    $('input[name=page]').val({{ paginator.num_pages }});
-                })
-                $("button[name=prev_page_button]").click(function () {
-                    $('input[name=page]').val({{ page }}-1);
-                })
-                $("button[name=next_page_button]").click(function () {
-                    $('input[name=page]').val({{ page }}+1);
-                })
-                $("input[name=page]").change(function () {
-                    $("input[name=page]").val($(this).val());
-                })
-                $("input[name=size]").change(function () {
-                    $("input[name=size]").val($(this).val());
-                })
-            })
-        </script>
-    </head>
-    <body>
-        <nav class="navbar navbar-expand bg-dark navbar-dark fixed-top">
-{#                <a class="navbar-brand text-white">自动化测试</a>#}
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" href="/cases">用例维护</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link active" href="/steps">步骤维护</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/steps">aaaa</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/steps">bbbb</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/steps">cccc</a>
-                </li>
-            </ul>
-
-            <form class="form-inline">
-                <span class="navbar-text text-white">当前用户</span>
-                <span class="navbar-text" style="color: yellow; padding: 0 0.5em">{{ request.user }}</span>
-                <button class="btn btn-secondary" type="button">登出</button>
-            </form>
-        </nav>
-        <div class="container-fluid" style="margin-top: 60px;">
-{#            <ol class="breadcrumb my-4">#}
-{#                <li class="breadcrumb-item active">步骤列表</li>#}
-{#            </ol>#}
-            {% if errors %}
-                <ul>
-                    {% for error in errors %}
-                        <li style="color: red;">error: {{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-
-            <form action="" method="post" id="objects_form">
-                {% csrf_token %}
-
-                {% include 'main/paginator.html' %}
-                <div class="table-responsive" style="padding: 5px 0px">
-                    <table >
-                        <colgroup>
-                            <col style='width:300px;'>
-                            <col>
-                            <col style='width:50px;'>
-                        </colgroup>
-                        <tr>
-                            <td>
-                                <input type="text" id="search_text" name="search_text" value="{{ search_text }}">
-                                <button type="submit" id='search_button' class="btn btn-primary">搜索</button>
-                            </td>
-                            <td></td>
-                            <td><button type="button" id="add_button" class="btn btn-success" onclick="window.open('{% url "step_add" %}');">添加</button></td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="table-responsive">
-                    <table id='result_table' class="table table-striped table-bordered table-hover">
-                        <colgroup>
-                            <col style='width: 80px;'>
-                            <col>
-                            <col style='width: 200px;'>
-                            <col style='width: 150px;'>
-                            <col style='width: 80px;'>
-                        </colgroup>
-                        <thead class="thead-light">
-                            <tr>
-                                <th>ID</th>
-                                <th>名称</th>
-                                <th>关键字</th>
-                                <th>Action</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody id='tbody1'>
-                            {% for object in objects %}
-                                <tr object_id="{{ object.id }}">
-                                    <td col_name='id'><a target="_blank" href="{% url 'step' object.id %}">{{ object.id }}</a></td>
-                                    <td quick_update col_name='name'>{{ object.name }}</td>
-                                    <td quick_update col_name='keyword'>{{ object.keyword }}</td>
-                                    <td col_name='action'>{{ object.action }}</td>
-                                    <td>
-                                        <button type="button" id="delete_button" name="delete_button" class="btn btn-danger">删除</button>
-                                    </td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center">查无数据</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% include 'main/paginator.html' %}
-            </form>
-        </div>
-    </body>
-</html>
+{% extends 'main/list_base.html' %}
+{% block title %}步骤列表{% endblock %}
+{% block general_script %}
+<script>
+    $(function () {
+        // 更新导航栏
+        $('#nav_step').addClass('active');
+        // 注册快速更新事件
+        var tds = $('#result_table tbody td[quick_update]');
+        quick_update("{% url 'step_update' %}", tds, update_single_column, refresh_single_column);
+        // 注册删除按钮事件
+        bind_delete_button("{% url 'step_delete' %}");
+    })
+</script>
+{% endblock %}
+{% block search_tools %}
+<div class="table-responsive" style="padding: 5px 0px" id="search_tools">
+    <table >
+        <colgroup>
+            <col style='width:300px;'>
+            <col>
+            <col style='width:50px;'>
+        </colgroup>
+        <tr>
+            <td>
+                <input type="text" id="search_text" name="search_text" value="{{ search_text }}">
+                <button type="submit" id='search_button' class="btn btn-primary">搜索</button>
+            </td>
+            <td></td>
+            <td><button type="button" id="add_button" class="btn btn-success" onclick="window.open('{% url "step_add" %}');">添加</button></td>
+        </tr>
+    </table>
+</div>
+{% endblock %}
+{% block result_table %}
+<div class="table-responsive" id='result_table'>
+    <table class="table table-striped table-bordered table-hover">
+        <colgroup>
+            <col style='width: 80px;'>
+            <col>
+            <col style='width: 200px;'>
+            <col style='width: 150px;'>
+            <col style='width: 80px;'>
+        </colgroup>
+        <thead class="thead-light">
+            <tr>
+                <th>ID</th>
+                <th>名称</th>
+                <th>关键字</th>
+                <th>Action</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for object in objects %}
+            <tr object_id="{{ object.id }}">
+                <td col_name='id'><a target="_blank" href="{% url 'step' object.id %}">{{ object.id }}</a></td>
+                <td quick_update col_name='name'>{{ object.name }}</td>
+                <td quick_update col_name='keyword'>{{ object.keyword }}</td>
+                <td col_name='action'>{{ object.action }}</td>
+                <td>
+                    <button type="button" id="delete_button" name="delete_button" class="btn btn-danger">删除</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">查无数据</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
