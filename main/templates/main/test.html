@@ -10,41 +10,43 @@
         <link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
         <script src="{% static 'main/js/jquery-3.3.1.min.js' %}"></script>
         <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
-{#        <script src="{% static 'main/js/bootstrap.min.js' %}"></script>#}
+        <script src="{% static 'main/js/bootstrap.min.js' %}"></script>
         <script src="{% static 'main/js/main.js' %}"></script>
         <style>
-            .info_div {
-	width: 100%;
-	top: 0px;
-	left: 0px;
-	position: fixed;
-	z-index: 101;
-	background-color: #eee;
-	opacity: 0.95;
-	text-align: center;
-	{#display: none;#}
-}
-            .show_info_wrap {
-                float: left;
-                position: relative;
-                left: 50%
-            }
-            .show_info_inner {
-                position: relative;
-                left: -50%;
-            }
+
         </style>
         <script>
             $(function () {
+                $('#b1').click(function() {
+                    console.log('show');
+                    $('#m1').modal();
+                })
 
             })
         </script>
     </head>
     <body>
+        <button id="b1">show</button>
         <div class="container-fluid">
-            <div id="show_info"><div><div class="alert alert-success">保存成功</div></div></div>
-
-{#            <div class="alert alert-success text-center fixed-top">保存成功</div>#}
+            <div id="m1" class="modal">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <span class="modal-title font-weight-bold">请确认</span>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div>
+                                是否删除<span class="mark">你妈</span>？
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-danger">确定</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal"></span>取消</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </body>
 </html>

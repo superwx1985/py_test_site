@@ -28,13 +28,16 @@ class StepForm0(forms.Form):
 
 
 class PaginatorForm(forms.Form):
-    page = forms.IntegerField(min_value=1, required=False)
+    # page = forms.IntegerField(min_value=1, required=False)
     size = forms.IntegerField(min_value=1, max_value=10000, required=False)
 
     def __init__(self, page_max_value, *args, **kwargs):
         super(PaginatorForm, self).__init__(*args, **kwargs)
 
         self.fields['page'] = forms.IntegerField(min_value=1, max_value=page_max_value, required=False)
+
+        for k, v in self.fields.items():
+            v.widget.attrs.update({'class': 'form-control', 'style': 'width: 85px'})
 
 
 class StepForm(forms.ModelForm):

@@ -144,19 +144,19 @@ td {
 	word-wrap: normal;
 }
 /*提示信息*/
-#show_info {
+.show_info {
     position: fixed;
     top: 0;
     right: 0;
     left: 0;
     z-index: 1030;
 }
-#show_info>div {
+.show_info>div {
     float: left;
     position: relative;
     left: 50%
 }
-#show_info>div>div {
+.show_info>div>div {
     position: relative;
     left: -50%;
     opacity: 0.75;
@@ -225,19 +225,26 @@ td {
 
 /*分页工具栏div*/
 div.paginator{
-	width: 550px; margin: 0 auto; text-align: center
+	margin: 0 auto;
+	text-align: center
 }
-
-/*分页工具栏td*/
+div.paginator>div{
+	float: left;
+    position: relative;
+    left: 50%
+}
+div.paginator>div>div{
+    position: relative;
+    left: -50%;
+    opacity: 0.75;
+}
 div.paginator td{
 	text-align: center;
 	/*font-size: 0.8em*/
 }
-
-/*分页工具栏输入框*/
 div.paginator input {
 	/*font-size: 1em;*/
-	width: 60px;
+	/*width: 60px;*/
 	border: 1px solid rgb(153, 153, 153);
 	resize: vertical;
 	text-align: right;

@@ -1,20 +1,24 @@
-<div name="operate_div" class="paginator">
-    <table>
-        <colgroup>
-            <col style="width: 50px;">
-            <col style="width: 50px;">
-            <col>
-            <col style="width: 50px;">
-            <col style="width: 50px;">
-            <col>
-        </colgroup>
-        <tr>
-            <td><button name="first_page_button" class="btn btn-info">首页</button></td>
-            <td><button name="prev_page_button" class="btn btn-info">上页</button></td>
-            <td><div>{{ paginator_form.page }}&nbsp;/&nbsp;{{ paginator.num_pages|default:"0" }}&nbsp;页</div></td>
-            <td><button name="next_page_button" class="btn btn-info">下页</button></td>
-            <td><button name="last_page_button" class="btn btn-info">末页</button></td>
-            <td><div>每页&nbsp;{{ paginator_form.size }}&nbsp;共&nbsp;{{ paginator.count|default:"0" }}&nbsp;条</div></td>
-        </tr>
-    </table>
+<div class="paginator">
+    <div>
+        <div>
+            <table>
+                <colgroup>
+                    <col style="width: 50px;">
+                    <col style="width: 50px;">
+                    <col>
+                    <col style="width: 50px;">
+                    <col style="width: 50px;">
+                    <col>
+                </colgroup>
+                <tr>
+                    <td><button name="first_page_button" type="button" class="btn btn-info">首页</button></td>
+                    <td><button name="prev_page_button" type="button" class="btn btn-info">上页</button></td>
+                    <td><div>{{ paginator_form.page }}&nbsp;/&nbsp;{{ paginator.num_pages|default:0 }}&nbsp;页</div></td>
+                    <td><button name="next_page_button" type="button" class="btn btn-info">下页</button></td>
+                    <td><button name="last_page_button" type="button" class="btn btn-info">末页</button></td>
+                    <td><div>每页&nbsp;{{ paginator_form.size }}&nbsp;共&nbsp;{{ paginator.count|default:0 }}&nbsp;条</div></td>
+                </tr>
+            </table>
+        </div>
+    </div>
 </div>

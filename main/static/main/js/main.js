@@ -92,12 +92,14 @@ function quick_update(url, tds, func, callback_func) {
     });
 }
 
+
 // 删除
 function bind_delete_button(url) {
     $('button[name="delete_button"]').off('click').click(function () {
         var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
         var object_id = $(this).parents('tr').attr('object_id');
-        var name = $(this).parent().siblings('td[col_name="name"]').text();
+        // var name = $(this).parent().siblings('td[col_name="name"]').text();
+        var name = $(this).parents('tr').find('td[col_name="name"]').text();
         var msg = '确定要删除【' + name + '】吗？';
         var dialog_div = $('<div id="dialog-confirm" title="请确认"><p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>'+msg+'</p></div>');
         dialog_div.dialog({
@@ -130,7 +132,7 @@ function refresh_single_column(is_success, object_id, new_value, old_value, col_
             td.css('background-color', '');
         }, 1000);
     } else {
-        show_info(msg, 'alert alert-warning', 5000)
+        show_info(msg, 'alert alert-warning', 5000);
         td.css('background-color', 'red');// 变为红色
         td.animate({opacity: 'toggle'}, 300);// 闪烁动画
         td.animate({opacity: 'toggle'}, 300);
@@ -197,7 +199,7 @@ function show_info(msg, class_list, time) {
 	if ("undefined"!==typeof(_show_info_timeout_id)) {
 		clearTimeout(_show_info_timeout_id);
 	}
-	var show_info = $("#show_info");
+	var show_info = $(".show_info");
 	show_info.empty()
 	var show_info_wrap = $('<div></div>');
 	var show_info_inner = $('<div></div>');

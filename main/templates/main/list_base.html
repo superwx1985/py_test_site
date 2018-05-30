@@ -17,25 +17,50 @@
         {% block general_script %}
         <script>
             $(function () {
-                // 保存页码及页数
+                // 获取分页信息
                 window.page = {{ paginator_form.page.value|default:1 }}
+                window.maxPage = {{ paginator.num_pages|default:0 }}
                 window.size = {{ paginator_form.size.value|default:10 }}
                 // 更新cookie
                 set_cookie('page', window.page);
                 set_cookie('size', window.size);
                 // 注册翻页工具条
-                $("button[name=first_page_button]").click(function () {
-                    $('input[name=page]').val(1);
-                });
-                $("button[name=last_page_button]").click(function () {
-                    $('input[name=page]').val(window.page);
-                });
-                $("button[name=prev_page_button]").click(function () {
-                    $('input[name=page]').val({{ page }}-1);
-                });
-                $("button[name=next_page_button]").click(function () {
-                    $('input[name=page]').val({{ page }}+1);
-                });
+                var button = $("button[name=first_page_button]");
+                if (window.page == 1) {
+                    button.addClass('disabled')
+                } else {
+                    button.click(function () {
+                        $('input[name=page]').val(1);
+                        $('#objects_form').submit();
+                    });
+                }
+                var button = $("button[name=prev_page_button]");
+                if (window.page == 1) {
+                    button.addClass('disabled')
+                } else {
+                    button.click(function () {
+                        $('input[name=page]').val({{ page }}-1);
+                        $('#objects_form').submit();
+                    });
+                }
+                var button = $("button[name=next_page_button]");
+                if (window.page == maxPage) {
+                    button.addClass('disabled')
+                } else {
+                    button.click(function () {
+                        $('input[name=page]').val({{ page }}+1);
+                        $('#objects_form').submit();
+                    });
+                }
+                var button = $("button[name=last_page_button]");
+                if (window.page == maxPage) {
+                    button.addClass('disabled')
+                } else {
+                    button.click(function () {
+                        $('input[name=page]').val({{ paginator.num_pages }});
+                        $('#objects_form').submit();
+                    });
+                }
                 $("input[name=page]").change(function () {
                     $("input[name=page]").val($(this).val());
                 });
@@ -62,8 +87,8 @@
                     {% endfor %}
                 </ul>
             {% endif %}
-            <div id="show_info"></div>
-            <form action="" method="post" id="objects_form">
+            {% include 'main/show_info.html' %}
+            <form action="" method="post" id="objects_form" class="form-inline">
                 {% csrf_token %}
                 {% include 'main/paginator.html' %}
                 {% block search_tools %}
