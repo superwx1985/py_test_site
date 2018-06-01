@@ -107,7 +107,7 @@ class CaseVsStep(models.Model):
     order = models.DecimalField(max_digits=10, decimal_places=2, default=1)
 
     class Meta:
-        unique_together = ('case', 'step')
+        unique_together = ('case', 'step', 'order')
         ordering = ['case', 'order']
 
     def case_id(self):
@@ -135,6 +135,9 @@ class Action(models.Model):
         unique_together = ('name', 'type')
 
     def __str__(self):
+        return '{} - {}'.format(self.type, self.name)
+
+    def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return '{} - {}'.format(self.type, self.name)
 
 

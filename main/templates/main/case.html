@@ -1,95 +1,170 @@
 {% extends 'main/detail_base.html' %}
-<html>
-    <head>
-        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-        {% if form.initial %}
-            <title>步骤详情 - {{ form.initial.name }}</title>
-        {% else %}
-            <title>步骤详情 - 添加</title>
-        {% endif %}
+{% load widget_tweaks %}
 {% block title %}
     {% if form.initial %}
-        用例详情 - {{ form.initial.name }}
+        {{ form.initial.name }} - {{ block.super }}
     {% else %}
-        用例详情 - 添加
+        新用例 - {{ block.super }}
     {% endif %}
 {% endblock %}
+{% block style %}
+    <style type='text/css' media='screen'>
+    </style>
+{% endblock %}
 {% block script %}
-<script>
-    $(function () {
-        // 更新导航栏
-        $('#nav_case').addClass('active');
-    })
-</script>
+    <script>
+        $(function () {
+            // 更新导航栏
+            $('#nav_case').addClass('active');
+            // 获取全部step
+            getListAll("{% url 'step_list_all' %}", $('input[name="csrfmiddlewaretoken"]').val(), update_step_list_all);
+            // 处理step拖动及排序
+            stepHandle();
+        });
+        function update_step_list_all(success, data) {
+            if (success) {
+                var tbody = $('#steps_all tbody');
+                tbody.empty();
+                $.each($.parseJSON(data.data), function (i, v) {
+                    console.log(i, v);
+                    var tr = $('<tr></tr>');
+                    $('<td></td>').text(v.pk).appendTo(tr);
+                    $('<td></td>').text(v.fields.name).appendTo(tr);
+                    $('<td></td>').text(v.fields.action).appendTo(tr);
+                    tbody.append(tr);
+                });
+                tbody.find('tr').draggable({
+                    appendTo: 'body',
+                    {#helper: 'clone'#}
+                    helper: function(event) {
+                        console.log($(this))
+                        var str = '';
+                        var len = $(this).children().length;
+                        $(this).children().each(function(i) {
+                            if (i === len-1) {
+                                str += $(this).text();
+                            } else {
+                                str += $(this).text() + ' | '
+                            }
+                        });
+                        return $('<div></div>').text(str).css("background-color", "lightblue");
+                    }
+                });
+            }
+        }
+        function stepHandle() {
+            $('#steps_selected table').droppable({
+                activeClass: 'ui-state-default',
+                hoverClass: 'ui-state-hover',
+                accept: 'tr:not(.ui-sortable-helper)',
+                drop: function (event, ui) {
+                    tbody = $(this).children('tbody');
+                    console.log(ui);
+                    tbody.children('[placeholder]').remove();
+                    tbody.append(ui.draggable.clone().removeClass());
+                }
+            }).children('tbody').sortable({
+                distance: 10,
+                placeholder: 'ui-state-highlight'
+            });
+            $('#steps_all table').droppable({
+                activeClass: 'ui-state-default',
+                hoverClass: 'ui-state-hover',
+                accept: '#steps_selected tr',
+                drop: function (event, ui) {
+                    ui.draggable.remove();
+                    if ($('#steps_selected tbody tr').length <= 1) {
+                        $('#steps_selected tbody').append($('<tr placeholder><td colspan="3" class="text-center">未选中步骤</td></tr>'));
+                    }
+                }
+            })
+        }
+    </script>
 {% endblock %}
 
 {% block detail_header %}
-<ol class="breadcrumb my-4">
-    <li class="breadcrumb-item active">
-    {% if form.initial %}
-        创建时间：{{ obj.created_date }}，创建人：{{ obj.creator }}，上次修改时间：{{ obj.modified_date }}，修改人：{{ obj.modifier }}
-    {% else %}
-        添加一个步骤
-    {% endif %}
-    </li>
-</ol>
+    <ol class="breadcrumb my-4">
+        <li class="breadcrumb-item active" style="background-color: lightblue">
+        {% if form.initial %}
+            创建时间：{{ obj.created_date }}，创建人：{{ obj.creator }}，上次修改时间：{{ obj.modified_date }}，修改人：{{ obj.modifier }}
+        {% else %}
+            添加一个步骤
+        {% endif %}
+        </li>
+    </ol>
 {% endblock %}
 
 {% block detail_content %}
-<div class="row align-items-center">
-    <div class="col-1 text-right ">名称</div>
-    <div class="col" form_data>
-        {{ form.name }}
-        {% if form.errors.name.0 %}
-            <div class="text-warning">{{ form.errors.name.0 }}</div>
-        {% endif %}
+    <div class="row align-items-center">
+        <div class="col-1 text-right ">名称</div>
+        <div class="col" form_data>
+            {% include 'main/include/form.html' with field=form.name placeholder_text='请输入名称' %}
+        </div>
     </div>
-</div>
-<div class="row align-items-center">
-    <div class="col-1 text-right">描述</div>
-    <div class="col" form_data>
-        {{ form.description }}
-        {% if form.errors.description.0 %}
-            <div class="text-warning">{{ form.errors.description.0 }}</div>
-        {% endif %}
+    <div class="row align-items-center">
+        <div class="col-1 text-right">描述</div>
+        <div class="col" form_data>
+            {% include 'main/include/form.html' with field=form.description placeholder_text='' %}
+        </div>
     </div>
-</div>
-<div class="row align-items-center">
-    <div class="col-1 text-right">关键字</div>
-    <div class="col" form_data>
-        {{ form.keyword }}
-        {% if form.errors.keyword.0 %}
-            <div class="text-warning">{{ form.errors.keyword.0 }}</div>
-        {% endif %}
+    <div class="row align-items-center">
+        <div class="col-1 text-right">关键字</div>
+        <div class="col" form_data>
+            {% include 'main/include/form.html' with field=form.keyword placeholder_text='' %}
+        </div>
     </div>
-</div>
-<div class="row align-items-center">
-    <div class="col-1 text-right">配置</div>
-    <div class="col" form_data>
-        {{ form.config }}
-        {% if form.errors.config.0 %}
-            <div class="text-warning">{{ form.errors.config.0 }}</div>
-        {% endif %}
+    <div class="row align-items-center">
+        <div class="col-1 text-right">配置</div>
+        <div class="col" form_data>
+            {% include 'main/include/form.html' with field=form.config placeholder_text='' %}
+        </div>
     </div>
-</div>
-<div class="row align-items-center">
-    <div class="col-1 text-right">步骤</div>
-    <div class="col" form_data>
-        {{ form.step }}
-        {% if form.errors.step.0 %}
-            <div class="text-warning">{{ form.errors.step.0 }}</div>
-        {% endif %}
+    <div class="row align-items-center">
+        <div class="col-1 text-right">步骤</div>
+        <div class="col" form_data style="display: none">
+            {% include 'main/include/form.html' with field=form.config placeholder_text='' %}
+        </div>
     </div>
+    <div id='step' class="row">
+        <div id="steps_selected" class="col-6 text-center">
+            <h4 class="ui-widget-header">关联步骤列表</h4>
+            <div class="ui-widget-content">
+                <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                    <colgroup>
+                        <col style='width: 80px;'>
+                        <col>
+                        <col style='width: 150px;'>
+                    </colgroup>
+                    <thead class="thead-light"><tr><th>ID</th><th>名称</th><th>动作</th></thead>
+                    <tbody class="text-left"><tr placeholder><td colspan="3" class="text-center">未选中步骤</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+        <div id="steps_all" class="col-6 text-center">
+            <h4 class="ui-widget-header">可选步骤列表</h4>
+            <div class="ui-widget-content">
+                <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                    <colgroup>
+                        <col style='width: 80px;'>
+                        <col>
+                        <col style='width: 150px;'>
+                    </colgroup>
+                    <thead class="thead-light"><tr><th>ID</th><th>名称</th><th>动作</th></thead>
+                    <tbody class="text-left"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <br/>
+
+    <div class="text-center fixed-bottom" >
+
+<div class="btn-group">
+                <td><input type="submit" value="提交" class="btn btn-success"></td>
+                <td><input type="reset" value="还原" class="btn btn-secondary"></td>
+                <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
 </div>
-<br/>
-<div class="save_button_group fixed-bottom">
-    <table>
-        <tr>
-            <td><input type="submit" value="提交" class="btn btn-primary"></td>
-            <td><input type="reset" value="还原" class="btn btn-secondary"></td>
-            <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
-        </tr>
-    </table>
-</div>
+
+    </div>
 {% endblock %}

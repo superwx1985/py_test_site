@@ -1,75 +1,75 @@
 {% extends 'main/list_base.html' %}
-{% block title %}步骤列表{% endblock %}
+{% block title %}步骤 - {{ block.super }}{% endblock %}
 {% block script %}
-<script>
-    $(function () {
-        // 更新导航栏
-        $('#nav_step').addClass('active');
-        // 注册快速更新事件
-        var tds = $('#result_table tbody td[quick_update]');
-        quick_update("{% url 'step_update' %}", tds, update_single_column, refresh_single_column);
-        // 注册删除按钮事件
-        bind_delete_button("{% url 'step_delete' %}");
-    })
-</script>
+    <script>
+        $(function () {
+            // 更新导航栏
+            $('#nav_step').addClass('active');
+            // 注册快速更新事件
+            var tds = $('#result_table tbody td[quick_update]');
+            quick_update("{% url 'step_update' %}", tds, update_single_column, refresh_single_column);
+            // 注册删除按钮事件
+            bind_delete_button("{% url 'step_delete' %}");
+        })
+    </script>
 {% endblock %}
 {% block search_tools %}
-<div class="table-responsive" style="padding: 5px 0px" id="search_tools">
-    <table >
-        <colgroup>
-            <col style='width:300px;'>
-            <col>
-            <col style='width:50px;'>
-        </colgroup>
-        <tr>
-            <td>
-                <input type="text" id="search_text" name="search_text" value="{{ search_text }}"  class="form-control">
-                <button type="submit" id='search_button' class="btn btn-primary"><i class="icon-search">&nbsp;</i>搜索</button>
-            </td>
-            <td></td>
-            <td><button type="button" id="add_button" class="btn btn-success" onclick="window.open('{% url "step_add" %}');"><i class="icon-plus">&nbsp;</i>添加</button></td>
-        </tr>
-    </table>
-</div>
+    <div class="table-responsive" style="padding: 5px 0px" id="search_tools">
+        <table >
+            <colgroup>
+                <col style='width:300px;'>
+                <col>
+                <col style='width:50px;'>
+            </colgroup>
+            <tr>
+                <td>
+                    <input type="text" id="search_text" name="search_text" value="{{ search_text }}"  class="form-control">
+                    <button type="submit" id='search_button' class="btn btn-primary"><i class="icon-search">&nbsp;</i>搜索</button>
+                </td>
+                <td></td>
+                <td><button type="button" id="add_button" class="btn btn-success" onclick="window.open('{% url "step_add" %}');"><i class="icon-plus">&nbsp;</i>添加</button></td>
+            </tr>
+        </table>
+    </div>
 {% endblock %}
 {% block result_table %}
-<div class="table-responsive" id='result_table'>
-    <table class="table table-striped table-bordered table-hover">
-        <colgroup>
-            <col style='width: 80px;'>
-            <col style='width: 80px;'>
-            <col>
-            <col style='width: 200px;'>
-            <col style='width: 150px;'>
-        </colgroup>
-        <thead class="thead-light">
-            <tr>
-                <th>操作</th>
-                <th>ID</th>
-                <th>名称</th>
-                <th>关键字</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for object in objects %}
-            <tr pk="{{ object.pk }}">
-                <td>
-                    <div class="mx-auto text-center">
-                        <button type="button" id="delete_button" name="delete_button" class="btn btn-danger">删除</button>
-                    </div>
-                </td>
-                <td col_name='id'><a target="_blank" href="{% url 'step' object.pk %}" class="font-weight-bold">{{ object.pk }}</a></td>
-                <td quick_update col_name='name'>{{ object.name }}</td>
-                <td quick_update col_name='keyword'>{{ object.keyword }}</td>
-                <td col_name='action'>{{ object.action }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" class="text-center">查无数据</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+    <div class="table-responsive" id='result_table'>
+        <table class="table table-striped table-bordered table-hover">
+            <colgroup>
+                <col style='width: 80px;'>
+                <col style='width: 80px;'>
+                <col>
+                <col style='width: 200px;'>
+                <col style='width: 150px;'>
+            </colgroup>
+            <thead class="thead-light">
+                <tr>
+                    <th>操作</th>
+                    <th>ID</th>
+                    <th>名称</th>
+                    <th>关键字</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for object in objects %}
+                <tr pk="{{ object.pk }}">
+                    <td>
+                        <div class="mx-auto text-center">
+                            <button type="button" id="delete_button" name="delete_button" class="btn btn-danger">删除</button>
+                        </div>
+                    </td>
+                    <td col_name='id'><a target="_blank" href="{% url 'step' object.pk %}" class="font-weight-bold">{{ object.pk }}</a></td>
+                    <td quick_update col_name='name'>{{ object.name }}</td>
+                    <td quick_update col_name='keyword'>{{ object.keyword }}</td>
+                    <td col_name='action'>{{ object.action }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">查无数据</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}

@@ -33,6 +33,7 @@ urlpatterns = [
     path('step/add/', mv.step_add, name='step_add'),
     path('step/delete/', mv.step_delete, name='step_delete'),
     path('step/update/', mv.step_update, name='step_update'),
+    path('step/list_all/', mv.step_list_all, name='step_list_all'),
 
     path('action_list/', mv.action_list, name='action_list'),
     path('test1/', mv.test1, name='test1'),

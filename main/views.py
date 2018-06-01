@@ -13,6 +13,7 @@ from django.contrib.auth.decorators import login_required
 # from django.views.decorators.csrf import csrf_exempt
 from main.models import Case, Step, Action
 from .forms import PaginatorForm, StepForm, CaseForm
+from django.shortcuts import get_object_or_404
 
 
 # 用例列表
@@ -49,10 +50,11 @@ def cases(request):
 # 用例详情
 @login_required
 def case(request, pk):
-    try:
-        obj = Case.objects.get(id=pk)
-    except Case.DoesNotExist:
-        raise Http404('Step does not exist')
+    obj = get_object_or_404(Case, pk=pk)
+    # try:
+    #     obj = Case.objects.get(pk=pk)
+    # except Case.DoesNotExist:
+    #     raise Http404('Step does not exist')
     if request.method == 'GET':
         form = CaseForm(instance=obj)
         if request.GET.get('success', '') == '1' and request.META.get('HTTP_REFERER'):
@@ -69,10 +71,8 @@ def case(request, pk):
             form_.save()
             # form.save_m2m()
             return HttpResponseRedirect(reverse('case', args=[pk]) + '?success=1')
-        else:
-            is_success = False
-            print(form.errors)
-            return render(request, 'main/case.html', locals())
+    is_success = False
+    return render(request, 'main/case.html', locals())
 
 
 @login_required
@@ -99,7 +99,7 @@ def case_delete(request):
     if request.method == 'POST':
         pk = request.POST.get('pk')
         if pk:
-            Case.objects.filter(id=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
+            Case.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
         return HttpResponse('success')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
@@ -112,7 +112,7 @@ def case_update(request):
         col_name = request.POST['col_name']
         new_value = request.POST['new_value']
         response_['new_value'] = new_value
-        obj = Case.objects.get(id=pk)
+        obj = Case.objects.get(pk=pk)
         obj.modifier = request.user
         obj.modified_date = timezone.now()
         if col_name == 'name':
@@ -201,10 +201,7 @@ def steps(request):
 
 @login_required
 def step(request, pk):
-    try:
-        obj = Step.objects.get(id=pk)
-    except Step.DoesNotExist:
-        raise Http404('Step does not exist')
+    obj = get_object_or_404(Step, pk=pk)
     if request.method == 'GET':
         form = StepForm(instance=obj)
         related_objects = obj.case_set.filter(is_active=True)
@@ -222,9 +219,8 @@ def step(request, pk):
             form_.save()
             form.save_m2m()
             return HttpResponseRedirect(reverse('step', args=[pk]) + '?success=1')
-        else:
-            is_success = False
-            return render(request, 'main/step.html', locals())
+    is_success = False
+    return render(request, 'main/step.html', locals())
 
 
 @login_required
@@ -251,7 +247,7 @@ def step_delete(request):
     if request.method == 'POST':
         pk = request.POST.get('pk')
         if pk:
-            Step.objects.filter(id=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
+            Step.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
         return HttpResponse('成功')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
@@ -264,7 +260,7 @@ def step_update(request):
         col_name = request.POST['col_name']
         new_value = request.POST['new_value']
         response_['new_value'] = new_value
-        obj = Step.objects.get(id=pk)
+        obj = Step.objects.get(pk=pk)
         obj.modifier = request.user
         obj.modified_date = timezone.now()
         if col_name == 'name':
@@ -295,6 +291,19 @@ def action_list(request):
 
     data_dict = dict()
     data_dict['data'] = list(objects)
+    return JsonResponse(data_dict)
+
+
+# 获取step
+@login_required
+def step_list_all(request):
+    from django.core import serializers
+    objects = Step.objects.filter(is_active=1).order_by('id')
+    # data_dict = dict()
+    # data_dict['data'] = list(objects)
+    json_ = serializers.serialize('json', objects, use_natural_foreign_keys=True)
+    data_dict = dict()
+    data_dict['data'] = json_
     return JsonResponse(data_dict)
 
 

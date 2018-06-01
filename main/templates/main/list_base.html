@@ -4,101 +4,101 @@
     <head>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-        <title>{% block title %}标题{% endblock %}</title>
+        <title>{% block title %}列表{% endblock %}</title>
         {% block general_style %}
-        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
-        <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
-        <link rel="stylesheet" href="{% static 'main/css/bootstrap-4.1.1/bootstrap.min.css' %}">
-        <link rel="stylesheet" href="{% static 'main/css/toastr-2.1.4/toastr.css' %}">
-        <link rel="stylesheet" href="{% static 'main/css/font-awesome/font-awesome.css' %}">
+            <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
+            <link rel="stylesheet" href="{% static 'main/css/bootstrap-4.1.1/bootstrap.min.css' %}">
+            <link rel="stylesheet" href="{% static 'main/css/toastr-2.1.4/toastr.css' %}">
+            <link rel="stylesheet" href="{% static 'main/css/font-awesome/font-awesome.css' %}">
+            <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
         {% endblock %}
         {% block style %}
         {% endblock %}
         {% block general_script %}
-        <script src="{% static 'main/js/jquery/jquery-3.3.1.min.js' %}"></script>
-        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
-        <script src="{% static 'main/js/bootstrap-4.1.1/bootstrap.min.js' %}"></script>
-        <script src="{% static 'main/js/bootbox/bootbox.min.js' %}"></script>
-        <script src="{% static 'main/js/toastr-2.1.4/toastr.min.js' %}"></script>
-        <script src="{% static 'main/js/main.js' %}"></script>
-        <script>
-            $(function () {
-                // 获取分页信息
-                window.page = {{ paginator_form.page.value|default:1 }}
-                window.maxPage = {{ paginator.num_pages|default:0 }}
-                window.size = {{ paginator_form.size.value|default:10 }}
-                // 更新cookie
-                set_cookie('page', window.page);
-                set_cookie('size', window.size);
-                // 注册翻页工具条
-                var button = $("button[name=first_page_button]");
-                if (window.page == 1) {
-                    button.addClass('disabled')
-                } else {
-                    button.click(function () {
-                        $('input[name=page]').val(1);
-                        $('#objects_form').submit();
+            <script src="{% static 'main/js/jquery/jquery-3.3.1.min.js' %}"></script>
+            <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+            <script src="{% static 'main/js/bootstrap-4.1.1/bootstrap.min.js' %}"></script>
+            <script src="{% static 'main/js/bootbox/bootbox.min.js' %}"></script>
+            <script src="{% static 'main/js/toastr-2.1.4/toastr.min.js' %}"></script>
+            <script src="{% static 'main/js/main.js' %}"></script>
+            <script>
+                $(function () {
+                    // 获取分页信息
+                    window.page = {{ paginator_form.page.value|default:1 }}
+                    window.maxPage = {{ paginator.num_pages|default:0 }}
+                    window.size = {{ paginator_form.size.value|default:10 }}
+                    // 更新cookie
+                    set_cookie('page', window.page);
+                    set_cookie('size', window.size);
+                    // 注册翻页工具条
+                    var button = $("button[name=first_page_button]");
+                    if (window.page == 1) {
+                        button.addClass('disabled')
+                    } else {
+                        button.click(function () {
+                            $('input[name=page]').val(1);
+                            $('#objects_form').submit();
+                        });
+                    }
+                    var button = $("button[name=prev_page_button]");
+                    if (window.page == 1) {
+                        button.addClass('disabled')
+                    } else {
+                        button.click(function () {
+                            $('input[name=page]').val({{ page }}-1);
+                            $('#objects_form').submit();
+                        });
+                    }
+                    var button = $("button[name=next_page_button]");
+                    if (window.page == maxPage) {
+                        button.addClass('disabled')
+                    } else {
+                        button.click(function () {
+                            $('input[name=page]').val({{ page }}+1);
+                            $('#objects_form').submit();
+                        });
+                    }
+                    var button = $("button[name=last_page_button]");
+                    if (window.page == maxPage) {
+                        button.addClass('disabled')
+                    } else {
+                        button.click(function () {
+                            $('input[name=page]').val({{ paginator.num_pages }});
+                            $('#objects_form').submit();
+                        });
+                    }
+                    $("input[name=page]").change(function () {
+                        $("input[name=page]").val($(this).val());
                     });
-                }
-                var button = $("button[name=prev_page_button]");
-                if (window.page == 1) {
-                    button.addClass('disabled')
-                } else {
-                    button.click(function () {
-                        $('input[name=page]').val({{ page }}-1);
-                        $('#objects_form').submit();
+                    $("input[name=size]").change(function () {
+                        $("input[name=size]").val($(this).val());
                     });
-                }
-                var button = $("button[name=next_page_button]");
-                if (window.page == maxPage) {
-                    button.addClass('disabled')
-                } else {
-                    button.click(function () {
-                        $('input[name=page]').val({{ page }}+1);
-                        $('#objects_form').submit();
+                    // 注册注销按钮
+                    $("#logout_btn").click(function () {
+                        window.open('/logout/', '_self');
                     });
-                }
-                var button = $("button[name=last_page_button]");
-                if (window.page == maxPage) {
-                    button.addClass('disabled')
-                } else {
-                    button.click(function () {
-                        $('input[name=page]').val({{ paginator.num_pages }});
-                        $('#objects_form').submit();
-                    });
-                }
-                $("input[name=page]").change(function () {
-                    $("input[name=page]").val($(this).val());
-                });
-                $("input[name=size]").change(function () {
-                    $("input[name=size]").val($(this).val());
-                });
-                // 注册注销按钮
-                $("#logout_btn").click(function () {
-                    window.open('/logout/', '_self');
-                });
-                // 提示框样式
-                toastr.options = {
-                    "closeButton":false,//显示关闭按钮
-                    "debug":false,//启用debug
-                    "positionClass":"toast-top-center",//弹出的位置
-                    "showDuration":"300",//显示的时间
-                    "hideDuration":"1000",//消失的时间
-                    "timeOut":"5000",//停留的时间
-                    "extendedTimeOut":"1000",//控制时间
-                    "showEasing":"swing",//显示时的动画缓冲方式
-                    "hideEasing":"linear",//消失时的动画缓冲方式
-                    "showMethod":"fadeIn",//显示时的动画方式
-                    "hideMethod":"fadeOut"//消失时的动画方式
-                };
-            })
-        </script>
+                    // 提示框样式
+                    toastr.options = {
+                        "closeButton":false,//显示关闭按钮
+                        "debug":false,//启用debug
+                        "positionClass":"toast-top-center",//弹出的位置
+                        "showDuration":"300",//显示的时间
+                        "hideDuration":"1000",//消失的时间
+                        "timeOut":"5000",//停留的时间
+                        "extendedTimeOut":"1000",//控制时间
+                        "showEasing":"swing",//显示时的动画缓冲方式
+                        "hideEasing":"linear",//消失时的动画缓冲方式
+                        "showMethod":"fadeIn",//显示时的动画方式
+                        "hideMethod":"fadeOut"//消失时的动画方式
+                    };
+                })
+            </script>
         {% endblock %}
         {% block script %}
         {% endblock %}
     </head>
     <body>
-        {% include 'main/navbar.html' %}
+        {% include 'main/include/navbar.html' %}
         <div class="container-fluid" style="margin-top: 60px;">
             {% if errors %}
                 <ul>
@@ -107,14 +107,14 @@
                     {% endfor %}
                 </ul>
             {% endif %}
-            <form action="" method="post" id="objects_form" class="form-inline">
+            <form method="post" id="objects_form" class="form-inline">
                 {% csrf_token %}
-                {% include 'main/paginator.html' %}
+                {% include 'main/include/paginator.html' %}
                 {% block search_tools %}
                 {% endblock %}
                 {% block result_table %}
                 {% endblock %}
-                {% include 'main/paginator.html' %}
+                {% include 'main/include/paginator.html' %}
             </form>
         </div>
     </body>

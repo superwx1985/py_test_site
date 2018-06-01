@@ -222,3 +222,32 @@ function show_info(msg, class_list, time) {
 	show_info.show();
 	window._show_info_timeout_id = setTimeout(function(){show_info.fadeOut(500)}, time);// 停留{time}毫秒之后淡出
 }*/
+
+// 获取结果集
+function getListAll(url, csrf_token, callback_func) {
+	$.ajax({
+        url: url,
+        type: "POST",
+        data: {
+            csrfmiddlewaretoken: csrf_token,
+        },
+        dataType: "json",
+        success: function (data, textStatus) {
+            // console.log('success');
+            // console.log("data['new_value']: " + data['new_value']);
+            // console.log("textStatus: " + textStatus);
+            callback_func(true, data)
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            // console.log('error');
+            // console.log("XMLHttpRequest: " + XMLHttpRequest);
+            // console.log("XMLHttpRequest.status: " + XMLHttpRequest.status);
+            // console.log("XMLHttpRequest.statusText: " + XMLHttpRequest.statusText);
+            // console.log("XMLHttpRequest.responseText: " + XMLHttpRequest.responseText);
+            // console.log("XMLHttpRequest.responseXML: "+XMLHttpRequest.responseXML);
+            // console.log("textStatus: " + textStatus);
+            // console.log("errorThrown: " + errorThrown);
+            callback_func(false, XMLHttpRequest.responseText)
+        }
+    })
+}
