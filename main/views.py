@@ -12,7 +12,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 # from django.views.decorators.csrf import csrf_exempt
 from main.models import Case, Step, Action
-from .forms import PaginatorForm, StepForm
+from .forms import PaginatorForm, StepForm, CaseForm
 
 
 # 用例列表
@@ -48,25 +48,58 @@ def cases(request):
 
 # 用例详情
 @login_required
-def case(request):
-    pd = dict()
-    pd['id'] = str(request.GET.get('id', 0))
-    if pd['id'].isdigit():
-        pd['id'] = int(float(pd['id']))
-    else:
-        pd['id'] = 0
-    pd['object'] = None
-    objects = Case.objects.filter(id=pd['id'])
-    if objects:
-        pd['object'] = objects[0]
-    return render(request, 'main/case.html', {'pd': pd})
+def case(request, pk):
+    try:
+        obj = Case.objects.get(id=pk)
+    except Case.DoesNotExist:
+        raise Http404('Step does not exist')
+    if request.method == 'GET':
+        form = CaseForm(instance=obj)
+        if request.GET.get('success', '') == '1' and request.META.get('HTTP_REFERER'):
+            is_success = True
+        return render(request, 'main/case.html', locals())
+    elif request.method == 'POST':
+        creator = obj.creator
+        form = CaseForm(data=request.POST, instance=obj)
+        if form.is_valid():
+            form_ = form.save(commit=False)
+            form_.creator = creator
+            form_.modifier = request.user
+            form_.is_active = obj.is_active
+            form_.save()
+            # form.save_m2m()
+            return HttpResponseRedirect(reverse('case', args=[pk]) + '?success=1')
+        else:
+            is_success = False
+            print(form.errors)
+            return render(request, 'main/case.html', locals())
+
+
+@login_required
+def case_add(request):
+    if request.method == 'GET':
+        form = CaseForm()
+        return render(request, 'main/case.html', locals())
+    elif request.method == 'POST':
+        form = CaseForm(data=request.POST)
+        if form.is_valid():
+            form_ = form.save(commit=False)
+            form_.creator = request.user
+            form_.modifier = request.user
+            form_.is_active = True
+            form_.save()
+            form.save_m2m()
+            pk = form_.id
+            return HttpResponseRedirect(reverse('case', args=[pk]) + '?success=1')
+        else:
+            return render(request, 'main/case.html', locals())
 
 
 def case_delete(request):
     if request.method == 'POST':
-        object_id = request.POST.get('object_id')
-        if object_id:
-            Case.objects.filter(id=object_id).update(is_active=0, modifier=request.user, modified_date=timezone.now())
+        pk = request.POST.get('pk')
+        if pk:
+            Case.objects.filter(id=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
         return HttpResponse('success')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
@@ -75,21 +108,26 @@ def case_delete(request):
 def case_update(request):
     response_ = {'new_value': ''}
     try:
+        pk = int(request.POST['pk'])
         col_name = request.POST['col_name']
-        object_id = int(request.POST['object_id'])
         new_value = request.POST['new_value']
         response_['new_value'] = new_value
+        obj = Case.objects.get(id=pk)
+        obj.modifier = request.user
+        obj.modified_date = timezone.now()
         if col_name == 'name':
-            Case.objects.filter(id=object_id).update(name=new_value, modifier=request.user,
-                                                     modified_date=timezone.now())
+            obj.name = new_value
+            obj.clean_fields()
+            obj.save()
         elif col_name == 'keyword':
-            Case.objects.filter(id=object_id).update(keyword=new_value, modifier=request.user,
-                                                     modified_date=timezone.now())
+            obj.keyword = new_value
+            obj.clean_fields()
+            obj.save()
         else:
             raise ValueError('invalid col_name')
     except Exception as e:
         print(traceback.format_exc())
-        return HttpResponseBadRequest(traceback.format_exc())
+        return HttpResponseBadRequest(str(e))
     return JsonResponse(response_)
 
 
@@ -162,9 +200,9 @@ def steps(request):
 
 
 @login_required
-def step(request, object_id):
+def step(request, pk):
     try:
-        obj = Step.objects.get(id=object_id)
+        obj = Step.objects.get(id=pk)
     except Step.DoesNotExist:
         raise Http404('Step does not exist')
     if request.method == 'GET':
@@ -183,7 +221,7 @@ def step(request, object_id):
             form_.is_active = obj.is_active
             form_.save()
             form.save_m2m()
-            return HttpResponseRedirect(reverse('step', args=[object_id]) + '?success=1')
+            return HttpResponseRedirect(reverse('step', args=[pk]) + '?success=1')
         else:
             is_success = False
             return render(request, 'main/step.html', locals())
@@ -193,13 +231,9 @@ def step(request, object_id):
 def step_add(request):
     if request.method == 'GET':
         form = StepForm()
-        return render(request, 'main/step_form_model.html', locals())
+        return render(request, 'main/step.html', locals())
     elif request.method == 'POST':
-        post = request.POST.copy()
-        post['creator'] = str(request.user.id)
-        post['modifier'] = str(request.user.id)
-        post['is_active'] = '1'
-        form = StepForm(data=post)
+        form = StepForm(data=request.POST)
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = request.user
@@ -207,17 +241,17 @@ def step_add(request):
             form_.is_active = True
             form_.save()
             form.save_m2m()
-            object_id = form_.id
-            return HttpResponseRedirect(reverse('step', args=[object_id]) + '?success=1')
+            pk = form_.id
+            return HttpResponseRedirect(reverse('step', args=[pk]) + '?success=1')
         else:
-            return render(request, 'main/step_form_model.html', locals())
+            return render(request, 'main/step.html', locals())
 
 
 def step_delete(request):
     if request.method == 'POST':
-        object_id = request.POST.get('object_id')
-        if object_id:
-            Step.objects.filter(id=object_id).update(is_active=0, modifier=request.user, modified_date=timezone.now())
+        pk = request.POST.get('pk')
+        if pk:
+            Step.objects.filter(id=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
         return HttpResponse('成功')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
@@ -226,11 +260,11 @@ def step_delete(request):
 def step_update(request):
     response_ = {'new_value': ''}
     try:
-        object_id = int(request.POST['object_id'])
+        pk = int(request.POST['pk'])
         col_name = request.POST['col_name']
         new_value = request.POST['new_value']
         response_['new_value'] = new_value
-        obj = Step.objects.get(id=object_id)
+        obj = Step.objects.get(id=pk)
         obj.modifier = request.user
         obj.modified_date = timezone.now()
         if col_name == 'name':
@@ -264,8 +298,12 @@ def action_list(request):
     return JsonResponse(data_dict)
 
 
-def test(request):
-    return render(request, 'main/test.html')
+def test1(request):
+    return render(request, 'main/test1.html')
+
+
+def test2(request):
+    return render(request, 'main/test2.html')
 
 
 @login_required

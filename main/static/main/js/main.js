@@ -22,7 +22,7 @@ function quick_update(url, tds, func, callback_func) {
         var td = $(this);
         var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
         var col_name = td.attr('col_name');
-        var object_id = td.parent('tr').attr('object_id');
+        var pk = td.parent('tr').attr('pk');
         // 判断是否已在编辑
         if (td.attr('editing')) {
             // 获取原值
@@ -31,7 +31,7 @@ function quick_update(url, tds, func, callback_func) {
             var new_value = textarea.val();
             //当修改前后的值不同时才进行数据库提交操作
             if (old_value != new_value) {
-                func(url, csrf_token, object_id, new_value, old_value, col_name, callback_func);
+                func(url, csrf_token, pk, new_value, old_value, col_name, callback_func);
             }
             // 去掉编辑标志
             td.removeAttr('editing');
@@ -63,8 +63,8 @@ function quick_update(url, tds, func, callback_func) {
                     case 13:
                         var new_value = textarea.val();
                         // 当修改前后的值不同时才进行数据库提交操作
-                        if (old_value != new_value) {
-                            func(url, csrf_token, object_id, new_value, old_value, col_name, callback_func);
+                        if (old_value !== new_value) {
+                            func(url, csrf_token, pk, new_value, old_value, col_name, callback_func);
                         }
                         // 去掉编辑标志
                         td.removeAttr('editing');
@@ -97,33 +97,44 @@ function quick_update(url, tds, func, callback_func) {
 function bind_delete_button(url) {
     $('button[name="delete_button"]').off('click').click(function () {
         var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
-        var object_id = $(this).parents('tr').attr('object_id');
+        var pk = $(this).parents('tr').attr('pk');
         // var name = $(this).parent().siblings('td[col_name="name"]').text();
         var name = $(this).parents('tr').find('td[col_name="name"]').text();
-        var msg = '确定要删除【' + name + '】吗？';
-        var dialog_div = $('<div id="dialog-confirm" title="请确认"><p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span>'+msg+'</p></div>');
-        dialog_div.dialog({
-            resizable: false,
-            modal: true,
+        var msg = '确定要删除<span class="mark">' + name + '</span>吗？';
+        bootbox.confirm({
+            title: '<i class="icon-spinner icon-spin icon-2x pull-left"></i>',
+            message: msg,
             buttons: {
-                "确定": function () {
-                    $(this).dialog("close");
-                    $.post(url, {csrfmiddlewaretoken: csrf_token, object_id: object_id}, function(data){$("#objects_form").submit()});
+                confirm: {
+                    label: '<i class="icon-trash">&nbsp;</i>确定',
+                    className: 'btn-danger'
                 },
-                "取消": function () {
-                    $(this).dialog("close");
+                cancel: {
+                    label: '<i class="icon-undo">&nbsp;</i>取消',
+                    className: 'btn-secondary'
                 }
-            }
-        });
+            },
+            callback: function (result) {
+                if (result === true) {
+                    console.log('delete');
+                    $.post(url, {'csrfmiddlewaretoken': csrf_token, 'pk': pk}, function(data) {
+                        $("#objects_form").submit()
+                    });
+                }
+            },
+            size: 'large'
+        })
     })
 }
 
 
 // 刷新字段显示
-function refresh_single_column(is_success, object_id, new_value, old_value, col_name, msg) {
-    var td = $('tr[object_id="'+object_id+'"]>td[col_name="'+col_name+'"]');
+function refresh_single_column(is_success, pk, new_value, old_value, col_name, msg) {
+    var td = $('tr[pk="'+pk+'"]>td[col_name="'+col_name+'"]');
     td.text(new_value);
     if (is_success) {
+        console.log(1111)
+        toastr.success('更新成功');
         td.css('background-color', 'lightgreen');// 变为浅绿
         td.animate({opacity: 'toggle'}, 300);// 闪烁动画
         td.animate({opacity: 'toggle'}, 300);
@@ -132,7 +143,7 @@ function refresh_single_column(is_success, object_id, new_value, old_value, col_
             td.css('background-color', '');
         }, 1000);
     } else {
-        show_info(msg, 'alert alert-warning', 5000);
+        toastr.error(msg);
         td.css('background-color', 'red');// 变为红色
         td.animate({opacity: 'toggle'}, 300);// 闪烁动画
         td.animate({opacity: 'toggle'}, 300);
@@ -145,13 +156,13 @@ function refresh_single_column(is_success, object_id, new_value, old_value, col_
 
 
 // 更新单个字段
-function update_single_column(url, csrf_token, object_id, new_value, old_value, col_name, callback_func) {
+function update_single_column(url, csrf_token, pk, new_value, old_value, col_name, callback_func) {
     $.ajax({
         url: url,
         type: "POST",
         data: {
             csrfmiddlewaretoken: csrf_token,
-            object_id: object_id,
+            pk: pk,
             new_value: new_value,
             col_name: col_name
         },
@@ -160,7 +171,7 @@ function update_single_column(url, csrf_token, object_id, new_value, old_value, 
             // console.log('success');
             // console.log("data['new_value']: " + data['new_value']);
             // console.log("textStatus: " + textStatus);
-            callback_func(true, object_id, new_value, old_value, col_name)
+            callback_func(true, pk, new_value, old_value, col_name)
         },
         error: function (XMLHttpRequest, textStatus, errorThrown) {
             // console.log('error');
@@ -171,7 +182,7 @@ function update_single_column(url, csrf_token, object_id, new_value, old_value, 
             // console.log("XMLHttpRequest.responseXML: "+XMLHttpRequest.responseXML);
             // console.log("textStatus: " + textStatus);
             // console.log("errorThrown: " + errorThrown);
-            callback_func(false, object_id, new_value, old_value, col_name, XMLHttpRequest.responseText)
+            callback_func(false, pk, new_value, old_value, col_name, XMLHttpRequest.responseText)
         }
     })
 }
@@ -193,7 +204,8 @@ function get_cookie(name) {
 	}
 }
 
-// 输出返回消息
+// 输出返回消息（废弃，使用toastr代替）
+/*
 function show_info(msg, class_list, time) {
 	// 首先停止上次的setTimeout任务
 	if ("undefined"!==typeof(_show_info_timeout_id)) {
@@ -209,4 +221,4 @@ function show_info(msg, class_list, time) {
 	show_info_inner.addClass(class_list);
 	show_info.show();
 	window._show_info_timeout_id = setTimeout(function(){show_info.fadeOut(500)}, time);// 停留{time}毫秒之后淡出
-}
+}*/

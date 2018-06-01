@@ -23,19 +23,20 @@ urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
     path('run/', mv.run, name='run'),
     path('cases/', mv.cases, name='cases'),
-    path('case/<int:object_id>/', mv.step, name='case'),
-    path('case/add/', mv.step_add, name='case_add'),
+    path('case/<int:pk>/', mv.case, name='case'),
+    path('case/add/', mv.case_add, name='case_add'),
     path('case/delete/', mv.case_delete, name='case_delete'),
     path('case/update/', mv.case_update, name='case_update'),
 
     path('steps/', mv.steps, name='steps'),
-    path('step/<int:object_id>/', mv.step, name='step'),
+    path('step/<int:pk>/', mv.step, name='step'),
     path('step/add/', mv.step_add, name='step_add'),
     path('step/delete/', mv.step_delete, name='step_delete'),
     path('step/update/', mv.step_update, name='step_update'),
 
     path('action_list/', mv.action_list, name='action_list'),
-    path('test/', mv.test, name='test'),
+    path('test1/', mv.test1, name='test1'),
+    path('test2/', mv.test2, name='test2'),
     path('logout/', mv.logout, name='logout'),
 
 ]

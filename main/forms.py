@@ -1,5 +1,5 @@
 from django import forms
-from .models import Action, Step
+from .models import Action, Step, Case
 from django.contrib.auth.models import User
 from django.contrib.admin.widgets import FilteredSelectMultiple
 
@@ -38,6 +38,33 @@ class PaginatorForm(forms.Form):
 
         for k, v in self.fields.items():
             v.widget.attrs.update({'class': 'form-control', 'style': 'width: 85px'})
+
+
+class CaseForm(forms.ModelForm):
+    # 不验证某些字段
+    creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+    modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+    is_active = forms.CharField(required=False)
+
+    class Meta:
+        model = Case
+        fields = '__all__'
+        widgets = {
+            # 'name': forms.Textarea(),
+            # 'keyword': forms.Textarea(),
+            # 'save_as': forms.Textarea(),
+            # 'ui_alert_handle': forms.RadioSelect,
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(CaseForm, self).__init__(*args, **kwargs)
+
+        for k, v in self.fields.items():
+            # 如果widget是Textarea，rows属性设置为空
+            if isinstance(v.widget, forms.Textarea):
+                v.widget.attrs.update({'rows': '', 'class': 'form-control'})
+            else:
+                v.widget.attrs.update({'class': 'form-control'})
 
 
 class StepForm(forms.ModelForm):

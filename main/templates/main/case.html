@@ -1,81 +1,95 @@
-<!DOCTYPE HTML>
-{% load staticfiles %}
+{% extends 'main/detail_base.html' %}
 <html>
     <head>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-        {% if  pd.object %}
-            <title>用例详情 - {{ pd.object.name }}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        {% if form.initial %}
+            <title>步骤详情 - {{ form.initial.name }}</title>
         {% else %}
-            <title>用例详情 - 添加</title>
+            <title>步骤详情 - 添加</title>
         {% endif %}
-        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'/>
-        <link rel="stylesheet" href='{% static "main/css/main.css" %}'/>
-        <script src="{% static 'main/js/jquery-3.1.1.min.js' %}"></script>
-        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
-        <script src="{% static 'main/js/main.js' %}"></script>
-        <script>
-            $(function () {
+{% block title %}
+    {% if form.initial %}
+        用例详情 - {{ form.initial.name }}
+    {% else %}
+        用例详情 - 添加
+    {% endif %}
+{% endblock %}
+{% block script %}
+<script>
+    $(function () {
+        // 更新导航栏
+        $('#nav_case').addClass('active');
+    })
+</script>
+{% endblock %}
 
-            })
-        </script>
-    </head>
-    <body>
-        {% if errors %}
-            <ul>
-                {% for error in errors %}
-                    <li style="color: red;">error: {{ error }}</li>
-                {% endfor %}
-            </ul>
+{% block detail_header %}
+<ol class="breadcrumb my-4">
+    <li class="breadcrumb-item active">
+    {% if form.initial %}
+        创建时间：{{ obj.created_date }}，创建人：{{ obj.creator }}，上次修改时间：{{ obj.modified_date }}，修改人：{{ obj.modifier }}
+    {% else %}
+        添加一个步骤
+    {% endif %}
+    </li>
+</ol>
+{% endblock %}
+
+{% block detail_content %}
+<div class="row align-items-center">
+    <div class="col-1 text-right ">名称</div>
+    <div class="col" form_data>
+        {{ form.name }}
+        {% if form.errors.name.0 %}
+            <div class="text-warning">{{ form.errors.name.0 }}</div>
         {% endif %}
-
-        <form action="" method="post" id="object_form">
-            {% csrf_token %}
-
-
-            <table id='detail_table' class="detail_table">
-                <colgroup>
-                    <col style='width:100px;'>
-                    <col style='width:60px;'>
-                    <col>
-                </colgroup>
-                <tbody id='tbody1'>
-                    <tr id="name">
-                        <th class="center">名称</th>
-                        <td><button type='button' name='reset_button'>还原</button></td>
-                        <td type="value">
-                            <textarea class='input_area'>{{ pd.object.name }}</textarea>
-                        </td>
-                    </tr>
-                    <tr id="description">
-                        <th class="center">描述</th>
-                        <td><button type='button' name='reset_button'>还原</button></td>
-                        <td type="value">
-                            <textarea class='input_area'>{{ pd.object.description }}</textarea>
-                        </td>
-                    </tr>
-                    <tr id="keyword">
-                        <th class="center">关键字</th>
-                        <td><button type='button' name='reset_button'>还原</button></td>
-                        <td type="value">
-                            <textarea class='input_area'>{{ pd.object.keyword }}</textarea>
-                        </td>
-                    </tr>
-                    <tr id="config">
-                        <th class="center">配置项</th>
-                        <td><button type='button' name='reset_button'>还原</button></td>
-                        <td type="value">
-                            <textarea class='input_area'>{{ pd.object.config }}</textarea>
-                        </td>
-                    </tr>
-
-
-                </tbody>
-            </table>
-            <input type="submit" value="提交">
-        </form>
-
-        <br/>
-        <br/>
-        {{ pd }}
-    </body>
-</html>
+    </div>
+</div>
+<div class="row align-items-center">
+    <div class="col-1 text-right">描述</div>
+    <div class="col" form_data>
+        {{ form.description }}
+        {% if form.errors.description.0 %}
+            <div class="text-warning">{{ form.errors.description.0 }}</div>
+        {% endif %}
+    </div>
+</div>
+<div class="row align-items-center">
+    <div class="col-1 text-right">关键字</div>
+    <div class="col" form_data>
+        {{ form.keyword }}
+        {% if form.errors.keyword.0 %}
+            <div class="text-warning">{{ form.errors.keyword.0 }}</div>
+        {% endif %}
+    </div>
+</div>
+<div class="row align-items-center">
+    <div class="col-1 text-right">配置</div>
+    <div class="col" form_data>
+        {{ form.config }}
+        {% if form.errors.config.0 %}
+            <div class="text-warning">{{ form.errors.config.0 }}</div>
+        {% endif %}
+    </div>
+</div>
+<div class="row align-items-center">
+    <div class="col-1 text-right">步骤</div>
+    <div class="col" form_data>
+        {{ form.step }}
+        {% if form.errors.step.0 %}
+            <div class="text-warning">{{ form.errors.step.0 }}</div>
+        {% endif %}
+    </div>
+</div>
+<br/>
+<div class="save_button_group fixed-bottom">
+    <table>
+        <tr>
+            <td><input type="submit" value="提交" class="btn btn-primary"></td>
+            <td><input type="reset" value="还原" class="btn btn-secondary"></td>
+            <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
+        </tr>
+    </table>
+</div>
+{% endblock %}

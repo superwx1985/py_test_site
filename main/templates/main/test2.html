@@ -1,0 +1,57 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        <title>TEST2</title>
+        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
+        <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
+        <link rel="stylesheet" href="{% static 'main/css/bootstrap-4.1.1/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'main/css/toastr-2.1.4/toastr.css' %}">
+        <link rel="stylesheet" href="{% static 'main/css/font-awesome/font-awesome.css' %}">
+        <script src="{% static 'main/js/jquery/jquery-3.3.1.min.js' %}"></script>
+        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+        <script src="{% static 'main/js/bootstrap-4.1.1/bootstrap.min.js' %}"></script>
+        <script src="{% static 'main/js/bootbox/bootbox.min.js' %}"></script>
+        <script src="{% static 'main/js/toastr-2.1.4/toastr.min.js' %}"></script>
+        <script src="{% static 'main/js/main.js' %}"></script>
+        <style>
+
+        </style>
+        <script>
+            $(function () {
+
+            })
+        </script>
+    </head>
+    <body>
+        <form class="form-horizontal">
+            <div class="form-group row">
+                <label class="col-sm-2 control-label">邮箱</label>
+                <div class="col-sm-10">
+                    <input type="email" class="form-control" placeholder="请输入邮箱">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">密码</label>
+                <div class="col-sm-10">
+                    <input type="password" class="form-control" placeholder="请输入密码">
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10 col-sm-offset-2">
+                    <label>
+                        <input type="checkbox">记住密码
+                    </label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-10 col-sm-offset-2">
+                    <button class="btn btn-default">进入邮箱</button>
+                </div>
+
+            </div>
+        </form>
+    </body>
+</html>

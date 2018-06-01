@@ -5,16 +5,22 @@
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
         <title>{% block title %}标题{% endblock %}</title>
+        {% block general_style %}
         <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
-        <link rel="stylesheet" href="{% static 'main/css/bootstrap.min.css' %}">
         <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
-        <script src="{% static 'main/js/jquery-3.3.1.min.js' %}"></script>
-        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
-        <script src="{% static 'main/js/bootstrap.min.js' %}"></script>
-        <script src="{% static 'main/js/main.js' %}"></script>
+        <link rel="stylesheet" href="{% static 'main/css/bootstrap-4.1.1/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'main/css/toastr-2.1.4/toastr.css' %}">
+        <link rel="stylesheet" href="{% static 'main/css/font-awesome/font-awesome.css' %}">
+        {% endblock %}
         {% block style %}
         {% endblock %}
         {% block general_script %}
+        <script src="{% static 'main/js/jquery/jquery-3.3.1.min.js' %}"></script>
+        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+        <script src="{% static 'main/js/bootstrap-4.1.1/bootstrap.min.js' %}"></script>
+        <script src="{% static 'main/js/bootbox/bootbox.min.js' %}"></script>
+        <script src="{% static 'main/js/toastr-2.1.4/toastr.min.js' %}"></script>
+        <script src="{% static 'main/js/main.js' %}"></script>
         <script>
             $(function () {
                 // 获取分页信息
@@ -71,6 +77,20 @@
                 $("#logout_btn").click(function () {
                     window.open('/logout/', '_self');
                 });
+                // 提示框样式
+                toastr.options = {
+                    "closeButton":false,//显示关闭按钮
+                    "debug":false,//启用debug
+                    "positionClass":"toast-top-center",//弹出的位置
+                    "showDuration":"300",//显示的时间
+                    "hideDuration":"1000",//消失的时间
+                    "timeOut":"5000",//停留的时间
+                    "extendedTimeOut":"1000",//控制时间
+                    "showEasing":"swing",//显示时的动画缓冲方式
+                    "hideEasing":"linear",//消失时的动画缓冲方式
+                    "showMethod":"fadeIn",//显示时的动画方式
+                    "hideMethod":"fadeOut"//消失时的动画方式
+                };
             })
         </script>
         {% endblock %}
@@ -87,7 +107,6 @@
                     {% endfor %}
                 </ul>
             {% endif %}
-            {% include 'main/show_info.html' %}
             <form action="" method="post" id="objects_form" class="form-inline">
                 {% csrf_token %}
                 {% include 'main/paginator.html' %}

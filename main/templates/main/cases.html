@@ -23,11 +23,11 @@
         </colgroup>
         <tr>
             <td>
-                <input type="text" id="search_text" name="search_text" value="{{ search_text }}">
-                <button type="submit" id='search_button' class="btn btn-primary">搜索</button>
+                <input type="text" id="search_text" name="search_text" value="{{ search_text }}"  class="form-control">
+                <button type="submit" id='search_button' class="btn btn-primary"><i class="icon-search">&nbsp;</i>搜索</button>
             </td>
             <td></td>
-            <td><button type="button" id="add_button" class="btn btn-success" onclick="window.open('{% url "case_add" %}');">添加</button></td>
+            <td><button type="button" id="add_button" class="btn btn-success" onclick="window.open('{% url "case_add" %}');"><i class="icon-plus">&nbsp;</i>添加</button></td>
         </tr>
     </table>
 </div>
@@ -53,13 +53,13 @@
         </thead>
         <tbody>
             {% for object in objects %}
-            <tr object_id="{{ object.id }}">
+            <tr pk="{{ object.pk }}">
                 <td>
                     <div class="mx-auto text-center">
                         <button type="button" id="delete_button" name="delete_button" class="btn btn-danger">删除</button>
                     </div>
                 </td>
-                <td col_name='id'><a target="_blank" href="{% url 'case' object.id %}" class="font-weight-bold">{{ object.id }}</a></td>
+                <td col_name='id'><a target="_blank" href="{% url 'case' object.pk %}" class="font-weight-bold">{{ object.pk }}</a></td>
                 <td quick_update col_name='name'>{{ object.name }}</td>
                 <td quick_update col_name='keyword'>{{ object.keyword }}</td>
                 <td col_name='action'>{{ object.action }}</td>
