@@ -1,12 +1,12 @@
 {% extends 'main/list_base.html' %}
-{% block title %}用例 - {{ block.super }}{% endblock %}
+{% block title %}配置 - {{ block.super }}{% endblock %}
 {% block script %}
     <script>
         $(function () {
             // 更新导航栏
-            $('#nav_case').addClass('active');
+            $('#nav_config').addClass('active');
             // 获取添加地址
-            window.addUrl="{% url 'case_add' %}"
+            window.addUrl="{% url 'config_add' %}"
         })
     </script>
 {% endblock %}
@@ -18,7 +18,6 @@
                 <col style='width: 80px;'>
                 <col>
                 <col style='width: 200px;'>
-                <col style='width: 150px;'>
             </colgroup>
             <thead class="thead-light">
                 <tr>
@@ -26,25 +25,23 @@
                     <th>ID</th>
                     <th>名称</th>
                     <th>关键字</th>
-                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for object in objects %}
-                    <tr pk="{{ object.pk }}" updateUrl="{% url 'case_update' object.pk %}" delUrl="{% url 'case_delete' object.pk %}">
+                    <tr pk="{{ object.pk }}" updateUrl="{% url 'config_update' object.pk %}" delUrl="{% url 'config_delete' object.pk %}">
                         <td>
                             <div class="mx-auto text-center">
                                 <button type="button" id="delete_button" name="delete_button" class="btn btn-danger">删除</button>
                             </div>
                         </td>
-                        <td col_name='id'><a target="_blank" href="{% url 'case' object.pk %}" class="font-weight-bold">{{ object.pk }}</a></td>
+                        <td col_name='id'><a target="_blank" href="{% url 'config' object.pk %}" class="font-weight-bold">{{ object.pk }}</a></td>
                         <td quick_update col_name='name'>{{ object.name }}</td>
                         <td quick_update col_name='keyword'>{{ object.keyword }}</td>
-                        <td col_name='action'>{{ object.action }}</td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center">查无数据</td>
+                        <td colspan="4" class="text-center">查无数据</td>
                     </tr>
                 {% endfor %}
             </tbody>

@@ -5,15 +5,8 @@
         $(function () {
             // 更新导航栏
             $('#nav_step').addClass('active');
-            // 注册快速更新事件
-            var tds = $('#result_table tbody td[quick_update]');
-            quick_update(tds, update_single_column, refresh_single_column);
-            // 注册添加按钮
-            $('#add_button').on('click', function () {
-                window.open('{% url "step_add" %}');
-            });
-            // 注册删除按钮
-            bind_delete_button();
+            // 获取添加地址
+            window.addUrl="{% url 'step_add' %}"
         })
     </script>
 {% endblock %}

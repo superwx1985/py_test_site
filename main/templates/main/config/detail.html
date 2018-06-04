@@ -1,0 +1,126 @@
+{% extends 'main/detail_base.html' %}
+{% load widget_tweaks %}
+{% block title %}
+    {% if form.initial %}
+        {{ form.initial.name }} - {{ block.super }}
+    {% else %}
+        新用例 - {{ block.super }}
+    {% endif %}
+{% endblock %}
+{% block style %}
+    <style type='text/css' media='screen'>
+
+    </style>
+{% endblock %}
+{% block script %}
+    <script>
+        $(function () {
+            // 更新导航栏
+            $('#nav_config').addClass('active');
+        });
+    </script>
+{% endblock %}
+
+{% block detail_header %}
+    <ol class="breadcrumb my-4">
+        <li class="breadcrumb-item active">
+        {% if form.initial %}
+            创建时间：{{ obj.created_date }}，创建人：{{ obj.creator }}，上次修改时间：{{ obj.modified_date }}，修改人：{{ obj.modifier }}
+        {% else %}
+            添加一个配置
+        {% endif %}
+        </li>
+    </ol>
+{% endblock %}
+
+{% block detail_content %}
+    <div class="row align-items-center">
+        <div class="col-1 text-right font-weight-bold">名称</div>
+        <div class="col" form_data>
+            {% include 'main/include/form.html' with field=form.name placeholder_text='' %}
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-right font-weight-bold">描述</div>
+        <div class="col" form_data>
+            {% include 'main/include/form.html' with field=form.description placeholder_text='' %}
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-right font-weight-bold">关键字</div>
+        <div class="col" form_data>
+            {% include 'main/include/form.html' with field=form.keyword placeholder_text='' %}
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-right font-weight-bold">配置项</div>
+        <div class="col" form_data>
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-toggle="tab" href="#ui_config">UI测试配置</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#api_config">API测试配置</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-toggle="tab" href="#db_config">DB测试配置</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div id="ui_config" class="container tab-pane active">
+                    <br>
+                    <div class="form-inline">
+                        <div class="form-group" style="padding: 0 5px" form_data>
+                            <label>驱动类型：</label>
+                            {% include 'main/include/form.html' with field=form.ui_selenium_client placeholder_text='' %}
+                        </div>
+                        <div class="form-group" style="padding: 0 5px" form_data>
+                            <label>IP：</label>
+                            {% include 'main/include/form.html' with field=form.ui_remote_id placeholder_text='' %}
+                        </div>
+                        <div class="form-group" style="padding: 0 5px" form_data>
+                            <label>端口：</label>
+                            {% include 'main/include/form.html' with field=form.ui_remote_port placeholder_text='' %}
+                        </div>
+                    </div>
+                    <br>
+                    <div class="form-inline">
+                        <div class="form-group" style="padding: 0 5px" form_data>
+                            <label>浏览器类型：</label>
+                            {% include 'main/include/form.html' with field=form.ui_driver_type placeholder_text='' %}
+                        </div>
+                        <div class="form-group" style="padding: 0 5px" form_data>
+                            <label>窗口大小：</label>
+                            {% include 'main/include/form.html' with field=form.ui_window_size placeholder_text='' %}
+                        </div>
+                    </div>
+                    <br>
+                    <div class="form-inline">
+                        <div class="form-group" style="padding: 0 5px" form_data>
+                            <label>窗口宽度：</label>
+                            {% include 'main/include/form.html' with field=form.ui_window_width placeholder_text='' %}
+                        </div>
+                        <div class="form-group" style="padding: 0 5px" form_data>
+                            <label>窗口高度：</label>
+                            {% include 'main/include/form.html' with field=form.ui_window_height placeholder_text='' %}
+                        </div>
+                    </div>
+                </div>
+                <div id="api_config" class="container tab-pane">
+                    <br>
+                </div>
+                <div id="db_config" class="container tab-pane">
+                    <br>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center fixed-bottom" >
+        <div class="btn-group">
+            <td><input type="submit" value="提交" class="btn btn-success"></td>
+            <td><input type="reset" value="还原" class="btn btn-secondary"></td>
+            <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
+        </div>
+    </div>
+{% endblock %}

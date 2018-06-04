@@ -102,7 +102,7 @@ class CaseVsStep(models.Model):
                                  on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
-    order = models.DecimalField(max_digits=10, decimal_places=2, default=1)
+    order = models.IntegerField(default=0)
 
     class Meta:
         unique_together = ('case', 'step', 'order')
@@ -171,6 +171,29 @@ class Config(models.Model):
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='config_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
+    ui_selenium_client_list = (
+        (0, ''),
+        (1, 'Selenium - 本地'),
+        (2, 'Selenium - 远程'),
+    )
+    ui_selenium_client = models.IntegerField(choices=ui_selenium_client_list, default=0)
+    ui_remote_id = models.CharField(max_length=100, blank=True, default='')
+    ui_remote_port = models.IntegerField(blank=True, null=True)
+    ui_driver_list = (
+        (1, 'Chrome'),
+        (2, 'IE'),
+        (3, 'FireFox'),
+        (4, 'PhantomJS'),
+    )
+    ui_driver_type = models.IntegerField(choices=ui_driver_list, default=1)
+    ui_window_size_list = (
+        (1, '最大化'),
+        (2, '自定义'),
+    )
+    ui_window_size = models.IntegerField(choices=ui_window_size_list, default=1)
+    ui_window_width = models.IntegerField(blank=True, null=True)
+    ui_window_height = models.IntegerField(blank=True, null=True)
+    ui_driver_ff_profile = models.CharField(max_length=100, blank=True, default='')
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return self.name

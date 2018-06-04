@@ -13,6 +13,10 @@ $.extend({
     }
 });
 
+// 添加
+function add() {
+    $('#add_button').on('click', function () {window.open(window.addUrl);});
+}
 
 // 快速修改
 function quick_update(tds, func, callback_func) {

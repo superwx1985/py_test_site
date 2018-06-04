@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.core import serializers
 # from django.views.decorators.csrf import csrf_exempt
 from main.models import Case, Step, Action, CaseVsStep
-from .forms import PaginatorForm, StepForm, CaseForm
+from main.forms import PaginatorForm, StepForm, CaseForm
 
 
 # 用例列表
@@ -110,6 +110,7 @@ def case_add(request):
             return render(request, 'main/case.html', locals())
 
 
+@login_required
 def case_delete(request, pk):
     if request.method == 'POST':
         Case.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
@@ -118,6 +119,7 @@ def case_delete(request, pk):
         return HttpResponseBadRequest('only accept "POST" method')
 
 
+@login_required
 def case_update(request, pk):
     if request.method == 'POST':
         response_ = {'new_value': ''}
@@ -259,6 +261,7 @@ def step_add(request):
             return render(request, 'main/step.html', locals())
 
 
+@login_required
 def step_delete(request, pk):
     if request.method == 'POST':
         Step.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
@@ -267,6 +270,7 @@ def step_delete(request, pk):
         return HttpResponseBadRequest('only accept "POST" method')
 
 
+@login_required
 def step_update(request, pk):
     if request.method == 'POST':
         response_ = {'new_value': ''}

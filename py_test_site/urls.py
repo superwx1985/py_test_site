@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin, auth
 from django.urls import path
 import main.views as mv
+import main.config.views as config_views
 
 
 urlpatterns = [
@@ -36,6 +37,12 @@ urlpatterns = [
     path('step/<int:pk>/delete/', mv.step_delete, name='step_delete'),
     path('step/<int:pk>/update/', mv.step_update, name='step_update'),
     path('step/list_all/', mv.step_list_all, name='step_list_all'),
+    
+    path('configs/', config_views.configs, name='configs'),
+    path('config/add/', config_views.config_add, name='config_add'),
+    path('config/<int:pk>/', config_views.config, name='config'),
+    path('config/<int:pk>/delete/', config_views.config_delete, name='config_delete'),
+    path('config/<int:pk>/update/', config_views.config_update, name='config_update'),
 
     path('action_list/', mv.action_list, name='action_list'),
     path('test1/', mv.test1, name='test1'),

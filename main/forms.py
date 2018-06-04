@@ -98,3 +98,20 @@ class StepForm(forms.ModelForm):
     #             v.widget.attrs.update({'rows': '', 'class': 'form-control'})
     #         else:
     #             v.widget.attrs.update({'class': 'form-control'})
+
+
+class ConfigForm(forms.ModelForm):
+    # 不验证某些字段
+    creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+    modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+    is_active = forms.CharField(required=False)
+
+    class Meta:
+        model = Config
+        fields = '__all__'
+        widgets = {
+            # 'name': forms.Textarea(),
+            # 'keyword': forms.Textarea(),
+            # 'save_as': forms.Textarea(),
+            # 'ui_alert_handle': forms.RadioSelect,
+        }
