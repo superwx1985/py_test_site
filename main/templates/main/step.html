@@ -1,7 +1,7 @@
 {% extends 'main/detail_base.html' %}
 {% block title %}
     {% if form.initial %}
-        {{ form.initial.name }} - {{ block.super }}
+        {{ form.initial.name }} - 步骤 - {{ block.super }}
     {% else %}
         新步骤 - {{ block.super }}
     {% endif %}
@@ -17,27 +17,27 @@
         $('#id_action').off('change').change(function () {
             showActionField($(this));
         });
-        // 展示Action相关内容
-        function showActionField($actionSelect) {
-            if ($actionSelect.find('option:selected').text().indexOf('UI') == 0) {
-                $('div[action_type="ui"]').show()
-                $('div[action_type="api"]').hide()
-                $('div[action_type="db"]').hide()
-            } else if ($actionSelect.find('option:selected').text().indexOf('API') == 0) {
-                $('div[action_type="ui"]').hide()
-                $('div[action_type="api"]').show()
-                $('div[action_type="db"]').hide()
-            } else if ($actionSelect.find('option:selected').text().indexOf('DB') == 0) {
-                $('div[action_type="ui"]').hide()
-                $('div[action_type="api"]').hide()
-                $('div[action_type="db"]').show()
-            } else {
-                $('div[action_type="ui"]').hide()
-                $('div[action_type="api"]').hide()
-                $('div[action_type="db"]').hide()
-            }
+    });
+    // 展示Action相关内容
+    function showActionField($actionSelect) {
+        if ($actionSelect.find('option:selected').text().indexOf('UI') == 0) {
+            $('div[action_type="ui"]').show();
+            $('div[action_type="api"]').hide();
+            $('div[action_type="db"]').hide();
+        } else if ($actionSelect.find('option:selected').text().indexOf('API') == 0) {
+            $('div[action_type="ui"]').hide();
+            $('div[action_type="api"]').show();
+            $('div[action_type="db"]').hide();
+        } else if ($actionSelect.find('option:selected').text().indexOf('DB') == 0) {
+            $('div[action_type="ui"]').hide();
+            $('div[action_type="api"]').hide();
+            $('div[action_type="db"]').show();
+        } else {
+            $('div[action_type="ui"]').hide();
+            $('div[action_type="api"]').hide();
+            $('div[action_type="db"]').hide();
         }
-    })
+    }
 </script>
 {% endblock %}
 
@@ -53,115 +53,118 @@
     </ol>
 {% endblock %}
 
-{% block detail_content %}
-    <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">名称</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.name placeholder_text='' %}
+{% block detail_form %}
+    <form method="post" id="object_form" novalidate>
+        {% csrf_token %}
+        <div class="row align-items-center">
+            <div class="col-1 text-right font-weight-bold">名称</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.name placeholder='' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">描述</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.description placeholder_text='' %}
+        <div class="row align-items-center">
+            <div class="col-1 text-right font-weight-bold">描述</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_textarea.html' with field=form.description placeholder='1' rows='5' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">关键字</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.keyword placeholder_text='' %}
+        <div class="row align-items-center">
+            <div class="col-1 text-right font-weight-bold">关键字</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.keyword placeholder='' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">动作</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.action placeholder_text='' %}
+        <div class="row align-items-center">
+            <div class="col-1 text-right font-weight-bold">动作</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.action placeholder='' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">超时</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.timeout placeholder_text='' %}
+        <div class="row align-items-center">
+            <div class="col-1 text-right font-weight-bold">超时</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.timeout placeholder='' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">结果另存</div>
-        <div class="col mx-auto" form_data>
-            {% include 'main/include/form.html' with field=form.save_as placeholder_text='' %}
+        <div class="row align-items-center">
+            <div class="col-1 text-right font-weight-bold">结果另存</div>
+            <div class="col mx-auto" form_data>
+                {% include 'main/include/form_input.html' with field=form.save_as placeholder='' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center" action_type="ui">
-        <div class="col-1 text-right font-weight-bold">定位方式</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.ui_by placeholder_text='' %}
+        <div class="row align-items-center" action_type="ui">
+            <div class="col-1 text-right font-weight-bold">定位方式</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.ui_by placeholder='' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center" action_type="ui">
-        <div class="col-1 text-right font-weight-bold">定位值</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.ui_locator placeholder_text='' %}
+        <div class="row align-items-center" action_type="ui">
+            <div class="col-1 text-right font-weight-bold">定位值</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_textarea.html' with field=form.ui_locatorption placeholder='1' rows='5' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center" action_type="ui">
-        <div class="col-1 text-right font-weight-bold">索引</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.ui_index placeholder_text='' %}
+        <div class="row align-items-center" action_type="ui">
+            <div class="col-1 text-right font-weight-bold">索引</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.ui_index placeholder='' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center" action_type="ui">
-        <div class="col-1 text-right font-weight-bold">基元素</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.ui_base_element placeholder_text='' %}
+        <div class="row align-items-center" action_type="ui">
+            <div class="col-1 text-right font-weight-bold">基元素</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_textarea.html' with field=form.ui_base_element placeholder='1' rows='5' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center" action_type="ui">
-        <div class="col-1 text-right font-weight-bold">数据</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.ui_data placeholder_text='' %}
+        <div class="row align-items-center" action_type="ui">
+            <div class="col-1 text-right font-weight-bold">数据</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_textarea.html' with field=form.ui_data placeholder='1' rows='5' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center" action_type="ui">
-        <div class="col-1 text-right font-weight-bold">特殊动作</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.ui_special_action placeholder_text='' %}
+        <div class="row align-items-center" action_type="ui">
+            <div class="col-1 text-right font-weight-bold">特殊动作</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.ui_special_action placeholder='' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center" action_type="ui">
-        <div class="col-1 text-right font-weight-bold">浏览器弹出处理</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.ui_alert_handle placeholder_text='' %}
+        <div class="row align-items-center" action_type="ui">
+            <div class="col-1 text-right font-weight-bold">浏览器弹出处理</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.ui_alert_handle placeholder='' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center" action_type="api">
-        <div class="col-1 text-right font-weight-bold">请求地址</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.api_url placeholder_text='' %}
+        <div class="row align-items-center" action_type="api">
+            <div class="col-1 text-right font-weight-bold">请求地址</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_textarea.html' with field=form.api_url placeholder='1' rows='5' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center" action_type="api">
-        <div class="col-1 text-right font-weight-bold">请求 Headers</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.api_headers placeholder_text='' %}
+        <div class="row align-items-center" action_type="api">
+            <div class="col-1 text-right font-weight-bold">请求 Headers</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_textarea.html' with field=form.api_headers placeholder='1' rows='5' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center" action_type="api">
-        <div class="col-1 text-right font-weight-bold">请求 Body</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.api_body placeholder_text='' %}
+        <div class="row align-items-center" action_type="api">
+            <div class="col-1 text-right font-weight-bold">请求 Body</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_textarea.html' with field=form.api_body placeholder='1' rows='5' %}
+            </div>
         </div>
-    </div>
-    <div class="row align-items-center" action_type="api">
-        <div class="col-1 text-right font-weight-bold">验证内容</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.api_data placeholder_text='' %}
+        <div class="row align-items-center" action_type="api">
+            <div class="col-1 text-right font-weight-bold">验证内容</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_textarea.html' with field=form.api_data placeholder='1' rows='5' %}
+            </div>
         </div>
-    </div>
 
-    <div class="text-center fixed-bottom" >
-        <div class="btn-group">
-            <td><input type="submit" value="提交" class="btn btn-success"></td>
-            <td><input type="reset" value="还原" class="btn btn-secondary"></td>
-            <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
+        <div class="text-center fixed-bottom" >
+            <div class="btn-group">
+                <td><input type="submit" value="提交" class="btn btn-success"></td>
+                <td><input type="reset" value="还原" class="btn btn-secondary"></td>
+                <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
+            </div>
         </div>
-    </div>
+    </form>
 {% endblock %}

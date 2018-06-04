@@ -63,13 +63,13 @@ def case(request, pk):
     elif request.method == 'POST':
         creator = obj.creator
         form = CaseForm(data=request.POST, instance=obj)
+        step_list = json.loads(request.POST.get('step', ''))
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = creator
             form_.modifier = request.user
             form_.is_active = obj.is_active
             form_.save()
-            step_list = json.loads(request.POST.get('step', ''))
             csv = CaseVsStep.objects.filter(case=obj).order_by('order')
             original_step_list = list()
             for csv_dict in csv.values('step'):
@@ -85,6 +85,16 @@ def case(request, pk):
                     CaseVsStep.objects.create(case=obj, step=step_, order=order, creator=request.user, modifier=request.user)
             # form.save_m2m()
             return HttpResponseRedirect(reverse('case', args=[pk]) + '?success=1')
+        else:
+            # 暂存step列表
+            csv = CaseVsStep.objects.filter(case=obj).order_by('order')
+            original_step_list = list()
+            for csv_dict in csv.values('step'):
+                original_step_list.append(str(csv_dict['step']))
+            temp_list = list()
+            temp_dict = dict()
+            if original_step_list != step_list:
+                step_list_temp_json = json.dumps(step_list)
     is_success = False
     print(form.errors)
     return render(request, 'main/case.html', locals())
@@ -343,6 +353,26 @@ def case_steps(request, pk):
         action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
     data_dict = dict()
     data_dict['data'] = list(v)
+    return JsonResponse(data_dict)
+
+
+# 获取临时step
+@login_required
+def step_list_temp(request):
+    step_list = json.loads(request.POST.get('condition', ''))
+    order = 0
+    list_ = list()
+    for step_str in step_list:
+        if step_str.strip() == '':
+            continue
+        order += 1
+        step_ = Step.objects.filter(pk=step_str).values('pk', 'name').annotate(
+            action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+        step_ = list(step_)
+        step_[0]['order'] = order
+        list_.append(step_[0])
+    data_dict = dict()
+    data_dict['data'] = list_
     return JsonResponse(data_dict)
 
 

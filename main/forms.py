@@ -1,5 +1,5 @@
 from django import forms
-from .models import Action, Step, Case, Config
+from .models import *
 from django.contrib.auth.models import User
 
 
@@ -40,8 +40,6 @@ class PaginatorForm(forms.Form):
 
 
 class CaseForm(forms.ModelForm):
-    # 优化查询数量，防止对action type查询多次
-    config = forms.ModelChoiceField(queryset=Config.objects.select_related('creator', 'modifier'))
     # 不验证某些字段
     creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
     modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
@@ -73,7 +71,7 @@ class CaseForm(forms.ModelForm):
 
 class StepForm(forms.ModelForm):
     # 优化查询数量，防止对action type查询多次
-    action = forms.ModelChoiceField(queryset=Action.objects.select_related('creator', 'modifier', 'type', 'type__creator', 'type__modifier'))
+    action = forms.ModelChoiceField(queryset=Action.objects.select_related('creator', 'modifier', 'type'))
     # 不验证某些字段
     creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
     modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
@@ -108,6 +106,40 @@ class ConfigForm(forms.ModelForm):
 
     class Meta:
         model = Config
+        fields = '__all__'
+        widgets = {
+            # 'name': forms.Textarea(),
+            # 'keyword': forms.Textarea(),
+            # 'save_as': forms.Textarea(),
+            # 'ui_alert_handle': forms.RadioSelect,
+        }
+
+
+class VariableGroupForm(forms.ModelForm):
+    # 不验证某些字段
+    creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+    modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+    is_active = forms.CharField(required=False)
+
+    class Meta:
+        model = VariableGroup
+        fields = '__all__'
+        widgets = {
+            # 'name': forms.Textarea(),
+            # 'keyword': forms.Textarea(),
+            # 'save_as': forms.Textarea(),
+            # 'ui_alert_handle': forms.RadioSelect,
+        }
+
+
+class VariableForm(forms.ModelForm):
+    # 不验证某些字段
+    creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+    modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+    is_active = forms.CharField(required=False)
+
+    class Meta:
+        model = Variable
         fields = '__all__'
         widgets = {
             # 'name': forms.Textarea(),

@@ -13,9 +13,9 @@ def save_model_(request, obj, change):
 
 class CaseAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active', 'config',)
+        'id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',)
     list_display_links = ('id', 'name',)
-    list_filter = ('config',)
+    list_filter = ('creator',)
 
     # 其中obj是修改后的对象，form是返回的表单（修改后的），当新建一个对象时change=False, 当修改一个对象时change=True
     # def save_model(self, request, obj, form, change):
@@ -41,7 +41,7 @@ class StepAdmin(admin.ModelAdmin):
 
 
 class ActionTypeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',)
+    list_display = ('id', 'name', 'is_active',)
     list_display_links = ('id', 'name',)
 
 

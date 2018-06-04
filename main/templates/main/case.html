@@ -2,7 +2,7 @@
 {% load widget_tweaks %}
 {% block title %}
     {% if form.initial %}
-        {{ form.initial.name }} - {{ block.super }}
+        {{ form.initial.name }} - 用例 - {{ block.super }}
     {% else %}
         新用例 - {{ block.super }}
     {% endif %}
@@ -18,16 +18,22 @@
             // 更新导航栏
             $('#nav_case').addClass('active');
             // 获取全部step
-            getListAll("{% url 'step_list_all' %}", $('input[name="csrfmiddlewaretoken"]').val(), update_step_list_all);
+            getList("{% url 'step_list_all' %}", $('input[name="csrfmiddlewaretoken"]').val(), update_step_list_all);
             {% if pk %}
                 // 获取已选step
-                getListAll("{% url 'case_steps' pk %}", $('input[name="csrfmiddlewaretoken"]').val(), update_step_list_selected);
+                {% if step_list_temp_json %}
+                    getList("{% url 'case_steps' pk %}", $('input[name="csrfmiddlewaretoken"]').val(), step_list_selected_save);
+                    getList("{% url 'step_list_temp' %}", $('input[name="csrfmiddlewaretoken"]').val(), step_list_selected_update, '{{ step_list_temp_json|safe }}');
+                {% else %}
+                    getList("{% url 'case_steps' pk %}", $('input[name="csrfmiddlewaretoken"]').val(), step_list_selected_save_and_update);
+                {% endif %}
+
             {% endif %}
             // 处理step拖动及排序
             stepHandle();
             // 还原已选列表
             $('input[type=reset]').on('click', function() {
-                update_step_list_selected(true)
+                step_list_selected_update(true, $('#steps_selected tbody').data('original_data'))
             });
         });
         // 更新全部步骤列表
@@ -68,30 +74,36 @@
                 });
             }
         }
-        // 更新已选步骤列表
-        function update_step_list_selected(success, data) {
+        // 保存已选步骤初始值
+        function step_list_selected_save(success, data){
             if (success) {
                 var tbody = $('#steps_selected tbody');
-                // 保存原始数据，用于还原
-                if (tbody.data('original_data')) {
-                    data = tbody.data('original_data')
-                } else {
-                    tbody.data('original_data', data);
-                }
+                tbody.data('original_data', data);
+            }
+        }
+        // 更新已选步骤列表
+        function step_list_selected_update(success, data) {
+            if (success) {
+                var tbody = $('#steps_selected tbody');
                 if (data.data.length > 0) {
                     tbody.empty();
                     $.each(data.data, function (i, v) {
                         var tr = $('<tr></tr>');
                         $('<td moveable><i class="icon-move"></i></td>').appendTo(tr);
-                        $('<td index class="text-center"></td>').text(i+1).appendTo(tr);
+                        $('<td index class="text-center"></td>').text(i + 1).appendTo(tr);
                         $('<td class="text-center"></td>').text(v.pk).appendTo(tr);
                         $('<td></td>').text(v.name).appendTo(tr);
                         $('<td></td>').text(v.action).appendTo(tr);
                         tbody.append(tr);
                     });
                 }
-                update_steps_selected_index(init=true);
+                update_steps_selected_index(true);
             }
+        }
+        // 保存并更新已选步骤列表
+        function step_list_selected_save_and_update(success, data) {
+            step_list_selected_save(success, data)
+            step_list_selected_update(success, data)
         }
         // 处理step拖动及排序
         function stepHandle() {
@@ -154,78 +166,72 @@
     </ol>
 {% endblock %}
 
-{% block detail_content %}
-    <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">名称</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.name placeholder_text='' %}
-        </div>
-    </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">描述</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.description placeholder_text='' %}
-        </div>
-    </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">关键字</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.keyword placeholder_text='' %}
-        </div>
-    </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">配置</div>
-        <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.config placeholder_text='' %}
-        </div>
-    </div>
-    <div class="row align-items-center" style="display: none">
-        <div class="col-1 text-right font-weight-bold">步骤</div>
-        <div class="col" form_data>
-            <input type="text" name="step" value="{{ form.step.value }}" id="id_step" class="form-control" placeholder="" required="">
-        </div>
-    </div>
-    <div id='step' class="row">
-        <div id="steps_selected" class="col-6 text-center">
-            <h4 class="ui-widget-header">关联步骤列表</h4>
-            <div class="ui-widget-content">
-                <table class="table table-sm table-bordered table-hover" style="width: 100%">
-                    <colgroup>
-                        <col style='width: 1em;'>
-                        <col style='width: 60px;'>
-                        <col style='width: 60px;'>
-                        <col>
-                        <col style='width: 150px;'>
-                    </colgroup>
-                    <thead class="thead-light"><tr><th></th><th>序号</th><th>ID</th><th>名称</th><th>动作</th></tr></thead>
-                    <tbody class="text-left">
-                        <tr placeholder><td colspan="5" class="text-center">未选中步骤</td></tr>
-                    </tbody>
-                </table>
+{% block detail_form %}
+    <form method="post" id="object_form" novalidate>
+        {% csrf_token %}
+        <div class="row align-items-center">
+            <div class="col-1 text-right font-weight-bold">名称</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.name placeholder_text='' %}
             </div>
         </div>
-        <div id="steps_all" class="col-6 text-center">
-            <h4 class="ui-widget-header">可选步骤列表</h4>
-            <div class="ui-widget-content">
-                <table class="table table-sm table-bordered table-hover" style="width: 100%">
-                    <colgroup>
-                        <col style='width: 1em;'>
-                        <col style='width: 60px;'>
-                        <col>
-                        <col style='width: 150px;'>
-                    </colgroup>
-                    <thead class="thead-light"><tr><th></th><th>ID</th><th>名称</th><th>动作</th></tr></thead>
-                    <tbody class="text-left"></tbody>
-                </table>
+        <div class="row align-items-center">
+            <div class="col-1 text-right font-weight-bold">描述</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_textarea.html' with field=form.description placeholder='1' rows='5' %}
             </div>
         </div>
-    </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-right font-weight-bold">关键字</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.keyword placeholder_text='' %}
+            </div>
+        </div>
 
-    <div class="text-center fixed-bottom" >
-        <div class="btn-group">
-            <td><input type="submit" value="提交" class="btn btn-success"></td>
-            <td><input type="reset" value="还原" class="btn btn-secondary"></td>
-            <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
+        <input type="text" name="step" id="id_step" hidden>
+
+        <div id='step' class="row">
+            <div id="steps_selected" class="col-6 text-center">
+                <h5 class="ui-widget-header">关联步骤列表</h5>
+                <div class="ui-widget-content">
+                    <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                        <colgroup>
+                            <col style='width: 1em;'>
+                            <col style='width: 60px;'>
+                            <col style='width: 60px;'>
+                            <col>
+                            <col style='width: 150px;'>
+                        </colgroup>
+                        <thead class="thead-light"><tr><th></th><th>序号</th><th>ID</th><th>名称</th><th>动作</th></tr></thead>
+                        <tbody class="text-left">
+                            <tr placeholder><td colspan="5" class="text-center">未选中步骤</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="steps_all" class="col-6 text-center">
+                <h5 class="ui-widget-header">可选步骤列表</h5>
+                <div class="ui-widget-content">
+                    <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                        <colgroup>
+                            <col style='width: 1em;'>
+                            <col style='width: 60px;'>
+                            <col>
+                            <col style='width: 150px;'>
+                        </colgroup>
+                        <thead class="thead-light"><tr><th></th><th>ID</th><th>名称</th><th>动作</th></tr></thead>
+                        <tbody class="text-left"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
+
+        <div class="text-center fixed-bottom" >
+            <div class="btn-group">
+                <td><input type="submit" value="提交" class="btn btn-success"></td>
+                <td><input type="reset" value="还原" class="btn btn-secondary"></td>
+                <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
+            </div>
+        </div>
+    </form>
 {% endblock %}

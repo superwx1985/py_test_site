@@ -1,0 +1,97 @@
+{% extends 'main/detail_base.html' %}
+{% load widget_tweaks %}
+{% block title %}
+    {% if form.initial %}
+        {{ form.initial.name }} - 变量组 - {{ block.super }}
+    {% else %}
+        新变量组 - {{ block.super }}
+    {% endif %}
+{% endblock %}
+{% block style %}
+    <style type='text/css' media='screen'>
+
+    </style>
+{% endblock %}
+{% block script %}
+    <script>
+        $(function () {
+            // 更新导航栏
+            $('#nav_variable').addClass('active');
+        });
+    </script>
+{% endblock %}
+
+{% block detail_header %}
+    <ol class="breadcrumb my-4">
+        <li class="breadcrumb-item active">
+        {% if form.initial %}
+            创建时间：{{ obj.created_date }}，创建人：{{ obj.creator }}，上次修改时间：{{ obj.modified_date }}，修改人：{{ obj.modifier }}
+        {% else %}
+            添加一个变量组
+        {% endif %}
+        </li>
+    </ol>
+{% endblock %}
+
+{% block detail_form %}
+    <form method="post" id="object_form" novalidate>
+        {% csrf_token %}
+        <div class="row align-items-center">
+            <div class="col-1 text-right font-weight-bold">名称</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.name placeholder='' %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-right font-weight-bold">描述</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_textarea.html' with field=form.description placeholder='1' rows='5' %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-right font-weight-bold">关键字</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.keyword placeholder='' %}
+            </div>
+        </div>
+
+        <input name="variables" hidden>
+
+        <div class="text-center fixed-bottom" >
+            <div class="btn-group">
+                <td><input type="submit" value="提交" class="btn btn-success"></td>
+                <td><input type="reset" value="还原" class="btn btn-secondary"></td>
+                <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+{% block detail_inner_list %}
+    <div id='step' class="row">
+        <div id="variables" class="col text-center">
+            <h5 class="ui-widget-header">变量列表</h5>
+            <div class="ui-widget-content">
+                <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                    <colgroup>
+                        <col style='width: 1em;'>
+                        <col style='width: 60px;'>
+                        <col style='width: 60px;'>
+                        <col style='width: 200px;'>
+                        <col>
+                    </colgroup>
+                    <thead class="thead-light"><tr><th></th><th>序号</th><th>ID</th><th>名称</th><th>值</th></tr></thead>
+                    <tbody class="text-left">
+                        <tr new_helper>
+                            <td class="text-center"><i class="icon-plus-sign icon-2x"></i></td>
+                            <td></td>
+                            <td></td>
+                            <td><input placeholder="请输入变量名" class="form-control"></td>
+                            <td><input placeholder="请输入变量值" class="form-control"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 
+# 用例表
 class Case(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -11,7 +12,7 @@ class Case(models.Model):
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='case_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
-    config = models.ForeignKey('main.Config', on_delete=models.DO_NOTHING)
+    # config = models.ForeignKey('main.Config', on_delete=models.DO_NOTHING)
     step = models.ManyToManyField('Step', through='CaseVsStep', through_fields=('case', 'step'))
 
     class Meta:
@@ -23,6 +24,7 @@ class Case(models.Model):
         return self.name
 
 
+# 步骤表
 class Step(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -92,6 +94,7 @@ class Step(models.Model):
         return self.name
 
 
+# 用例和步骤关系表
 class CaseVsStep(models.Model):
     case = models.ForeignKey('main.Case', on_delete=models.DO_NOTHING)
     step = models.ForeignKey('main.Step', on_delete=models.DO_NOTHING)
@@ -118,6 +121,7 @@ class CaseVsStep(models.Model):
         return '{} [{}]<===>{} [{}]'.format(self.case.id, self.case.name, self.step.id, self.step.name)
 
 
+# 动作（关键字）表
 class Action(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -143,16 +147,9 @@ class Action(models.Model):
         return self.full_name
 
 
+# 步骤类型字典表
 class ActionType(models.Model):
     name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=100, blank=True, default='')
-    creator = models.ForeignKey(User, verbose_name='创建人', related_name='action_type_creator',
-                                on_delete=models.DO_NOTHING)
-    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='action_type_modifier',
-                                 on_delete=models.DO_NOTHING)
-    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
@@ -162,6 +159,7 @@ class ActionType(models.Model):
         return self.name
 
 
+# 配置表
 class Config(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
@@ -172,7 +170,6 @@ class Config(models.Model):
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
     ui_selenium_client_list = (
-        (0, ''),
         (1, 'Selenium - 本地'),
         (2, 'Selenium - 远程'),
     )
@@ -211,6 +208,44 @@ class Group(models.Model):
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='group_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
+
+    def natural_key(self):  # 序列化时，可以用此值代替外键ID
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+
+# 变量组表
+class VariableGroup(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(max_length=100, blank=True, default='')
+    creator = models.ForeignKey(User, verbose_name='创建人', related_name='variable_group_creator', on_delete=models.DO_NOTHING)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='variable_group_modifier', on_delete=models.DO_NOTHING)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    def natural_key(self):  # 序列化时，可以用此值代替外键ID
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+
+# 变量表
+class Variable(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(max_length=100, blank=True, default='')
+    creator = models.ForeignKey(User, verbose_name='创建人', related_name='variable_creator', on_delete=models.DO_NOTHING)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='variable_modifier', on_delete=models.DO_NOTHING)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_active = models.BooleanField(default=True)
+    value = models.TextField(blank=True)
+    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.DO_NOTHING)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return self.name

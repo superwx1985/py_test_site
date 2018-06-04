@@ -74,11 +74,10 @@
             {% endif %}
             {% block detail_header %}
             {% endblock %}
-            <form method="post" id="object_form" novalidate>
-                {% csrf_token %}
-                {% block detail_content %}
-                {% endblock %}
-            </form>
+            {% block detail_form %}
+            {% endblock %}
+            {% block detail_inner_list %}
+            {% endblock %}
         </div>
     </body>
 </html>

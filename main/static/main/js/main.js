@@ -139,7 +139,6 @@ function refresh_single_column(is_success, pk, new_value, old_value, col_name, m
     var td = $('tr[pk="'+pk+'"]>td[col_name="'+col_name+'"]');
     td.text(new_value);
     if (is_success) {
-        console.log(1111)
         toastr.success('更新成功');
         td.css('background-color', 'lightgreen');// 变为浅绿
         td.animate({opacity: 'toggle'}, 300);// 闪烁动画
@@ -196,7 +195,7 @@ function update_single_column(url, csrf_token, pk, new_value, old_value, col_nam
 // 设置cookie
 function set_cookie(name, value, seconds) {
 	var exp = new Date();
-	exp.setTime(exp.getTime() + seconds*1000)
+	exp.setTime(exp.getTime() + seconds*1000);
 	document.cookie = name + "=" + encodeURI(value) + ";expires=" + exp.toUTCString();
 }
 
@@ -230,13 +229,13 @@ function show_info(msg, class_list, time) {
 }*/
 
 // 获取结果集
-function getListAll(url, csrf_token, callback_func, condition) {
+function getList(url, csrf_token, callback_func, condition) {
 	$.ajax({
         url: url,
-        type: "GET",
+        type: "POST",
         data: {
             csrfmiddlewaretoken: csrf_token,
-            condition: condition,
+            condition: condition
         },
         dataType: "json",
         success: function (data, textStatus) {
