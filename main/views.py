@@ -1,19 +1,20 @@
 import json
 import traceback
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.core.serializers import serialize
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
 from django.db import connection
-from django.db.models import Q
+from django.db.models import Q, F, CharField, Value
+from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
+from django.core import serializers
 # from django.views.decorators.csrf import csrf_exempt
-from main.models import Case, Step, Action
+from main.models import Case, Step, Action, CaseVsStep
 from .forms import PaginatorForm, StepForm, CaseForm
-from django.shortcuts import get_object_or_404
 
 
 # 用例列表
@@ -50,11 +51,10 @@ def cases(request):
 # 用例详情
 @login_required
 def case(request, pk):
-    obj = get_object_or_404(Case, pk=pk)
-    # try:
-    #     obj = Case.objects.get(pk=pk)
-    # except Case.DoesNotExist:
-    #     raise Http404('Step does not exist')
+    try:
+        obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
+    except Case.DoesNotExist:
+        raise Http404('Step does not exist')
     if request.method == 'GET':
         form = CaseForm(instance=obj)
         if request.GET.get('success', '') == '1' and request.META.get('HTTP_REFERER'):
@@ -69,9 +69,24 @@ def case(request, pk):
             form_.modifier = request.user
             form_.is_active = obj.is_active
             form_.save()
+            step_list = json.loads(request.POST.get('step', ''))
+            csv = CaseVsStep.objects.filter(case=obj).order_by('order')
+            original_step_list = list()
+            for csv_dict in csv.values('step'):
+                original_step_list.append(str(csv_dict['step']))
+            if original_step_list != step_list:
+                csv.delete()
+                order = 0
+                for step_str in step_list:
+                    if step_str.strip() == '':
+                        continue
+                    order += 1
+                    step_ = Step.objects.get(pk=step_str)
+                    CaseVsStep.objects.create(case=obj, step=step_, order=order, creator=request.user, modifier=request.user)
             # form.save_m2m()
             return HttpResponseRedirect(reverse('case', args=[pk]) + '?success=1')
     is_success = False
+    print(form.errors)
     return render(request, 'main/case.html', locals())
 
 
@@ -95,40 +110,40 @@ def case_add(request):
             return render(request, 'main/case.html', locals())
 
 
-def case_delete(request):
+def case_delete(request, pk):
     if request.method == 'POST':
-        pk = request.POST.get('pk')
-        if pk:
-            Case.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
+        Case.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
         return HttpResponse('success')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
 
 
-def case_update(request):
-    response_ = {'new_value': ''}
-    try:
-        pk = int(request.POST['pk'])
-        col_name = request.POST['col_name']
-        new_value = request.POST['new_value']
-        response_['new_value'] = new_value
-        obj = Case.objects.get(pk=pk)
-        obj.modifier = request.user
-        obj.modified_date = timezone.now()
-        if col_name == 'name':
-            obj.name = new_value
-            obj.clean_fields()
-            obj.save()
-        elif col_name == 'keyword':
-            obj.keyword = new_value
-            obj.clean_fields()
-            obj.save()
-        else:
-            raise ValueError('invalid col_name')
-    except Exception as e:
-        print(traceback.format_exc())
-        return HttpResponseBadRequest(str(e))
-    return JsonResponse(response_)
+def case_update(request, pk):
+    if request.method == 'POST':
+        response_ = {'new_value': ''}
+        try:
+            col_name = request.POST['col_name']
+            new_value = request.POST['new_value']
+            response_['new_value'] = new_value
+            obj = Case.objects.get(pk=pk)
+            obj.modifier = request.user
+            obj.modified_date = timezone.now()
+            if col_name == 'name':
+                obj.name = new_value
+                obj.clean_fields()
+                obj.save()
+            elif col_name == 'keyword':
+                obj.keyword = new_value
+                obj.clean_fields()
+                obj.save()
+            else:
+                raise ValueError('invalid col_name')
+        except Exception as e:
+            print(traceback.format_exc())
+            return HttpResponseBadRequest(str(e))
+        return JsonResponse(response_)
+    else:
+        return HttpResponseBadRequest('only accept "POST" method')
 
 
 # 生成查询条件的Q对象
@@ -201,7 +216,8 @@ def steps(request):
 
 @login_required
 def step(request, pk):
-    obj = get_object_or_404(Step, pk=pk)
+    obj = Step.objects.select_related('creator', 'modifier').get(pk=pk)
+    # obj = get_object_or_404(Step, pk=pk).select_related('creator', 'modifier')
     if request.method == 'GET':
         form = StepForm(instance=obj)
         related_objects = obj.case_set.filter(is_active=True)
@@ -243,40 +259,40 @@ def step_add(request):
             return render(request, 'main/step.html', locals())
 
 
-def step_delete(request):
+def step_delete(request, pk):
     if request.method == 'POST':
-        pk = request.POST.get('pk')
-        if pk:
-            Step.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
-        return HttpResponse('成功')
+        Step.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
+        return HttpResponse('success')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
 
 
-def step_update(request):
-    response_ = {'new_value': ''}
-    try:
-        pk = int(request.POST['pk'])
-        col_name = request.POST['col_name']
-        new_value = request.POST['new_value']
-        response_['new_value'] = new_value
-        obj = Step.objects.get(pk=pk)
-        obj.modifier = request.user
-        obj.modified_date = timezone.now()
-        if col_name == 'name':
-            obj.name = new_value
-            obj.clean_fields()
-            obj.save()
-        elif col_name == 'keyword':
-            obj.keyword = new_value
-            obj.clean_fields()
-            obj.save()
-        else:
-            raise ValueError('invalid col_name')
-    except Exception as e:
-        print(traceback.format_exc())
-        return HttpResponseBadRequest(str(e))
-    return JsonResponse(response_)
+def step_update(request, pk):
+    if request.method == 'POST':
+        response_ = {'new_value': ''}
+        try:
+            col_name = request.POST['col_name']
+            new_value = request.POST['new_value']
+            response_['new_value'] = new_value
+            obj = Step.objects.get(pk=pk)
+            obj.modifier = request.user
+            obj.modified_date = timezone.now()
+            if col_name == 'name':
+                obj.name = new_value
+                obj.clean_fields()
+                obj.save()
+            elif col_name == 'keyword':
+                obj.keyword = new_value
+                obj.clean_fields()
+                obj.save()
+            else:
+                raise ValueError('invalid col_name')
+        except Exception as e:
+            print(traceback.format_exc())
+            return HttpResponseBadRequest(str(e))
+        return JsonResponse(response_)
+    else:
+        return HttpResponseBadRequest('only accept "POST" method')
 
 
 # 获取action
@@ -294,16 +310,35 @@ def action_list(request):
     return JsonResponse(data_dict)
 
 
-# 获取step
+# 获取全部step
 @login_required
-def step_list_all(request):
-    from django.core import serializers
-    objects = Step.objects.filter(is_active=1).order_by('id')
-    # data_dict = dict()
-    # data_dict['data'] = list(objects)
+def step_list_all_old(request):
+    objects = Step.objects.filter(is_active=1).order_by('id').select_related(
+        'action', 'creator', 'modifier', 'action__type')
     json_ = serializers.serialize('json', objects, use_natural_foreign_keys=True)
     data_dict = dict()
     data_dict['data'] = json_
+    return JsonResponse(data_dict)
+
+
+# 获取全部step
+@login_required
+def step_list_all(request):
+    v = Step.objects.filter(is_active=1).order_by('pk').values('pk', 'name').annotate(
+        action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+    data_dict = dict()
+    data_dict['data'] = list(v)
+    return JsonResponse(data_dict)
+
+
+# 获取选中的step
+@login_required
+def case_steps(request, pk):
+    v = Step.objects.filter(case=pk).order_by('casevsstep__order').values(
+        'pk', 'name', order=F('casevsstep__order')).annotate(
+        action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+    data_dict = dict()
+    data_dict['data'] = list(v)
     return JsonResponse(data_dict)
 
 

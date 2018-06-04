@@ -15,6 +15,7 @@
         {% block style %}
         {% endblock %}
         {% block general_script %}
+            <script src="{% static 'main/js/popper/popper.js' %}"></script>
             <script src="{% static 'main/js/jquery/jquery-3.3.1.min.js' %}"></script>
             <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
             <script src="{% static 'main/js/bootstrap-4.1.1/bootstrap.min.js' %}"></script>
@@ -67,12 +68,6 @@
                             $('#objects_form').submit();
                         });
                     }
-                    $("input[name=page]").change(function () {
-                        $("input[name=page]").val($(this).val());
-                    });
-                    $("input[name=size]").change(function () {
-                        $("input[name=size]").val($(this).val());
-                    });
                     // 注册注销按钮
                     $("#logout_btn").click(function () {
                         window.open('/logout/', '_self');
@@ -99,7 +94,7 @@
     </head>
     <body>
         {% include 'main/include/navbar.html' %}
-        <div class="container-fluid" style="margin-top: 60px;">
+        <div class="container-fluid" style="padding-top: 60px; padding-bottom: 40px">
             {% if errors %}
                 <ul>
                     {% for error in errors %}
@@ -109,11 +104,12 @@
             {% endif %}
             <form method="post" id="objects_form" class="form-inline">
                 {% csrf_token %}
-                {% include 'main/include/paginator.html' %}
                 {% block search_tools %}
+                    {% include 'main/include/search_tools.html' %}
                 {% endblock %}
                 {% block result_table %}
                 {% endblock %}
+
                 {% include 'main/include/paginator.html' %}
             </form>
         </div>

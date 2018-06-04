@@ -27,6 +27,7 @@
         {% block style %}
         {% endblock %}
         {% block general_script %}
+            <script src="{% static 'main/js/popper/popper.js' %}"></script>
             <script src="{% static 'main/js/jquery/jquery-3.3.1.min.js' %}"></script>
             <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
             <script src="{% static 'main/js/bootstrap-4.1.1/bootstrap.min.js' %}"></script>
@@ -63,7 +64,7 @@
     </head>
     <body>
         {% include 'main/include/navbar.html' %}
-        <div class="container-fluid" style="margin: 60px 0 30px 0">
+        <div class="container-fluid" style="padding-top: 60px; padding-bottom: 40px">
             {% if errors %}
                 <ul>
                     {% for error in errors %}

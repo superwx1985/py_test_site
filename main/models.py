@@ -6,10 +6,8 @@ class Case(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(max_length=100, blank=True, default='')
-    # creator = models.CharField('创建人', max_length=100, editable=False, default='')
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='case_creator', on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    # modifier = models.CharField('修改人', max_length=100, editable=False, default='')
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='case_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -110,11 +108,11 @@ class CaseVsStep(models.Model):
         unique_together = ('case', 'step', 'order')
         ordering = ['case', 'order']
 
-    def case_id(self):
-        return '{}'.format(self.case.id)
-
-    def step_id(self):
-        return '{}'.format(self.step.id)
+    # def case_id(self):
+    #     return self.case.id
+    #
+    # def step_id(self):
+    #     return self.step.id
 
     def __str__(self):
         return '{} [{}]<===>{} [{}]'.format(self.case.id, self.case.name, self.step.id, self.step.name)
@@ -131,14 +129,18 @@ class Action(models.Model):
     is_active = models.BooleanField(default=True)
     type = models.ForeignKey('main.ActionType', on_delete=models.DO_NOTHING)
 
+    @property
+    def full_name(self):
+        return '{} - {}'.format(self.type, self.name)
+
     class Meta:
         unique_together = ('name', 'type')
 
     def __str__(self):
-        return '{} - {}'.format(self.type, self.name)
+        return self.full_name
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
-        return '{} - {}'.format(self.type, self.name)
+        return self.full_name
 
 
 class ActionType(models.Model):

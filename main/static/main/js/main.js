@@ -15,13 +15,14 @@ $.extend({
 
 
 // 快速修改
-function quick_update(url, tds, func, callback_func) {
+function quick_update(tds, func, callback_func) {
     // 注册鼠标双击事件
     tds.off('dblclick').dblclick(function () {
         //找到当前鼠标双击的td
         var td = $(this);
         var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
         var col_name = td.attr('col_name');
+        var url = td.parent('tr').attr('updateUrl');
         var pk = td.parent('tr').attr('pk');
         // 判断是否已在编辑
         if (td.attr('editing')) {
@@ -94,9 +95,10 @@ function quick_update(url, tds, func, callback_func) {
 
 
 // 删除
-function bind_delete_button(url) {
+function bind_delete_button() {
     $('button[name="delete_button"]').off('click').click(function () {
         var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
+        var url = $(this).parents('tr').attr('delUrl');
         var pk = $(this).parents('tr').attr('pk');
         // var name = $(this).parent().siblings('td[col_name="name"]').text();
         var name = $(this).parents('tr').find('td[col_name="name"]').text();
@@ -224,12 +226,13 @@ function show_info(msg, class_list, time) {
 }*/
 
 // 获取结果集
-function getListAll(url, csrf_token, callback_func) {
+function getListAll(url, csrf_token, callback_func, condition) {
 	$.ajax({
         url: url,
-        type: "POST",
+        type: "GET",
         data: {
             csrfmiddlewaretoken: csrf_token,
+            condition: condition,
         },
         dataType: "json",
         success: function (data, textStatus) {

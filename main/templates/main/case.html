@@ -9,6 +9,7 @@
 {% endblock %}
 {% block style %}
     <style type='text/css' media='screen'>
+
     </style>
 {% endblock %}
 {% block script %}
@@ -18,73 +19,132 @@
             $('#nav_case').addClass('active');
             // 获取全部step
             getListAll("{% url 'step_list_all' %}", $('input[name="csrfmiddlewaretoken"]').val(), update_step_list_all);
+            {% if pk %}
+                // 获取已选step
+                getListAll("{% url 'case_steps' pk %}", $('input[name="csrfmiddlewaretoken"]').val(), update_step_list_selected);
+            {% endif %}
             // 处理step拖动及排序
             stepHandle();
+            // 还原已选列表
+            $('input[type=reset]').on('click', function() {
+                update_step_list_selected(true)
+            });
         });
+        // 更新全部步骤列表
         function update_step_list_all(success, data) {
             if (success) {
                 var tbody = $('#steps_all tbody');
                 tbody.empty();
-                $.each($.parseJSON(data.data), function (i, v) {
-                    console.log(i, v);
+                $.each(data.data, function (i, v) {
                     var tr = $('<tr></tr>');
-                    $('<td></td>').text(v.pk).appendTo(tr);
-                    $('<td></td>').text(v.fields.name).appendTo(tr);
-                    $('<td></td>').text(v.fields.action).appendTo(tr);
+                    tr.data("step_data", v);
+                    $('<td moveable><i class="icon-move"></i></td>').appendTo(tr);
+                    $('<td class="text-center"></td>').text(v.pk).appendTo(tr);
+                    // var td = $('<td></td>')
+                    // var a = $('<a href="javascript:"></a>').text(v.fields.name);
+                    // a.attr({'data-toggle': 'popover', 'data-trigger': 'focus' ,'title': v.fields.keyword, 'data-content': v.fields.description})
+                    // td.append(a).appendTo(tr);
+                    $('<td></td>').text(v.name).appendTo(tr);
+                    $('<td></td>').text(v.action).appendTo(tr);
                     tbody.append(tr);
                 });
+
+                // 使得步骤列表可拖动
                 tbody.find('tr').draggable({
                     appendTo: 'body',
-                    {#helper: 'clone'#}
-                    helper: function(event) {
-                        console.log($(this))
-                        var str = '';
-                        var len = $(this).children().length;
-                        $(this).children().each(function(i) {
-                            if (i === len-1) {
-                                str += $(this).text();
-                            } else {
-                                str += $(this).text() + ' | '
-                            }
-                        });
-                        return $('<div></div>').text(str).css("background-color", "lightblue");
+                    connectToSortable: '#steps_selected tbody',
+                    cursor: "crosshair",
+                    handle: "[moveable]",
+                    distance: 15,
+                    scope: "steps_all",
+                    helper: function() {
+                        var tr = $(this).clone().removeClass().css('background-color', 'lightblue');
+                        tr.children('[moveable]').after($('<td index class="text-center"></td>'));
+                        return tr;
+                    },
+                    stop: function( event, ui ) {
+                        ui.helper.removeAttr('style');
                     }
                 });
             }
         }
+        // 更新已选步骤列表
+        function update_step_list_selected(success, data) {
+            if (success) {
+                var tbody = $('#steps_selected tbody');
+                // 保存原始数据，用于还原
+                if (tbody.data('original_data')) {
+                    data = tbody.data('original_data')
+                } else {
+                    tbody.data('original_data', data);
+                }
+                if (data.data.length > 0) {
+                    tbody.empty();
+                    $.each(data.data, function (i, v) {
+                        var tr = $('<tr></tr>');
+                        $('<td moveable><i class="icon-move"></i></td>').appendTo(tr);
+                        $('<td index class="text-center"></td>').text(i+1).appendTo(tr);
+                        $('<td class="text-center"></td>').text(v.pk).appendTo(tr);
+                        $('<td></td>').text(v.name).appendTo(tr);
+                        $('<td></td>').text(v.action).appendTo(tr);
+                        tbody.append(tr);
+                    });
+                }
+                update_steps_selected_index(init=true);
+            }
+        }
+        // 处理step拖动及排序
         function stepHandle() {
-            $('#steps_selected table').droppable({
+            $('#steps_selected tbody').sortable({
+                items: "tr:not([placeholder])",
+                distance: 15,
+                handle: "[moveable]",
+                placeholder: 'ui-state-highlight',
+                stop: function( event, ui ) {
+                    update_steps_selected_index();
+                }
+            });
+            $('#steps_selected tbody').droppable({
                 activeClass: 'ui-state-default',
                 hoverClass: 'ui-state-hover',
-                accept: 'tr:not(.ui-sortable-helper)',
+                accept: 'tr',
+                scope: "steps_all",
                 drop: function (event, ui) {
-                    tbody = $(this).children('tbody');
-                    console.log(ui);
-                    tbody.children('[placeholder]').remove();
-                    tbody.append(ui.draggable.clone().removeClass());
+                    $(this).children('[placeholder]').remove();
                 }
-            }).children('tbody').sortable({
-                distance: 10,
-                placeholder: 'ui-state-highlight'
             });
             $('#steps_all table').droppable({
                 activeClass: 'ui-state-default',
                 hoverClass: 'ui-state-hover',
-                accept: '#steps_selected tr',
+                accept: '#steps_selected tr:not([placeholder])',
                 drop: function (event, ui) {
                     ui.draggable.remove();
                     if ($('#steps_selected tbody tr').length <= 1) {
-                        $('#steps_selected tbody').append($('<tr placeholder><td colspan="3" class="text-center">未选中步骤</td></tr>'));
+                        $('#steps_selected tbody').append($('<tr placeholder><td colspan="5" class="text-center">未选中步骤</td></tr>'));
                     }
                 }
             })
+        }
+        // 更新已选步骤的序号，更新step field内容
+        function update_steps_selected_index(init) {
+            var steps = $('#steps_selected tbody tr');
+            var step_list = new Array()
+            steps.each(function(i) {
+                $(this).children('[index]').text(i+1);
+                step_list.push($(this).children('td:nth-of-type(3)').text());
+            });
+            var step_list_str = JSON.stringify(step_list)
+            $('[name=step]').val(step_list_str);
+            if (init) {
+                $('[name=step]').attr('value', step_list_str);
+            }
         }
     </script>
 {% endblock %}
 
 {% block detail_header %}
     <ol class="breadcrumb my-4">
-        <li class="breadcrumb-item active" style="background-color: lightblue">
+        <li class="breadcrumb-item active">
         {% if form.initial %}
             创建时间：{{ obj.created_date }}，创建人：{{ obj.creator }}，上次修改时间：{{ obj.modified_date }}，修改人：{{ obj.modifier }}
         {% else %}
@@ -96,33 +156,33 @@
 
 {% block detail_content %}
     <div class="row align-items-center">
-        <div class="col-1 text-right ">名称</div>
+        <div class="col-1 text-right font-weight-bold">名称</div>
         <div class="col" form_data>
-            {% include 'main/include/form.html' with field=form.name placeholder_text='请输入名称' %}
+            {% include 'main/include/form.html' with field=form.name placeholder_text='' %}
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-right">描述</div>
+        <div class="col-1 text-right font-weight-bold">描述</div>
         <div class="col" form_data>
             {% include 'main/include/form.html' with field=form.description placeholder_text='' %}
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-right">关键字</div>
+        <div class="col-1 text-right font-weight-bold">关键字</div>
         <div class="col" form_data>
             {% include 'main/include/form.html' with field=form.keyword placeholder_text='' %}
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-right">配置</div>
+        <div class="col-1 text-right font-weight-bold">配置</div>
         <div class="col" form_data>
             {% include 'main/include/form.html' with field=form.config placeholder_text='' %}
         </div>
     </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-right">步骤</div>
-        <div class="col" form_data style="display: none">
-            {% include 'main/include/form.html' with field=form.config placeholder_text='' %}
+    <div class="row align-items-center" style="display: none">
+        <div class="col-1 text-right font-weight-bold">步骤</div>
+        <div class="col" form_data>
+            <input type="text" name="step" value="{{ form.step.value }}" id="id_step" class="form-control" placeholder="" required="">
         </div>
     </div>
     <div id='step' class="row">
@@ -131,12 +191,16 @@
             <div class="ui-widget-content">
                 <table class="table table-sm table-bordered table-hover" style="width: 100%">
                     <colgroup>
-                        <col style='width: 80px;'>
+                        <col style='width: 1em;'>
+                        <col style='width: 60px;'>
+                        <col style='width: 60px;'>
                         <col>
                         <col style='width: 150px;'>
                     </colgroup>
-                    <thead class="thead-light"><tr><th>ID</th><th>名称</th><th>动作</th></thead>
-                    <tbody class="text-left"><tr placeholder><td colspan="3" class="text-center">未选中步骤</td></tr></tbody>
+                    <thead class="thead-light"><tr><th></th><th>序号</th><th>ID</th><th>名称</th><th>动作</th></tr></thead>
+                    <tbody class="text-left">
+                        <tr placeholder><td colspan="5" class="text-center">未选中步骤</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -145,26 +209,23 @@
             <div class="ui-widget-content">
                 <table class="table table-sm table-bordered table-hover" style="width: 100%">
                     <colgroup>
-                        <col style='width: 80px;'>
+                        <col style='width: 1em;'>
+                        <col style='width: 60px;'>
                         <col>
                         <col style='width: 150px;'>
                     </colgroup>
-                    <thead class="thead-light"><tr><th>ID</th><th>名称</th><th>动作</th></thead>
+                    <thead class="thead-light"><tr><th></th><th>ID</th><th>名称</th><th>动作</th></tr></thead>
                     <tbody class="text-left"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <br/>
-
     <div class="text-center fixed-bottom" >
-
-<div class="btn-group">
-                <td><input type="submit" value="提交" class="btn btn-success"></td>
-                <td><input type="reset" value="还原" class="btn btn-secondary"></td>
-                <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
-</div>
-
+        <div class="btn-group">
+            <td><input type="submit" value="提交" class="btn btn-success"></td>
+            <td><input type="reset" value="还原" class="btn btn-secondary"></td>
+            <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
+        </div>
     </div>
 {% endblock %}

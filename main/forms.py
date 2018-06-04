@@ -1,5 +1,5 @@
 from django import forms
-from .models import Action, Step, Case
+from .models import Action, Step, Case, Config
 from django.contrib.auth.models import User
 
 
@@ -40,10 +40,13 @@ class PaginatorForm(forms.Form):
 
 
 class CaseForm(forms.ModelForm):
+    # 优化查询数量，防止对action type查询多次
+    config = forms.ModelChoiceField(queryset=Config.objects.select_related('creator', 'modifier'))
     # 不验证某些字段
     creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
     modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
     is_active = forms.CharField(required=False)
+    step = forms.CharField(required=False, validators=[])
 
     class Meta:
         model = Case
@@ -70,7 +73,7 @@ class CaseForm(forms.ModelForm):
 
 class StepForm(forms.ModelForm):
     # 优化查询数量，防止对action type查询多次
-    action = forms.ModelChoiceField(queryset=Action.objects.prefetch_related('type'))
+    action = forms.ModelChoiceField(queryset=Action.objects.select_related('creator', 'modifier', 'type', 'type__creator', 'type__modifier'))
     # 不验证某些字段
     creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
     modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
