@@ -70,12 +70,12 @@ def case(request, pk):
             form_.modifier = request.user
             form_.is_active = obj.is_active
             form_.save()
-            csv = CaseVsStep.objects.filter(case=obj).order_by('order')
+            cvs = CaseVsStep.objects.filter(case=obj).order_by('order')
             original_step_list = list()
-            for csv_dict in csv.values('step'):
+            for csv_dict in cvs.values('step'):
                 original_step_list.append(str(csv_dict['step']))
             if original_step_list != step_list:
-                csv.delete()
+                cvs.delete()
                 order = 0
                 for step_str in step_list:
                     if step_str.strip() == '':

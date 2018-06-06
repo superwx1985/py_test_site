@@ -51,3 +51,7 @@ div.paginator input {
 	resize: vertical;
 	text-align: right;
 }
+/*垂直居中*/
+.vertical-middle {
+	vertical-align: middle!important;
+}

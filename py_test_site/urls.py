@@ -47,10 +47,11 @@ urlpatterns = [
     path('config/<int:pk>/update/', config_views.config_update, name='config_update'),
 
     path('variable_groups/', variable_views.variable_groups, name='variable_groups'),
-    path('variable_groups/add/', variable_views.variable_group_add, name='variable_group_add'),
-    path('variable_groups/<int:pk>/', variable_views.variable_group, name='variable_group'),
-    path('variable_groups/<int:pk>/delete/', variable_views.variable_group_delete, name='variable_group_delete'),
-    path('variable_groups/<int:pk>/update/', variable_views.variable_group_update, name='variable_group_update'),
+    path('variable_group/add/', variable_views.variable_group_add, name='variable_group_add'),
+    path('variable_group/<int:pk>/', variable_views.variable_group, name='variable_group'),
+    path('variable_group/<int:pk>/delete/', variable_views.variable_group_delete, name='variable_group_delete'),
+    path('variable_group/<int:pk>/update/', variable_views.variable_group_update, name='variable_group_update'),
+    path('variable_group/<int:pk>/variables/', variable_views.variable_group_variables, name='variable_group_variables'),
 
     path('action_list/', mv.action_list, name='action_list'),
     path('test1/', mv.test1, name='test1'),

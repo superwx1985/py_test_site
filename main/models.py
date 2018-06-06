@@ -238,13 +238,8 @@ class VariableGroup(models.Model):
 class Variable(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=100, blank=True, default='')
-    creator = models.ForeignKey(User, verbose_name='创建人', related_name='variable_creator', on_delete=models.DO_NOTHING)
-    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='variable_modifier', on_delete=models.DO_NOTHING)
-    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_active = models.BooleanField(default=True)
     value = models.TextField(blank=True)
+    order = models.IntegerField(default=0)
     variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.DO_NOTHING)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
@@ -252,3 +247,6 @@ class Variable(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        unique_together = ('name', 'variable_group')

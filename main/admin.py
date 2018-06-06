@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ActionType, Config, Group, Case, Action, Step, CaseVsStep
+from .models import *
 
 
 def save_model_(request, obj, change):
@@ -57,6 +57,16 @@ class CaseVsStepAdmin(admin.ModelAdmin):
     list_display_links = ('id', 'case', 'step')
 
 
+class VariableGroupAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',)
+    list_display_links = ('id', 'name',)
+
+
+class VariableAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'value', 'order',)
+    list_display_links = ('id', 'name',)
+
+
 admin.site.register(Group, GroupAdmin)
 admin.site.register(Case, CaseAdmin)
 admin.site.register(Action, ActionAdmin)
@@ -64,3 +74,5 @@ admin.site.register(Step, StepAdmin)
 admin.site.register(ActionType, ActionTypeAdmin)
 admin.site.register(Config, ConfigAdmin)
 admin.site.register(CaseVsStep, CaseVsStepAdmin)
+admin.site.register(VariableGroup, VariableGroupAdmin)
+admin.site.register(Variable, VariableAdmin)

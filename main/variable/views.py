@@ -61,12 +61,24 @@ def variable_group(request, pk):
     elif request.method == 'POST':
         creator = obj.creator
         form = VariableGroupForm(data=request.POST, instance=obj)
+        variable_list = json.loads(request.POST.get('variable', ''))
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = creator
             form_.modifier = request.user
             form_.is_active = obj.is_active
             form_.save()
+            vo = Variable.objects.filter(variable_group=obj)
+            vv = vo.order_by('order').values('name', 'value')
+            vv = list(vv)
+            if vv != variable_list:
+                vo.delete()
+                order = 0
+                for v in variable_list:
+                    if not v:
+                        continue
+                    order += 1
+                    Variable.objects.create(variable_group=obj, name=v['name'], value=v['value'], order=order)
             form.save_m2m()
             return HttpResponseRedirect(reverse('variable_group', args=[pk]) + '?success=1')
     is_success = False
@@ -131,3 +143,11 @@ def variable_group_update(request, pk):
     else:
         return HttpResponseBadRequest('only accept "POST" method')
 
+
+# 获取变量组中的变量
+@login_required
+def variable_group_variables(request, pk):
+    v = Variable.objects.filter(variable_group=pk).order_by('order').values('pk', 'name', 'value')
+    data_dict = dict()
+    data_dict['data'] = list(v)
+    return JsonResponse(data_dict)

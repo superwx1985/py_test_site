@@ -17,7 +17,150 @@
         $(function () {
             // 更新导航栏
             $('#nav_variable').addClass('active');
+            // 初始化变量名列表
+            window.variableNames = new Array();
+            // 注册添加按钮
+            $('#new_helper td:nth-of-type(1)').on('click', function () {
+                addVariable();
+            });
+            // 获取变量组中的变量
+            getList("{% url 'variable_group_variables' pk %}", $('input[name="csrfmiddlewaretoken"]').val(), variableSaveAndUpdate);
+            // 启用排序
+            sortableVariable();
         });
+        // 启用排序功能
+        function sortableVariable() {
+            $('#variable tbody').sortable({
+                items: "tr:not(#new_helper)",
+                distance: 15,
+                handle: "[moveable]",
+                placeholder: 'ui-state-highlight',
+                stop: function( event, ui ) {
+                    updateVariableIndex();
+                }
+            });
+        }
+        // 保存变量列表
+        function variableSave(success, data){
+            if (success) {
+                var tbody = $('#variables tbody');
+                tbody.data('original_data', data);
+            }
+        }
+        // 更新变量列表
+        function variableUpdate(success, data) {
+            if (success) {
+                var tbody = $('#variables tbody');
+                if (data.data.length > 0) {
+                    $.each(data.data, function (i, v) {
+                        var tr = $('<tr></tr>');
+                        $('<td class="text-center vertical-middle" col_move moveable><i class="icon-sort icon-2x"></i></td>').on(
+                            'click', function() {
+                                delVariable(tr);
+                            }).appendTo(tr);
+                        $('<td class="text-center vertical-middle" col_del><i class="icon-trash icon-2x"></i></td>').on(
+                            'click', function() {
+                                delVariable(tr);
+                            }).appendTo(tr);
+                        var span = $('<span></span>').text(i + 1);
+                        $('<td index class="text-center vertical-middle" col_index></td>').append(span).appendTo(tr);
+                        var input = $('<input placeholder="请输入变量名" class="form-control">').val(v.name).on('change', function () {
+                            updateVariableIndex();
+                        });
+                        $('<td class="text-center vertical-middle" col_name></td>').append(input).appendTo(tr);
+                        var input = $('<input placeholder="请输入变量值" class="form-control">').val(v.value).on('change', function () {
+                            updateVariableIndex();
+                        });
+                        $('<td class="text-center vertical-middle" col_value></td>').append(input).appendTo(tr);
+                        tr.insertBefore($('#new_helper'));
+                        // 插入变量名列表
+                        checkVariableName(v.name);
+                    });
+                    updateVariableIndex(true);
+                }
+            }
+        }
+        // 保存并更新变量列表
+        function variableSaveAndUpdate(success, data) {
+            variableSave(success, data);
+            variableUpdate(success, data)
+        }
+        // 添加变量
+        function addVariable() {
+            var new_helper = $('#new_helper');
+            new_helper.find('div.invalid-feedback').remove();
+            var name_input = $('#new_helper td[col_name] input');
+            name_input.removeClass('is-invalid');
+            var checkResult = checkVariableName(name_input.val());
+            if (checkResult === true) {
+                var new_variable = new_helper.clone();
+                // 去掉new_helper id，添加新增标志
+                new_variable.removeAttr('id').addClass("bg-light");;
+                // 改变新增按钮为排序按钮
+                new_variable.children('td[col_move]').attr('moveable', '').empty().append('<i class="icon-sort icon-2x"></i>');
+                // 添加删除按钮
+                new_variable.children('td[col_del]').empty().append('<i class="icon-trash icon-2x"></i>').on(
+                    'click', function() {
+                        delVariable(new_variable);
+                    });
+                // 插入并淡入
+                new_variable.insertBefore(new_helper).hide();
+                new_variable.fadeIn();
+                $('#new_helper td[col_name] input').val('').focus();
+                $('#new_helper td[col_value] input').val('');
+                updateVariableIndex();
+            } else {
+                var errorDiv = $('<div class="invalid-feedback">' + checkResult + '</div>');
+                name_input.addClass('is-invalid');
+                name_input.after(errorDiv);
+                name_input.off('change').on('keydown', function() {
+                    name_input.removeClass('is-invalid');
+                    name_input.siblings('div.invalid-feedback').remove();
+                });
+            }
+        }
+        // 删除变量
+        function delVariable($tr) {
+            var name = $tr.find('td[col_name] input').val();
+            var index = $.inArray(name, window.variableNames);
+            if (index >= 0) {
+                window.variableNames.splice(index, 1);
+            }
+            $tr.remove();
+            updateVariableIndex();
+        }
+        // 验证并添加变量名
+        function checkVariableName(name) {
+            if (!name || ''===name) {
+                return '变量名不能为空'
+            }
+            var index = $.inArray(name, window.variableNames);
+            if (index >= 0) {
+                var duplicationName = window.variableNames[index];
+                return '变量名【' + duplicationName + '】重复'
+            }
+            window.variableNames.push(name);
+            return true;
+        }
+        // 更新变量列表序号，更新variable field内容
+        function updateVariableIndex(init) {
+            var trs = $('#variable tbody tr:not(#new_helper)');
+            var variable_list = new Array();
+            trs.each(function(i) {
+                $(this).find('td[col_index] span').text(i+1);
+                var name =$(this).find('td[col_name] input').val();
+                var value =$(this).find('td[col_value] input').val();
+                var variable = new Object();
+                variable.name = name;
+                variable.value = value;
+                variable_list.push(variable);
+            });
+            var json_str = JSON.stringify(variable_list);
+            $('input[name=variable]').val(json_str);
+            if (init) {
+                $('input[name=variable]').attr('value', json_str);
+            }
+        }
     </script>
 {% endblock %}
 
@@ -55,7 +198,7 @@
             </div>
         </div>
 
-        <input name="variables" hidden>
+        <input name="variable" hidden>
 
         <div class="text-center fixed-bottom" >
             <div class="btn-group">
@@ -68,26 +211,26 @@
 {% endblock %}
 
 {% block detail_inner_list %}
-    <div id='step' class="row">
-        <div id="variables" class="col text-center">
+    <div id='variable' class="row">
+        <div class="col text-center">
             <h5 class="ui-widget-header">变量列表</h5>
             <div class="ui-widget-content">
-                <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                <table class="table table-sm table-bordered" style="width: 100%">
                     <colgroup>
-                        <col style='width: 1em;'>
                         <col style='width: 60px;'>
                         <col style='width: 60px;'>
-                        <col style='width: 200px;'>
+                        <col style='width: 60px;'>
+                        <col style='width: 20%;'>
                         <col>
                     </colgroup>
-                    <thead class="thead-light"><tr><th></th><th>序号</th><th>ID</th><th>名称</th><th>值</th></tr></thead>
+                    <thead class="thead-light"><tr><th></th><th></th><th>序号</th><th>名称</th><th>值</th></tr></thead>
                     <tbody class="text-left">
-                        <tr new_helper>
-                            <td class="text-center"><i class="icon-plus-sign icon-2x"></i></td>
-                            <td></td>
-                            <td></td>
-                            <td><input placeholder="请输入变量名" class="form-control"></td>
-                            <td><input placeholder="请输入变量值" class="form-control"></td>
+                        <tr id="new_helper">
+                            <td class="text-center vertical-middle" col_move><i class="icon-plus-sign icon-2x"></i></td>
+                            <td class="text-center vertical-middle" col_del></td>
+                            <td class="text-center vertical-middle" col_index><span></span></td>
+                            <td col_name><input placeholder="请输入变量名" class="form-control"></td>
+                            <td col_value><input placeholder="请输入变量值" class="form-control"></td>
                         </tr>
                     </tbody>
                 </table>

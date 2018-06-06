@@ -102,7 +102,7 @@
         }
         // 保存并更新已选步骤列表
         function step_list_selected_save_and_update(success, data) {
-            step_list_selected_save(success, data)
+            step_list_selected_save(success, data);
             step_list_selected_update(success, data)
         }
         // 处理step拖动及排序
@@ -140,15 +140,15 @@
         // 更新已选步骤的序号，更新step field内容
         function update_steps_selected_index(init) {
             var steps = $('#steps_selected tbody tr');
-            var step_list = new Array()
+            var step_list = new Array();
             steps.each(function(i) {
                 $(this).children('[index]').text(i+1);
                 step_list.push($(this).children('td:nth-of-type(3)').text());
             });
-            var step_list_str = JSON.stringify(step_list)
-            $('[name=step]').val(step_list_str);
+            var json_str = JSON.stringify(step_list);
+            $('input[name=step]').val(json_str);
             if (init) {
-                $('[name=step]').attr('value', step_list_str);
+                $('input[name=step]').attr('value', json_str);
             }
         }
     </script>
