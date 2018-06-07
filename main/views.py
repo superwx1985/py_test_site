@@ -6,7 +6,7 @@ from django.core.serializers import serialize
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
 from django.db import connection
-from django.db.models import Q, F, CharField, Value
+from django.db.models import Q, F, CharField, Value, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib import auth
@@ -34,7 +34,9 @@ def cases(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = Case.objects.filter(q, is_active=1).order_by('id')
+    # objects = Case.objects.filter(q, is_active=1).order_by('id')
+    objects = Case.objects.filter(is_active=1).order_by('id').values('pk', 'name', 'keyword').annotate(
+        step_count=Count('step'))
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)
@@ -56,20 +58,22 @@ def case(request, pk):
     except Case.DoesNotExist:
         raise Http404('Step does not exist')
     if request.method == 'GET':
-        form = CaseForm(instance=obj)
-        if request.GET.get('success', '') == '1' and request.META.get('HTTP_REFERER'):
+        if request.session.get('status', None) == 'success':
             is_success = True
+        request.session['status'] = None
+        form = CaseForm(instance=obj)
         return render(request, 'main/case.html', locals())
     elif request.method == 'POST':
         creator = obj.creator
         form = CaseForm(data=request.POST, instance=obj)
-        step_list = json.loads(request.POST.get('step', ''))
+        step_list = json.loads(request.POST.get('step', '[]'))
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = creator
             form_.modifier = request.user
             form_.is_active = obj.is_active
             form_.save()
+            # form.save_m2m()
             cvs = CaseVsStep.objects.filter(case=obj).order_by('order')
             original_step_list = list()
             for csv_dict in cvs.values('step'):
@@ -83,8 +87,8 @@ def case(request, pk):
                     order += 1
                     step_ = Step.objects.get(pk=step_str)
                     CaseVsStep.objects.create(case=obj, step=step_, order=order, creator=request.user, modifier=request.user)
-            # form.save_m2m()
-            return HttpResponseRedirect(reverse('case', args=[pk]) + '?success=1')
+            request.session['status'] = 'success'
+            return HttpResponseRedirect(reverse('case', args=[pk]))
         else:
             # 暂存step列表
             csv = CaseVsStep.objects.filter(case=obj).order_by('order')
@@ -94,7 +98,7 @@ def case(request, pk):
             temp_list = list()
             temp_dict = dict()
             if original_step_list != step_list:
-                step_list_temp_json = json.dumps(step_list)
+                temp_list_json = json.dumps(step_list)
     is_success = False
     print(form.errors)
     return render(request, 'main/case.html', locals())
@@ -107,17 +111,31 @@ def case_add(request):
         return render(request, 'main/case.html', locals())
     elif request.method == 'POST':
         form = CaseForm(data=request.POST)
+        step_list = json.loads(request.POST.get('step', '[]'))
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = request.user
             form_.modifier = request.user
             form_.is_active = True
             form_.save()
-            form.save_m2m()
-            pk = form_.id
-            return HttpResponseRedirect(reverse('case', args=[pk]) + '?success=1')
+            # form.save_m2m()
+            obj = form_
+            pk = obj.id
+            order = 0
+            for step_str in step_list:
+                if step_str.strip() == '':
+                    continue
+                order += 1
+                step_ = Step.objects.get(pk=step_str)
+                CaseVsStep.objects.create(case=obj, step=step_, order=order, creator=request.user,
+                                          modifier=request.user)
+            request.session['status'] = 'success'
+            return HttpResponseRedirect(reverse('case', args=[pk]))
         else:
-            return render(request, 'main/case.html', locals())
+            temp_list_json = json.dumps(step_list)
+    is_success = False
+    print(form.errors)
+    return render(request, 'main/case.html', locals())
 
 
 @login_required
@@ -231,10 +249,11 @@ def step(request, pk):
     obj = Step.objects.select_related('creator', 'modifier').get(pk=pk)
     # obj = get_object_or_404(Step, pk=pk).select_related('creator', 'modifier')
     if request.method == 'GET':
+        if request.session.get('status', None) == 'success':
+            is_success = True
+        request.session['status'] = None
         form = StepForm(instance=obj)
         related_objects = obj.case_set.filter(is_active=True)
-        if request.GET.get('success', '') == '1' and request.META.get('HTTP_REFERER'):
-            is_success = True
         return render(request, 'main/step.html', locals())
     elif request.method == 'POST':
         creator = obj.creator
@@ -246,8 +265,10 @@ def step(request, pk):
             form_.is_active = obj.is_active
             form_.save()
             form.save_m2m()
-            return HttpResponseRedirect(reverse('step', args=[pk]) + '?success=1')
+            request.session['status'] = 'success'
+            return HttpResponseRedirect(reverse('step', args=[pk]))
     is_success = False
+    print(form.errors)
     return render(request, 'main/step.html', locals())
 
 
@@ -266,9 +287,11 @@ def step_add(request):
             form_.save()
             form.save_m2m()
             pk = form_.id
-            return HttpResponseRedirect(reverse('step', args=[pk]) + '?success=1')
-        else:
-            return render(request, 'main/step.html', locals())
+            request.session['status'] = 'success'
+            return HttpResponseRedirect(reverse('step', args=[pk]))
+    is_success = False
+    print(form.errors)
+    return render(request, 'main/step.html', locals())
 
 
 @login_required

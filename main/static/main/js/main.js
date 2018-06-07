@@ -110,6 +110,7 @@ function bind_delete_button() {
         bootbox.confirm({
             title: '<i class="icon-spinner icon-spin icon-2x pull-left"></i>',
             message: msg,
+            size: 'large',
             buttons: {
                 confirm: {
                     label: '<i class="icon-trash">&nbsp;</i>确定',
@@ -122,15 +123,13 @@ function bind_delete_button() {
             },
             callback: function (result) {
                 if (result === true) {
-                    console.log('delete');
                     $.post(url, {'csrfmiddlewaretoken': csrf_token, 'pk': pk}, function(data) {
                         $("#objects_form").submit()
                     });
                 }
-            },
-            size: 'large'
-        })
-    })
+            }
+        });
+    });
 }
 
 

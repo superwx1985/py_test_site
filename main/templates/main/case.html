@@ -21,13 +21,14 @@
             getList("{% url 'step_list_all' %}", $('input[name="csrfmiddlewaretoken"]').val(), update_step_list_all);
             {% if pk %}
                 // 获取已选step
-                {% if step_list_temp_json %}
+                {% if temp_list_json %}
                     getList("{% url 'case_steps' pk %}", $('input[name="csrfmiddlewaretoken"]').val(), step_list_selected_save);
-                    getList("{% url 'step_list_temp' %}", $('input[name="csrfmiddlewaretoken"]').val(), step_list_selected_update, '{{ step_list_temp_json|safe }}');
+                    getList("{% url 'step_list_temp' %}", $('input[name="csrfmiddlewaretoken"]').val(), step_list_selected_update, '{{ temp_list_json|safe }}');
                 {% else %}
                     getList("{% url 'case_steps' pk %}", $('input[name="csrfmiddlewaretoken"]').val(), step_list_selected_save_and_update);
                 {% endif %}
-
+            {% else %}
+                update_steps_selected_index(true);
             {% endif %}
             // 处理step拖动及排序
             stepHandle();
@@ -172,19 +173,19 @@
         <div class="row align-items-center">
             <div class="col-1 text-right font-weight-bold">名称</div>
             <div class="col" form_data>
-                {% include 'main/include/form_input.html' with field=form.name placeholder_text='' %}
+                {% include 'main/include/form_input.html' with field=form.name %}
             </div>
         </div>
         <div class="row align-items-center">
             <div class="col-1 text-right font-weight-bold">描述</div>
             <div class="col" form_data>
-                {% include 'main/include/form_textarea.html' with field=form.description placeholder='1' rows='5' %}
+                {% include 'main/include/form_textarea.html' with field=form.description rows='5' %}
             </div>
         </div>
         <div class="row align-items-center">
             <div class="col-1 text-right font-weight-bold">关键字</div>
             <div class="col" form_data>
-                {% include 'main/include/form_input.html' with field=form.keyword placeholder_text='' %}
+                {% include 'main/include/form_input.html' with field=form.keyword %}
             </div>
         </div>
 
@@ -226,11 +227,10 @@
             </div>
         </div>
 
-        <div class="text-center fixed-bottom" >
-            <div class="btn-group">
-                <td><input type="submit" value="提交" class="btn btn-success"></td>
-                <td><input type="reset" value="还原" class="btn btn-secondary"></td>
-                <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
+        <div class="text-center float-button">
+            <div class="btn-group btn-group-lg" style="z-index: 0">
+                <td><button type="submit" class="btn btn-success"><i class="icon-ok">&nbsp;</i>提交</button></td>
+                <td><button type="button" class="btn btn-danger" id="closeWindow"><i class="icon-remove">&nbsp;</i>关闭</button></td>
             </div>
         </div>
     </form>

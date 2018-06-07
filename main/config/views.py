@@ -54,9 +54,10 @@ def config(request, pk):
     except Config.DoesNotExist:
         raise Http404('Step does not exist')
     if request.method == 'GET':
-        form = ConfigForm(instance=obj)
-        if request.GET.get('success', '') == '1' and request.META.get('HTTP_REFERER'):
+        if request.session.get('status', None) == 'success':
             is_success = True
+        request.session['status'] = None
+        form = ConfigForm(instance=obj)
         return render(request, 'main/config/detail.html', locals())
     elif request.method == 'POST':
         creator = obj.creator
@@ -68,7 +69,8 @@ def config(request, pk):
             form_.is_active = obj.is_active
             form_.save()
             form.save_m2m()
-            return HttpResponseRedirect(reverse('config', args=[pk]) + '?success=1')
+            request.session['status'] = 'success'
+            return HttpResponseRedirect(reverse('config', args=[pk]))
     is_success = False
     print(form.errors)
     return render(request, 'main/config/detail.html', locals())
@@ -89,7 +91,9 @@ def config_add(request):
             form_.save()
             form.save_m2m()
             pk = form_.id
-            return HttpResponseRedirect(reverse('config', args=[pk]) + '?success=1')
+            request.session['status'] = 'success'
+            return HttpResponseRedirect(reverse('config', args=[pk]))
+    is_success = False
     print(form.errors)
     return render(request, 'main/config/detail.html', locals())
 

@@ -20,11 +20,21 @@
             // 初始化变量名列表
             window.variableNames = new Array();
             // 注册添加按钮
-            $('#new_helper td:nth-of-type(1)').on('click', function () {
+            $('#new_helper td[col_move]').on('click', function () {
                 addVariable();
             });
             // 获取变量组中的变量
-            getList("{% url 'variable_group_variables' pk %}", $('input[name="csrfmiddlewaretoken"]').val(), variableSaveAndUpdate);
+            {% if pk %}
+                // 获取已选step
+                {% if temp_list_json %}
+                    getList("{% url 'variable_group_variables' pk %}", $('input[name="csrfmiddlewaretoken"]').val(), variableSave);
+                    variableUpdate(true, $.parseJSON("{{ temp_list_json|escapejs }}"));
+                {% else %}
+                    getList("{% url 'variable_group_variables' pk %}", $('input[name="csrfmiddlewaretoken"]').val(), variableSaveAndUpdate);
+                {% endif %}
+            {% else %}
+                updateVariableIndex(true);
+            {% endif %}
             // 启用排序
             sortableVariable();
         });
@@ -54,24 +64,24 @@
                 if (data.data.length > 0) {
                     $.each(data.data, function (i, v) {
                         var tr = $('<tr></tr>');
-                        $('<td class="text-center vertical-middle" col_move moveable><i class="icon-sort icon-2x"></i></td>').on(
+                        $('<td class="middle" col_move moveable><i class="icon-sort icon-2x"></i></td>').on(
                             'click', function() {
                                 delVariable(tr);
                             }).appendTo(tr);
-                        $('<td class="text-center vertical-middle" col_del><i class="icon-trash icon-2x"></i></td>').on(
+                        $('<td class="middle" col_del><i class="icon-trash icon-2x"></i></td>').on(
                             'click', function() {
                                 delVariable(tr);
                             }).appendTo(tr);
                         var span = $('<span></span>').text(i + 1);
-                        $('<td index class="text-center vertical-middle" col_index></td>').append(span).appendTo(tr);
+                        $('<td index class="middle" col_index></td>').append(span).appendTo(tr);
                         var input = $('<input placeholder="请输入变量名" class="form-control">').val(v.name).on('change', function () {
                             updateVariableIndex();
                         });
-                        $('<td class="text-center vertical-middle" col_name></td>').append(input).appendTo(tr);
+                        $('<td class="middle" col_name></td>').append(input).appendTo(tr);
                         var input = $('<input placeholder="请输入变量值" class="form-control">').val(v.value).on('change', function () {
                             updateVariableIndex();
                         });
-                        $('<td class="text-center vertical-middle" col_value></td>').append(input).appendTo(tr);
+                        $('<td class="middle" col_value></td>').append(input).appendTo(tr);
                         tr.insertBefore($('#new_helper'));
                         // 插入变量名列表
                         checkVariableName(v.name);
@@ -109,6 +119,7 @@
                 $('#new_helper td[col_name] input').val('').focus();
                 $('#new_helper td[col_value] input').val('');
                 updateVariableIndex();
+                return true;
             } else {
                 var errorDiv = $('<div class="invalid-feedback">' + checkResult + '</div>');
                 name_input.addClass('is-invalid');
@@ -117,17 +128,38 @@
                     name_input.removeClass('is-invalid');
                     name_input.siblings('div.invalid-feedback').remove();
                 });
+                return false;
             }
         }
         // 删除变量
         function delVariable($tr) {
             var name = $tr.find('td[col_name] input').val();
-            var index = $.inArray(name, window.variableNames);
-            if (index >= 0) {
-                window.variableNames.splice(index, 1);
-            }
-            $tr.remove();
-            updateVariableIndex();
+            var msg = '确定要删除<span class="mark">' + name + '</span>吗？';
+            bootbox.confirm({
+                title: '<i class="icon-spinner icon-spin icon-2x pull-left"></i>',
+                message: msg,
+                size: 'large',
+                buttons: {
+                    confirm: {
+                        label: '<i class="icon-trash">&nbsp;</i>确定',
+                        className: 'btn-danger'
+                    },
+                    cancel: {
+                        label: '<i class="icon-undo">&nbsp;</i>取消',
+                        className: 'btn-secondary'
+                    }
+                },
+                callback: function (result) {
+                    if (result === true) {
+                        var index = $.inArray(name, window.variableNames);
+                        if (index >= 0) {
+                            window.variableNames.splice(index, 1);
+                        }
+                        $tr.remove();
+                        updateVariableIndex();
+                    }
+                }
+            });
         }
         // 验证并添加变量名
         function checkVariableName(name) {
@@ -161,6 +193,38 @@
                 $('input[name=variable]').attr('value', json_str);
             }
         }
+        // 检查是否有未保存的变量
+        function checkUnsaved() {
+            var name = $('#new_helper td[col_name] input').val();
+            if (name !== '') {
+                var msg = '检查到您还有未保存的变量<span class="mark">' + name + '</span>，是否需要一并提交？';
+                bootbox.confirm({
+                    title: '<i class="icon-spinner icon-spin icon-2x pull-left"></i>',
+                    message: msg,
+                    size: 'large',
+                    buttons: {
+                        confirm: {
+                            label: '<i class="icon-ok">&nbsp;</i>一并提交',
+                            className: 'btn-success'
+                        },
+                        cancel: {
+                            label: '<i class="icon-undo">&nbsp;</i>返回修改',
+                            className: 'btn-secondary'
+                        }
+                    },
+                    callback: function (result) {
+                        if (result === true) {
+                            if (addVariable()) {
+                                $('#object_form').removeAttr('onsubmit').submit();
+                            }
+                        }
+                    }
+                });
+            } else {
+                $('#object_form').removeAttr('onsubmit').submit();
+            }
+            return false;
+        }
     </script>
 {% endblock %}
 
@@ -168,7 +232,7 @@
     <ol class="breadcrumb my-4">
         <li class="breadcrumb-item active">
         {% if form.initial %}
-            创建时间：{{ obj.created_date }}，创建人：{{ obj.creator }}，上次修改时间：{{ obj.modified_date }}，修改人：{{ obj.modifier }}
+            创建时间：{{ obj.created_date }}，创建人：{{ obj.creator }}，上次修改时间：{{ obj.modified_date }}，修改人：{{ obj.modifier }} === {{ request.session.success }}
         {% else %}
             添加一个变量组
         {% endif %}
@@ -177,34 +241,33 @@
 {% endblock %}
 
 {% block detail_form %}
-    <form method="post" id="object_form" novalidate>
+    <form method="post" id="object_form" novalidate onsubmit="return checkUnsaved();">
         {% csrf_token %}
         <div class="row align-items-center">
             <div class="col-1 text-right font-weight-bold">名称</div>
             <div class="col" form_data>
-                {% include 'main/include/form_input.html' with field=form.name placeholder='' %}
+                {% include 'main/include/form_input.html' with field=form.name %}
             </div>
         </div>
         <div class="row align-items-center">
             <div class="col-1 text-right font-weight-bold">描述</div>
             <div class="col" form_data>
-                {% include 'main/include/form_textarea.html' with field=form.description placeholder='1' rows='5' %}
+                {% include 'main/include/form_textarea.html' with field=form.description rows='5' %}
             </div>
         </div>
         <div class="row align-items-center">
             <div class="col-1 text-right font-weight-bold">关键字</div>
             <div class="col" form_data>
-                {% include 'main/include/form_input.html' with field=form.keyword placeholder='' %}
+                {% include 'main/include/form_input.html' with field=form.keyword %}
             </div>
         </div>
 
         <input name="variable" hidden>
 
-        <div class="text-center fixed-bottom" >
-            <div class="btn-group">
-                <td><input type="submit" value="提交" class="btn btn-success"></td>
-                <td><input type="reset" value="还原" class="btn btn-secondary"></td>
-                <td><input type="button" value="关闭" onclick="window.close();" class="btn btn-danger"></td>
+        <div class="text-center float-button">
+            <div class="btn-group btn-group-lg" style="z-index: 0">
+                <td><button type="submit" class="btn btn-success"><i class="icon-ok">&nbsp;</i>提交</button></td>
+                <td><button type="button" class="btn btn-danger" id="closeWindow"><i class="icon-remove">&nbsp;</i>关闭</button></td>
             </div>
         </div>
     </form>
@@ -226,9 +289,9 @@
                     <thead class="thead-light"><tr><th></th><th></th><th>序号</th><th>名称</th><th>值</th></tr></thead>
                     <tbody class="text-left">
                         <tr id="new_helper">
-                            <td class="text-center vertical-middle" col_move><i class="icon-plus-sign icon-2x"></i></td>
-                            <td class="text-center vertical-middle" col_del></td>
-                            <td class="text-center vertical-middle" col_index><span></span></td>
+                            <td class="middle" col_move><i class="icon-save icon-2x"></i></td>
+                            <td class="middle" col_del></td>
+                            <td class="middle" col_index><span></span></td>
                             <td col_name><input placeholder="请输入变量名" class="form-control"></td>
                             <td col_value><input placeholder="请输入变量值" class="form-control"></td>
                         </tr>

@@ -54,20 +54,22 @@ def variable_group(request, pk):
     except VariableGroup.DoesNotExist:
         raise Http404('Step does not exist')
     if request.method == 'GET':
-        form = VariableGroupForm(instance=obj)
-        if request.GET.get('success', '') == '1' and request.META.get('HTTP_REFERER'):
+        if request.session.get('status', None) == 'success':
             is_success = True
+        request.session['status'] = None
+        form = VariableGroupForm(instance=obj)
         return render(request, 'main/variable/detail.html', locals())
     elif request.method == 'POST':
         creator = obj.creator
         form = VariableGroupForm(data=request.POST, instance=obj)
-        variable_list = json.loads(request.POST.get('variable', ''))
+        variable_list = json.loads(request.POST.get('variable', '[]'))
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = creator
             form_.modifier = request.user
             form_.is_active = obj.is_active
             form_.save()
+            form.save_m2m()
             vo = Variable.objects.filter(variable_group=obj)
             vv = vo.order_by('order').values('name', 'value')
             vv = list(vv)
@@ -79,8 +81,13 @@ def variable_group(request, pk):
                         continue
                     order += 1
                     Variable.objects.create(variable_group=obj, name=v['name'], value=v['value'], order=order)
-            form.save_m2m()
-            return HttpResponseRedirect(reverse('variable_group', args=[pk]) + '?success=1')
+            request.session['status'] = 'success'
+            return HttpResponseRedirect(reverse('variable_group', args=[pk]))
+        else:
+            # 暂存variable列表
+            temp_dict = dict()
+            temp_dict['data'] = variable_list
+            temp_list_json = json.dumps(temp_dict)
     is_success = False
     print(form.errors)
     return render(request, 'main/variable/detail.html', locals())
@@ -93,6 +100,7 @@ def variable_group_add(request):
         return render(request, 'main/variable/detail.html', locals())
     elif request.method == 'POST':
         form = VariableGroupForm(data=request.POST)
+        variable_list = json.loads(request.POST.get('variable', '[]'))
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = request.user
@@ -101,7 +109,20 @@ def variable_group_add(request):
             form_.save()
             form.save_m2m()
             pk = form_.id
-            return HttpResponseRedirect(reverse('variable_group', args=[pk]) + '?success=1')
+            order = 0
+            for v in variable_list:
+                if not v:
+                    continue
+                order += 1
+                Variable.objects.create(variable_group=pk, name=v['name'], value=v['value'], order=order)
+            request.session['status'] = 'success'
+            return HttpResponseRedirect(reverse('variable_group', args=[pk]))
+        else:
+            # 暂存variable列表
+            temp_dict = dict()
+            temp_dict['data'] = variable_list
+            temp_list_json = json.dumps(temp_dict)
+    is_success = False
     print(form.errors)
     return render(request, 'main/variable/detail.html', locals())
 
