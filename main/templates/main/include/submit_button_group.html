@@ -1,0 +1,9 @@
+<div class="text-center float-button">
+    <div class="btn-group btn-group-lg">
+        <td><button type="submit" class="btn btn-primary" id="save"><i class="icon-ok">&nbsp;</i>应用</button></td>
+        <td><button type="submit" class="btn btn-success" id="saveAndReturn"><i class="icon-upload-alt">&nbsp;</i>提交</button></td>
+        {% if not pk %}
+            <td><button type="submit" class="btn btn-info" id="AddAnother"><i class="icon-plus">&nbsp;</i>继续添加</button></td>
+        {% endif %}
+    </div>
+</div>

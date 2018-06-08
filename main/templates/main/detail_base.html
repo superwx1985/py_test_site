@@ -50,8 +50,9 @@
                     {% elif is_success is True %}
                         toastr.success('保存成功');
                     {% endif %}
-                    // 注册关闭窗口按钮
-                    $('#closeWindow').on('click', function() {window.close()});
+                    // 注册提交并返回
+                    $('#saveAndReturn').on('click', function() {$('[name=redirect]').val(true)});
+                    $('#AddAnother').on('click', function() {$('[name=redirect]').val('add_another')});
                 });
             </script>
         {% endblock %}

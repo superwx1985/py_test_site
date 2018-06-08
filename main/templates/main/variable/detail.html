@@ -115,7 +115,7 @@
                     });
                 // 插入并淡入
                 new_variable.insertBefore(new_helper).hide();
-                new_variable.fadeIn();
+                new_variable.fadeIn("slow");
                 $('#new_helper td[col_name] input').val('').focus();
                 $('#new_helper td[col_value] input').val('');
                 updateVariableIndex();
@@ -155,7 +155,9 @@
                         if (index >= 0) {
                             window.variableNames.splice(index, 1);
                         }
-                        $tr.remove();
+                        $tr.fadeOut("slow", function() {
+                            $(this).remove();
+                        });
                         updateVariableIndex();
                     }
                 }
@@ -244,32 +246,29 @@
     <form method="post" id="object_form" novalidate onsubmit="return checkUnsaved();">
         {% csrf_token %}
         <div class="row align-items-center">
-            <div class="col-1 text-right font-weight-bold">名称</div>
+            <div class="col-1 text-center font-weight-bold">名称</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.name %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-right font-weight-bold">描述</div>
+            <div class="col-1 text-center font-weight-bold">描述</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.description rows='5' %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-right font-weight-bold">关键字</div>
+            <div class="col-1 text-center font-weight-bold">关键字</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.keyword %}
             </div>
         </div>
 
         <input name="variable" hidden>
+        <input name="redirect" hidden value="{{ redirect }}">
+        <input name="redirect_url" hidden value="{{ redirect_url }}">
 
-        <div class="text-center float-button">
-            <div class="btn-group btn-group-lg" style="z-index: 0">
-                <td><button type="submit" class="btn btn-success"><i class="icon-ok">&nbsp;</i>提交</button></td>
-                <td><button type="button" class="btn btn-danger" id="closeWindow"><i class="icon-remove">&nbsp;</i>关闭</button></td>
-            </div>
-        </div>
+        {% include 'main/include/submit_button_group.html' %}
     </form>
 {% endblock %}
 

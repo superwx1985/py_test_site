@@ -87,12 +87,20 @@
                         "hideMethod":"fadeOut"//消失时的动画方式
                     };
                     // 注册添加按钮
-                    $('#add_button').on('click', function () {window.open(window.addUrl);});
+                    $('#add_button').on('click', function () {window.open(window.addUrl, '_self');});
                     // 注册快速更新事件
                     var tds = $('#result_table tbody td[quick_update]');
                     quick_update(tds, update_single_column, refresh_single_column);
+                    // 注册详情按钮
+                    bind_edit_button();
                     // 注册删除按钮
                     bind_delete_button();
+                    // 触发操作提示
+                    {% if form.errors %}
+                        toastr.error('请更正错误项');
+                    {% elif is_success is True %}
+                        toastr.success('保存成功');
+                    {% endif %}
                 })
             </script>
         {% endblock %}

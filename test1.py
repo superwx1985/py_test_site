@@ -2,8 +2,14 @@ import math
 import sys
 import os
 
-class W:
-    pass
 
-w = type
-print(isinstance(w, type))
+
+
+
+def a():
+    print(sys._getframe().f_code.co_name)
+    a = get_current_function_name()
+    print(a)
+
+
+a()

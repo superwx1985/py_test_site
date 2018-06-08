@@ -12,13 +12,13 @@ from django.utils import timezone
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
-from main.models import VariableGroup, Variable
-from main.forms import PaginatorForm, VariableGroupForm
-from main.views import get_query_condition
+from main.models import Config
+from main.forms import PaginatorForm, ConfigForm
+from main.views.general import get_query_condition
 
 
 @login_required
-def variable_groups(request):
+def configs(request):
     if request.method == 'POST':
         page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
         size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
@@ -27,13 +27,16 @@ def variable_groups(request):
         page = int(request.COOKIES.get('page', 1))
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
+        if request.session.get('status', None) == 'success':
+            is_success = True
+        request.session['status'] = None
     keyword_list_temp = search_text.split(' ')
     keyword_list = list()
     for keyword in keyword_list_temp:
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = VariableGroup.objects.filter(q, is_active=1).order_by('id')
+    objects = Config.objects.filter(q, is_active=1).order_by('id')
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)
@@ -44,25 +47,25 @@ def variable_groups(request):
         objects = paginator.page(paginator.num_pages)
         page = paginator.num_pages
     paginator_form = PaginatorForm(initial={'page': page, 'size': size}, page_max_value=paginator.num_pages)
-    return render(request, 'main/variable/list.html', locals())
+    return render(request, 'main/config/list.html', locals())
 
 
 @login_required
-def variable_group(request, pk):
+def config(request, pk):
     try:
-        obj = VariableGroup.objects.select_related('creator', 'modifier').get(pk=pk)
-    except VariableGroup.DoesNotExist:
+        obj = Config.objects.select_related('creator', 'modifier').get(pk=pk)
+    except Config.DoesNotExist:
         raise Http404('Step does not exist')
     if request.method == 'GET':
+        form = ConfigForm(instance=obj)
         if request.session.get('status', None) == 'success':
             is_success = True
         request.session['status'] = None
-        form = VariableGroupForm(instance=obj)
-        return render(request, 'main/variable/detail.html', locals())
+        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
+        return render(request, 'main/config/detail.html', locals())
     elif request.method == 'POST':
         creator = obj.creator
-        form = VariableGroupForm(data=request.POST, instance=obj)
-        variable_list = json.loads(request.POST.get('variable', '[]'))
+        form = ConfigForm(data=request.POST, instance=obj)
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = creator
@@ -70,37 +73,29 @@ def variable_group(request, pk):
             form_.is_active = obj.is_active
             form_.save()
             form.save_m2m()
-            vo = Variable.objects.filter(variable_group=obj)
-            vv = vo.order_by('order').values('name', 'value')
-            vv = list(vv)
-            if vv != variable_list:
-                vo.delete()
-                order = 0
-                for v in variable_list:
-                    if not v:
-                        continue
-                    order += 1
-                    Variable.objects.create(variable_group=obj, name=v['name'], value=v['value'], order=order)
             request.session['status'] = 'success'
-            return HttpResponseRedirect(reverse('variable_group', args=[pk]))
-        else:
-            # 暂存variable列表
-            temp_dict = dict()
-            temp_dict['data'] = variable_list
-            temp_list_json = json.dumps(temp_dict)
-    is_success = False
-    print(form.errors)
-    return render(request, 'main/variable/detail.html', locals())
+            redirect = request.POST.get('redirect')
+            redirect_url = request.POST.get('redirect_url', '')
+            if not redirect or not redirect_url:
+                return HttpResponseRedirect(reverse('config', args=[pk]) + '?redirect_url=' + redirect_url)
+            else:
+                return HttpResponseRedirect(redirect_url)
+        redirect_url = request.POST.get('redirect_url', '')
+        is_success = False
+        return render(request, 'main/config/detail.html', locals())
 
 
 @login_required
-def variable_group_add(request):
+def config_add(request):
     if request.method == 'GET':
-        form = VariableGroupForm()
-        return render(request, 'main/variable/detail.html', locals())
+        form = ConfigForm()
+        if request.session.get('status', None) == 'success':
+            is_success = True
+        request.session['status'] = None
+        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
+        return render(request, 'main/config/detail.html', locals())
     elif request.method == 'POST':
-        form = VariableGroupForm(data=request.POST)
-        variable_list = json.loads(request.POST.get('variable', '[]'))
+        form = ConfigForm(data=request.POST)
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = request.user
@@ -109,42 +104,38 @@ def variable_group_add(request):
             form_.save()
             form.save_m2m()
             pk = form_.id
-            order = 0
-            for v in variable_list:
-                if not v:
-                    continue
-                order += 1
-                Variable.objects.create(variable_group=pk, name=v['name'], value=v['value'], order=order)
             request.session['status'] = 'success'
-            return HttpResponseRedirect(reverse('variable_group', args=[pk]))
-        else:
-            # 暂存variable列表
-            temp_dict = dict()
-            temp_dict['data'] = variable_list
-            temp_list_json = json.dumps(temp_dict)
-    is_success = False
-    print(form.errors)
-    return render(request, 'main/variable/detail.html', locals())
+            redirect = request.POST.get('redirect')
+            redirect_url = request.POST.get('redirect_url', '')
+            if not redirect or not redirect_url:
+                return HttpResponseRedirect(reverse('config', args=[pk]) + '?redirect_url=' + redirect_url)
+            elif redirect == 'add_another':
+                return HttpResponseRedirect(reverse('config_add') + '?redirect_url=' + redirect_url)
+            else:
+                return HttpResponseRedirect(redirect_url)
+        redirect_url = request.POST.get('redirect_url', '')
+        is_success = False
+        return render(request, 'main/config/detail.html', locals())
 
 
 @login_required
-def variable_group_delete(request, pk):
+def config_delete(request, pk):
     if request.method == 'POST':
-        VariableGroup.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
+        Config.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
         return HttpResponse('success')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
 
 
 @login_required
-def variable_group_update(request, pk):
+def config_update(request, pk):
     if request.method == 'POST':
         response_ = {'new_value': ''}
         try:
             col_name = request.POST['col_name']
             new_value = request.POST['new_value']
             response_['new_value'] = new_value
-            obj = VariableGroup.objects.get(pk=pk)
+            obj = Config.objects.get(pk=pk)
             obj.modifier = request.user
             obj.modified_date = timezone.now()
             if col_name == 'name':
@@ -164,11 +155,3 @@ def variable_group_update(request, pk):
     else:
         return HttpResponseBadRequest('only accept "POST" method')
 
-
-# 获取变量组中的变量
-@login_required
-def variable_group_variables(request, pk):
-    v = Variable.objects.filter(variable_group=pk).order_by('order').values('pk', 'name', 'value')
-    data_dict = dict()
-    data_dict['data'] = list(v)
-    return JsonResponse(data_dict)

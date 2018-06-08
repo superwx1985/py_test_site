@@ -13,11 +13,6 @@ $.extend({
     }
 });
 
-// 添加
-function add() {
-    $('#add_button').on('click', function () {window.open(window.addUrl);});
-}
-
 // 快速修改
 function quick_update(tds, func, callback_func) {
     // 注册鼠标双击事件
@@ -26,7 +21,7 @@ function quick_update(tds, func, callback_func) {
         var td = $(this);
         var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
         var col_name = td.attr('col_name');
-        var url = td.parent('tr').attr('updateUrl');
+        var url = td.parent('tr').attr('update_url');
         var pk = td.parent('tr').attr('pk');
         // 判断是否已在编辑
         if (td.attr('editing')) {
@@ -97,12 +92,19 @@ function quick_update(tds, func, callback_func) {
     });
 }
 
+// 详情
+function bind_edit_button() {
+    $('button[name=edit_button]').on('click', function() {
+        var url = $(this).parents('tr').attr('edit_url');
+        window.open(url, '_self');
+    });
+}
 
 // 删除
 function bind_delete_button() {
     $('button[name="delete_button"]').off('click').click(function () {
         var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
-        var url = $(this).parents('tr').attr('delUrl');
+        var url = $(this).parents('tr').attr('del_url');
         var pk = $(this).parents('tr').attr('pk');
         // var name = $(this).parent().siblings('td[col_name="name"]').text();
         var name = $(this).parents('tr').find('td[col_name="name"]').text();

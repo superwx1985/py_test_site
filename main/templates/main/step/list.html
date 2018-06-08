@@ -1,12 +1,12 @@
 {% extends 'main/list_base.html' %}
-{% block title %}用例 - {{ block.super }}{% endblock %}
+{% block title %}步骤 - {{ block.super }}{% endblock %}
 {% block script %}
     <script>
         $(function () {
             // 更新导航栏
-            $('#nav_case').addClass('active');
+            $('#nav_step').addClass('active');
             // 获取添加地址
-            window.addUrl="{% url 'case_add' %}"
+            window.addUrl="{% url 'step_add' %}"
         })
     </script>
 {% endblock %}
@@ -18,27 +18,28 @@
                 <col>
                 <col style='width: 200px;'>
                 <col style='width: 150px;'>
-                <col style='width: 60px;'>
+                <col style='width: 120px;'>
             </colgroup>
             <thead class="thead-light middle">
                 <tr>
                     <th>ID</th>
                     <th>名称</th>
                     <th>关键字</th>
-                    <th>步骤数</th>
+                    <th>Action</th>
                     <th>操作</th>
                 </tr>
             </thead>
             <tbody>
                 {% for object in objects %}
-                    <tr pk="{{ object.pk }}" updateUrl="{% url 'case_update' object.pk %}" delUrl="{% url 'case_delete' object.pk %}">
-                        <td col_name='id' class="middle"><a target="_blank" href="{% url 'case' object.pk %}" class="font-weight-bold">{{ object.pk }}</a></td>
+                    <tr pk="{{ object.pk }}" edit_url="{% url 'step' object.pk %}" updateUrl="{% url 'step_update' object.pk %}" delUrl="{% url 'step_delete' object.pk %}">
+                        <td col_name='id' class="middle">{{ object.pk }}</td>
                         <td quick_update col_name='name' class="align-middle">{{ object.name }}</td>
                         <td quick_update col_name='keyword' class="align-middle">{{ object.keyword }}</td>
-                        <td col_name='step_count' class="middle">{{ object.step_count }}</td>
+                        <td col_name='action' class="align-middle">{{ object.action }}</td>
                         <td>
                             <div class="middle">
-                                <button type="button" id="delete_button" name="delete_button" class="btn btn-danger"><i class="icon-trash"></i></button>
+                                <button type="button" name="edit_button" class="btn btn-info"><i class="icon-pencil"></i></button>
+                                <button type="button" name="delete_button" class="btn btn-danger"><i class="icon-trash"></i></button>
                             </div>
                         </td>
                     </tr>
