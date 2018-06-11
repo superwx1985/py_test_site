@@ -29,7 +29,7 @@
             </thead>
             <tbody>
                 {% for object in objects %}
-                    <tr pk="{{ object.pk }}" edit_url="{% url 'config' object.pk %}" update_url="{% url 'config_update' object.pk %}" del_url="{% url 'config_delete' object.pk %}">
+                    <tr pk="{{ object.pk }}" edit_url="{% url 'config' object.pk %}" quick_update_url="{% url 'config_quick_update' object.pk %}" del_url="{% url 'config_delete' object.pk %}">
                         <td col_name='id' class="middle">{{ object.pk }}</td>
                         <td quick_update col_name='name' class="align-middle">{{ object.name }}</td>
                         <td quick_update col_name='keyword' class="align-middle">{{ object.keyword }}</td>

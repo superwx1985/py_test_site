@@ -1,0 +1,268 @@
+{% extends 'main/detail_base.html' %}
+{% load widget_tweaks %}
+{% block title %}
+    {% if form.initial %}
+        {{ form.initial.name }} - 套件 - {{ block.super }}
+    {% else %}
+        新套件 - {{ block.super }}
+    {% endif %}
+{% endblock %}
+{% block style %}
+    <style type='text/css' media='screen'>
+
+    </style>
+{% endblock %}
+{% block script %}
+    <script>
+        $(function () {
+            // 更新导航栏
+            $('#nav_suite').addClass('active');
+            window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
+            // 获取全部m2m
+            getList("{% url 'case_list_all' %}", window.$csrf_input.val(), update_m2m_list_all);
+            {% if temp_list_json %}
+                // 获取暂存m2m
+                getList("{% url 'case_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, "{{ temp_list_json|escapejs }}");
+                {% if pk %}
+                    // 获取m2m
+                    getList("{% url 'suite_cases' pk %}", window.$csrf_input.val(), m2m_list_selected_save);
+                {% endif %}
+            {% else %}
+                {% if pk %}
+                    // 获取m2m
+                    getList("{% url 'suite_cases' pk %}", window.$csrf_input.val(), m2m_list_selected_save_and_update);
+                {% endif %}
+            {% endif %}
+            // 处理m2m拖动及排序
+            m2m_handle();
+        });
+        // 更新全部步骤列表
+        function update_m2m_list_all(success, data) {
+            if (success) {
+                var tbody = $('#m2m_all tbody');
+                tbody.empty();
+                $.each(data.data, function (i, v) {
+                    var tr = $('<tr></tr>');
+                    tr.data("m2m_data", v);
+                    $('<td moveable><i class="icon-move"></i></td>').appendTo(tr);
+                    $('<td class="text-center"></td>').text(v.pk).appendTo(tr);
+                    $('<td></td>').text(v.name).appendTo(tr);
+                    tbody.append(tr);
+                });
+
+                // 使得步骤列表可拖动
+                tbody.find('tr').draggable({
+                    appendTo: 'body',
+                    connectToSortable: '#m2m_selected tbody',
+                    cursor: "crosshair",
+                    handle: "[moveable]",
+                    distance: 15,
+                    scope: "m2m_all",
+                    helper: function() {
+                        var tr = $(this).clone().removeClass().css('background-color', 'lightblue');
+                        tr.children('[moveable]').after($('<td index class="text-center"></td>'));
+                        return tr;
+                    },
+                    stop: function( event, ui ) {
+                        ui.helper.removeAttr('style');
+                    }
+                });
+            }
+        }
+        // 保存已选步骤初始值
+        function m2m_list_selected_save(success, data){
+            if (success) {
+                var tbody = $('#m2m_selected tbody');
+                tbody.data('original_data', data);
+            }
+        }
+        // 更新已选步骤列表
+        function m2m_list_selected_update(success, data) {
+            if (success) {
+                var tbody = $('#m2m_selected tbody');
+                if (data.data.length > 0) {
+                    tbody.empty();
+                    $.each(data.data, function (i, v) {
+                        var tr = $('<tr></tr>');
+                        $('<td moveable><i class="icon-move"></i></td>').appendTo(tr);
+                        $('<td index class="text-center"></td>').text(i + 1).appendTo(tr);
+                        $('<td class="text-center"></td>').text(v.pk).appendTo(tr);
+                        $('<td></td>').text(v.name).appendTo(tr);
+                        tbody.append(tr);
+                    });
+                }
+                update_m2m_selected_index(true);
+            }
+        }
+        // 保存并更新已选步骤列表
+        function m2m_list_selected_save_and_update(success, data) {
+            m2m_list_selected_save(success, data);
+            m2m_list_selected_update(success, data)
+        }
+        // 处理m2m拖动及排序
+        function m2m_handle() {
+            $('#m2m_selected tbody').sortable({
+                items: "tr:not([placeholder])",
+                distance: 15,
+                handle: "[moveable]",
+                placeholder: 'ui-state-highlight',
+                stop: function( event, ui ) {
+                    update_m2m_selected_index();
+                }
+            });
+            $('#m2m_selected tbody').droppable({
+                activeClass: 'ui-state-default',
+                hoverClass: 'ui-state-hover',
+                accept: 'tr',
+                scope: "m2m_all",
+                drop: function (event, ui) {
+                    $(this).children('[placeholder]').remove();
+                }
+            });
+            $('#m2m_all table').droppable({
+                activeClass: 'ui-state-default',
+                hoverClass: 'ui-state-hover',
+                accept: '#m2m_selected tr:not([placeholder])',
+                drop: function (event, ui) {
+                    ui.draggable.remove();
+                    if ($('#m2m_selected tbody tr').length <= 1) {
+                        $('#m2m_selected tbody').append($('<tr placeholder><td colspan="4" class="text-center">无关联数据</td></tr>'));
+                    }
+                }
+            })
+        }
+        // 更新已选m2m的序号，更新m2m field内容
+        function update_m2m_selected_index(init) {
+            var steps = $('#m2m_selected tbody tr');
+            var step_list = [];
+            steps.each(function(i) {
+                $(this).children('[index]').text(i+1);
+                step_list.push($(this).children('td:nth-of-type(3)').text());
+            });
+            var json_str = JSON.stringify(step_list);
+            $('input[name=case]').val(json_str);
+            if (init) {
+                $('input[name=case]').attr('value', json_str);
+            }
+        }
+    </script>
+{% endblock %}
+
+{% block detail_header %}
+    <ol class="breadcrumb my-4">
+        <li class="breadcrumb-item active">
+        {% if form.initial %}
+            创建时间：{{ obj.created_date }}，创建人：{{ obj.creator }}，上次修改时间：{{ obj.modified_date }}，修改人：{{ obj.modifier }}
+        {% else %}
+            添加一个套件
+        {% endif %}
+        </li>
+    </ol>
+{% endblock %}
+
+{% block detail_form %}
+    <form method="post" id="object_form" novalidate>
+        {% csrf_token %}
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">名称</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.name %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">描述</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_textarea.html' with field=form.description rows='5' %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">关键字</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.keyword %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">基础超时设置</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.base_timeout %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">UI测试截图</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_checkbox.html' with field=form.ui_get_ss %}
+            </div>
+        </div>
+
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">文件日志级别</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.log_level %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">控台日志级别</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.console_log_level %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">启用线程数</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.thread_count %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">测试配置</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.config %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">公共变量组</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.variable_group %}
+            </div>
+        </div>
+
+        <input name="case" hidden>
+        <input name="redirect" hidden value="{{ redirect }}">
+        <input name="redirect_url" hidden value="{{ redirect_url }}">
+
+        <div id='case' class="row">
+            <div id="m2m_selected" class="col-6 text-center">
+                <h5 class="ui-widget-header">关联用例列表</h5>
+                <div class="ui-widget-content">
+                    <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                        <colgroup>
+                            <col style='width: 1em;'>
+                            <col style='width: 60px;'>
+                            <col style='width: 60px;'>
+                            <col>
+                        </colgroup>
+                        <thead class="thead-light"><tr><th></th><th>序号</th><th>ID</th><th>名称</th></tr></thead>
+                        <tbody class="text-left">
+                            <tr placeholder><td colspan="4" class="text-center">无关联数据</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="m2m_all" class="col-6 text-center">
+                <h5 class="ui-widget-header">可选用例列表</h5>
+                <div class="ui-widget-content">
+                    <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                        <colgroup>
+                            <col style='width: 1em;'>
+                            <col style='width: 60px;'>
+                            <col>
+                        </colgroup>
+                        <thead class="thead-light"><tr><th></th><th>ID</th><th>名称</th></tr></thead>
+                        <tbody class="text-left"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {% include 'main/include/submit_button_group.html' %}
+    </form>
+{% endblock %}

@@ -31,11 +31,11 @@
             </thead>
             <tbody>
                 {% for object in objects %}
-                    <tr pk="{{ object.pk }}" edit_url="{% url 'case' object.pk %}" updateUrl="{% url 'case_update' object.pk %}" delUrl="{% url 'case_delete' object.pk %}">
+                    <tr pk="{{ object.pk }}" edit_url="{% url 'case' object.pk %}" quick_update_url="{% url 'case_quick_update' object.pk %}" del_url="{% url 'case_delete' object.pk %}">
                         <td col_name='id' class="middle">{{ object.pk }}</td>
                         <td quick_update col_name='name' class="align-middle">{{ object.name }}</td>
                         <td quick_update col_name='keyword' class="align-middle">{{ object.keyword }}</td>
-                        <td col_name='step_count' class="middle">{{ object.step_count }}</td>
+                        <td col_name='step_count' class="middle">{{ object.m2m_count }}</td>
                         <td>
                             <div class="middle">
                                 <button type="button" name="edit_button" class="btn btn-info"><i class="icon-pencil"></i></button>

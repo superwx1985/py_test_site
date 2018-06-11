@@ -21,6 +21,7 @@ import main.views.case as case
 import main.views.step as step
 import main.views.config as config
 import main.views.variable as variable
+import main.views.suite as suite
 
 
 urlpatterns = [
@@ -31,14 +32,16 @@ urlpatterns = [
     path('case/add/', case.case_add, name='case_add'),
     path('case/<int:pk>/', case.case, name='case'),
     path('case/<int:pk>/delete/', case.case_delete, name='case_delete'),
-    path('case/<int:pk>/update/', case.case_update, name='case_update'),
+    path('case/<int:pk>/quick_update/', case.case_quick_update, name='case_quick_update'),
     path('case/<int:pk>/steps/', case.case_steps, name='case_steps'),
+    path('case/list_all/', case.case_list_all, name='case_list_all'),
+    path('case/list_temp/', case.case_list_temp, name='case_list_temp'),
 
     path('steps/', step.steps, name='steps'),
     path('step/add/', step.step_add, name='step_add'),
     path('step/<int:pk>/', step.step, name='step'),
     path('step/<int:pk>/delete/', step.step_delete, name='step_delete'),
-    path('step/<int:pk>/update/', step.step_update, name='step_update'),
+    path('step/<int:pk>/quick_update/', step.step_quick_update, name='step_quick_update'),
     path('step/list_all/', step.step_list_all, name='step_list_all'),
     path('step/list_temp/', step.step_list_temp, name='step_list_temp'),
 
@@ -46,14 +49,22 @@ urlpatterns = [
     path('config/add/', config.config_add, name='config_add'),
     path('config/<int:pk>/', config.config, name='config'),
     path('config/<int:pk>/delete/', config.config_delete, name='config_delete'),
-    path('config/<int:pk>/update/', config.config_update, name='config_update'),
+    path('config/<int:pk>/quick_update/', config.config_quick_update, name='config_quick_update'),
 
     path('variable_groups/', variable.variable_groups, name='variable_groups'),
     path('variable_group/add/', variable.variable_group_add, name='variable_group_add'),
     path('variable_group/<int:pk>/', variable.variable_group, name='variable_group'),
     path('variable_group/<int:pk>/delete/', variable.variable_group_delete, name='variable_group_delete'),
-    path('variable_group/<int:pk>/update/', variable.variable_group_update, name='variable_group_update'),
+    path('variable_group/<int:pk>/quick_update/', variable.variable_group_quick_update, name='variable_group_quick_update'),
     path('variable_group/<int:pk>/variables/', variable.variable_group_variables, name='variable_group_variables'),
+
+    path('suites/', suite.suites, name='suites'),
+    path('suite/add/', suite.suite_add, name='suite_add'),
+    path('suite/<int:pk>/', suite.suite, name='suite'),
+    path('suite/<int:pk>/delete/', suite.suite_delete, name='suite_delete'),
+    path('suite/<int:pk>/quick_update/', suite.suite_quick_update, name='suite_quick_update'),
+    path('suite/<int:pk>/cases/', suite.suite_cases, name='suite_cases'),
+    path('suite/<int:pk>/execute/', suite.suite_execute, name='suite_execute'),
 
     path('test1/', general.test1, name='test1'),
     path('test2/', general.test2, name='test2'),

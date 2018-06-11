@@ -21,7 +21,7 @@ function quick_update(tds, func, callback_func) {
         var td = $(this);
         var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
         var col_name = td.attr('col_name');
-        var url = td.parent('tr').attr('update_url');
+        var url = td.parent('tr').attr('quick_update_url');
         var pk = td.parent('tr').attr('pk');
         // 判断是否已在编辑
         if (td.attr('editing')) {
@@ -105,7 +105,6 @@ function bind_delete_button() {
     $('button[name="delete_button"]').off('click').click(function () {
         var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
         var url = $(this).parents('tr').attr('del_url');
-        var pk = $(this).parents('tr').attr('pk');
         // var name = $(this).parent().siblings('td[col_name="name"]').text();
         var name = $(this).parents('tr').find('td[col_name="name"]').text();
         var msg = '确定要删除<span class="mark">' + name + '</span>吗？';
@@ -125,7 +124,7 @@ function bind_delete_button() {
             },
             callback: function (result) {
                 if (result === true) {
-                    $.post(url, {'csrfmiddlewaretoken': csrf_token, 'pk': pk}, function(data) {
+                    $.post(url, {'csrfmiddlewaretoken': csrf_token}, function(data) {
                         $("#objects_form").submit()
                     });
                 }

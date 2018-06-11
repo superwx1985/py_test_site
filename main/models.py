@@ -12,13 +12,13 @@ class Case(models.Model):
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='case_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
-    # config = models.ForeignKey('main.Config', on_delete=models.DO_NOTHING)
+    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.DO_NOTHING, blank=True, null=True)
     step = models.ManyToManyField('Step', through='CaseVsStep', through_fields=('case', 'step'))
 
     class Meta:
         pass
         # db_table = 'test_case_step'
-        ordering = ['name']  # 这个字段是告诉Django模型对象返回的记录结果集是按照哪个字段排序的,-xxx表示降序，?xxx表示随机
+        ordering = ['-pk']  # 这个字段是告诉Django模型对象返回的记录结果集是按照哪个字段排序的,-xxx表示降序，?xxx表示随机
 
     def __str__(self):
         return self.name
@@ -87,7 +87,7 @@ class Step(models.Model):
 
     class Meta:
         # db_table = 'test_case_step'
-        ordering = ['name']
+        ordering = ['-pk']
         pass
 
     def __str__(self):
@@ -199,31 +199,16 @@ class Config(models.Model):
         return self.name
 
 
-class Group(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=100, blank=True, default='')
-    creator = models.ForeignKey(User, verbose_name='创建人', related_name='group_creator', on_delete=models.DO_NOTHING)
-    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='group_modifier', on_delete=models.DO_NOTHING)
-    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_active = models.BooleanField(default=True)
-
-    def natural_key(self):  # 序列化时，可以用此值代替外键ID
-        return self.name
-
-    def __str__(self):
-        return self.name
-
-
 # 变量组表
 class VariableGroup(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(max_length=100, blank=True, default='')
-    creator = models.ForeignKey(User, verbose_name='创建人', related_name='variable_group_creator', on_delete=models.DO_NOTHING)
+    creator = models.ForeignKey(User, verbose_name='创建人', related_name='variable_group_creator',
+                                on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='variable_group_modifier', on_delete=models.DO_NOTHING)
+    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='variable_group_modifier',
+                                 on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
 
@@ -250,3 +235,58 @@ class Variable(models.Model):
 
     class Meta:
         unique_together = ('name', 'variable_group')
+
+
+# 测试套件
+class Suite(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(max_length=100, blank=True, default='')
+    creator = models.ForeignKey(User, verbose_name='创建人', related_name='suite_creator', on_delete=models.DO_NOTHING)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='suite_modifier', on_delete=models.DO_NOTHING)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_active = models.BooleanField(default=True)
+    base_timeout = models.FloatField(default=10)
+    ui_get_ss = models.BooleanField(default=True)
+    log_level_list = (
+        (0, 'NOTSET'),
+        (10, 'DEBUG'),
+        (20, 'INFO'),
+        (30, 'WARNING'),
+        (40, 'ERROR'),
+        (50, 'CRITICAL'),
+    )
+    log_level = models.IntegerField(choices=log_level_list, default=20)
+    console_log_level = models.IntegerField(choices=log_level_list, default=20)
+    thread_count = models.IntegerField(default=1)
+    config = models.ForeignKey('main.Config', on_delete=models.DO_NOTHING)
+    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.DO_NOTHING, blank=True, null=True)
+    case = models.ManyToManyField('Case', through='SuiteVsCase', through_fields=('suite', 'case'))
+
+    def natural_key(self):  # 序列化时，可以用此值代替外键ID
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+
+# 测试套件和用例的对应关系
+class SuiteVsCase(models.Model):
+    suite = models.ForeignKey('main.Suite', on_delete=models.DO_NOTHING)
+    case = models.ForeignKey('main.Case', on_delete=models.DO_NOTHING)
+    creator = models.ForeignKey(User, verbose_name='创建人', related_name='suite_vs_case_creator',
+                                on_delete=models.DO_NOTHING)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='suite_vs_case_modifier',
+                                 on_delete=models.DO_NOTHING)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_active = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('suite', 'case', 'order')
+        ordering = ['suite', 'order']
+
+    def __str__(self):
+        return '{} [{}]<===>{} [{}]'.format(self.suite.id, self.suite.name, self.case.id, self.case.name)

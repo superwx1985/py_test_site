@@ -1,0 +1,67 @@
+{% extends 'main/list_base.html' %}
+{% block title %}套件 - {{ block.super }}{% endblock %}
+{% block script %}
+    <script>
+        $(function () {
+            // 更新导航栏
+            $('#nav_suite').addClass('active');
+            // 获取添加地址
+            window.addUrl="{% url 'suite_add' %}"
+            // 运行按钮
+            $('[name=execute_button]').on('click', function () {
+                var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
+                var url = $(this).parents('tr').attr('exe_url');
+                console.log(url)
+                $.post(url, {'csrfmiddlewaretoken': csrf_token}, function(data) {
+
+                    });
+            });
+        })
+    </script>
+{% endblock %}
+{% block result_table %}
+    <div class="table-responsive" id='result_table'>
+        <table class="table table-striped table-bordered table-hover">
+            <colgroup>
+                <col style='width: 80px;'>
+                <col>
+                <col style='width: 200px;'>
+                <col style='width: 400px;'>
+                <col style='width: 150px;'>
+                <col style='width: 160px;'>
+            </colgroup>
+            <thead class="thead-light middle">
+                <tr>
+                    <th>ID</th>
+                    <th>名称</th>
+                    <th>关键字</th>
+                    <th>配置</th>
+                    <th>用例数</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for object in objects %}
+                    <tr pk="{{ object.pk }}" edit_url="{% url 'suite' object.pk %}" quick_update_url="{% url 'suite_quick_update' object.pk %}" del_url="{% url 'suite_delete' object.pk %}" exe_url="{% url 'suite_execute' object.pk %}">
+                        <td col_name='id' class="middle">{{ object.pk }}</td>
+                        <td quick_update col_name='name' class="align-middle">{{ object.name }}</td>
+                        <td quick_update col_name='keyword' class="align-middle">{{ object.keyword }}</td>
+                        <td quick_update class="align-middle">{{ object.config__name }}</td>
+                        <td col_name='step_count' class="middle">{{ object.m2m_count }}</td>
+                        <td>
+                            <div class="middle">
+                                <button type="button" name="execute_button" class="btn btn-outline-success"><i class="icon-play"></i></button>
+                                <button type="button" name="edit_button" class="btn btn-info"><i class="icon-pencil"></i></button>
+                                <button type="button" name="delete_button" class="btn btn-danger"><i class="icon-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center">查无数据</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

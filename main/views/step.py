@@ -139,7 +139,7 @@ def step_delete(request, pk):
 
 
 @login_required
-def step_update(request, pk):
+def step_quick_update(request, pk):
     if request.method == 'POST':
         response_ = {'new_value': ''}
         try:
@@ -181,28 +181,28 @@ def step_list_all_old(request):
 # 获取全部step
 @login_required
 def step_list_all(request):
-    v = Step.objects.filter(is_active=1).order_by('pk').values('pk', 'name').annotate(
+    objects = Step.objects.filter(is_active=1).order_by('pk').values('pk', 'name').annotate(
         action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
     data_dict = dict()
-    data_dict['data'] = list(v)
+    data_dict['data'] = list(objects)
     return JsonResponse(data_dict)
 
 
 # 获取临时step
 @login_required
 def step_list_temp(request):
-    step_list = json.loads(request.POST.get('condition', ''))
+    list_ = json.loads(request.POST.get('condition', ''))
     order = 0
-    list_ = list()
-    for step_str in step_list:
-        if step_str.strip() == '':
+    list_temp = list()
+    for pk in list_:
+        if pk.strip() == '':
             continue
         order += 1
-        step_ = Step.objects.filter(pk=step_str).values('pk', 'name').annotate(
+        objects = Step.objects.filter(pk=pk).values('pk', 'name').annotate(
             action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
-        step_ = list(step_)
-        step_[0]['order'] = order
-        list_.append(step_[0])
+        objects = list(objects)
+        objects[0]['order'] = order
+        list_temp.append(objects[0])
     data_dict = dict()
-    data_dict['data'] = list_
+    data_dict['data'] = list_temp
     return JsonResponse(data_dict)

@@ -74,11 +74,11 @@ def variable_group(request, pk):
             form_.is_active = obj.is_active
             form_.save()
             form.save_m2m()
-            vo = Variable.objects.filter(variable_group=obj)
-            vv = vo.order_by('order').values('name', 'value')
-            vv = list(vv)
-            if vv != variable_list:
-                vo.delete()
+            objects = Variable.objects.filter(variable_group=obj)
+            object_values = objects.order_by('order').values('name', 'value')
+            object_values = list(object_values)
+            if object_values != variable_list:
+                objects.delete()
                 order = 0
                 for v in variable_list:
                     if not v:
@@ -121,13 +121,14 @@ def variable_group_add(request):
             form_.is_active = True
             form_.save()
             form.save_m2m()
-            pk = form_.id
+            obj = form_
+            pk = obj.id
             order = 0
             for v in variable_list:
                 if not v:
                     continue
                 order += 1
-                Variable.objects.create(variable_group=pk, name=v['name'], value=v['value'], order=order)
+                Variable.objects.create(variable_group=obj, name=v['name'], value=v['value'], order=order)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
             redirect_url = request.POST.get('redirect_url', '')
@@ -157,7 +158,7 @@ def variable_group_delete(request, pk):
 
 
 @login_required
-def variable_group_update(request, pk):
+def variable_group_quick_update(request, pk):
     if request.method == 'POST':
         response_ = {'new_value': ''}
         try:

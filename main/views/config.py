@@ -128,7 +128,7 @@ def config_delete(request, pk):
 
 
 @login_required
-def config_update(request, pk):
+def config_quick_update(request, pk):
     if request.method == 'POST':
         response_ = {'new_value': ''}
         try:

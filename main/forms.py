@@ -147,3 +147,21 @@ class VariableForm(forms.ModelForm):
             # 'save_as': forms.Textarea(),
             # 'ui_alert_handle': forms.RadioSelect,
         }
+
+
+class SuiteForm(forms.ModelForm):
+    # 不验证某些字段
+    creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+    modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+    is_active = forms.CharField(required=False)
+    case = forms.CharField(required=False, validators=[])
+
+    class Meta:
+        model = Suite
+        fields = '__all__'
+        widgets = {
+            # 'name': forms.Textarea(),
+            # 'keyword': forms.Textarea(),
+            # 'save_as': forms.Textarea(),
+            # 'ui_alert_handle': forms.RadioSelect,
+        }

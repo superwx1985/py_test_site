@@ -17,28 +17,31 @@
         $(function () {
             // 更新导航栏
             $('#nav_case').addClass('active');
-            // 获取全部step
-            getList("{% url 'step_list_all' %}", $('input[name="csrfmiddlewaretoken"]').val(), update_step_list_all);
-            {% if pk %}
-                // 获取已选step
-                {% if temp_list_json %}
-                    getList("{% url 'case_steps' pk %}", $('input[name="csrfmiddlewaretoken"]').val(), step_list_selected_save);
-                    getList("{% url 'step_list_temp' %}", $('input[name="csrfmiddlewaretoken"]').val(), step_list_selected_update, '{{ temp_list_json|safe }}');
-                {% else %}
-                    getList("{% url 'case_steps' pk %}", $('input[name="csrfmiddlewaretoken"]').val(), step_list_selected_save_and_update);
+            window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
+            // 获取全部m2m
+            getList("{% url 'step_list_all' %}", window.$csrf_input.val(), update_m2m_list_all);
+            {% if temp_list_json %}
+                // 获取暂存m2m
+                getList("{% url 'step_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, "{{ temp_list_json|escapejs }}");
+                {% if pk %}
+                    // 获取m2m
+                    getList("{% url 'case_steps' pk %}", window.$csrf_input.val(), m2m_list_selected_save);
                 {% endif %}
             {% else %}
-                update_steps_selected_index(true);
+                {% if pk %}
+                    // 获取m2m
+                    getList("{% url 'case_steps' pk %}", window.$csrf_input.val(), m2m_list_selected_save_and_update);
+                {% endif %}
             {% endif %}
             // 处理step拖动及排序
             stepHandle();
             // 还原已选列表
             $('input[type=reset]').on('click', function() {
-                step_list_selected_update(true, $('#steps_selected tbody').data('original_data'))
+                m2m_list_selected_update(true, $('#steps_selected tbody').data('original_data'))
             });
         });
         // 更新全部步骤列表
-        function update_step_list_all(success, data) {
+        function update_m2m_list_all(success, data) {
             if (success) {
                 var tbody = $('#steps_all tbody');
                 tbody.empty();
@@ -76,14 +79,14 @@
             }
         }
         // 保存已选步骤初始值
-        function step_list_selected_save(success, data){
+        function m2m_list_selected_save(success, data){
             if (success) {
                 var tbody = $('#steps_selected tbody');
                 tbody.data('original_data', data);
             }
         }
         // 更新已选步骤列表
-        function step_list_selected_update(success, data) {
+        function m2m_list_selected_update(success, data) {
             if (success) {
                 var tbody = $('#steps_selected tbody');
                 if (data.data.length > 0) {
@@ -102,9 +105,9 @@
             }
         }
         // 保存并更新已选步骤列表
-        function step_list_selected_save_and_update(success, data) {
-            step_list_selected_save(success, data);
-            step_list_selected_update(success, data)
+        function m2m_list_selected_save_and_update(success, data) {
+            m2m_list_selected_save(success, data);
+            m2m_list_selected_update(success, data)
         }
         // 处理step拖动及排序
         function stepHandle() {
@@ -133,7 +136,7 @@
                 drop: function (event, ui) {
                     ui.draggable.remove();
                     if ($('#steps_selected tbody tr').length <= 1) {
-                        $('#steps_selected tbody').append($('<tr placeholder><td colspan="5" class="text-center">未选中步骤</td></tr>'));
+                        $('#steps_selected tbody').append($('<tr placeholder><td colspan="5" class="text-center">无关联数据</td></tr>'));
                     }
                 }
             })
@@ -141,7 +144,7 @@
         // 更新已选步骤的序号，更新step field内容
         function update_steps_selected_index(init) {
             var steps = $('#steps_selected tbody tr');
-            var step_list = new Array();
+            var step_list = [];
             steps.each(function(i) {
                 $(this).children('[index]').text(i+1);
                 step_list.push($(this).children('td:nth-of-type(3)').text());
@@ -188,6 +191,12 @@
                 {% include 'main/include/form_input.html' with field=form.keyword %}
             </div>
         </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">本地变量组</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.variable_group %}
+            </div>
+        </div>
 
         <input type="text" name="step" id="id_step" hidden>
         <input name="redirect" hidden value="{{ redirect }}">
@@ -207,7 +216,7 @@
                         </colgroup>
                         <thead class="thead-light"><tr><th></th><th>序号</th><th>ID</th><th>名称</th><th>动作</th></tr></thead>
                         <tbody class="text-left">
-                            <tr placeholder><td colspan="5" class="text-center">未选中步骤</td></tr>
+                            <tr placeholder><td colspan="5" class="text-center">无关联数据</td></tr>
                         </tbody>
                     </table>
                 </div>

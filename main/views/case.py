@@ -1,21 +1,15 @@
 import json
 import traceback
-import sys
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
-from django.shortcuts import render, get_object_or_404
-from django.core.serializers import serialize
+from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
-from django.db import connection
-from django.db.models import Q, F, CharField, Value, Count
+from django.db.models import F, CharField, Value, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
-from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from django.core import serializers
-# from django.views.decorators.csrf import csrf_exempt
-from main.models import Case, Step, Action, CaseVsStep
-from main.forms import PaginatorForm, StepForm, CaseForm
+from main.models import Case, Step, CaseVsStep
+from main.forms import PaginatorForm, CaseForm
 from main.views.general import get_query_condition
 
 
@@ -39,9 +33,8 @@ def cases(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    # objects = Case.objects.filter(q, is_active=1).order_by('id')
-    objects = Case.objects.filter(is_active=1).order_by('id').values('pk', 'name', 'keyword').annotate(
-        step_count=Count('step'))
+    objects = Case.objects.filter(q, is_active=1).order_by('id').values('pk', 'name', 'keyword').annotate(
+        m2m_count=Count('step'))
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)
@@ -72,7 +65,7 @@ def case(request, pk):
     elif request.method == 'POST':
         creator = obj.creator
         form = CaseForm(data=request.POST, instance=obj)
-        step_list = json.loads(request.POST.get('step', '[]'))
+        m2m_list = json.loads(request.POST.get('step', '[]'))
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = creator
@@ -80,19 +73,20 @@ def case(request, pk):
             form_.is_active = obj.is_active
             form_.save()
             # form.save_m2m()
-            cvs = CaseVsStep.objects.filter(case=obj).order_by('order')
-            original_step_list = list()
-            for csv_dict in cvs.values('step'):
-                original_step_list.append(str(csv_dict['step']))
-            if original_step_list != step_list:
-                cvs.delete()
+            m2m = CaseVsStep.objects.filter(case=obj).order_by('order')
+            original_m2m_list = list()
+            for dict_ in m2m.values('step'):
+                original_m2m_list.append(str(dict_['step']))
+            if original_m2m_list != m2m_list:
+                m2m.delete()
                 order = 0
-                for step_str in step_list:
-                    if step_str.strip() == '':
+                for m2m_pk in m2m_list:
+                    if m2m_pk.strip() == '':
                         continue
                     order += 1
-                    step_ = Step.objects.get(pk=step_str)
-                    CaseVsStep.objects.create(case=obj, step=step_, order=order, creator=request.user, modifier=request.user)
+                    m2m_object = Step.objects.get(pk=m2m_pk)
+                    CaseVsStep.objects.create(case=obj, step=m2m_object, order=order, creator=request.user,
+                                              modifier=request.user)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
             redirect_url = request.POST.get('redirect_url', '')
@@ -102,14 +96,14 @@ def case(request, pk):
                 return HttpResponseRedirect(redirect_url)
         else:
             # 暂存step列表
-            csv = CaseVsStep.objects.filter(case=obj).order_by('order')
-            original_step_list = list()
-            for csv_dict in csv.values('step'):
-                original_step_list.append(str(csv_dict['step']))
+            m2m = CaseVsStep.objects.filter(case=obj).order_by('order')
+            original_m2m_list = list()
+            for dict_ in m2m.values('step'):
+                original_m2m_list.append(str(dict_['step']))
             temp_list = list()
             temp_dict = dict()
-            if original_step_list != step_list:
-                temp_list_json = json.dumps(step_list)
+            if original_m2m_list != m2m_list:
+                temp_list_json = json.dumps(m2m_list)
         redirect_url = request.POST.get('redirect_url', '')
         is_success = False
         return render(request, 'main/case/detail.html', locals())
@@ -126,7 +120,7 @@ def case_add(request):
         return render(request, 'main/case/detail.html', locals())
     elif request.method == 'POST':
         form = CaseForm(data=request.POST)
-        step_list = json.loads(request.POST.get('step', '[]'))
+        m2m_list = json.loads(request.POST.get('step', '[]'))
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = request.user
@@ -137,12 +131,12 @@ def case_add(request):
             obj = form_
             pk = obj.id
             order = 0
-            for step_str in step_list:
-                if step_str.strip() == '':
+            for m2m_pk in m2m_list:
+                if m2m_pk.strip() == '':
                     continue
                 order += 1
-                step_ = Step.objects.get(pk=step_str)
-                CaseVsStep.objects.create(case=obj, step=step_, order=order, creator=request.user,
+                m2m_object = Step.objects.get(pk=m2m_pk)
+                CaseVsStep.objects.create(case=obj, step=m2m_object, order=order, creator=request.user,
                                           modifier=request.user)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
@@ -154,7 +148,7 @@ def case_add(request):
             else:
                 return HttpResponseRedirect(redirect_url)
         else:
-            temp_list_json = json.dumps(step_list)
+            temp_list_json = json.dumps(m2m_list)
         redirect_url = request.POST.get('redirect_url', '')
         is_success = False
         return render(request, 'main/case/detail.html', locals())
@@ -170,7 +164,7 @@ def case_delete(request, pk):
 
 
 @login_required
-def case_update(request, pk):
+def case_quick_update(request, pk):
     if request.method == 'POST':
         response_ = {'new_value': ''}
         try:
@@ -209,21 +203,29 @@ def case_steps(request, pk):
     return JsonResponse(data_dict)
 
 
-# 获取临时step
+# 获取全部case
 @login_required
-def step_list_temp(request):
-    step_list = json.loads(request.POST.get('condition', ''))
+def case_list_all(request):
+    objects = Case.objects.filter(is_active=1).order_by('pk').values('pk', 'name')
+    data_dict = dict()
+    data_dict['data'] = list(objects)
+    return JsonResponse(data_dict)
+
+
+# 获取临时case
+@login_required
+def case_list_temp(request):
+    list_ = json.loads(request.POST.get('condition', ''))
     order = 0
-    list_ = list()
-    for step_str in step_list:
-        if step_str.strip() == '':
+    list_temp = list()
+    for pk in list_:
+        if pk.strip() == '':
             continue
         order += 1
-        step_ = Step.objects.filter(pk=step_str).values('pk', 'name').annotate(
-            action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
-        step_ = list(step_)
-        step_[0]['order'] = order
-        list_.append(step_[0])
+        objects = Case.objects.filter(pk=pk).values('pk', 'name')
+        objects = list(objects)
+        objects[0]['order'] = order
+        list_temp.append(objects[0])
     data_dict = dict()
-    data_dict['data'] = list_
+    data_dict['data'] = list_temp
     return JsonResponse(data_dict)
