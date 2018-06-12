@@ -2,9 +2,9 @@ import json
 import re
 import uuid
 from copy import deepcopy
-from py_test import vic_tools as attr_display
 from py_test.vic_tools import vic_eval
 from py_test.vic_tools.vic_date_handle import str_to_time
+from py_test.vic_tools.attr_display import AttrDisplay
 from py_test.vic_tools.vic_str_handle import remove_line_break_and_blank_from_both_ends, remove_line_break_from_both_ends
 from py_test.init_log import get_thread_logger
 
@@ -180,7 +180,7 @@ class FindObject:
 
 
 # 保存查找结果
-class FindResult(attr_display.Attr_display):
+class FindResult(AttrDisplay):
     def __init__(self, is_matched, condition, data, match_count, condition_value, operator_list, data_object):
         self.is_matched = is_matched
         self.condition = condition

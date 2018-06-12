@@ -1,26 +1,31 @@
 import datetime
 import os
+import json
+import pytz
 import logging
-from py_test.general import vic_variables, vic_public_elements, vic_config
+from py_test.general import vic_variables, vic_public_elements, vic_config, run_case
 from concurrent.futures import ThreadPoolExecutor, wait
 from py_test.general.import_test_data import get_matched_file_list
 from py_test.general.vic_method import load_public_data
-from main.models import Suite, Case
+from main.models import Suite, Case, SuiteResult
+from django.forms.models import model_to_dict
 
 
-def batch_run_excel(pk, result_dir, get_ss=True, log_level=logging.DEBUG, console_log_level=logging.INFO, thread_count=1):
+def batch_run_excel(request, pk, result_dir):
+    start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+    try:
+        suite = Suite.objects.get(pk=pk)
+    except Suite.DoesNotExist:
+        return
+
+    log_level = suite.log_level
+    console_log_level = suite.console_log_level
     from py_test.init_log import init_logger, get_thread_logger
     init_logger(log_level, console_log_level)
     logger = get_thread_logger()
     logger.info('开始')
     logger.info('========================================')
     start_time = datetime.datetime.now()
-
-    Suite.objects.get()
-    try:
-        suite = Suite.objects.get(pk=pk)
-    except Suite.DoesNotExist:
-        return
 
     # 读取公共配置
     public_variable_group = suite.variable_group
@@ -34,6 +39,25 @@ def batch_run_excel(pk, result_dir, get_ss=True, log_level=logging.DEBUG, consol
 
     # 获取用例组
     cases = Case.objects.filter(suite=suite).order_by('suitevscase__order')
+
+    # 限制进程数
+    thread_count = suite.thread_count if suite.thread_count <= 10 else 10
+
+    # 初始化suite result
+    suite_result = SuiteResult.objects.create(
+        name=suite.name,
+        description=suite.description,
+        keyword=suite.keyword,
+        base_timeout=suite.base_timeout,
+        ui_get_ss=suite.ui_get_ss,
+        thread_count=suite.thread_count,
+        config=json.dumps(model_to_dict(suite.config) if suite.config else {}),
+        variable_group=json.dumps(model_to_dict(suite.variable_group) if suite.variable_group else {}),
+
+        suite=suite,
+        creator=request.user,
+        start_date=start_date
+    )
 
     if len(cases) == 0:
         logger.info('没有符合条件的用例')
@@ -56,42 +80,51 @@ def batch_run_excel(pk, result_dir, get_ss=True, log_level=logging.DEBUG, consol
 
     futures = list()
     pool = ThreadPoolExecutor(thread_count)
-    tc_id = 1
+    case_order = 0
     for case in cases:
-        if case_type_mapping[case_type] == 'ui':
-            from py_test.ui_test.run_case import run
-            futures.append(
-                pool.submit(run, excel_file=tc[0], tc_id=tc_id, variables=vic_variables.Variables(),
-                            result_dir=result_path, base_timeout=base_timeout, get_ss=get_ss))
-        elif case_type_mapping[case_type] == 'api':
-            from py_test.api_test import run
-            futures.append(
-                pool.submit(run, excel_file=tc[0], tc_id=tc_id, variables=vic_variables.Variables(),
-                            result_dir=result_path, base_timeout=base_timeout))
-        elif case_type_mapping[case_type] == 'db':
-            from py_test.db_test import run
-            futures.append(pool.submit(run, excel_file=tc[0], tc_id=tc_id, variables=vic_variables.Variables()))
-        tc_id += 1
+        case_order += 1
+        run_case.run(case=case,
+                     suite_result=suite_result,
+                     result_path=result_path,
+                     case_order=case_order,
+                     user=request.user,
+                     )
+        import time
+        time.sleep(3)
 
-    future_results = wait(futures)
+    # for case in cases:
+    #     futures.append(pool.submit(
+    #         run_case,
+    #         case=case,
+    #         suite_result=suite_result,
+    #         result_path=result_path,
+    #         case_order=case_order,
+    #         username=request.user.username,
+    #     ))
+    #     case_order += 1
+
+    # future_results = wait(futures)
     case_result_list = list()
     all_case_count = 0
     pass_case_count = 0
     fail_case_count = 0
     error_case_count = 0
     skip_case_count = 0
-    for future_result in future_results.done:
-        case_result = future_result.result()
-        case_result_list.append(case_result)
-        all_case_count += 1
-        if case_result.status == 'p':
-            pass_case_count += 1
-        elif case_result.status == 'f':
-            fail_case_count += 1
-        elif case_result.status == 'e':
-            error_case_count += 1
-        else:
-            skip_case_count += 1
+    # for future_result in future_results.done:
+    #     case_result = future_result.result()
+    #     print(case_result)
+    # for future_result in future_results.done:
+    #     case_result = future_result.result()
+    #     case_result_list.append(case_result)
+    #     all_case_count += 1
+    #     if case_result.status == 'p':
+    #         pass_case_count += 1
+    #     elif case_result.status == 'f':
+    #         fail_case_count += 1
+    #     elif case_result.status == 'e':
+    #         error_case_count += 1
+    #     else:
+    #         skip_case_count += 1
 
     # 按case id排序
     case_result_list.sort(key=lambda x: x.id)
@@ -107,47 +140,19 @@ def batch_run_excel(pk, result_dir, get_ss=True, log_level=logging.DEBUG, consol
     logger.info('开始生成测试报告...')
 
     from py_test.general.vic_method import generate_case_report
-    report_name = generate_case_report(case_type=case_type, result_dir=result_path, report_file_name=report_folder_name,
-                                       case_result_list=case_result_list, start_time=start_time, end_time=end_time,
-                                       report_title=report_title)
+    # report_name = generate_case_report(case_type=case_type, result_dir=result_path, report_file_name=report_folder_name,
+    #                                    case_result_list=case_result_list, start_time=start_time, end_time=end_time,
+    #                                    report_title=report_title)
+    report_name = case_order
+
     logger.info('测试报告生成完毕 => %s' % report_name)
     logger.info('========================================')
     logger.info('结束')
-    return report_name, all_case_count, pass_case_count, fail_case_count, error_case_count, skip_case_count
+
+    suite_result.end_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+    suite_result.save()
+    return suite_result
 
 
 if __name__ == '__main__':
-    # base_dir = os.path.dirname(__file__)
-    public_file_dir = 'D:/自动化测试工具/test_case/public'
-    case_dir = 'D:/自动化测试工具/test_case/ui'
-    case_ignore = '''
-~$
-'''
-    case_prefix = '''
-
-'''
-    case_suffix = '''
-xls, xlsx
-'''
-    case_keyword = '''
-
-'''
-    result_dir = 'D:/自动化测试工具/report'
-
-    batch_run_excel(public_file_dir, case_dir, case_ignore, case_prefix, case_suffix, case_keyword, result_dir,
-                    case_type='ui', base_timeout=10, report_title='debug', get_ss=1, log_level=5,
-                    console_log_level=logging.INFO, thread_count=1)
-
-    # 报告上传ftp
-    # hostaddr = '192.168.119.23'  # ftp地址
-    # username = 'wangx'  # 用户名
-    # password = '123456'  # 密码
-    # port = 9921  # 端口号
-    # encoding = 'gbk'  # 设置字符编码
-    # rootdir_local = os.path.split(reportname)[0]  # 本地目录
-    # rootdir_remote = '/result/'  # 远程目录
-    # import vic_test.vic_FTP as vic_FTP
-    # f = vic_FTP.MYFTP(hostaddr, username, password, rootdir_remote, port, encoding)
-    # f.login()
-    # f.download_files(rootdir_local, rootdir_remote)
-    # f.upload_files(rootdir_local, rootdir_remote, 1)
+    pass

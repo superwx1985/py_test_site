@@ -11,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from main.models import Suite, Case, SuiteVsCase
 from main.forms import PaginatorForm, SuiteForm
 from main.views.general import get_query_condition
+from django.forms.models import model_to_dict
 
 
 # 用例列表
@@ -225,4 +226,6 @@ def case_list_temp(request):
 @login_required
 def suite_execute(request, pk):
     print(pk)
-    return JsonResponse(dict())
+    from py_test.general.execute_suite import batch_run_excel
+    suite_result = batch_run_excel(request, pk, 'result1111')
+    return JsonResponse(model_to_dict(suite_result))

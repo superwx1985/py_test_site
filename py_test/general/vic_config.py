@@ -1,4 +1,5 @@
 config_dict = dict()
+config_dict['config'] = None
 
 
 def get_config():

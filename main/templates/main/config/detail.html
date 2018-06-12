@@ -25,19 +25,23 @@
             $('#id_ui_window_size').on('change', function () {
                 show_ui_window_size_related($(this))
             });
-            // 初始化窗口关联项
-            show_ui_window_size_related($('#id_ui_window_size'));
             // 初始化驱动类型关联项
             show_ui_selenium_client_related($('#id_ui_selenium_client'));
         });
         // 处理驱动类型关联项
         function show_ui_selenium_client_related($select) {
             if ($select.val() == 1) {
-                $('#id_ui_remote_id').attr('disabled', true);
-                $('#id_ui_remote_port').attr('disabled', true);
+                $('#ui_config').find('select:not(#id_ui_selenium_client),input').removeAttr('readonly');
+                $('#id_ui_remote_ip').attr('readonly', true);
+                $('#id_ui_remote_port').attr('readonly', true);
+                show_ui_window_size_related($('#id_ui_window_size'));
+            } else if ($select.val() == 2) {
+                $('#ui_config').find('select:not(#id_ui_selenium_client),input').removeAttr('readonly');
+                $('#id_ui_remote_ip').removeAttr('readonly');
+                $('#id_ui_remote_port').removeAttr('readonly');
+                show_ui_window_size_related($('#id_ui_window_size'));
             } else {
-                $('#id_ui_remote_id').removeAttr('disabled');
-                $('#id_ui_remote_port').removeAttr('disabled');
+                $('#ui_config').find('select:not(#id_ui_selenium_client),input').attr('readonly', true);
             }
         }
         // 处理窗口关联项
@@ -109,7 +113,7 @@
                             </div>
                             <div class="form-group" style="padding: 0 5px" form_data>
                                 <label>IP：</label>
-                                {% include 'main/include/form_input.html' with field=form.ui_remote_id %}
+                                {% include 'main/include/form_input.html' with field=form.ui_remote_ip %}
                             </div>
                             <div class="form-group" style="padding: 0 5px" form_data>
                                 <label>端口：</label>

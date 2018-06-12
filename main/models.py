@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 class Case(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=100, blank=True, default='')
+    keyword = models.CharField(blank=True, max_length=100)
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='case_creator', on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='case_modifier', on_delete=models.DO_NOTHING)
@@ -28,7 +28,7 @@ class Case(models.Model):
 class Step(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=100, blank=True, default='')
+    keyword = models.CharField(blank=True, max_length=100)
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='step_creator', on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='step_modifier', on_delete=models.DO_NOTHING)
@@ -125,7 +125,7 @@ class CaseVsStep(models.Model):
 class Action(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=100, blank=True, default='')
+    keyword = models.CharField(blank=True, max_length=100)
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='action_creator', on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='action_modifier', on_delete=models.DO_NOTHING)
@@ -163,18 +163,19 @@ class ActionType(models.Model):
 class Config(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=100, blank=True, default='')
+    keyword = models.CharField(blank=True, max_length=100)
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='config_creator', on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='config_modifier', on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
     ui_selenium_client_list = (
+        (0, '不启用'),
         (1, 'Selenium - 本地'),
         (2, 'Selenium - 远程'),
     )
     ui_selenium_client = models.IntegerField(choices=ui_selenium_client_list, default=0)
-    ui_remote_id = models.CharField(max_length=100, blank=True, default='')
+    ui_remote_ip = models.CharField(max_length=100, blank=True, default='')
     ui_remote_port = models.IntegerField(blank=True, null=True)
     ui_driver_list = (
         (1, 'Chrome'),
@@ -203,7 +204,7 @@ class Config(models.Model):
 class VariableGroup(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=100, blank=True, default='')
+    keyword = models.CharField(blank=True, max_length=100)
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='variable_group_creator',
                                 on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
@@ -241,7 +242,7 @@ class Variable(models.Model):
 class Suite(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
-    keyword = models.CharField(max_length=100, blank=True, default='')
+    keyword = models.CharField(blank=True, max_length=100)
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='suite_creator', on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='suite_modifier', on_delete=models.DO_NOTHING)
@@ -290,3 +291,80 @@ class SuiteVsCase(models.Model):
 
     def __str__(self):
         return '{} [{}]<===>{} [{}]'.format(self.suite.id, self.suite.name, self.case.id, self.case.name)
+
+
+# suite测试结果
+class SuiteResult(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(blank=True, max_length=100)
+    base_timeout = models.FloatField(default=10)
+    ui_get_ss = models.BooleanField(default=True)
+    thread_count = models.IntegerField(default=1)
+    config = models.TextField(blank=True)
+    variable_group = models.TextField(blank=True)
+
+    suite = models.ForeignKey('main.Suite', on_delete=models.DO_NOTHING)
+    creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.DO_NOTHING)
+    start_date = models.DateTimeField(blank=True, null=True)
+    end_date = models.DateTimeField(blank=True, null=True)
+    execute_count = models.IntegerField(blank=True, null=True)
+    pass_count = models.IntegerField(blank=True, null=True)
+    fail_count = models.IntegerField(blank=True, null=True)
+    error_count = models.IntegerField(blank=True, null=True)
+
+
+# case测试结果
+class CaseResult(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(blank=True, max_length=100)
+    variable_group = models.TextField(blank=True)
+
+    suite_result = models.ForeignKey('main.SuiteResult', on_delete=models.DO_NOTHING)
+    step_result = models.ForeignKey('main.StepResult', on_delete=models.DO_NOTHING, blank=True, null=True)
+    level = models.IntegerField(default=0)
+    case = models.ForeignKey('main.Case', on_delete=models.DO_NOTHING)
+    case_order = models.IntegerField(blank=True, null=True)
+    creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.DO_NOTHING)
+    start_date = models.DateTimeField(blank=True, null=True)
+    end_date = models.DateTimeField(blank=True, null=True)
+    execute_count = models.IntegerField(blank=True, null=True)
+    pass_count = models.IntegerField(blank=True, null=True)
+    fail_count = models.IntegerField(blank=True, null=True)
+    error_count = models.IntegerField(blank=True, null=True)
+    init_error = models.TextField(blank=True)
+
+
+# step测试结果
+class StepResult(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(blank=True, max_length=100)
+    variable_group = models.TextField(blank=True)
+    action = models.CharField(blank=True, max_length=100)
+    timeout = models.FloatField(blank=True, null=True)
+    save_as = models.CharField(blank=True, max_length=100)
+    ui_by = models.CharField(blank=True, max_length=100)
+    ui_locator = models.TextField(blank=True)
+    ui_index = models.IntegerField(blank=True, null=True)
+    ui_base_element = models.TextField(blank=True)
+    ui_data = models.TextField(blank=True)
+    ui_special_action = models.CharField(blank=True, max_length=100)
+    ui_alert_handle = models.CharField(blank=True, max_length=100)
+    api_url = models.TextField(blank=True)
+    api_headers = models.TextField(blank=True)
+    api_body = models.TextField(blank=True)
+    api_data = models.TextField(blank=True)
+
+    case_result = models.ForeignKey('main.CaseResult', on_delete=models.DO_NOTHING)
+    step = models.ForeignKey('main.Step', on_delete=models.DO_NOTHING)
+    step_order = models.IntegerField(blank=True, null=True)
+    creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.DO_NOTHING)
+    start_date = models.DateTimeField(blank=True, null=True)
+    end_date = models.DateTimeField(blank=True, null=True)
+    execute_count = models.IntegerField(blank=True, null=True)
+    pass_count = models.IntegerField(blank=True, null=True)
+    fail_count = models.IntegerField(blank=True, null=True)
+    error_count = models.IntegerField(blank=True, null=True)
+    init_error = models.TextField(blank=True)

@@ -23,60 +23,58 @@ from py_test.init_log import get_thread_logger
 
 
 # 获取浏览器driver
-def get_driver(driver_info):
-    if driver_info['driver_type'].lower() == 'local':
-        if driver_info['browser_type'].lower() == 'ie':
-            dr = webdriver.Ie()
-        elif driver_info['browser_type'].lower() == 'firefox':
-            if driver_info['browser_profile']:
-                dr = webdriver.Firefox(firefox_profile=webdriver.FirefoxProfile(driver_info['browser_profile']))
-            else:
-                dr = webdriver.Firefox()
-        elif driver_info['browser_type'].lower() == 'chrome':
+def get_driver(config):
+    if config.ui_selenium_client == 1:  # 本地
+        if config.ui_driver_type == 1:  # Chrome
             chrome_option = webdriver.ChromeOptions()
             chrome_option._arguments = ['test-type', "start-maximized", "no-default-browser-check"]
             dr = webdriver.Chrome(chrome_options=chrome_option)
-        elif driver_info['browser_type'].lower() == 'phantomjs':
+        elif config.ui_driver_type == 2:  # IE
+            dr = webdriver.Ie()
+        elif config.ui_driver_type == 3:  # FireFox
+            if config.ui_driver_ff_profile:
+                dr = webdriver.Firefox(firefox_profile=webdriver.FirefoxProfile(config.ui_driver_ff_profile))
+            else:
+                dr = webdriver.Firefox()
+        elif config.ui_driver_type == 4:  # PhantomJS
             dr = webdriver.PhantomJS()
         else:
-            raise Exception('No such driver, please check your setting')
-    elif driver_info['driver_type'].lower() == 'remote':
-        if not driver_info['browser_ip'] or not driver_info['browser_port']:
-            raise Exception('Missing remote browser config')
-        if driver_info['browser_type'].lower() == 'ie':
+            raise ValueError('浏览器类型错误，请检查配置项')
+    elif config.ui_selenium_client == 2:  # 远程
+        if not config.ui_remote_ip or not config.ui_remote_port:
+            raise ValueError('缺少远程驱动配置参数，检查配置项')
+        if config.ui_driver_type == 1:  # Chrome
             dr = webdriver.Remote(
-                command_executor='http://' + driver_info['browser_ip'] + ':' + driver_info['browser_port'] + '/wd/hub',
-                desired_capabilities=DesiredCapabilities.INTERNETEXPLORER)
-        elif driver_info['browser_type'].lower() == 'firefox':
+                command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
+                desired_capabilities=DesiredCapabilities.CHROME
+            )
+        elif config.ui_driver_type == 2:  # IE
             dr = webdriver.Remote(
-                command_executor='http://' + driver_info['browser_ip'] + ':' + driver_info['browser_port'] + '/wd/hub',
-                desired_capabilities=DesiredCapabilities.FIREFOX)
-        elif driver_info['browser_type'].lower() == 'chrome':
+                command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
+                desired_capabilities=DesiredCapabilities.INTERNETEXPLORER
+            )
+        elif config.ui_driver_type == 3:  # FireFox
             dr = webdriver.Remote(
-                command_executor='http://' + driver_info['browser_ip'] + ':' + driver_info['browser_port'] + '/wd/hub',
-                desired_capabilities=DesiredCapabilities.CHROME)
-        elif driver_info['browser_type'].lower() == 'safari':
+                command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
+                desired_capabilities=DesiredCapabilities.FIREFOX
+            )
+        elif config.ui_driver_type == 4:  # PhantomJS
             dr = webdriver.Remote(
-                command_executor='http://' + driver_info['browser_ip'] + ':' + driver_info['browser_port'] + '/wd/hub',
-                desired_capabilities=DesiredCapabilities.SAFARI)
-        elif driver_info['browser_type'].lower() == 'phantomjs':
-            dr = webdriver.Remote(
-                command_executor='http://' + driver_info['browser_ip'] + ':' + driver_info['browser_port'] + '/wd/hub',
-                desired_capabilities=DesiredCapabilities.PHANTOMJS)
+                command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
+                desired_capabilities=DesiredCapabilities.PHANTOMJS
+            )
         else:
-            raise Exception('No such driver, please check your setting')
+            raise ValueError('浏览器类型错误，请检查配置项')
     else:
-        raise Exception('No such driver, please check your setting')
+        raise ValueError('驱动类型错误，请检查配置项')
 
-    if driver_info['browser_size'] == 'maximize' or not driver_info['browser_size']:
-        dr.maximize_window()
-    elif driver_info['browser_size'] == 'custom':
-        if not driver_info['browser_width'] or not driver_info['browser_height']:
-            raise Exception('Missing browser width or height')
-        dr.set_window_size(driver_info['browser_width'], driver_info['browser_height'])
+    if config.ui_window_size_list == 2:
+        if not config.ui_window_width or not config.ui_window_height:
+            raise ValueError('自定义窗口但未指定大小，请检查配置项')
+        dr.set_window_size(config.ui_window_width, config.ui_window_height)
         dr.set_window_position(0, 0)
     else:
-        raise Exception('Browser size config error, please check your setting')
+        dr.maximize_window()
     return dr
 
 
