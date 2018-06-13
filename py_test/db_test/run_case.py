@@ -5,7 +5,7 @@ from py_test.db_test import method
 from py_test.vic_tools.vic_str_handle import change_digit_to_string
 from py_test.general import vic_variables, test_result
 from py_test.general import vic_method, import_test_data
-from py_test.init_log import get_thread_logger
+from py_test.general.thread_log import get_thread_logger
 
 
 # 获取全局变量
@@ -182,7 +182,7 @@ def run(excel_file, tc_id=1, variables=None):
 
 if __name__ == '__main__':
     import logging
-    from py_test.init_log import init_logger
+    from py_test.general.thread_log import init_logger
     init_logger(log_level=logging.DEBUG, console_log_level=logging.INFO)
     logger = get_thread_logger()
     # base_dir = os.path.dirname(__file__)

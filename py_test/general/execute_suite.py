@@ -3,7 +3,7 @@ import os
 import json
 import pytz
 import logging
-from py_test.general import vic_variables, vic_public_elements, vic_config, execute_case
+from py_test.general import vic_variables, vic_public_elements, vic_config, execute_case, thread_log
 from concurrent.futures import ThreadPoolExecutor, wait
 from py_test.general.import_test_data import get_matched_file_list
 from py_test.general.vic_method import load_public_data
@@ -18,7 +18,7 @@ def execute_suite(request, pk, result_dir):
     except Suite.DoesNotExist:
         return
 
-    console_log_level = suite.console_log_level
+    thread_log.THREAD_LEVEL = suite.log_level
 
     logger = logging.getLogger('py_test')
     logger.setLevel(suite.log_level)

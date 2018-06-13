@@ -26,7 +26,7 @@ def get_case_list(case_dir, case_ignore, case_prefix, case_suffix, case_keyword)
 def batch_run_excel(public_file_dir, case_dir, case_ignore, case_prefix, case_suffix, case_keyword, result_dir,
                     case_type, base_timeout=30, report_title='自动化测试报告', get_ss=True, log_level=logging.DEBUG,
                     console_log_level=logging.INFO, thread_count=1):
-    from py_test.init_log import init_logger, get_thread_logger
+    from py_test.general.thread_log import init_logger, get_thread_logger
     init_logger(log_level, console_log_level)
     logger = get_thread_logger()
     logger.info('开始')

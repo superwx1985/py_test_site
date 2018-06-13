@@ -1,6 +1,6 @@
 import ast
 from copy import deepcopy
-from py_test.init_log import get_thread_logger
+from py_test.general.thread_log import get_thread_logger
 
 
 class EvalObject:

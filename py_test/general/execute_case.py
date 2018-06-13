@@ -2,17 +2,15 @@ import datetime
 import time
 import json
 import traceback
-import logging
 import pytz
-from py_test.general import vic_variables, vic_public_elements, test_result, vic_config
-from py_test.general import vic_method, import_test_data
+from py_test.general import vic_variables, vic_public_elements
+from py_test.general import vic_method
 from py_test.ui_test import method
-from selenium.common.exceptions import UnexpectedAlertPresentException, NoSuchElementException
-from py_test.vic_tools import vic_eval
-from py_test.vic_tools.vic_str_handle import change_digit_to_string, change_string_to_digit
-from py_test.init_log import get_thread_logger, project_dir
+from selenium.common.exceptions import UnexpectedAlertPresentException
+from py_test.general.thread_log import get_thread_logger
 from main.models import CaseResult, Step
 from django.forms.models import model_to_dict
+from .execute_step import execute_step
 
 
 # 获取全局变量
@@ -23,7 +21,7 @@ public_elements = vic_public_elements.public_elements
 
 def execute_case(case, suite_result, result_path, case_order, user, variables=None, step_result=None, level=0, dr=None):
     start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
-    logger = logging.getLogger('py_test.{}'.format(__name__))
+    logger = get_thread_logger()
     # 创建截图保存目录
     # if result_dir == None:
     #     result_dir = project_dir
@@ -52,7 +50,8 @@ def execute_case(case, suite_result, result_path, case_order, user, variables=No
 
     # 用例初始化
     try:
-        logger.info('{}-{}\t初始化用例【{}】'.format(case_order, 0, case.name))
+        execute_id = '{}-{}'.format(case_order, 0)
+        logger.info('{}\t初始化用例【{}】'.format(execute_id, case.name))
         config = suite_result.suite.config
         # 初始化driver
         if level == 0 and config.ui_selenium_client != 0:
@@ -71,7 +70,7 @@ def execute_case(case, suite_result, result_path, case_order, user, variables=No
                 variables.set_variable(variable.name, value)
 
     except Exception as e:
-        logger.error('{}-{}\t初始化出错\n{}'.format(case_order, 0, traceback.format_exc()))
+        logger.error('{}-{}\t初始化出错'.format(case_order, 0), exc_info=True)
         suite_result.end_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
         suite_result.save()
         if logger.level < 10:
@@ -98,6 +97,9 @@ def execute_case(case, suite_result, result_path, case_order, user, variables=No
                 logger.info('{}-{}\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(case_order, step_order, alert_handle_text, alert_text))
             if last_url == 'data:,':
                 last_url = ''
+
+        step_result = execute_step(step, case_result, result_path, step_order, user, variables, level=level, dr=dr)
+        print(step_result.pk)
 
     if level == 0 and dr is not None:
         dr.quit()

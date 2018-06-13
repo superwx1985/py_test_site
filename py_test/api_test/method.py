@@ -2,7 +2,7 @@ import datetime
 import httplib2
 import json
 from py_test.vic_tools import vic_find_object
-from py_test.init_log import get_thread_logger
+from py_test.general.thread_log import get_thread_logger
 
 
 # 发送http请求

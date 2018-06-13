@@ -19,7 +19,7 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.action_chains import ActionChains
 from py_test.vic_tools import vic_find_object, vic_eval
 from py_test.vic_tools.vic_str_handle import change_string_to_digit
-from py_test.init_log import get_thread_logger
+from py_test.general.thread_log import get_thread_logger
 
 
 # 获取浏览器driver
@@ -401,8 +401,6 @@ def wait_for_element_disappear(dr, by, locator, timeout, base_element, variable_
 
 # 跳转到url
 def go_to_url(dr, url):
-    if url.count('http://') == 0 and url.count('https://') == 0:
-        url = 'http://' + url
     try:
         dr.get(url)
     except exceptions.TimeoutException as e:

@@ -20,23 +20,34 @@
     });
     // 展示Action相关内容
     function showActionField($actionSelect) {
-        if ($actionSelect.find('option:selected').text().indexOf('UI') == 0) {
-            $('div[action_type="ui"]').show();
-            $('div[action_type="api"]').hide();
-            $('div[action_type="db"]').hide();
-        } else if ($actionSelect.find('option:selected').text().indexOf('API') == 0) {
-            $('div[action_type="ui"]').hide();
-            $('div[action_type="api"]').show();
-            $('div[action_type="db"]').hide();
-        } else if ($actionSelect.find('option:selected').text().indexOf('DB') == 0) {
-            $('div[action_type="ui"]').hide();
-            $('div[action_type="api"]').hide();
-            $('div[action_type="db"]').show();
+        resetActionField();
+        var select_text = $actionSelect.find('option:selected').text();
+        if (select_text.indexOf('UI') === 0) {
+            if (select_text.indexOf('打开页面') > 0) {
+                $('div[name=ui_data] .col-1').text('URL');
+                $('div[name=ui_alert_handle],div[name=ui_data]').show();
+            }
+        } else if (select_text.indexOf('API') === 0) {
+            $('div[ui]').hide();
+            $('div[api]').show();
+            $('div[db]').hide();
+        } else if (select_text.indexOf('DB') === 0) {
+            $('div[ui]').hide();
+            $('div[api]').hide();
+            $('div[db]').show();
         } else {
-            $('div[action_type="ui"]').hide();
-            $('div[action_type="api"]').hide();
-            $('div[action_type="db"]').hide();
+            $('div[ui]').hide();
+            $('div[api]').hide();
+            $('div[db]').hide();
         }
+    }
+    // 还原文字
+    function resetActionField() {
+        $('div[ui][name=ui_data] .col-1').text('数据');
+        $('div[common]').hide();
+        $('div[ui]').hide();
+        $('div[api]').hide();
+        $('div[db]').hide();
     }
 </script>
 {% endblock %}
@@ -56,103 +67,103 @@
 {% block detail_form %}
     <form method="post" id="object_form" novalidate>
         {% csrf_token %}
-        <div class="row align-items-center">
+        <div class="row align-items-center" base>
             <div class="col-1 text-center font-weight-bold">名称</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.name %}
             </div>
         </div>
-        <div class="row align-items-center">
+        <div class="row align-items-center" base>
             <div class="col-1 text-center font-weight-bold">描述</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.description rows='5' %}
             </div>
         </div>
-        <div class="row align-items-center">
+        <div class="row align-items-center" base>
             <div class="col-1 text-center font-weight-bold">关键字</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.keyword %}
             </div>
         </div>
-        <div class="row align-items-center">
+        <div class="row align-items-center" base>
             <div class="col-1 text-center font-weight-bold">动作</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.action %}
             </div>
         </div>
-        <div class="row align-items-center">
+        <div class="row align-items-center" base>
             <div class="col-1 text-center font-weight-bold">超时设置</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.timeout %}
             </div>
         </div>
-        <div class="row align-items-center">
+        <div class="row align-items-center" common name="save_as">
             <div class="col-1 text-center font-weight-bold">结果另存</div>
             <div class="col mx-auto" form_data>
                 {% include 'main/include/form_input.html' with field=form.save_as %}
             </div>
         </div>
-        <div class="row align-items-center" action_type="ui">
+        <div class="row align-items-center" ui name="ui_by">
             <div class="col-1 text-center font-weight-bold">定位方式</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.ui_by %}
             </div>
         </div>
-        <div class="row align-items-center" action_type="ui">
+        <div class="row align-items-center" ui name="ui_locatorption">
             <div class="col-1 text-center font-weight-bold">定位值</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.ui_locatorption rows='5' %}
             </div>
         </div>
-        <div class="row align-items-center" action_type="ui">
+        <div class="row align-items-center" ui name="ui_index">
             <div class="col-1 text-center font-weight-bold">索引</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.ui_index %}
             </div>
         </div>
-        <div class="row align-items-center" action_type="ui">
+        <div class="row align-items-center" ui name="ui_base_element">
             <div class="col-1 text-center font-weight-bold">基元素</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.ui_base_element rows='5' %}
             </div>
         </div>
-        <div class="row align-items-center" action_type="ui">
+        <div class="row align-items-center" ui name="ui_data">
             <div class="col-1 text-center font-weight-bold">数据</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.ui_data rows='5' %}
             </div>
         </div>
-        <div class="row align-items-center" action_type="ui">
+        <div class="row align-items-center" ui name="ui_special_action">
             <div class="col-1 text-center font-weight-bold">特殊动作</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.ui_special_action %}
             </div>
         </div>
-        <div class="row align-items-center" action_type="ui">
+        <div class="row align-items-center" ui name="ui_alert_handle">
             <div class="col-1 text-center font-weight-bold">浏览器弹出处理</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.ui_alert_handle %}
             </div>
         </div>
-        <div class="row align-items-center" action_type="api">
+        <div class="row align-items-center" api>
             <div class="col-1 text-center font-weight-bold">请求地址</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.api_url rows='5' %}
             </div>
         </div>
-        <div class="row align-items-center" action_type="api">
+        <div class="row align-items-center" api>
             <div class="col-1 text-center font-weight-bold">请求 Headers</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.api_headers rows='5' %}
             </div>
         </div>
-        <div class="row align-items-center" action_type="api">
+        <div class="row align-items-center" api>
             <div class="col-1 text-center font-weight-bold">请求 Body</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.api_body rows='5' %}
             </div>
         </div>
-        <div class="row align-items-center" action_type="api">
+        <div class="row align-items-center" api>
             <div class="col-1 text-center font-weight-bold">验证内容</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.api_data rows='5' %}

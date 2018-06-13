@@ -1,10 +1,10 @@
 import datetime
 import os
-from py_test.general import vic_variables, vic_public_elements
+from py_test.general import vic_variables
 from py_test.general import import_test_data
 from py_test.vic_tools import vic_eval, vic_generate_str
 from py_test.vic_tools import vic_excel_col_change
-from py_test.init_log import get_thread_logger
+from py_test.general.thread_log import get_thread_logger
 
 
 # 替换字符串内的变量

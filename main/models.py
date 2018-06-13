@@ -298,6 +298,7 @@ class SuiteResult(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
+
     base_timeout = models.FloatField(default=10)
     ui_get_ss = models.BooleanField(default=True)
     thread_count = models.IntegerField(default=1)
@@ -319,6 +320,7 @@ class CaseResult(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
+
     variable_group = models.TextField(blank=True)
 
     suite_result = models.ForeignKey('main.SuiteResult', on_delete=models.DO_NOTHING)
@@ -341,7 +343,7 @@ class StepResult(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    variable_group = models.TextField(blank=True)
+
     action = models.CharField(blank=True, max_length=100)
     timeout = models.FloatField(blank=True, null=True)
     save_as = models.CharField(blank=True, max_length=100)
@@ -360,6 +362,7 @@ class StepResult(models.Model):
     case_result = models.ForeignKey('main.CaseResult', on_delete=models.DO_NOTHING)
     step = models.ForeignKey('main.Step', on_delete=models.DO_NOTHING)
     step_order = models.IntegerField(blank=True, null=True)
+
     creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.DO_NOTHING)
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)

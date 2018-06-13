@@ -2,7 +2,7 @@ import os
 import csv
 import xlrd
 from py_test.vic_tools import vic_excel_col_change
-from py_test.init_log import get_thread_logger
+from py_test.general.thread_log import get_thread_logger
 
 
 def get_csv_data(filename, print_=False):
@@ -150,7 +150,7 @@ def get_matched_file_list(_dir, ignore='', prefix='', suffix='', keyword=''):
 
 
 if __name__ == '__main__':
-    from py_test.init_log import init_logger
+    from py_test.general.thread_log import init_logger
 
     init_logger(log_level=10, console_log_level=20)
     # base_dir = os.path.dirname(__file__)
