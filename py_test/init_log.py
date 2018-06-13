@@ -49,7 +49,8 @@ def init_logger(log_level=logging.INFO, console_log_level=logging.INFO):
     logger = logging.getLogger('py_test')
     logger.setLevel(log_level)
     log_para['level'] = log_level
-    logger.addHandler(ch)
+    if ch not in logger.handlers:
+        logger.addHandler(ch)
 
 
 # 获取子线程日志

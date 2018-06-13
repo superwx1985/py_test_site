@@ -6,12 +6,11 @@
             // 更新导航栏
             $('#nav_suite').addClass('active');
             // 获取添加地址
-            window.addUrl="{% url 'suite_add' %}"
+            window.addUrl="{% url 'suite_add' %}";
             // 运行按钮
             $('[name=execute_button]').on('click', function () {
                 var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
                 var url = $(this).parents('tr').attr('exe_url');
-                console.log(url)
                 $.post(url, {'csrfmiddlewaretoken': csrf_token}, function(data) {
 
                     });

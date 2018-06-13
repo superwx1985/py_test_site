@@ -3,7 +3,7 @@ import os
 import json
 import pytz
 import logging
-from py_test.general import vic_variables, vic_public_elements, vic_config, run_case
+from py_test.general import vic_variables, vic_public_elements, vic_config, execute_case
 from concurrent.futures import ThreadPoolExecutor, wait
 from py_test.general.import_test_data import get_matched_file_list
 from py_test.general.vic_method import load_public_data
@@ -11,20 +11,22 @@ from main.models import Suite, Case, SuiteResult
 from django.forms.models import model_to_dict
 
 
-def batch_run_excel(request, pk, result_dir):
+def execute_suite(request, pk, result_dir):
     start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
     try:
         suite = Suite.objects.get(pk=pk)
     except Suite.DoesNotExist:
         return
 
-    log_level = suite.log_level
     console_log_level = suite.console_log_level
-    from py_test.init_log import init_logger, get_thread_logger
-    init_logger(log_level, console_log_level)
-    logger = get_thread_logger()
+
+    logger = logging.getLogger('py_test')
+    logger.setLevel(suite.log_level)
     logger.info('开始')
+    logger.info(logger.level)
     logger.info('========================================')
+    logger.debug('===================debug=====================')
+    logger.warning('===================warning=====================')
     start_time = datetime.datetime.now()
 
     # 读取公共配置
@@ -81,38 +83,28 @@ def batch_run_excel(request, pk, result_dir):
     futures = list()
     pool = ThreadPoolExecutor(thread_count)
     case_order = 0
+
     for case in cases:
+        futures.append(pool.submit(
+            execute_case.execute_case,
+            case=case,
+            suite_result=suite_result,
+            result_path=result_path,
+            case_order=case_order,
+            user=request.user,
+        ))
         case_order += 1
-        run_case.run(case=case,
-                     suite_result=suite_result,
-                     result_path=result_path,
-                     case_order=case_order,
-                     user=request.user,
-                     )
-        import time
-        time.sleep(3)
 
-    # for case in cases:
-    #     futures.append(pool.submit(
-    #         run_case,
-    #         case=case,
-    #         suite_result=suite_result,
-    #         result_path=result_path,
-    #         case_order=case_order,
-    #         username=request.user.username,
-    #     ))
-    #     case_order += 1
-
-    # future_results = wait(futures)
+    future_results = wait(futures)
     case_result_list = list()
     all_case_count = 0
     pass_case_count = 0
     fail_case_count = 0
     error_case_count = 0
     skip_case_count = 0
-    # for future_result in future_results.done:
-    #     case_result = future_result.result()
-    #     print(case_result)
+    for future_result in future_results.done:
+        case_result = future_result.result()
+        print(case_result)
     # for future_result in future_results.done:
     #     case_result = future_result.result()
     #     case_result_list.append(case_result)

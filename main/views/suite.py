@@ -17,6 +17,7 @@ from django.forms.models import model_to_dict
 # 用例列表
 @login_required
 def suites(request):
+    prompt = None
     if request.method == 'POST':
         page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
         size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
@@ -26,7 +27,7 @@ def suites(request):
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
     keyword_list_temp = search_text.split(' ')
     keyword_list = list()
@@ -59,7 +60,7 @@ def suite(request, pk):
     if request.method == 'GET':
         form = SuiteForm(instance=obj)
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
         return render(request, 'main/suite/detail.html', locals())
@@ -115,7 +116,7 @@ def suite_add(request):
     if request.method == 'GET':
         form = SuiteForm()
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
         return render(request, 'main/suite/detail.html', locals())
@@ -226,6 +227,6 @@ def case_list_temp(request):
 @login_required
 def suite_execute(request, pk):
     print(pk)
-    from py_test.general.execute_suite import batch_run_excel
-    suite_result = batch_run_excel(request, pk, 'result1111')
+    from py_test.general.execute_suite import execute_suite
+    suite_result = execute_suite(request, pk, 'result1111')
     return JsonResponse(model_to_dict(suite_result))

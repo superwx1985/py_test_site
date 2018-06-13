@@ -28,7 +28,7 @@ def variable_groups(request):
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
     keyword_list_temp = search_text.split(' ')
     keyword_list = list()
@@ -59,7 +59,7 @@ def variable_group(request, pk):
     if request.method == 'GET':
         form = VariableGroupForm(instance=obj)
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
         return render(request, 'main/variable/detail.html', locals())
@@ -107,7 +107,7 @@ def variable_group_add(request):
     if request.method == 'GET':
         form = VariableGroupForm()
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
         return render(request, 'main/variable/detail.html', locals())

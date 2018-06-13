@@ -96,9 +96,7 @@
                     // 注册删除按钮
                     bind_delete_button();
                     // 触发操作提示
-                    {% if form.errors %}
-                        toastr.error('请更正错误项');
-                    {% elif is_success is True %}
+                    {% if prompt == 'success' %}
                         toastr.success('保存成功');
                     {% endif %}
                 })
@@ -110,13 +108,6 @@
     <body>
         {% include 'main/include/navbar.html' %}
         <div class="container-fluid" style="padding-top: 60px; padding-bottom: 40px">
-            {% if errors %}
-                <ul>
-                    {% for error in errors %}
-                        <li style="color: red;">error: {{ error }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
             <form method="post" id="objects_form" class="form-inline">
                 {% csrf_token %}
                 {% block search_tools %}

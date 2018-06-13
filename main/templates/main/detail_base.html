@@ -45,10 +45,10 @@
                         "hideMethod":"fadeOut"//消失时的动画方式
                     };
                     // 触发操作提示
-                    {% if form.errors %}
-                        toastr.error('请更正错误项');
-                    {% elif is_success is True %}
+                    {% if prompt == 'success' %}
                         toastr.success('保存成功');
+                    {% elif form.errors %}
+                        toastr.error('请更正错误项');
                     {% endif %}
                     // 注册提交并返回
                     $('#saveAndReturn').on('click', function() {$('[name=redirect]').val(true)});

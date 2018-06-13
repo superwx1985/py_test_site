@@ -2,7 +2,7 @@ import datetime
 import time
 import json
 import traceback
-import uuid
+import logging
 import pytz
 from py_test.general import vic_variables, vic_public_elements, test_result, vic_config
 from py_test.general import vic_method, import_test_data
@@ -21,9 +21,9 @@ global_variables = vic_variables.global_variables
 public_elements = vic_public_elements.public_elements
 
 
-def run(case, suite_result, result_path, case_order, user, variables=None, step_result=None, level=0, dr=None):
+def execute_case(case, suite_result, result_path, case_order, user, variables=None, step_result=None, level=0, dr=None):
     start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
-    logger = get_thread_logger()
+    logger = logging.getLogger('py_test.{}'.format(__name__))
     # 创建截图保存目录
     # if result_dir == None:
     #     result_dir = project_dir
@@ -103,6 +103,7 @@ def run(case, suite_result, result_path, case_order, user, variables=None, step_
         dr.quit()
         dr = None
 
+    time.sleep(3)
     case_result.end_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
     case_result.save()
     return case_result

@@ -25,7 +25,7 @@ def cases(request):
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
     keyword_list_temp = search_text.split(' ')
     keyword_list = list()
@@ -58,7 +58,7 @@ def case(request, pk):
     if request.method == 'GET':
         form = CaseForm(instance=obj)
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
         return render(request, 'main/case/detail.html', locals())
@@ -114,7 +114,7 @@ def case_add(request):
     if request.method == 'GET':
         form = CaseForm()
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
         return render(request, 'main/case/detail.html', locals())

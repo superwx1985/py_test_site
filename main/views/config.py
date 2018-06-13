@@ -28,7 +28,7 @@ def configs(request):
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
     keyword_list_temp = search_text.split(' ')
     keyword_list = list()
@@ -59,7 +59,7 @@ def config(request, pk):
     if request.method == 'GET':
         form = ConfigForm(instance=obj)
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
         return render(request, 'main/config/detail.html', locals())
@@ -90,7 +90,7 @@ def config_add(request):
     if request.method == 'GET':
         form = ConfigForm()
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
         return render(request, 'main/config/detail.html', locals())

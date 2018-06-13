@@ -32,7 +32,7 @@ def steps(request):
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
     keyword_list_temp = search_text.split(' ')
     keyword_list = list()
@@ -70,7 +70,7 @@ def step(request, pk):
         related_objects = obj.case_set.filter(is_active=True)
         form = StepForm(instance=obj)
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
         return render(request, 'main/step/detail.html', locals())
@@ -101,7 +101,7 @@ def step_add(request):
     if request.method == 'GET':
         form = StepForm()
         if request.session.get('status', None) == 'success':
-            is_success = True
+            prompt = 'success'
         request.session['status'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
         return render(request, 'main/step/detail.html', locals())
