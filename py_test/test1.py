@@ -1,10 +1,10 @@
-import os
+import json
 
 
-# 获取工程根目录
-project_dir = os.path.dirname(os.path.abspath(__file__))
-# 日志目录
-log_dir = os.path.join(project_dir, 'log')
+a = json.dumps(None)
 
-print(project_dir)
-print(log_dir)
+print(a, type(a))
+
+b = json.loads(a)
+
+print(b, type(b))

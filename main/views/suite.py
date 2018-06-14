@@ -35,8 +35,7 @@ def suites(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = Suite.objects.filter(q, is_active=1).order_by('id').values('pk', 'name', 'keyword', 'config__name').annotate(
-        m2m_count=Count('case'))
+    objects = Suite.objects.filter(q, is_active=True).order_by('id').values('pk', 'name', 'keyword', 'config__name').annotate(m2m_count=Count('case'))
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)
@@ -62,7 +61,7 @@ def suite(request, pk):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
+        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/suite/detail.html', locals())
     elif request.method == 'POST':
         creator = obj.creator
@@ -118,7 +117,7 @@ def suite_add(request):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
+        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/suite/detail.html', locals())
     elif request.method == 'POST':
         form = SuiteForm(data=request.POST)
@@ -159,7 +158,7 @@ def suite_add(request):
 @login_required
 def suite_delete(request, pk):
     if request.method == 'POST':
-        Suite.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
+        Suite.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
         return HttpResponse('success')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
@@ -197,7 +196,7 @@ def suite_quick_update(request, pk):
 # 获取选中的case
 @login_required
 def suite_cases(request, pk):
-    v = Case.objects.filter(suite=pk).order_by('suitevscase__order').values('pk', 'name', order=F('suitevscase__order'))
+    v = Case.objects.filter(suite=pk, is_active=True).order_by('suitevscase__order').values('pk', 'name', order=F('suitevscase__order'))
     data_dict = dict()
     data_dict['data'] = list(v)
     return JsonResponse(data_dict)
@@ -226,7 +225,6 @@ def case_list_temp(request):
 # 执行套件
 @login_required
 def suite_execute(request, pk):
-    print(pk)
     from py_test.general.execute_suite import execute_suite
     suite_result = execute_suite(request, pk, 'result1111')
     return JsonResponse(model_to_dict(suite_result))

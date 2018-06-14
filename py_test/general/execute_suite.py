@@ -29,18 +29,19 @@ def execute_suite(request, pk, result_dir):
     logger.warning('===================warning=====================')
     start_time = datetime.datetime.now()
 
-    # 读取公共配置
-    public_variable_group = suite.variable_group
-    global_variables = vic_variables.global_variables  # 初始化全局变量
-    public_elements = vic_public_elements.public_elements  # 初始化公共元素组
-    load_public_data(public_variable_group, global_variables, public_elements)
+    # 读取公共变量及元素组
+    if suite.variable_group:
+        variable_objects = suite.variable_group.variable_set.all()
+        global_variables = vic_variables.global_variables  # 初始化全局变量
+        public_elements = vic_public_elements.public_elements  # 初始化公共元素组
+        load_public_data(variable_objects, global_variables, public_elements)
 
     # 获取配置
     config = suite.config
     vic_config.set_config(config)
 
     # 获取用例组
-    cases = Case.objects.filter(suite=suite).order_by('suitevscase__order')
+    cases = Case.objects.filter(suite=suite, is_active=True).order_by('suitevscase__order')
 
     # 限制进程数
     thread_count = suite.thread_count if suite.thread_count <= 10 else 10
@@ -53,12 +54,12 @@ def execute_suite(request, pk, result_dir):
         base_timeout=suite.base_timeout,
         ui_get_ss=suite.ui_get_ss,
         thread_count=suite.thread_count,
-        config=json.dumps(model_to_dict(suite.config) if suite.config else {}),
-        variable_group=json.dumps(model_to_dict(suite.variable_group) if suite.variable_group else {}),
+        config=json.dumps(model_to_dict(suite.config)) if suite.config else None,
+        variable_group=json.dumps(model_to_dict(suite.variable_group)) if suite.variable_group else None,
 
         suite=suite,
         creator=request.user,
-        start_date=start_date
+        start_date=start_date,
     )
 
     if len(cases) == 0:
@@ -92,6 +93,7 @@ def execute_suite(request, pk, result_dir):
             result_path=result_path,
             case_order=case_order,
             user=request.user,
+            execute_str=case_order,
         ))
         case_order += 1
 

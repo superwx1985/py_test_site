@@ -41,11 +41,11 @@ def steps(request):
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
     # 使用join的方式把多个model结合起来
-    objects = Step.objects.filter(q, is_active=1).order_by('id').select_related('action__type')
+    objects = Step.objects.filter(q, is_active=True).order_by('id').select_related('action__type')
     # 分割为多条SQL，然后把结果集用python结合起来
-    # objects = Step.objects.filter(q, is_active=1).order_by('id').prefetch_related('action__type')
+    # objects = Step.objects.filter(q, is_active=True).order_by('id').prefetch_related('action__type')
     # 两者结合使用
-    # objects = Step.objects.filter(q, is_active=1).order_by('id').select_related('action').prefetch_related(
+    # objects = Step.objects.filter(q, is_active=True).order_by('id').select_related('action').prefetch_related(
     #     'action__type')
     paginator = Paginator(objects, size)
     try:
@@ -72,7 +72,7 @@ def step(request, pk):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
+        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/step/detail.html', locals())
     elif request.method == 'POST':
         creator = obj.creator
@@ -103,7 +103,7 @@ def step_add(request):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
+        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/step/detail.html', locals())
     elif request.method == 'POST':
         form = StepForm(data=request.POST)
@@ -132,7 +132,7 @@ def step_add(request):
 @login_required
 def step_delete(request, pk):
     if request.method == 'POST':
-        Step.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
+        Step.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
         return HttpResponse('success')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
@@ -170,7 +170,7 @@ def step_quick_update(request, pk):
 # 获取全部step
 @login_required
 def step_list_all_old(request):
-    objects = Step.objects.filter(is_active=1).order_by('id').select_related(
+    objects = Step.objects.filter(is_active=True).order_by('id').select_related(
         'action', 'creator', 'modifier', 'action__type')
     json_ = serializers.serialize('json', objects, use_natural_foreign_keys=True)
     data_dict = dict()
@@ -181,7 +181,7 @@ def step_list_all_old(request):
 # 获取全部step
 @login_required
 def step_list_all(request):
-    objects = Step.objects.filter(is_active=1).order_by('pk').values('pk', 'name').annotate(
+    objects = Step.objects.filter(is_active=True).order_by('pk').values('pk', 'name').annotate(
         action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
     data_dict = dict()
     data_dict['data'] = list(objects)

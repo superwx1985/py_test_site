@@ -36,7 +36,7 @@ def configs(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = Config.objects.filter(q, is_active=1).order_by('id')
+    objects = Config.objects.filter(q, is_active=True).order_by('id')
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)
@@ -61,7 +61,7 @@ def config(request, pk):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
+        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/config/detail.html', locals())
     elif request.method == 'POST':
         creator = obj.creator
@@ -92,7 +92,7 @@ def config_add(request):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
+        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/config/detail.html', locals())
     elif request.method == 'POST':
         form = ConfigForm(data=request.POST)
@@ -121,7 +121,7 @@ def config_add(request):
 @login_required
 def config_delete(request, pk):
     if request.method == 'POST':
-        Config.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
+        Config.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
         return HttpResponse('success')
     else:
         return HttpResponseBadRequest('only accept "POST" method')

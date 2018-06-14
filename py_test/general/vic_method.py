@@ -101,11 +101,11 @@ def get_excel_col_map(excel_data):
 
 
 # 读取公共内容
-def load_public_data(public_variable_group, global_variables, public_elements):
+def load_public_data(variable_objects, global_variables, public_elements):
     # 读取公共变量表，保存到全局变量中
-    for variable in public_variable_group.variable_set.all():
-        value = replace_special_value(variable.value, global_variables)
-        global_variables.set_variable(variable.name, value)
+    for obj in variable_objects:
+        value = replace_special_value(obj.value, global_variables)
+        global_variables.set_variable(obj.name, value)
 
     # 读取公共元素表，保存到公共元素组中
     # todo()

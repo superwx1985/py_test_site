@@ -33,7 +33,7 @@ def cases(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = Case.objects.filter(q, is_active=1).order_by('id').values('pk', 'name', 'keyword').annotate(
+    objects = Case.objects.filter(q, is_active=True).order_by('id').values('pk', 'name', 'keyword').annotate(
         m2m_count=Count('step'))
     paginator = Paginator(objects, size)
     try:
@@ -60,7 +60,7 @@ def case(request, pk):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
+        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/case/detail.html', locals())
     elif request.method == 'POST':
         creator = obj.creator
@@ -116,7 +116,7 @@ def case_add(request):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
+        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/case/detail.html', locals())
     elif request.method == 'POST':
         form = CaseForm(data=request.POST)
@@ -157,7 +157,7 @@ def case_add(request):
 @login_required
 def case_delete(request, pk):
     if request.method == 'POST':
-        Case.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
+        Case.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
         return HttpResponse('success')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
@@ -195,7 +195,7 @@ def case_quick_update(request, pk):
 # 获取选中的step
 @login_required
 def case_steps(request, pk):
-    v = Step.objects.filter(case=pk).order_by('casevsstep__order').values(
+    v = Step.objects.filter(case=pk, is_active=True).order_by('casevsstep__order').values(
         'pk', 'name', order=F('casevsstep__order')).annotate(
         action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
     data_dict = dict()
@@ -206,7 +206,7 @@ def case_steps(request, pk):
 # 获取全部case
 @login_required
 def case_list_all(request):
-    objects = Case.objects.filter(is_active=1).order_by('pk').values('pk', 'name')
+    objects = Case.objects.filter(is_active=True).order_by('pk').values('pk', 'name')
     data_dict = dict()
     data_dict['data'] = list(objects)
     return JsonResponse(data_dict)

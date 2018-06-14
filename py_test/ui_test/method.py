@@ -68,7 +68,7 @@ def get_driver(config):
     else:
         raise ValueError('驱动类型错误，请检查配置项')
 
-    if config.ui_window_size_list == 2:
+    if config.ui_window_size == 2:
         if not config.ui_window_width or not config.ui_window_height:
             raise ValueError('自定义窗口但未指定大小，请检查配置项')
         dr.set_window_size(config.ui_window_width, config.ui_window_height)
@@ -209,7 +209,7 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
                 last_print_time = now_time
                 continue
         else:
-            if index_ == '':
+            if index_ is None:
                 for element_temp in elements_temp:
                     element_text = dr.execute_script('return arguments[0].textContent||arguments[0].innerText',
                                                      element_temp)
@@ -235,7 +235,7 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
                 elapsed_time = str(round(now_time - start_time, 2))
                 logger.info('经过%s秒 - 找到期望元素%r个，其中包含期望文本的元素%r个' % (elapsed_time, len(elements_temp), len(elements)))
                 last_print_time = now_time
-        if len(elements) > 0 and (len(elements) == len(elements_temp) or index_ != ''):
+        if len(elements) > 0 and (len(elements) == len(elements_temp) or index_ is not None):
             break
     dr.implicitly_wait(timeout)
     elapsed_time = str(round(time.time() - start_time, 2))
@@ -403,8 +403,10 @@ def wait_for_element_disappear(dr, by, locator, timeout, base_element, variable_
 def go_to_url(dr, url):
     try:
         dr.get(url)
+        run_result = ('p', '成功跳转到url')
     except exceptions.TimeoutException as e:
         raise e
+    return run_result
 
 
 # 等待页面跳转
@@ -443,9 +445,9 @@ def try_to_click(dr, by, locator, timeout, index_, base_element, variable_elemen
                                                                            print_=print_)
         if run_result_temp[0] == 'f':
             raise exceptions.NoSuchElementException(run_result_temp[1])
-    if len(elements) == 1 and index_ in (0, ''):
+    if len(elements) == 1 and index_ in (None, 0):
         element = elements[0]
-    elif index_ == '':
+    elif index_ is None:
         raise ValueError('找到%r个元素，请指定一个index' % len(elements))
     elif index_ > (len(elements) - 1):
         raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
@@ -467,9 +469,9 @@ def try_to_double_click(dr, by, locator, timeout, index_, base_element, variable
                                                                            print_=print_)
         if run_result_temp[0] == 'f':
             raise exceptions.NoSuchElementException(run_result_temp[1])
-    if len(elements) == 1 and index_ in (0, ''):
+    if len(elements) == 1 and index_ in (None, 0):
         element = elements[0]
-    elif index_ == '':
+    elif index_ is None:
         raise ValueError('找到%r个元素，请指定一个index' % len(elements))
     elif index_ > (len(elements) - 1):
         raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
@@ -491,9 +493,9 @@ def try_to_enter(dr, by, locator, data, timeout, index_, base_element, variable_
                                                                            print_=print_)
         if run_result_temp[0] == 'f':
             raise exceptions.NoSuchElementException(run_result_temp[1])
-    if len(elements) == 1 and index_ in ('', 0):
+    if len(elements) == 1 and index_ in (None, 0):
         element = elements[0]
-    elif index_ == '':
+    elif index_ is None:
         raise ValueError('找到%r个元素，请指定一个index' % len(elements))
     elif index_ > (len(elements) - 1):
         raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
@@ -521,9 +523,9 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
                                                                  variable_elements=None, print_=print_)
             if run_result_temp[0] == 'f':
                 raise exceptions.NoSuchElementException(run_result_temp[1])
-        if len(elements) == 1 and index_ in ('', 0):
+        if len(elements) == 1 and index_ in (None, 0):
             element = elements[0]
-        elif index_ == '':
+        elif index_ is None:
             raise ValueError('找到%r个元素，请指定一个index' % len(elements))
         elif index_ > (len(elements) - 1):
             raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
@@ -703,10 +705,10 @@ def try_to_switch_to_window(dr, by, locator, timeout, base_element, print_=True)
 
 
 # 尝试切换frame
-def try_to_switch_to_frame(dr, by, locator, index, timeout, base_element, print_=True):
+def try_to_switch_to_frame(dr, by, locator, index_, timeout, base_element, print_=True):
     logger = get_thread_logger()
-    if index == '':
-        index = 0
+    if index_ is None:
+        index_ = 0
     start_time = time.time()
     last_print_time = 0
     success_ = False
@@ -716,13 +718,13 @@ def try_to_switch_to_frame(dr, by, locator, index, timeout, base_element, print_
             run_result_temp, elements = wait_for_element_present(dr, by, locator, 1, base_element=base_element,
                                                                  variable_elements=None, print_=False)
             if run_result_temp[0] == 'p':
-                frame = elements[index]
+                frame = elements[index_]
                 dr.switch_to.frame(frame)
                 success_ = True
                 break
         else:
             try:
-                dr.switch_to.frame(index)
+                dr.switch_to.frame(index_)
                 success_ = True
                 break
             except NoSuchFrameException:
@@ -753,7 +755,7 @@ def run_js(dr, by, locator, data, timeout, index_, base_element, variable_elemen
                                                                  variable_elements=None, print_=print_)
             if run_result_temp[0] == 'f':
                 raise exceptions.NoSuchElementException(run_result_temp[1])
-        if index_ == '':
+        if index_ is None:
             js_result = dr.execute_script(data, elements)
         elif index_ > (len(elements) - 1):
             raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))

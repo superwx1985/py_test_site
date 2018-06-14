@@ -27,6 +27,7 @@ import main.views.suite as suite
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
     path('run/', general.run, name='run'),
+    path('home/', case.cases, name='home'),
 
     path('cases/', case.cases, name='cases'),
     path('case/add/', case.case_add, name='case_add'),

@@ -194,6 +194,7 @@ LOGGING = {
             'class': 'django.utils.log.AdminEmailHandler',
             'include_html': True,
         },
+        # 请求日志文件
         'request_handler': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
@@ -202,6 +203,16 @@ LOGGING = {
             'backupCount': 5,
             'formatter': 'standard',
         },
+        # sql日志文件
+        'sql_handler': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': 'log/sql.log',
+            'maxBytes': 1024*1024*5,
+            'backupCount': 5,
+            'formatter': 'standard',
+        },
+        # 测试日志文件
         'py_test_file_handler': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
@@ -214,29 +225,25 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['default', 'console_normal', 'console_warning'],
+            # 'level': 'DEBUG' if DEBUG else 'INFO',  # 如果DEBUG打开则启动DEBUG日志
             'level': 'INFO',
             'propagate': False
         },
-        # 让Django打印出在数据库中执行的语句
+        # sql日志
         'django.db.backends': {
-            'handlers': ['console_normal', 'console_warning'],
+            'handlers': ['sql_handler'],
             'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': False
+            'propagate': True
         },
+        # 请求日志
         'django.request': {
             'handlers': ['request_handler'],
-            'level': 'DEBUG',
-            'propagate': False,
+            'propagate': True,
         },
         'py_test': {
             'handlers': ['console_normal', 'console_warning', 'py_test_file_handler'],
-            'level': 'DEBUG',
+            'level': 'DEBUG' if DEBUG else 'INFO',
             'propagate': False
         },
-        'sourceDns.webdns.util': {
-            'handlers': ['error'],
-            'level': 'ERROR',
-            'propagate': True
-        }
     },
 }

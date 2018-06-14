@@ -19,7 +19,7 @@ global_variables = vic_variables.global_variables
 public_elements = vic_public_elements.public_elements
 
 
-def execute_case(case, suite_result, result_path, case_order, user, variables=None, step_result=None, level=0, dr=None):
+def execute_case(case, suite_result, result_path, case_order, user, execute_str, variables=None, step_result=None, parent_case_pk_list=None, dr=None):
     start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
     logger = get_thread_logger()
     # 创建截图保存目录
@@ -37,28 +37,28 @@ def execute_case(case, suite_result, result_path, case_order, user, variables=No
         name=case.name,
         description=case.description,
         keyword=case.keyword,
-        variable_group=json.dumps(model_to_dict(case.variable_group) if case.variable_group else {}),
+        variable_group=json.dumps(model_to_dict(case.variable_group)) if case.variable_group else None,
 
         suite_result=suite_result,
         step_result=step_result,
-        level=level,
+        parent_case_pk_list=json.dumps(parent_case_pk_list) if parent_case_pk_list else None,
         case_order=case_order,
         case=case,
         creator=user,
-        start_date=start_date
+        start_date=start_date,
     )
 
     # 用例初始化
     try:
-        execute_id = '{}-{}'.format(case_order, 0)
+        execute_id = '【{}-{}】'.format(execute_str, 0)
         logger.info('{}\t初始化用例【{}】'.format(execute_id, case.name))
         config = suite_result.suite.config
         # 初始化driver
-        if level == 0 and config.ui_selenium_client != 0:
+        if step_result is None and config.ui_selenium_client != 0:
             dr = method.get_driver(config)
 
         # 读取测试步骤数据
-        steps = Step.objects.filter(case=case).order_by('casevsstep__order').select_related('action')
+        steps = Step.objects.filter(case=case, is_active=True).order_by('casevsstep__order').select_related('action')
 
         # 读取本地变量
         if variables is None:
@@ -70,7 +70,7 @@ def execute_case(case, suite_result, result_path, case_order, user, variables=No
                 variables.set_variable(variable.name, value)
 
     except Exception as e:
-        logger.error('{}-{}\t初始化出错'.format(case_order, 0), exc_info=True)
+        logger.error('{}\t初始化出错'.format(execute_id), exc_info=True)
         suite_result.end_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
         suite_result.save()
         if logger.level < 10:
@@ -83,7 +83,8 @@ def execute_case(case, suite_result, result_path, case_order, user, variables=No
     step_order = 0
     for step in steps:
         step_order += 1
-        logger.info('{}-{}\t{}|{}'.format(case_order, step_order, step.name, step.action))
+        execute_id = '【{}-{}】'.format(execute_str, step_order)
+        logger.info('{}\t执行步骤【{} | {} | {}】'.format(execute_id, step.id, step.name, step.action))
 
         timeout = step.timeout if not step.timeout else base_timeout
 
@@ -94,16 +95,15 @@ def execute_case(case, suite_result, result_path, case_order, user, variables=No
                 last_url = dr.current_url
             except UnexpectedAlertPresentException:
                 alert_handle_text, alert_text = method.confirm_alert(dr=dr, alert_handle=alert_handle, timeout=timeout)
-                logger.info('{}-{}\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(case_order, step_order, alert_handle_text, alert_text))
+                logger.info('{}\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(execute_id, alert_handle_text, alert_text))
             if last_url == 'data:,':
                 last_url = ''
 
-        step_result = execute_step(step, case_result, result_path, step_order, user, variables, level=level, dr=dr)
-        print(step_result.pk)
+        step_result_ = execute_step(step, case_result, result_path, step_order, user, execute_str, variables, parent_case_pk_list, dr=dr)
 
-    if level == 0 and dr is not None:
+    if step_result is None and dr is not None:
         dr.quit()
-        dr = None
+        del dr
 
     time.sleep(3)
     case_result.end_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))

@@ -84,6 +84,7 @@ class Step(models.Model):
     api_headers = models.TextField(blank=True)
     api_body = models.TextField(blank=True)
     api_data = models.TextField(blank=True)
+    other_sub_case = models.ForeignKey('main.Case', on_delete=models.DO_NOTHING, blank=True, null=True, related_name='step_sub_case')
 
     class Meta:
         # db_table = 'test_case_step'
@@ -302,8 +303,8 @@ class SuiteResult(models.Model):
     base_timeout = models.FloatField(default=10)
     ui_get_ss = models.BooleanField(default=True)
     thread_count = models.IntegerField(default=1)
-    config = models.TextField(blank=True)
-    variable_group = models.TextField(blank=True)
+    config = models.TextField(blank=True, null=True)
+    variable_group = models.TextField(blank=True, null=True)
 
     suite = models.ForeignKey('main.Suite', on_delete=models.DO_NOTHING)
     creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.DO_NOTHING)
@@ -321,11 +322,11 @@ class CaseResult(models.Model):
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
 
-    variable_group = models.TextField(blank=True)
+    variable_group = models.TextField(blank=True, null=True)
 
     suite_result = models.ForeignKey('main.SuiteResult', on_delete=models.DO_NOTHING)
     step_result = models.ForeignKey('main.StepResult', on_delete=models.DO_NOTHING, blank=True, null=True)
-    level = models.IntegerField(default=0)
+    parent_case_pk_list = models.TextField(blank=True, null=True)
     case = models.ForeignKey('main.Case', on_delete=models.DO_NOTHING)
     case_order = models.IntegerField(blank=True, null=True)
     creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.DO_NOTHING)
@@ -343,21 +344,7 @@ class StepResult(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-
     action = models.CharField(blank=True, max_length=100)
-    timeout = models.FloatField(blank=True, null=True)
-    save_as = models.CharField(blank=True, max_length=100)
-    ui_by = models.CharField(blank=True, max_length=100)
-    ui_locator = models.TextField(blank=True)
-    ui_index = models.IntegerField(blank=True, null=True)
-    ui_base_element = models.TextField(blank=True)
-    ui_data = models.TextField(blank=True)
-    ui_special_action = models.CharField(blank=True, max_length=100)
-    ui_alert_handle = models.CharField(blank=True, max_length=100)
-    api_url = models.TextField(blank=True)
-    api_headers = models.TextField(blank=True)
-    api_body = models.TextField(blank=True)
-    api_data = models.TextField(blank=True)
 
     case_result = models.ForeignKey('main.CaseResult', on_delete=models.DO_NOTHING)
     step = models.ForeignKey('main.Step', on_delete=models.DO_NOTHING)
@@ -366,8 +353,13 @@ class StepResult(models.Model):
     creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.DO_NOTHING)
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
-    execute_count = models.IntegerField(blank=True, null=True)
-    pass_count = models.IntegerField(blank=True, null=True)
-    fail_count = models.IntegerField(blank=True, null=True)
-    error_count = models.IntegerField(blank=True, null=True)
-    init_error = models.TextField(blank=True)
+    result_status_list = (
+        (1, 'pass'),
+        (2, 'fail'),
+        (3, 'error'),
+    )
+    result_status = models.IntegerField(blank=True, null=True)
+    result_message = models.TextField(blank=True)
+    result_error = models.TextField(blank=True)
+
+    step_snapshot = models.TextField(blank=True, null=True)

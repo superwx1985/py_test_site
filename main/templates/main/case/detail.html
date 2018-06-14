@@ -31,6 +31,9 @@
                 {% if pk %}
                     // 获取m2m
                     getList("{% url 'case_steps' pk %}", window.$csrf_input.val(), m2m_list_selected_save_and_update);
+                {% else %}
+                    // 关闭遮罩
+                    $('#mask').hide();
                 {% endif %}
             {% endif %}
             // 处理step拖动及排序
@@ -154,6 +157,8 @@
             if (init) {
                 $('input[name=step]').attr('value', json_str);
             }
+            // 关闭遮罩
+            $('#mask').hide();
         }
     </script>
 {% endblock %}

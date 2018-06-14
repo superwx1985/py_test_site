@@ -36,7 +36,7 @@ def variable_groups(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = VariableGroup.objects.filter(q, is_active=1).order_by('id')
+    objects = VariableGroup.objects.filter(q, is_active=True).order_by('id')
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)
@@ -61,7 +61,7 @@ def variable_group(request, pk):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
+        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/variable/detail.html', locals())
     elif request.method == 'POST':
         creator = obj.creator
@@ -109,7 +109,7 @@ def variable_group_add(request):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER'))
+        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/variable/detail.html', locals())
     elif request.method == 'POST':
         form = VariableGroupForm(data=request.POST)
@@ -151,7 +151,7 @@ def variable_group_add(request):
 @login_required
 def variable_group_delete(request, pk):
     if request.method == 'POST':
-        VariableGroup.objects.filter(pk=pk).update(is_active=0, modifier=request.user, modified_date=timezone.now())
+        VariableGroup.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
         return HttpResponse('success')
     else:
         return HttpResponseBadRequest('only accept "POST" method')
@@ -189,7 +189,7 @@ def variable_group_quick_update(request, pk):
 # 获取变量组中的变量
 @login_required
 def variable_group_variables(request, pk):
-    v = Variable.objects.filter(variable_group=pk).order_by('order').values('pk', 'name', 'value')
+    v = Variable.objects.filter(variable_group=pk, is_active=True).order_by('order').values('pk', 'name', 'value')
     data_dict = dict()
     data_dict['data'] = list(v)
     return JsonResponse(data_dict)
