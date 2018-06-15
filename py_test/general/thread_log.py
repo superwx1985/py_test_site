@@ -20,7 +20,9 @@ THREAD_LEVEL = logging.INFO
 
 
 # 获取子线程日志
-def get_thread_logger(level=THREAD_LEVEL):
+def get_thread_logger(level=None):
+    if level is None:
+        level = THREAD_LEVEL
     logger_name = threading.current_thread().name
     if logger_name not in thread_loggers:
         thread_logger = logging.getLogger('py_test.{}'.format(logger_name))

@@ -315,6 +315,13 @@ class SuiteResult(models.Model):
     fail_count = models.IntegerField(blank=True, null=True)
     error_count = models.IntegerField(blank=True, null=True)
 
+    result_status_list = (
+        (1, 'pass'),
+        (2, 'fail'),
+        (3, 'error'),
+    )
+    result_status = models.IntegerField(blank=True, null=True)
+
 
 # case测试结果
 class CaseResult(models.Model):
@@ -336,7 +343,15 @@ class CaseResult(models.Model):
     pass_count = models.IntegerField(blank=True, null=True)
     fail_count = models.IntegerField(blank=True, null=True)
     error_count = models.IntegerField(blank=True, null=True)
-    init_error = models.TextField(blank=True)
+
+    result_status_list = (
+        (1, 'pass'),
+        (2, 'fail'),
+        (3, 'error'),
+    )
+    result_status = models.IntegerField(blank=True, null=True)
+    result_message = models.TextField(blank=True)
+    result_error = models.TextField(blank=True)
 
 
 # step测试结果

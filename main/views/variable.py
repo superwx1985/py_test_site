@@ -6,7 +6,7 @@ from django.core.serializers import serialize
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
 from django.db import connection
-from django.db.models import Q, F, CharField, Value
+from django.db.models import Q, F, CharField, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib import auth
@@ -38,7 +38,8 @@ def variable_groups(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = VariableGroup.objects.filter(q, is_active=True).order_by('id')
+    objects = VariableGroup.objects.filter(q, is_active=True).order_by('id').values('pk', 'name', 'keyword').annotate(
+        variable_count=Count('variable'))
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)

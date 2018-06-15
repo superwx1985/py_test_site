@@ -22,7 +22,6 @@ def execute_suite(request, suite, result_dir):
     logger.info('========================================')
     logger.debug('===================debug=====================')
     logger.warning('===================warning=====================')
-    start_time = datetime.datetime.now()
 
     # 读取公共变量及元素组
     if suite.variable_group:
@@ -55,6 +54,11 @@ def execute_suite(request, suite, result_dir):
         suite=suite,
         creator=request.user,
         start_date=start_date,
+
+        execute_count=0,
+        pass_count=0,
+        fail_count=0,
+        error_count=0,
     )
 
     if len(cases) == 0:
@@ -63,7 +67,7 @@ def execute_suite(request, suite, result_dir):
         logger.info('结束')
         return suite_result
 
-    report_folder_name = 'Automation_Test_Report_' + start_time.strftime("%Y-%m-%d_%H%M%S")
+    report_folder_name = 'Automation_Test_Report_' + start_date.strftime("%Y-%m-%d_%H%M%S")
     result_path = os.path.join(result_dir, report_folder_name)
     if not os.path.isabs(result_path):  # 如果报告路径不是绝对路径，则生成在工程文件夹
         result_path = os.path.join(os.getcwd(), result_path)
@@ -93,53 +97,32 @@ def execute_suite(request, suite, result_dir):
         case_order += 1
 
     future_results = wait(futures)
-    case_result_list = list()
-    all_case_count = 0
-    pass_case_count = 0
-    fail_case_count = 0
-    error_case_count = 0
-    skip_case_count = 0
     for future_result in future_results.done:
         case_result = future_result.result()
-        print(case_result)
-    # for future_result in future_results.done:
-    #     case_result = future_result.result()
-    #     case_result_list.append(case_result)
-    #     all_case_count += 1
-    #     if case_result.status == 'p':
-    #         pass_case_count += 1
-    #     elif case_result.status == 'f':
-    #         fail_case_count += 1
-    #     elif case_result.status == 'e':
-    #         error_case_count += 1
-    #     else:
-    #         skip_case_count += 1
+        suite_result.execute_count += 1
+        if case_result.result_status == 1:
+            suite_result.pass_count += 1
+        elif case_result.result_status == 2:
+            suite_result.fail_count += 1
+        else:
+            suite_result.error_count += 1
 
-    # 按case id排序
-    case_result_list.sort(key=lambda x: x.id)
-
-    end_time = datetime.datetime.now()
-    elapsed_time = end_time - start_time
-    logger.info('测试用例执行完毕')
-    logger.info('========================================')
-    logger.info('执行: %d, 通过: %d, 失败: %d, 报错: %d, 跳过: %d' % (
-        all_case_count, pass_case_count, fail_case_count, error_case_count, skip_case_count))
-    logger.info('耗时: ' + str(elapsed_time))
-    logger.info('========================================')
-    logger.info('开始生成测试报告...')
-
-    from py_test.general.vic_method import generate_case_report
-    # report_name = generate_case_report(case_type=case_type, result_dir=result_path, report_file_name=report_folder_name,
-    #                                    case_result_list=case_result_list, start_time=start_time, end_time=end_time,
-    #                                    report_title=report_title)
-    report_name = case_order
-
-    logger.info('测试报告生成完毕 => %s' % report_name)
-    logger.info('========================================')
-    logger.info('结束')
-
+    if suite_result.error_count > 0:
+        suite_result.result_status = 3
+    if suite_result.fail_count > 0:
+        suite_result.result_status = 2
+    else:
+        suite_result.result_status = 1
     suite_result.end_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
     suite_result.save()
+
+    logger.info('测试用例执行完毕')
+    logger.info('========================================')
+    logger.info('执行: %d, 通过: %d, 失败: %d, 报错: %d' % (
+        suite_result.execute_count, suite_result.pass_count, suite_result.fail_count, suite_result.error_count))
+    logger.info('耗时: ' + str(suite_result.end_date - suite_result.start_date))
+    logger.info('========================================')
+    logger.info('结束')
     return suite_result
 
 

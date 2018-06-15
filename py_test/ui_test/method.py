@@ -172,7 +172,7 @@ def wait_for_text_present(dr, text, timeout, base_element, print_=True):
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 找到%s个期望文本' % (elapsed_time, len(elements)))
+            logger.debug('经过%s秒 - 找到%s个期望文本' % (elapsed_time, len(elements)))
             last_print_time = now_time
         if len(elements) > 0:
             break
@@ -205,7 +205,7 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
             now_time = time.time()
             if print_ and now_time - last_print_time >= 1:
                 elapsed_time = str(round(now_time - start_time, 2))
-                logger.info('经过%s秒 - 未找到期望元素' % elapsed_time)
+                logger.debug('经过%s秒 - 未找到期望元素' % elapsed_time)
                 last_print_time = now_time
                 continue
         else:
@@ -233,7 +233,7 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
             now_time = time.time()
             if print_ and now_time - last_print_time >= 1:
                 elapsed_time = str(round(now_time - start_time, 2))
-                logger.info('经过%s秒 - 找到期望元素%r个，其中包含期望文本的元素%r个' % (elapsed_time, len(elements_temp), len(elements)))
+                logger.debug('经过%s秒 - 找到期望元素%r个，其中包含期望文本的元素%r个' % (elapsed_time, len(elements_temp), len(elements)))
                 last_print_time = now_time
         if len(elements) > 0 and (len(elements) == len(elements_temp) or index_ is not None):
             break
@@ -265,7 +265,7 @@ def wait_for_element_present(dr, by, locator, timeout, base_element, variable_el
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 找到期望元素%r个' % (elapsed_time, len(elements)))
+            logger.debug('经过%s秒 - 找到期望元素%r个' % (elapsed_time, len(elements)))
             last_print_time = now_time
         if len(elements) > 0:
             break
@@ -303,7 +303,7 @@ def wait_for_element_visible(dr, by, locator, timeout, base_element, variable_el
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
+            logger.debug('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
             last_print_time = now_time
         if len(visible_elements) > 0:
             break
@@ -333,7 +333,7 @@ def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_elem
             now_time = time.time()
             if print_ and now_time - last_print_time >= 1:
                 elapsed_time = str(round(now_time - start_time, 2))
-                logger.info('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
+                logger.debug('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
                 last_print_time = now_time
                 continue
         eo = vic_eval.EvalObject(data, {'x': len(visible_elements)})
@@ -346,7 +346,7 @@ def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_elem
                 msg = '经过%s秒 - 找到期望元素%r个，其中可见元素%r个，符合给定的数量限制' % (elapsed_time, len(elements), len(visible_elements))
             else:
                 msg = '经过%s秒 - 找到期望元素%r个，其中可见元素%r个，不符合给定的数量限制' % (elapsed_time, len(elements), len(visible_elements))
-            logger.info(msg)
+            logger.debug(msg)
             last_print_time = now_time
         if compare_result is True:
             break
@@ -379,7 +379,7 @@ def wait_for_element_disappear(dr, by, locator, timeout, base_element, variable_
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
+            logger.debug('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
             last_print_time = now_time
         if len(elements) == 0:
             break
@@ -422,7 +422,7 @@ def wait_for_page_redirect(dr, new_url, timeout, print_=True):
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 验证新URL是否符合期望' % elapsed_time)
+            logger.debug('经过%s秒 - 验证新URL是否符合期望' % elapsed_time)
             last_print_time = now_time
         find_result = vic_find_object.find_with_condition(new_url, current_url)
         if find_result.is_matched:
@@ -657,7 +657,7 @@ def confirm_alert(dr, alert_handle, timeout, print_=True):
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 尝试以【%s】方式关闭弹窗' % (elapsed_time, alert_handle))
+            logger.debug('经过%s秒 - 尝试以【%s】方式关闭弹窗' % (elapsed_time, alert_handle))
             last_print_time = now_time
     elapsed_time = str(round(time.time() - start_time, 2))
     if not done:
@@ -694,7 +694,7 @@ def try_to_switch_to_window(dr, by, locator, timeout, base_element, print_=True)
             break
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 尝试切换到新窗口' % elapsed_time)
+            logger.debug('经过%s秒 - 尝试切换到新窗口' % elapsed_time)
             last_print_time = now_time
     elapsed_time = str(round(time.time() - start_time, 2))
     if not success_:
@@ -732,7 +732,7 @@ def try_to_switch_to_frame(dr, by, locator, index_, timeout, base_element, print
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 尝试切换到frame' % elapsed_time)
+            logger.debug('经过%s秒 - 尝试切换到frame' % elapsed_time)
             last_print_time = now_time
     elapsed_time = str(round(time.time() - start_time, 2))
     if not success_:
@@ -765,7 +765,7 @@ def run_js(dr, by, locator, data, timeout, index_, base_element, variable_elemen
         js_result = [js_result]
     msg = 'js执行完毕，返回值为：\n%s' % js_result
     if print_:
-        logger.info(msg)
+        logger.debug(msg)
     run_result = ('p', msg)
     return run_result, js_result
 
@@ -777,7 +777,7 @@ def get_current_screenshot(dr, result_dir, ss_name=None):
         ss_name = 'screenshot_{}.png'.format(uuid.uuid1())
     file_path = get_screenshot_full_name(ss_name, result_dir)
     get_screenshot(dr, file_path)
-    logger.info('截图保存为%s' % ss_name)
+    logger.debug('截图保存为%s' % ss_name)
     return ss_name
 
 
@@ -789,7 +789,8 @@ def get_screenshot(dr, file_path, scroll_step=100, scroll_delay=0.1, start_heigh
         del img
     else:
         dr.save_screenshot(file_path)
-    return file_path
+    run_result = ('p', '截图成功')
+    return run_result, file_path
 
 
 # chrome截长图
@@ -879,7 +880,8 @@ def get_screenshot_on_element(dr, element, file_path):
     else:
         dr.save_screenshot(file_path)
         scop_to(file_path, left, top, right, bottom)
-    return file_path
+    run_result = ('p', '截图成功')
+    return run_result, file_path
 
 
 # 下拉加载更多内容
@@ -913,7 +915,7 @@ def scroll_down_for_loading(driver, wait_time=30, print_=True):
             return
         time.sleep(1)
         if print_:
-            logger.info('经过%s秒 - 向下拖动第%s次' % (str(round(time.time() - start_time, 2)), i))
+            logger.debug('经过%s秒 - 向下拖动第%s次' % (str(round(time.time() - start_time, 2)), i))
 
 
 # 滚动到顶部

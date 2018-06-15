@@ -11,9 +11,30 @@
             $('[name=execute_button]').on('click', function () {
                 var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
                 var url = $(this).parents('tr').attr('exe_url');
-                $.post(url, {'csrfmiddlewaretoken': csrf_token}, function(data) {
-
-                    });
+                var name = $(this).parents('tr').find('td[col_name="name"]').text();
+                var msg = '开始执行<span class="mark">' + name + '</span>？';
+                bootbox.confirm({
+                    title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
+                    message: msg,
+                    size: 'large',
+                    buttons: {
+                        confirm: {
+                            label: '<i class="icon-trash">&nbsp;</i>确定',
+                            className: 'btn-success'
+                        },
+                        cancel: {
+                            label: '<i class="icon-undo">&nbsp;</i>取消',
+                            className: 'btn-secondary'
+                        }
+                    },
+                    callback: function (result) {
+                        if (result === true) {
+                            $.post(url, {'csrfmiddlewaretoken': csrf_token}, function(data) {
+                                console.log(data);
+                            });
+                        }
+                    }
+                });
             });
         })
     </script>
@@ -26,7 +47,7 @@
                 <col>
                 <col style='width: 200px;'>
                 <col style='width: 400px;'>
-                <col style='width: 150px;'>
+                <col style='width: 100px;'>
                 <col style='width: 160px;'>
             </colgroup>
             <thead class="thead-light middle">

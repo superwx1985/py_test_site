@@ -17,6 +17,7 @@
                 <col style='width: 80px;'>
                 <col>
                 <col style='width: 200px;'>
+                <col style='width: 100px;'>
                 <col style='width: 120px;'>
             </colgroup>
             <thead class="thead-light middle">
@@ -24,6 +25,7 @@
                     <th>ID</th>
                     <th>名称</th>
                     <th>关键字</th>
+                    <th>变量数</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -33,6 +35,7 @@
                         <td col_name='id' class="middle">{{ object.pk }}</td>
                         <td quick_update col_name='name' class="align-middle">{{ object.name }}</td>
                         <td quick_update col_name='keyword' class="align-middle">{{ object.keyword }}</td>
+                        <td col_name='keyword' class="middle">{{ object.variable_count }}</td>
                         <td>
                             <div class="middle">
                                 <button type="button" name="edit_button" class="btn btn-info"><i class="icon-pencil"></i></button>

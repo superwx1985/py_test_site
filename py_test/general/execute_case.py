@@ -22,6 +22,10 @@ public_elements = vic_public_elements.public_elements
 def execute_case(case, suite_result, result_path, case_order, user, execute_str, variables=None, step_result=None, parent_case_pk_list=None, dr=None):
     start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
     logger = get_thread_logger()
+    logger.debug('=================== 试试debug =====================')
+    logger.warning('=================== 试试warning =====================')
+    logger.error('=================== 试试error =====================')
+    logger.critical('=================== 试试critical =====================')
     # 创建截图保存目录
     # if result_dir == None:
     #     result_dir = project_dir
@@ -46,6 +50,10 @@ def execute_case(case, suite_result, result_path, case_order, user, execute_str,
         case=case,
         creator=user,
         start_date=start_date,
+        execute_count=0,
+        pass_count=0,
+        fail_count=0,
+        error_count=0,
     )
 
     # 用例初始化
@@ -71,41 +79,55 @@ def execute_case(case, suite_result, result_path, case_order, user, execute_str,
 
     except Exception as e:
         logger.error('{}\t初始化出错'.format(execute_id), exc_info=True)
-        suite_result.end_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
-        suite_result.save()
-        if logger.level < 10:
-            raise
-        return suite_result
+        case_result.result_message = '初始化出错'
+        case_result.result_error = traceback.format_exc()
 
-    base_timeout = suite_result.suite.base_timeout
-    ui_get_ss = suite_result.suite.ui_get_ss
-    last_alert_handle = ''  # 初始化弹窗处理方式
-    step_order = 0
-    for step in steps:
-        step_order += 1
-        execute_id = '【{}-{}】'.format(execute_str, step_order)
-        logger.info('{}\t执行步骤【{} | {} | {}】'.format(execute_id, step.id, step.name, step.action))
+    else:
+        base_timeout = suite_result.suite.base_timeout
+        last_alert_handle = ''  # 初始化弹窗处理方式
+        step_order = 0
+        for step in steps:
+            step_order += 1
+            execute_id = '【{}-{}】'.format(execute_str, step_order)
+            logger.info('{}\t执行步骤【{} | {} | {}】'.format(execute_id, step.id, step.name, step.action))
 
-        timeout = step.timeout if not step.timeout else base_timeout
+            timeout = step.timeout if not step.timeout else base_timeout
 
-        alert_handle = last_alert_handle
-        # 如有弹窗则处理弹窗
-        if dr is not None:
-            try:
-                last_url = dr.current_url
-            except UnexpectedAlertPresentException:
-                alert_handle_text, alert_text = method.confirm_alert(dr=dr, alert_handle=alert_handle, timeout=timeout)
-                logger.info('{}\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(execute_id, alert_handle_text, alert_text))
-            if last_url == 'data:,':
-                last_url = ''
+            alert_handle = last_alert_handle
+            # 如有弹窗则处理弹窗
+            if dr is not None:
+                try:
+                    last_url = dr.current_url
+                except UnexpectedAlertPresentException:
+                    alert_handle_text, alert_text = method.confirm_alert(dr=dr, alert_handle=alert_handle, timeout=timeout)
+                    logger.info('{}\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(execute_id, alert_handle_text, alert_text))
+                if last_url == 'data:,':
+                    last_url = ''
 
-        step_result_ = execute_step(step, case_result, result_path, step_order, user, execute_str, variables, parent_case_pk_list, dr=dr)
+            step_result_ = execute_step(step, case_result, result_path, step_order, user, execute_str, variables, parent_case_pk_list, dr=dr)
 
-    if step_result is None and dr is not None:
+            case_result.execute_count += 1
+            if step_result_.result_status == 1:
+                case_result.pass_count += 1
+            elif step_result_.result_status == 2:
+                case_result.fail_count += 1
+            else:
+                case_result.error_count += 1
+                break
+
+    # 如果不是子用例，且浏览器未关闭，且logging level大于等于10，则关闭浏览器
+    if step_result is None and dr is not None and logger.level >= 10:
         dr.quit()
         del dr
 
-    time.sleep(3)
+    if case_result.error_count > 0:
+        case_result.result_status = 3
+    if case_result.fail_count > 0:
+        case_result.result_status = 2
+        case_result.result_message = '失败'
+    else:
+        case_result.result_status = 1
+        case_result.result_message = '通过'
     case_result.end_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
     case_result.save()
     return case_result

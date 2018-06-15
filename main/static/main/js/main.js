@@ -107,9 +107,9 @@ function bind_delete_button() {
         var url = $(this).parents('tr').attr('del_url');
         // var name = $(this).parent().siblings('td[col_name="name"]').text();
         var name = $(this).parents('tr').find('td[col_name="name"]').text();
-        var msg = '确定要删除<span class="mark">' + name + '</span>吗？';
+        var msg = '要删除<span class="mark">' + name + '</span>吗？';
         bootbox.confirm({
-            title: '<i class="icon-spinner icon-spin icon-2x pull-left"></i>',
+            title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
             message: msg,
             size: 'large',
             buttons: {

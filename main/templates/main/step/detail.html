@@ -26,11 +26,16 @@
             var select_value = $actionSelect.find('option:selected').val();
             var select_text = $actionSelect.find('option:selected').text();
             if (select_text.indexOf('UI') === 0) {
-                if (select_value === '1') { // 打开页面
+                if (select_value === '1') {
                     $('div[name=ui_data] .col-1').text('URL');
                     $('div[name=ui_alert_handle],div[name=ui_data]').show();
-                } else if (select_value === '2') { // 输入
+                } else if ($.inArray(select_value, ["6", "14", "15", "16", "17", "18", "19", "20", "21"]) >= 0) {
                     $('div[ui]').show();
+                } else if ($.inArray(select_value, ["12", "13"]) >= 0) {
+                    $('div[ui]').show();
+                    $('div[name=ui_data],div[name=ui_special_action]').hide();
+                } else if ($.inArray(select_value, ["5"]) >= 0) {
+                    $('div[name=ui_alert_handle],div[name=ui_data]').show();
                 }
             } else if (select_text.indexOf('API') === 0) {
                 $('div[api]').show();

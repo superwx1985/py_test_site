@@ -1,3 +1,4 @@
+import os
 import json
 import logging
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
@@ -12,6 +13,8 @@ from main.models import Suite, Case, SuiteVsCase
 from main.forms import PaginatorForm, SuiteForm
 from main.views.general import get_query_condition
 from django.forms.models import model_to_dict
+from manage import PROJECT_ROOT
+from py_test.general.execute_suite import execute_suite
 
 logger = logging.getLogger('django.request')
 
@@ -234,8 +237,8 @@ def case_list_temp(request):
 def suite_execute(request, pk):
     try:
         suite_ = Suite.objects.get(pk=pk, is_active=True)
-        from py_test.general.execute_suite import execute_suite
-        suite_result = execute_suite(request, suite_, 'result1111')
+        result_path = os.path.join(PROJECT_ROOT, 'test_result')
+        suite_result = execute_suite(request, suite_, result_path)
         return JsonResponse({'statue': 1, 'message': 'OK', 'data': model_to_dict(suite_result)})
     except Suite.DoesNotExist:
         return JsonResponse({'statue': 2, 'message': 'Suite does not exist', 'data': None})

@@ -3,6 +3,7 @@ import time
 import json
 import traceback
 import pytz
+import uuid
 from py_test.general import vic_variables, vic_public_elements, test_result
 from py_test.general import vic_method, import_test_data
 from py_test.ui_test import method
@@ -49,7 +50,7 @@ def execute_step(step, case_result, result_path, step_order, user, execute_str, 
     )
     try:
         step_action = step.action
-        run_result = ('p', 'pass')
+        run_result = ('p', '成功')
         timeout = step.timeout if step.timeout else case_result.suite_result.base_timeout
         save_as = step.save_as
         ui_by_dict = {
@@ -86,8 +87,92 @@ def execute_step(step, case_result, result_path, step_order, user, execute_str, 
             if ui_data == '':
                 raise ValueError('请提供要打开的URL地址')
             run_result = method.go_to_url(dr, step.ui_data)
-        # 输入文字
+
+        # 刷新页面
         elif step_action.pk == 2:
+            dr.refresh()
+
+        # 前进
+        elif step_action.pk == 3:
+            dr.forward()
+
+        # 后退
+        elif step_action.pk == 4:
+            dr.back()
+
+        # 等待
+        elif step_action.pk == 5:
+            if ui_data == '':
+                time.sleep(1)
+            else:
+                try:
+                    second = change_string_to_digit(ui_data)
+                except ValueError:
+                    raise ValueError('无效的等待时间【{}】'.format(ui_data))
+                time.sleep(second)
+
+        # 截图
+        elif step_action.pk == 6:
+            if ui_data != '':
+                ss_name = ui_data
+            else:
+                ss_name = 'screenshot_{}.png'.format(uuid.uuid1())
+            file_path = method.get_screenshot_full_name(ss_name, result_path)
+            if ui_by != '' and ui_locator != '':
+                run_result_temp, visible_elements, _ = method.wait_for_element_visible(dr=dr, by=ui_by,
+                                                                                       locator=ui_locator,
+                                                                                       timeout=timeout,
+                                                                                       base_element=ui_base_element)
+                if len(visible_elements) > 0:
+                    run_result, _ = method.get_screenshot_on_element(dr, visible_elements[0], file_path)
+                else:
+                    run_result = ('f', '截图失败，原因为{}'.format(run_result_temp[1]))
+            else:
+                run_result, _ = method.get_screenshot(dr, file_path, 100, 0.1, 0, 10000)
+
+        # 切换frame
+        elif step_action.pk == 7:
+            pass
+
+        # 退出frame
+        elif step_action.pk == 8:
+            pass
+
+        # 切换窗口
+        elif step_action.pk == 9:
+            pass
+
+        # 关闭窗口
+        elif step_action.pk == 10:
+            pass
+
+        # 重置浏览器
+        elif step_action.pk == 11:
+            if dr is not None:
+                dr.quit()
+                dr = method.get_driver(case_result.suite_result.suite.config)
+
+        # 单击
+        elif step_action.pk == 12:
+            if ui_by == 0 or ui_locator == '':
+                raise ValueError('无效的定位方式或定位符')
+            variable_elements = None
+            if ui_by == 10:
+                variable_elements = vic_variables.get_elements(ui_locator, variables)
+            elif ui_by == 9:
+                ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
+            run_result, elements = method.try_to_click(dr=dr, by=ui_by, locator=ui_locator, timeout=timeout,
+                                                       index_=ui_index, base_element=ui_base_element,
+                                                       variable_elements=variable_elements)
+            if save_as != '':
+                variables.set_variable(save_as, elements)
+
+        # 双击
+        elif step_action.pk == 13:
+            pass
+
+        # 输入
+        elif step_action.pk == 14:
             if ui_by == 0 or ui_locator == '':
                 raise ValueError('无效的定位方式或定位符')
             variable_elements = None
@@ -101,6 +186,21 @@ def execute_step(step, case_result, result_path, step_order, user, execute_str, 
             if save_as != '':
                 variables.set_variable(save_as, elements)
 
+        # 特殊动作
+        elif step_action.pk == 15:
+            pass
+
+        # 验证URL
+        elif step_action.pk == 16:
+            pass
+
+        # 验证文字
+        elif step_action.pk == 17:
+            pass
+
+        # 验证元素可见
+        elif step_action.pk == 18:
+            pass
 
         # ===== API =====
         elif step_action.pk == 0:
@@ -111,17 +211,24 @@ def execute_step(step, case_result, result_path, step_order, user, execute_str, 
             pass
 
         # ===== OTHER =====
-        elif step_action.pk == 7:
+        # 调用子用例
+        elif step_action.pk == 26:
             if step.other_sub_case is None:
                 raise ValueError('子用例为空或不存在')
             elif step.other_sub_case.pk in parent_case_pk_list:
                 raise ValueError('子用例【{} | {}】不允许递归调用'.format(step.other_sub_case.pk, step.other_sub_case.name))
             else:
                 from .execute_case import execute_case
-                execute_case(case=step.other_sub_case, suite_result=case_result.suite_result, result_path=result_path,
-                             case_order=None, user=user, execute_str=execute_id, variables=variables,
-                             step_result=step_result, parent_case_pk_list=parent_case_pk_list, dr=dr)
-
+                case_result_ = execute_case(case=step.other_sub_case, suite_result=case_result.suite_result,
+                                            result_path=result_path, case_order=None, user=user, execute_str=execute_id,
+                                            variables=variables, step_result=step_result,
+                                            parent_case_pk_list=parent_case_pk_list, dr=dr)
+                if case_result_.error_count > 0:
+                    raise RuntimeError('子用例运行中出现错误')
+                elif case_result_.fail_count > 0:
+                    run_result = ('f', '子用例中出现验证失败的步骤')
+                else:
+                    run_result = ('p', '子用例运行成功')
         else:
             raise ValueError('未知的action')
         if run_result[0] == 'p':
