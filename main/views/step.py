@@ -1,5 +1,5 @@
 import json
-import traceback
+import logging
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
 from django.shortcuts import render, get_object_or_404
 from django.core.serializers import serialize
@@ -16,6 +16,8 @@ from django.core import serializers
 from main.models import Step, Action
 from main.forms import PaginatorForm, StepForm
 from main.views.general import get_query_condition
+
+logger = logging.getLogger('django.request')
 
 
 # 步骤列表
@@ -133,49 +135,42 @@ def step_add(request):
 def step_delete(request, pk):
     if request.method == 'POST':
         Step.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return HttpResponse('success')
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
     else:
-        return HttpResponseBadRequest('only accept "POST" method')
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': pk})
 
 
 @login_required
 def step_quick_update(request, pk):
     if request.method == 'POST':
-        response_ = {'new_value': ''}
         try:
             col_name = request.POST['col_name']
             new_value = request.POST['new_value']
-            response_['new_value'] = new_value
             obj = Step.objects.get(pk=pk)
-            obj.modifier = request.user
-            obj.modified_date = timezone.now()
-            if col_name == 'name':
-                obj.name = new_value
+            if col_name in ('name', 'keyword'):
+                setattr(obj, col_name, new_value)
                 obj.clean_fields()
-                obj.save()
-            elif col_name == 'keyword':
-                obj.keyword = new_value
-                obj.clean_fields()
+                obj.modifier = request.user
+                obj.modified_date = timezone.now()
                 obj.save()
             else:
-                raise ValueError('invalid col_name')
+                raise ValueError('非法的字段名称')
         except Exception as e:
-            print(traceback.format_exc())
-            return HttpResponseBadRequest(str(e))
-        return JsonResponse(response_)
+            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': new_value})
     else:
-        return HttpResponseBadRequest('only accept "POST" method')
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
-# 获取全部step
-@login_required
-def step_list_all_old(request):
-    objects = Step.objects.filter(is_active=True).order_by('id').select_related(
-        'action', 'creator', 'modifier', 'action__type')
-    json_ = serializers.serialize('json', objects, use_natural_foreign_keys=True)
-    data_dict = dict()
-    data_dict['data'] = json_
-    return JsonResponse(data_dict)
+# 获取全部step，使用用序列化的方法
+# @login_required
+# def step_list_all_old(request):
+#     objects = Step.objects.filter(is_active=True).order_by('id').select_related(
+#         'action', 'creator', 'modifier', 'action__type')
+#     json_ = serializers.serialize('json', objects, use_natural_foreign_keys=True)
+#     data_dict = dict()
+#     data_dict['data'] = json_
+#     return JsonResponse({'statue': 1, 'message': 'OK', 'data': json_})
 
 
 # 获取全部step
@@ -183,9 +178,7 @@ def step_list_all_old(request):
 def step_list_all(request):
     objects = Step.objects.filter(is_active=True).order_by('pk').values('pk', 'name').annotate(
         action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
-    data_dict = dict()
-    data_dict['data'] = list(objects)
-    return JsonResponse(data_dict)
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 
 # 获取临时step
@@ -203,6 +196,4 @@ def step_list_temp(request):
         objects = list(objects)
         objects[0]['order'] = order
         list_temp.append(objects[0])
-    data_dict = dict()
-    data_dict['data'] = list_temp
-    return JsonResponse(data_dict)
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': list_temp})

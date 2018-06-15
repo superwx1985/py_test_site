@@ -1,5 +1,5 @@
 import json
-import traceback
+import logging
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -11,6 +11,8 @@ from django.contrib.auth.decorators import login_required
 from main.models import Case, Step, CaseVsStep
 from main.forms import PaginatorForm, CaseForm
 from main.views.general import get_query_condition
+
+logger = logging.getLogger('django.request')
 
 
 # 用例列表
@@ -33,8 +35,11 @@ def cases(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = Case.objects.filter(q, is_active=True).order_by('id').values('pk', 'name', 'keyword').annotate(
-        m2m_count=Count('step'))
+    objects = Case.objects.filter(q, is_active=True).order_by('id').values('pk', 'name', 'keyword')
+    objects2 = Case.objects.filter(is_active=True, step__is_active=True).values('pk').annotate(m2m_count=Count('step'))
+    count_ = {o['pk']: o['m2m_count'] for o in objects2}
+    for o in objects:
+        o['m2m_count'] = count_.get(o['pk'], 0)
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)
@@ -65,7 +70,11 @@ def case(request, pk):
     elif request.method == 'POST':
         creator = obj.creator
         form = CaseForm(data=request.POST, instance=obj)
-        m2m_list = json.loads(request.POST.get('step', '[]'))
+        try:
+            m2m_list = json.loads(request.POST.get('step', 'null'))
+        except json.decoder.JSONDecodeError:
+            logger.warning('无法获取m2m值', exc_info=True)
+            m2m_list = None
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = creator
@@ -73,20 +82,21 @@ def case(request, pk):
             form_.is_active = obj.is_active
             form_.save()
             # form.save_m2m()
-            m2m = CaseVsStep.objects.filter(case=obj).order_by('order')
-            original_m2m_list = list()
-            for dict_ in m2m.values('step'):
-                original_m2m_list.append(str(dict_['step']))
-            if original_m2m_list != m2m_list:
-                m2m.delete()
-                order = 0
-                for m2m_pk in m2m_list:
-                    if m2m_pk.strip() == '':
-                        continue
-                    order += 1
-                    m2m_object = Step.objects.get(pk=m2m_pk)
-                    CaseVsStep.objects.create(case=obj, step=m2m_object, order=order, creator=request.user,
-                                              modifier=request.user)
+            if m2m_list:
+                m2m = CaseVsStep.objects.filter(case=obj).order_by('order')
+                original_m2m_list = list()
+                for dict_ in m2m.values('step'):
+                    original_m2m_list.append(str(dict_['step']))
+                if original_m2m_list != m2m_list:
+                    m2m.delete()
+                    order = 0
+                    for m2m_pk in m2m_list:
+                        if m2m_pk.strip() == '':
+                            continue
+                        order += 1
+                        m2m_object = Step.objects.get(pk=m2m_pk)
+                        CaseVsStep.objects.create(case=obj, step=m2m_object, order=order, creator=request.user,
+                                                  modifier=request.user)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
             redirect_url = request.POST.get('redirect_url', '')
@@ -95,15 +105,16 @@ def case(request, pk):
             else:
                 return HttpResponseRedirect(redirect_url)
         else:
-            # 暂存step列表
-            m2m = CaseVsStep.objects.filter(case=obj).order_by('order')
-            original_m2m_list = list()
-            for dict_ in m2m.values('step'):
-                original_m2m_list.append(str(dict_['step']))
-            temp_list = list()
-            temp_dict = dict()
-            if original_m2m_list != m2m_list:
-                temp_list_json = json.dumps(m2m_list)
+            if m2m_list:
+                # 暂存step列表
+                m2m = CaseVsStep.objects.filter(case=obj).order_by('order')
+                original_m2m_list = list()
+                for dict_ in m2m.values('step'):
+                    original_m2m_list.append(str(dict_['step']))
+                temp_list = list()
+                temp_dict = dict()
+                if original_m2m_list != m2m_list:
+                    temp_list_json = json.dumps(m2m_list)
         redirect_url = request.POST.get('redirect_url', '')
         is_success = False
         return render(request, 'main/case/detail.html', locals())
@@ -120,7 +131,11 @@ def case_add(request):
         return render(request, 'main/case/detail.html', locals())
     elif request.method == 'POST':
         form = CaseForm(data=request.POST)
-        m2m_list = json.loads(request.POST.get('step', '[]'))
+        try:
+            m2m_list = json.loads(request.POST.get('step', 'null'))
+        except json.decoder.JSONDecodeError:
+            logger.warning('无法获取m2m值', exc_info=True)
+            m2m_list = None
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = request.user
@@ -130,14 +145,15 @@ def case_add(request):
             # form.save_m2m()
             obj = form_
             pk = obj.id
-            order = 0
-            for m2m_pk in m2m_list:
-                if m2m_pk.strip() == '':
-                    continue
-                order += 1
-                m2m_object = Step.objects.get(pk=m2m_pk)
-                CaseVsStep.objects.create(case=obj, step=m2m_object, order=order, creator=request.user,
-                                          modifier=request.user)
+            if m2m_list:
+                order = 0
+                for m2m_pk in m2m_list:
+                    if m2m_pk.strip() == '':
+                        continue
+                    order += 1
+                    m2m_object = Step.objects.get(pk=m2m_pk)
+                    CaseVsStep.objects.create(case=obj, step=m2m_object, order=order, creator=request.user,
+                                              modifier=request.user)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
             redirect_url = request.POST.get('redirect_url', '')
@@ -148,7 +164,8 @@ def case_add(request):
             else:
                 return HttpResponseRedirect(redirect_url)
         else:
-            temp_list_json = json.dumps(m2m_list)
+            if m2m_list:
+                temp_list_json = json.dumps(m2m_list)
         redirect_url = request.POST.get('redirect_url', '')
         is_success = False
         return render(request, 'main/case/detail.html', locals())
@@ -158,58 +175,47 @@ def case_add(request):
 def case_delete(request, pk):
     if request.method == 'POST':
         Case.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return HttpResponse('success')
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
     else:
-        return HttpResponseBadRequest('only accept "POST" method')
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': pk})
 
 
 @login_required
 def case_quick_update(request, pk):
     if request.method == 'POST':
-        response_ = {'new_value': ''}
         try:
             col_name = request.POST['col_name']
             new_value = request.POST['new_value']
-            response_['new_value'] = new_value
             obj = Case.objects.get(pk=pk)
-            obj.modifier = request.user
-            obj.modified_date = timezone.now()
-            if col_name == 'name':
-                obj.name = new_value
+            if col_name in ('name', 'keyword'):
+                setattr(obj, col_name, new_value)
                 obj.clean_fields()
-                obj.save()
-            elif col_name == 'keyword':
-                obj.keyword = new_value
-                obj.clean_fields()
+                obj.modifier = request.user
+                obj.modified_date = timezone.now()
                 obj.save()
             else:
-                raise ValueError('invalid col_name')
+                raise ValueError('非法的字段名称')
         except Exception as e:
-            print(traceback.format_exc())
-            return HttpResponseBadRequest(str(e))
-        return JsonResponse(response_)
+            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': new_value})
     else:
-        return HttpResponseBadRequest('only accept "POST" method')
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
 # 获取选中的step
 @login_required
 def case_steps(request, pk):
-    v = Step.objects.filter(case=pk, is_active=True).order_by('casevsstep__order').values(
+    objects = Step.objects.filter(case=pk, is_active=True).order_by('casevsstep__order').values(
         'pk', 'name', order=F('casevsstep__order')).annotate(
         action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
-    data_dict = dict()
-    data_dict['data'] = list(v)
-    return JsonResponse(data_dict)
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 
 # 获取全部case
 @login_required
 def case_list_all(request):
     objects = Case.objects.filter(is_active=True).order_by('pk').values('pk', 'name')
-    data_dict = dict()
-    data_dict['data'] = list(objects)
-    return JsonResponse(data_dict)
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 
 # 获取临时case
@@ -226,6 +232,4 @@ def case_list_temp(request):
         objects = list(objects)
         objects[0]['order'] = order
         list_temp.append(objects[0])
-    data_dict = dict()
-    data_dict['data'] = list_temp
-    return JsonResponse(data_dict)
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': list_temp})

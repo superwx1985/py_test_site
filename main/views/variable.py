@@ -1,5 +1,5 @@
 import json
-import traceback
+import logging
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
 from django.shortcuts import render, get_object_or_404
 from django.core.serializers import serialize
@@ -15,6 +15,8 @@ from django.core import serializers
 from main.models import VariableGroup, Variable
 from main.forms import PaginatorForm, VariableGroupForm
 from main.views.general import get_query_condition
+
+logger = logging.getLogger('django.request')
 
 
 @login_required
@@ -67,6 +69,11 @@ def variable_group(request, pk):
         creator = obj.creator
         form = VariableGroupForm(data=request.POST, instance=obj)
         variable_list = json.loads(request.POST.get('variable', '[]'))
+        try:
+            variable_list = json.loads(request.POST.get('variable', 'null'))
+        except json.decoder.JSONDecodeError:
+            logger.warning('无法获取m2m值', exc_info=True)
+            variable_list = None
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = creator
@@ -74,17 +81,18 @@ def variable_group(request, pk):
             form_.is_active = obj.is_active
             form_.save()
             form.save_m2m()
-            objects = Variable.objects.filter(variable_group=obj)
-            object_values = objects.order_by('order').values('name', 'value')
-            object_values = list(object_values)
-            if object_values != variable_list:
-                objects.delete()
-                order = 0
-                for v in variable_list:
-                    if not v:
-                        continue
-                    order += 1
-                    Variable.objects.create(variable_group=obj, name=v['name'], value=v['value'], order=order)
+            if variable_list:
+                objects = Variable.objects.filter(variable_group=obj)
+                object_values = objects.order_by('order').values('name', 'value')
+                object_values = list(object_values)
+                if object_values != variable_list:
+                    objects.delete()
+                    order = 0
+                    for v in variable_list:
+                        if not v:
+                            continue
+                        order += 1
+                        Variable.objects.create(variable_group=obj, name=v['name'], value=v['value'], order=order)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
             redirect_url = request.POST.get('redirect_url', '')
@@ -93,10 +101,11 @@ def variable_group(request, pk):
             else:
                 return HttpResponseRedirect(redirect_url)
         else:
-            # 暂存variable列表
-            temp_dict = dict()
-            temp_dict['data'] = variable_list
-            temp_list_json = json.dumps(temp_dict)
+            if variable_list:
+                # 暂存variable列表
+                temp_dict = dict()
+                temp_dict['data'] = variable_list
+                temp_list_json = json.dumps(temp_dict)
         redirect_url = request.POST.get('redirect_url', '')
         is_success = False
         return render(request, 'main/variable/detail.html', locals())
@@ -113,7 +122,11 @@ def variable_group_add(request):
         return render(request, 'main/variable/detail.html', locals())
     elif request.method == 'POST':
         form = VariableGroupForm(data=request.POST)
-        variable_list = json.loads(request.POST.get('variable', '[]'))
+        try:
+            variable_list = json.loads(request.POST.get('variable', 'null'))
+        except json.decoder.JSONDecodeError:
+            logger.warning('无法获取m2m值', exc_info=True)
+            variable_list = None
         if form.is_valid():
             form_ = form.save(commit=False)
             form_.creator = request.user
@@ -123,12 +136,13 @@ def variable_group_add(request):
             form.save_m2m()
             obj = form_
             pk = obj.id
-            order = 0
-            for v in variable_list:
-                if not v:
-                    continue
-                order += 1
-                Variable.objects.create(variable_group=obj, name=v['name'], value=v['value'], order=order)
+            if variable_list:
+                order = 0
+                for v in variable_list:
+                    if not v:
+                        continue
+                    order += 1
+                    Variable.objects.create(variable_group=obj, name=v['name'], value=v['value'], order=order)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
             redirect_url = request.POST.get('redirect_url', '')
@@ -139,10 +153,11 @@ def variable_group_add(request):
             else:
                 return HttpResponseRedirect(redirect_url)
         else:
-            # 暂存variable列表
-            temp_dict = dict()
-            temp_dict['data'] = variable_list
-            temp_list_json = json.dumps(temp_dict)
+            if variable_list:
+                # 暂存variable列表
+                temp_dict = dict()
+                temp_dict['data'] = variable_list
+                temp_list_json = json.dumps(temp_dict)
         redirect_url = request.POST.get('redirect_url', '')
         is_success = False
         return render(request, 'main/variable/detail.html', locals())
@@ -152,44 +167,35 @@ def variable_group_add(request):
 def variable_group_delete(request, pk):
     if request.method == 'POST':
         VariableGroup.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return HttpResponse('success')
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
     else:
-        return HttpResponseBadRequest('only accept "POST" method')
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': pk})
 
 
 @login_required
 def variable_group_quick_update(request, pk):
     if request.method == 'POST':
-        response_ = {'new_value': ''}
         try:
             col_name = request.POST['col_name']
             new_value = request.POST['new_value']
-            response_['new_value'] = new_value
             obj = VariableGroup.objects.get(pk=pk)
-            obj.modifier = request.user
-            obj.modified_date = timezone.now()
-            if col_name == 'name':
-                obj.name = new_value
+            if col_name in ('name', 'keyword'):
+                setattr(obj, col_name, new_value)
                 obj.clean_fields()
-                obj.save()
-            elif col_name == 'keyword':
-                obj.keyword = new_value
-                obj.clean_fields()
+                obj.modifier = request.user
+                obj.modified_date = timezone.now()
                 obj.save()
             else:
-                raise ValueError('invalid col_name')
+                raise ValueError('非法的字段名称')
         except Exception as e:
-            print(traceback.format_exc())
-            return HttpResponseBadRequest(str(e))
-        return JsonResponse(response_)
+            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': new_value})
     else:
-        return HttpResponseBadRequest('only accept "POST" method')
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
 # 获取变量组中的变量
 @login_required
 def variable_group_variables(request, pk):
-    v = Variable.objects.filter(variable_group=pk, is_active=True).order_by('order').values('pk', 'name', 'value')
-    data_dict = dict()
-    data_dict['data'] = list(v)
-    return JsonResponse(data_dict)
+    objects = Variable.objects.filter(variable_group=pk).order_by('order').values('pk', 'name', 'value')
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})

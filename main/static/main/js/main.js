@@ -176,7 +176,12 @@ function update_single_column(url, csrf_token, pk, new_value, old_value, col_nam
             // console.log('success');
             // console.log("data['new_value']: " + data['new_value']);
             // console.log("textStatus: " + textStatus);
-            callback_func(true, pk, new_value, old_value, col_name)
+            console.log(data)
+            if (data.statue === 1) {
+                callback_func(true, pk, new_value, old_value, col_name);
+            } else {
+                callback_func(false, pk, new_value, old_value, col_name, data.message);
+            }
         },
         error: function (XMLHttpRequest, textStatus, errorThrown) {
             // console.log('error');
@@ -187,7 +192,7 @@ function update_single_column(url, csrf_token, pk, new_value, old_value, col_nam
             // console.log("XMLHttpRequest.responseXML: "+XMLHttpRequest.responseXML);
             // console.log("textStatus: " + textStatus);
             // console.log("errorThrown: " + errorThrown);
-            callback_func(false, pk, new_value, old_value, col_name, XMLHttpRequest.responseText)
+            callback_func(false, pk, new_value, old_value, col_name, XMLHttpRequest.responseText);
         }
     })
 }

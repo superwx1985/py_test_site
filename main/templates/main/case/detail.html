@@ -32,8 +32,8 @@
                     // 获取m2m
                     getList("{% url 'case_steps' pk %}", window.$csrf_input.val(), m2m_list_selected_save_and_update);
                 {% else %}
-                    // 关闭遮罩
-                    $('#mask').hide();
+                    // 初始化m2m字段
+                    update_m2m_selected_index(true);
                 {% endif %}
             {% endif %}
             // 处理step拖动及排序
@@ -104,7 +104,7 @@
                         tbody.append(tr);
                     });
                 }
-                update_steps_selected_index(true);
+                update_m2m_selected_index(true);
             }
         }
         // 保存并更新已选步骤列表
@@ -120,7 +120,7 @@
                 handle: "[moveable]",
                 placeholder: 'ui-state-highlight',
                 stop: function( event, ui ) {
-                    update_steps_selected_index();
+                    update_m2m_selected_index();
                 }
             });
             $('#steps_selected tbody').droppable({
@@ -145,7 +145,7 @@
             })
         }
         // 更新已选步骤的序号，更新step field内容
-        function update_steps_selected_index(init) {
+        function update_m2m_selected_index(init) {
             var steps = $('#steps_selected tbody tr');
             var step_list = [];
             steps.each(function(i) {

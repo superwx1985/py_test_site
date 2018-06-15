@@ -32,8 +32,8 @@
                     // 获取m2m
                     getList("{% url 'suite_cases' pk %}", window.$csrf_input.val(), m2m_list_selected_save_and_update);
                 {% else %}
-                    // 关闭遮罩
-                    $('#mask').hide();
+                    // 初始化m2m字段
+                    update_m2m_selected_index(true);
                 {% endif %}
             {% endif %}
             // 处理m2m拖动及排序
@@ -138,6 +138,7 @@
         function update_m2m_selected_index(init) {
             var steps = $('#m2m_selected tbody tr');
             var step_list = [];
+
             steps.each(function(i) {
                 $(this).children('[index]').text(i+1);
                 step_list.push($(this).children('td:nth-of-type(3)').text());

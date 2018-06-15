@@ -35,6 +35,9 @@
                 {% if pk %}
                     // 获取变量组
                     getList("{% url 'variable_group_variables' pk %}", window.$csrf_input.val(), variableUpdate);
+                {% else %}
+                    // 初始化变量组字段
+                    updateVariableIndex(true);
                 {% endif %}
             {% endif %}
 
@@ -89,8 +92,8 @@
                         // 插入变量名列表
                         checkVariableName(v.name);
                     });
-                    updateVariableIndex(true);
                 }
+                updateVariableIndex(true);
             }
         }
         // 保存并更新变量列表
@@ -197,6 +200,8 @@
             if (init) {
                 $('input[name=variable]').attr('value', json_str);
             }
+            // 关闭遮罩
+            $('#mask').hide();
         }
         // 检查是否有未保存的变量
         function checkUnsaved() {

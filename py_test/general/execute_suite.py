@@ -11,13 +11,8 @@ from main.models import Suite, Case, SuiteResult
 from django.forms.models import model_to_dict
 
 
-def execute_suite(request, pk, result_dir):
+def execute_suite(request, suite, result_dir):
     start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
-    try:
-        suite = Suite.objects.get(pk=pk)
-    except Suite.DoesNotExist:
-        return
-
     thread_log.THREAD_LEVEL = suite.log_level
 
     logger = logging.getLogger('py_test')
@@ -66,7 +61,7 @@ def execute_suite(request, pk, result_dir):
         logger.info('没有符合条件的用例')
         logger.info('========================================')
         logger.info('结束')
-        return '', 0, 0, 0, 0, 0
+        return suite_result
 
     report_folder_name = 'Automation_Test_Report_' + start_time.strftime("%Y-%m-%d_%H%M%S")
     result_path = os.path.join(result_dir, report_folder_name)

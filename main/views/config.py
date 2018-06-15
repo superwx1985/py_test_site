@@ -1,5 +1,5 @@
 import json
-import traceback
+import logging
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
 from django.shortcuts import render, get_object_or_404
 from django.core.serializers import serialize
@@ -15,6 +15,8 @@ from django.core import serializers
 from main.models import Config
 from main.forms import PaginatorForm, ConfigForm
 from main.views.general import get_query_condition
+
+logger = logging.getLogger('django.request')
 
 
 @login_required
@@ -122,36 +124,29 @@ def config_add(request):
 def config_delete(request, pk):
     if request.method == 'POST':
         Config.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return HttpResponse('success')
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
     else:
-        return HttpResponseBadRequest('only accept "POST" method')
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': pk})
 
 
 @login_required
 def config_quick_update(request, pk):
     if request.method == 'POST':
-        response_ = {'new_value': ''}
         try:
             col_name = request.POST['col_name']
             new_value = request.POST['new_value']
-            response_['new_value'] = new_value
             obj = Config.objects.get(pk=pk)
-            obj.modifier = request.user
-            obj.modified_date = timezone.now()
-            if col_name == 'name':
-                obj.name = new_value
+            if col_name in ('name', 'keyword'):
+                setattr(obj, col_name, new_value)
                 obj.clean_fields()
-                obj.save()
-            elif col_name == 'keyword':
-                obj.keyword = new_value
-                obj.clean_fields()
+                obj.modifier = request.user
+                obj.modified_date = timezone.now()
                 obj.save()
             else:
-                raise ValueError('invalid col_name')
+                raise ValueError('非法的字段名称')
         except Exception as e:
-            print(traceback.format_exc())
-            return HttpResponseBadRequest(str(e))
-        return JsonResponse(response_)
+            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': new_value})
     else:
-        return HttpResponseBadRequest('only accept "POST" method')
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': None})
 
