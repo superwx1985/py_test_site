@@ -299,6 +299,7 @@ class SuiteResult(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
+    is_active = models.BooleanField(default=True)
 
     base_timeout = models.FloatField(default=10)
     ui_get_ss = models.BooleanField(default=True)
@@ -307,7 +308,12 @@ class SuiteResult(models.Model):
     variable_group = models.TextField(blank=True, null=True)
 
     suite = models.ForeignKey('main.Suite', on_delete=models.DO_NOTHING)
-    creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.DO_NOTHING)
+    creator = models.ForeignKey(User, verbose_name='创建人', related_name='suite_result_creator',
+                                on_delete=models.DO_NOTHING)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='suite_result_modifier',
+                                 on_delete=models.DO_NOTHING)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     execute_count = models.IntegerField(blank=True, null=True)
@@ -316,9 +322,9 @@ class SuiteResult(models.Model):
     error_count = models.IntegerField(blank=True, null=True)
 
     result_status_list = (
-        (1, 'pass'),
-        (2, 'fail'),
-        (3, 'error'),
+        (1, '成功'),
+        (2, '失败'),
+        (3, '异常'),
     )
     result_status = models.IntegerField(blank=True, null=True)
 
@@ -345,9 +351,9 @@ class CaseResult(models.Model):
     error_count = models.IntegerField(blank=True, null=True)
 
     result_status_list = (
-        (1, 'pass'),
-        (2, 'fail'),
-        (3, 'error'),
+        (1, '成功'),
+        (2, '失败'),
+        (3, '异常'),
     )
     result_status = models.IntegerField(blank=True, null=True)
     result_message = models.TextField(blank=True)
@@ -369,9 +375,9 @@ class StepResult(models.Model):
     start_date = models.DateTimeField(blank=True, null=True)
     end_date = models.DateTimeField(blank=True, null=True)
     result_status_list = (
-        (1, 'pass'),
-        (2, 'fail'),
-        (3, 'error'),
+        (1, '成功'),
+        (2, '失败'),
+        (3, '异常'),
     )
     result_status = models.IntegerField(blank=True, null=True)
     result_message = models.TextField(blank=True)

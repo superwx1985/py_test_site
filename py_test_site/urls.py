@@ -22,6 +22,7 @@ import main.views.step as step
 import main.views.config as config
 import main.views.variable as variable
 import main.views.suite as suite
+import main.views.result as result
 
 
 urlpatterns = [
@@ -67,9 +68,15 @@ urlpatterns = [
     path('suite/<int:pk>/cases/', suite.suite_cases, name='suite_cases'),
     path('suite/<int:pk>/execute/', suite.suite_execute, name='suite_execute'),
 
+    path('results/', result.results, name='results'),
+    path('result/<int:pk>/', result.result, name='result'),
+    path('result/<int:pk>/delete/', result.result_delete, name='result_delete'),
+    path('result/<int:pk>/quick_update/', result.result_quick_update, name='result_quick_update'),
+
+    path('step_result/<int:pk>/', result.step_result, name='step_result'),
+
     path('test1/', general.test1, name='test1'),
     path('test2/', general.test2, name='test2'),
     path('logout/', general.logout, name='logout'),
 
 ]
-

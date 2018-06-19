@@ -1,0 +1,111 @@
+{% extends 'main/detail_base.html' %}
+{% load widget_tweaks %}
+{% block title %}
+    {{ form.initial.name }} - 结果 - {{ block.super }}
+{% endblock %}
+{% block style %}
+    <style type='text/css' media='screen'>
+
+    </style>
+{% endblock %}
+{% block script %}
+    <script>
+        $(function () {
+            // 更新导航栏
+            $('#nav_result').addClass('active');
+            window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
+            // 关闭遮罩
+            $('#mask').hide();
+            $('[name=step_result_name]').on('click', function() {
+                var csrf_token = window.$csrf_input.val();
+                var url = $(this).parents('tr').attr('step_result_url');
+                var title = $(this).text();
+                var msg = '<div class="middle"><i class="icon-spinner icon-spin icon-5x"></i></div>';
+                bootbox.dialog({
+                    title: title,
+                    message: msg,
+                    size: 'large',
+                    init: $.post(url, {'csrfmiddlewaretoken': csrf_token}, function(data) {
+                        console.log(data);
+                        $('.bootbox-body').html(data.data.start_date + '|' + data.data.result_message);
+                    })
+                });
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block detail_header %}
+    <ol class="breadcrumb my-4">
+        <li class="breadcrumb-item active">
+            测试时间：{{ obj.start_date }}，创建时间：{{ obj.created_date }}，创建人：{{ obj.creator }}，上次修改时间：{{ obj.modified_date }}，修改人：{{ obj.modifier }}
+        </li>
+    </ol>
+{% endblock %}
+
+{% block detail_form %}
+    <form method="post" id="object_form" novalidate>
+        {% csrf_token %}
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">名称</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.name %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">描述</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_textarea.html' with field=form.description rows='5' %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">关键字</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.keyword %}
+            </div>
+        </div>
+
+        <input name="redirect" hidden value="{{ redirect }}">
+        <input name="redirect_url" hidden value="{{ redirect_url }}">
+
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">用例执行情况</div>
+            <div class="col" form_data>
+                <ul class="nav nav-tabs" role="tablist">
+                    {% for case_result in sub_objects %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if forloop.counter == 1 %}active{% endif %}" data-toggle="tab" href="#case_result_{{ case_result.pk }}">{{ case_result.name }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+                <div class="tab-content bg-light">
+                    {% for case_result in sub_objects %}
+                        <div id="case_result_{{ case_result.pk }}" class="container-fluid tab-pane {% if forloop.counter == 1 %}active{% endif %}" style="padding: 1em">
+                            <div class="table-responsive" id='result_table'>
+                                <table class="table table-hover">
+                                    <colgroup>
+                                        <col style='width: 50px;'>
+                                        <col>
+                                        <col style='width: 200px;'>
+                                    </colgroup>
+                                    <tbody>
+                                        {% for step_result in case_result.stepresult_set.all %}
+                                            <tr pk="{{ step_result.pk }}" step_result_url="{% url 'step_result' step_result.pk %}">
+                                                <td class="middle">{% if step_result.result_status == 1 %}<i class="icon-ok-sign text-success"></i>{% elif step_result.result_status == 2 %}<i class="icon-remove-sign text-warning"></i>{% else %}<i class="icon-exclamation-sign text-danger"></i>{% endif %}</td>
+                                                <td><a name="step_result_name" href="javascript:">{{ step_result.name }}</a></td>
+                                                <td>{{ step_result.action }}</td>
+                                            </tr>
+                                        {% endfor %}
+
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        {% include 'main/include/submit_button_group.html' %}
+    </form>
+{% endblock %}

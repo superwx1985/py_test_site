@@ -53,6 +53,7 @@ def execute_suite(request, suite, result_dir):
 
         suite=suite,
         creator=request.user,
+        modifier=request.user,
         start_date=start_date,
 
         execute_count=0,

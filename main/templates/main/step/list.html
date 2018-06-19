@@ -38,14 +38,14 @@
                         <td col_name='action' class="align-middle">{{ object.action }}</td>
                         <td>
                             <div class="middle">
-                                <button type="button" name="edit_button" class="btn btn-info"><i class="icon-pencil"></i></button>
+                                <button type="button" name="edit_button" class="btn btn-info"><i class="icon-edit"></i></button>
                                 <button type="button" name="delete_button" class="btn btn-danger"><i class="icon-trash"></i></button>
                             </div>
                         </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center">查无数据</td>
+                        <td colspan="5" class="text-center bg-warning">查无数据</td>
                     </tr>
                 {% endfor %}
             </tbody>

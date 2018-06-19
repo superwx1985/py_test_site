@@ -1,14 +1,16 @@
 {% extends 'main/list_base.html' %}
-{% block title %}用例 - {{ block.super }}{% endblock %}
+{% block title %}结果 - {{ block.super }}{% endblock %}
 {% block script %}
     <script>
         $(function () {
             // 更新导航栏
-            $('#nav_case').addClass('active');
-            // 获取添加地址
-            window.addUrl="{% url 'case_add' %}"
+            $('#nav_result').addClass('active');
+
         })
     </script>
+{% endblock %}
+{% block search_tools %}
+    {% include 'main/include/search_tools.html' with hide_add_button=True %}
 {% endblock %}
 {% block result_table %}
     <div class="table-responsive" id='result_table'>
@@ -16,6 +18,7 @@
             <colgroup>
                 <col style='width: 80px;'>
                 <col>
+                <col style='width: 200px;'>
                 <col style='width: 200px;'>
                 <col style='width: 100px;'>
                 <col style='width: 120px;'>
@@ -25,27 +28,35 @@
                     <th>ID</th>
                     <th>名称</th>
                     <th>关键字</th>
-                    <th>步骤数</th>
+                    <th>测试时间</th>
+                    <th>结果</th>
                     <th>操作</th>
                 </tr>
             </thead>
             <tbody>
                 {% for object in objects %}
-                    <tr pk="{{ object.pk }}" edit_url="{% url 'case' object.pk %}" quick_update_url="{% url 'case_quick_update' object.pk %}" del_url="{% url 'case_delete' object.pk %}">
+                    <tr pk="{{ object.pk }}" edit_url="{% url 'result' object.pk %}" quick_update_url="{% url 'result_quick_update' object.pk %}" del_url="{% url 'result_delete' object.pk %}">
                         <td col_name='id' class="middle">{{ object.pk }}</td>
                         <td quick_update col_name='name' class="align-middle">{{ object.name }}</td>
                         <td quick_update col_name='keyword' class="align-middle">{{ object.keyword }}</td>
-                        <td col_name='step_count' class="middle">{{ object.m2m_count }}</td>
+                        <td col_name='start_date' class="middle">{{ object.start_date }}</td>
+                        {% if object.result_status == 1 %}
+                            <td col_name='step_count' class="middle text-success"><i class="icon-ok-sign"></i>&nbsp;{{ object.result_status_str }}</td>
+                        {% elif object.result_status == 2 %}
+                            <td col_name='step_count' class="middle text-warning"><i class="icon-remove-sign"></i>&nbsp;{{ object.result_status_str }}</td>
+                        {% else %}
+                            <td col_name='step_count' class="middle text-danger"><i class="icon-exclamation-sign"></i>&nbsp;{{ object.result_status_str }}</td>
+                        {% endif %}
                         <td>
                             <div class="middle">
-                                <button type="button" name="edit_button" class="btn btn-info"><i class="icon-edit"></i></button>
+                                <button type="button" name="edit_button" class="btn btn-info"><i class="icon-bar-chart"></i></button>
                                 <button type="button" name="delete_button" class="btn btn-danger"><i class="icon-trash"></i></button>
                             </div>
                         </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center bg-warning">查无数据</td>
+                        <td colspan="6" class="text-center bg-warning">查无数据</td>
                     </tr>
                 {% endfor %}
             </tbody>

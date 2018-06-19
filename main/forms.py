@@ -110,12 +110,6 @@ class ConfigForm(forms.ModelForm):
     class Meta:
         model = Config
         fields = '__all__'
-        widgets = {
-            # 'name': forms.Textarea(),
-            # 'keyword': forms.Textarea(),
-            # 'save_as': forms.Textarea(),
-            # 'ui_alert_handle': forms.RadioSelect,
-        }
 
 
 class VariableGroupForm(forms.ModelForm):
@@ -127,12 +121,6 @@ class VariableGroupForm(forms.ModelForm):
     class Meta:
         model = VariableGroup
         fields = '__all__'
-        widgets = {
-            # 'name': forms.Textarea(),
-            # 'keyword': forms.Textarea(),
-            # 'save_as': forms.Textarea(),
-            # 'ui_alert_handle': forms.RadioSelect,
-        }
 
 
 class VariableForm(forms.ModelForm):
@@ -144,12 +132,6 @@ class VariableForm(forms.ModelForm):
     class Meta:
         model = Variable
         fields = '__all__'
-        widgets = {
-            # 'name': forms.Textarea(),
-            # 'keyword': forms.Textarea(),
-            # 'save_as': forms.Textarea(),
-            # 'ui_alert_handle': forms.RadioSelect,
-        }
 
 
 class SuiteForm(forms.ModelForm):
@@ -162,9 +144,9 @@ class SuiteForm(forms.ModelForm):
     class Meta:
         model = Suite
         fields = '__all__'
-        widgets = {
-            # 'name': forms.Textarea(),
-            # 'keyword': forms.Textarea(),
-            # 'save_as': forms.Textarea(),
-            # 'ui_alert_handle': forms.RadioSelect,
-        }
+
+
+class SuiteResultForm(forms.Form):
+    name = forms.CharField(max_length=100)
+    description = forms.CharField(required=False, widget=forms.Textarea())
+    keyword = forms.CharField(required=False, max_length=100)
