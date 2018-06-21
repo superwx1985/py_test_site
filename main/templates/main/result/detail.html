@@ -5,7 +5,11 @@
 {% endblock %}
 {% block style %}
     <style type='text/css' media='screen'>
-
+        @media (min-width: 1024px) {
+          .modal-lg {
+            max-width: 80%;
+          }
+        }
     </style>
 {% endblock %}
 {% block script %}
@@ -18,7 +22,7 @@
             $('#mask').hide();
             $('[name=step_result_name]').on('click', function() {
                 var csrf_token = window.$csrf_input.val();
-                var url = $(this).parents('tr').attr('step_result_url');
+                var url = $(this).parents('tr').attr('step_img_url');
                 var title = $(this).text();
                 var msg = '<div class="middle"><i class="icon-spinner icon-spin icon-5x"></i></div>';
                 bootbox.dialog({
@@ -27,7 +31,15 @@
                     size: 'large',
                     init: $.post(url, {'csrfmiddlewaretoken': csrf_token}, function(data) {
                         console.log(data);
-                        $('.bootbox-body').html(data.data.start_date + '|' + data.data.result_message);
+                        var div = $('<div></div>')
+                        div.append($('<h4></h4>').text(data.data.result_message));
+                        div.append($('<pre></pre>').text(data.data.result_error));
+                        $.each(data.data.imgs, function(index, value){
+                            div.append($('<br>'));
+                            div.append($('<a></a>').attr('href', value).attr('target', '_blank').append($('<img>').attr('src', value).addClass('img-thumbnail')));
+                        });
+
+                        $('.bootbox-body').empty().append(div);
                     })
                 });
             });
@@ -87,13 +99,15 @@
                                         <col style='width: 50px;'>
                                         <col>
                                         <col style='width: 200px;'>
+                                        <col style='width: 200px;'>
                                     </colgroup>
                                     <tbody>
                                         {% for step_result in case_result.stepresult_set.all %}
-                                            <tr pk="{{ step_result.pk }}" step_result_url="{% url 'step_result' step_result.pk %}">
+                                            <tr pk="{{ step_result.pk }}" step_img_url="{% url 'step_img' step_result.pk %}">
                                                 <td class="middle">{% if step_result.result_status == 1 %}<i class="icon-ok-sign text-success"></i>{% elif step_result.result_status == 2 %}<i class="icon-remove-sign text-warning"></i>{% else %}<i class="icon-exclamation-sign text-danger"></i>{% endif %}</td>
                                                 <td><a name="step_result_name" href="javascript:">{{ step_result.name }}</a></td>
                                                 <td>{{ step_result.action }}</td>
+                                                <td>{{ step_result.start_date }}</td>
                                             </tr>
                                         {% endfor %}
 

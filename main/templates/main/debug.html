@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        <title>DEBUG</title>
+        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
+        <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
+        <link rel="stylesheet" href="{% static 'main/css/bootstrap-4.1.1/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'main/css/toastr-2.1.4/toastr.css' %}">
+        <link rel="stylesheet" href="{% static 'main/css/font-awesome/font-awesome.css' %}">
+        <script src="{% static 'main/js/jquery/jquery-3.3.1.min.js' %}"></script>
+        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+        <script src="{% static 'main/js/bootstrap-4.1.1/bootstrap.min.js' %}"></script>
+        <script src="{% static 'main/js/bootbox/bootbox.min.js' %}"></script>
+        <script src="{% static 'main/js/toastr-2.1.4/toastr.min.js' %}"></script>
+        <script src="{% static 'main/js/main.js' %}"></script>
+        <style>
+
+        </style>
+        <script>
+            $(function () {
+
+            })
+        </script>
+    </head>
+    <body>
+        <ul>
+            <li><a href="{% url 'test1' %}" target="_blank">test1</a></li>
+            <li><a href="{% url 'test2' %}" target="_blank">test2</a></li>
+            <li><a href="{% url 'debug1' %}" target="_blank">debug1</a></li>
+        </ul>
+        <br>
+        <div>
+            <img src="{% static '123/1.png' %}">
+        </div>
+
+    </body>
+</html>

@@ -131,7 +131,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # 默认上传位置
-MEDIA_URL = '/upload/'
+MEDIA_ROOT = 'media/'
+MEDIA_URL = '/media/'
 
 # 登陆页面
 LOGIN_URL = '/admin/login/'

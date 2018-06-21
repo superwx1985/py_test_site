@@ -1,5 +1,4 @@
 import datetime
-import os
 import json
 import pytz
 import logging
@@ -11,12 +10,14 @@ from main.models import Suite, Case, SuiteResult
 from django.forms.models import model_to_dict
 
 
-def execute_suite(request, suite, result_dir):
+def execute_suite(request, suite):
     start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
-    thread_log.THREAD_LEVEL = suite.log_level
 
     logger = logging.getLogger('py_test')
     logger.setLevel(suite.log_level)
+    # 设置线程日志level
+    thread_log.THREAD_LEVEL = suite.log_level
+
     logger.info('开始')
     logger.info(logger.level)
     logger.info('========================================')
@@ -68,12 +69,6 @@ def execute_suite(request, suite, result_dir):
         logger.info('结束')
         return suite_result
 
-    report_folder_name = 'Automation_Test_Report_' + start_date.strftime("%Y-%m-%d_%H%M%S")
-    result_path = os.path.join(result_dir, report_folder_name)
-    if not os.path.isabs(result_path):  # 如果报告路径不是绝对路径，则生成在工程文件夹
-        result_path = os.path.join(os.getcwd(), result_path)
-    if not os.path.exists(result_path):
-        os.makedirs(result_path)
 
     logger.info('准备运行下列【%s】个用例:' % len(cases))
     i = 1
@@ -90,7 +85,6 @@ def execute_suite(request, suite, result_dir):
             execute_case.execute_case,
             case=case,
             suite_result=suite_result,
-            result_path=result_path,
             case_order=case_order,
             user=request.user,
             execute_str=case_order,

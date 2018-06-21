@@ -1,13 +1,10 @@
 import datetime
-import time
 import json
 import traceback
 import pytz
-from py_test.general import vic_variables, vic_public_elements
-from py_test.general import vic_method
+from py_test.general import vic_variables, vic_public_elements, vic_method, thread_log
 from py_test.ui_test import method
 from selenium.common.exceptions import UnexpectedAlertPresentException
-from py_test.general.thread_log import get_thread_logger
 from main.models import CaseResult, Step
 from django.forms.models import model_to_dict
 from .execute_step import execute_step
@@ -19,9 +16,9 @@ global_variables = vic_variables.global_variables
 public_elements = vic_public_elements.public_elements
 
 
-def execute_case(case, suite_result, result_path, case_order, user, execute_str, variables=None, step_result=None, parent_case_pk_list=None, dr=None):
+def execute_case(case, suite_result, case_order, user, execute_str, variables=None, step_result=None, parent_case_pk_list=None, dr=None):
     start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     logger.debug('=================== 试试debug =====================')
     logger.warning('=================== 试试warning =====================')
     logger.error('=================== 试试error =====================')
@@ -104,7 +101,7 @@ def execute_case(case, suite_result, result_path, case_order, user, execute_str,
                 if last_url == 'data:,':
                     last_url = ''
 
-            step_result_ = execute_step(step, case_result, result_path, step_order, user, execute_str, variables, parent_case_pk_list, dr=dr)
+            step_result_ = execute_step(step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=dr)
 
             case_result.execute_count += 1
             if step_result_.result_status == 1:

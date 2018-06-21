@@ -384,3 +384,10 @@ class StepResult(models.Model):
     result_error = models.TextField(blank=True)
 
     step_snapshot = models.TextField(blank=True, null=True)
+
+    imgs = models.ManyToManyField(to='Image')
+
+
+class Image(models.Model):
+    name = models.CharField(max_length=100)
+    img = models.ImageField(upload_to='img')

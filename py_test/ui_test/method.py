@@ -12,11 +12,14 @@
 import time
 import uuid
 import os
+import io
+import datetime
 from selenium.common import exceptions
 from selenium import webdriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.common.action_chains import ActionChains
+from PIL import Image
 from py_test.vic_tools import vic_find_object, vic_eval
 from py_test.vic_tools.vic_str_handle import change_string_to_digit
 from py_test.general.thread_log import get_thread_logger
@@ -770,33 +773,31 @@ def run_js(dr, by, locator, data, timeout, index_, base_element, variable_elemen
     return run_result, js_result
 
 
-# 截取当前页面
-def get_current_screenshot(dr, result_dir, ss_name=None):
-    logger = get_thread_logger()
-    if ss_name is None:
-        ss_name = 'screenshot_{}.png'.format(uuid.uuid1())
-    file_path = get_screenshot_full_name(ss_name, result_dir)
-    get_screenshot(dr, file_path)
-    logger.debug('截图保存为%s' % ss_name)
-    return ss_name
-
-
 # 根据浏览器类型调取不同的截图方法
-def get_screenshot(dr, file_path, scroll_step=100, scroll_delay=0.1, start_height=0, max_height=10000):
-    if 'chrome' == dr.name:
-        img = get_long_screenshot_img_for_chrome(dr, scroll_step, scroll_delay, start_height, max_height)
-        img.save(file_path)
-        del img
+def get_screenshot(dr, element=None):
+    from django.core.files.uploadedfile import UploadedFile
+    from main.models import Image
+    bio = io.BytesIO()
+    if element:
+        img = get_image_on_element(dr, element)
     else:
-        dr.save_screenshot(file_path)
+        if 'chrome' == dr.name:
+            img = get_long_screenshot_img_for_chrome(dr)
+        else:
+            img = Image.open(io.BytesIO(dr.get_screenshot_as_png()))
+
+    img.save(bio, format='png')
+
+    name = datetime.datetime.now().strftime('%Y%m%d_%H%M%S.png')
+    image_store = Image(name=name, img=UploadedFile(bio, name=name))
+    image_store.save()
+    bio.close()
     run_result = ('p', '截图成功')
-    return run_result, file_path
+    return run_result, image_store
 
 
 # chrome截长图
 def get_long_screenshot_img_for_chrome(dr, scroll_step=100, scroll_delay=0.1, start_height=0, max_height=10000):
-    import io
-    from PIL import Image
     if start_height >= max_height:
         raise ValueError("截图开始高度大于最大高度")
     window_top = dr.execute_script('return scrollY;')
@@ -838,7 +839,6 @@ def get_long_screenshot_img_for_chrome(dr, scroll_step=100, scroll_delay=0.1, st
 
 # 垂直合并图片
 def vertical_join_image(img1, img2):
-    from PIL import Image
     width1 = img1.size[0]
     height1 = img1.size[1]
     width2 = img2.size[0]
@@ -854,7 +854,7 @@ def vertical_join_image(img1, img2):
 
 
 # 只截取某个元素
-def get_screenshot_on_element(dr, element, file_path):
+def get_image_on_element(dr, element):
     window_top = dr.execute_script('return scrollY;')
     dr.execute_script("arguments[0].scrollIntoView();", element)
     time.sleep(1)
@@ -865,23 +865,13 @@ def get_screenshot_on_element(dr, element, file_path):
     top = element.location['y'] - scroll_height
     bottom = top + element.size['height']
 
-    # 修剪图片
-    def scop_to(filename, left, top, right, bottom):
-        from PIL import Image
-        im = Image.open(filename)  # uses PIL library to open image in memory
-        im = im.crop((left, top, right, bottom))  # defines crop points
-        im.save(filename)  # saves new cropped image
-
     if 'chrome' == dr.name:
         img = get_long_screenshot_img_for_chrome(dr, 100, 0.1, scroll_height, scroll_height + element.size['height'])
-        img.save(file_path)
-        del img
-        scop_to(file_path, left, top, right, bottom)
     else:
-        dr.save_screenshot(file_path)
-        scop_to(file_path, left, top, right, bottom)
-    run_result = ('p', '截图成功')
-    return run_result, file_path
+        img = Image.open(io.BytesIO(dr.get_screenshot_as_png()))
+    # 裁剪图片
+    img.crop((left, top, right, bottom))
+    return img
 
 
 # 下拉加载更多内容

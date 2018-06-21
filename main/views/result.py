@@ -178,9 +178,18 @@ def result_quick_update(request, pk):
 
 
 @login_required
-def step_result(request, pk):
+def step_img(request, pk):
     try:
         obj = StepResult.objects.get(pk=pk)
     except StepResult.DoesNotExist:
         raise Http404('StepResult does not exist')
-    return JsonResponse({'statue': 1, 'message': 'OK', 'data': model_to_dict(obj)})
+    data_dict = dict()
+    data_dict['pk'] = pk
+    data_dict['name'] = obj.name
+    data_dict['result_message'] = obj.result_message
+    data_dict['result_error'] = obj.result_error
+    data_dict['start_date'] = obj.start_date
+    data_dict['imgs'] = list()
+    for img in obj.imgs.all():
+        data_dict['imgs'].append(img.img.url)
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': data_dict})

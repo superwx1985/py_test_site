@@ -3,15 +3,12 @@ import time
 import json
 import traceback
 import pytz
-import uuid
-from py_test.general import vic_variables, vic_public_elements, test_result
-from py_test.general import vic_method, import_test_data
+from py_test.general import vic_variables, vic_public_elements, thread_log
 from py_test.ui_test import method
 from selenium.common.exceptions import UnexpectedAlertPresentException, NoSuchElementException
 from py_test.vic_tools import vic_eval
 from py_test.vic_tools.vic_str_handle import change_digit_to_string, change_string_to_digit
-from py_test.general.thread_log import get_thread_logger
-from main.models import StepResult, Step
+from main.models import StepResult
 from django.forms.models import model_to_dict
 
 # 获取全局变量
@@ -20,11 +17,12 @@ global_variables = vic_variables.global_variables
 public_elements = vic_public_elements.public_elements
 
 
-def execute_step(step, case_result, result_path, step_order, user, execute_str, variables, parent_case_pk_list,
-                 dr=None):
+def execute_step(step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=None):
     start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     execute_id = '{}-{}'.format(execute_str, step_order)
+    # 截图列表
+    img_list = list()
 
     # 记录运行的case，防止递归调用
     if parent_case_pk_list is None:
@@ -33,7 +31,6 @@ def execute_step(step, case_result, result_path, step_order, user, execute_str, 
         parent_case_pk_list.append(case_result.case.pk)
 
     # 初始化case result
-
     step_result = StepResult.objects.create(
         name=step.name,
         description=step.description,
@@ -113,22 +110,18 @@ def execute_step(step, case_result, result_path, step_order, user, execute_str, 
 
         # 截图
         elif step_action.pk == 6:
-            if ui_data != '':
-                ss_name = ui_data
-            else:
-                ss_name = 'screenshot_{}.png'.format(uuid.uuid1())
-            file_path = method.get_screenshot_full_name(ss_name, result_path)
             if ui_by != '' and ui_locator != '':
                 run_result_temp, visible_elements, _ = method.wait_for_element_visible(dr=dr, by=ui_by,
                                                                                        locator=ui_locator,
                                                                                        timeout=timeout,
                                                                                        base_element=ui_base_element)
                 if len(visible_elements) > 0:
-                    run_result, _ = method.get_screenshot_on_element(dr, visible_elements[0], file_path)
+                    run_result, image_store = method.get_screenshot(dr, visible_elements[0])
                 else:
                     run_result = ('f', '截图失败，原因为{}'.format(run_result_temp[1]))
             else:
-                run_result, _ = method.get_screenshot(dr, file_path, 100, 0.1, 0, 10000)
+                run_result, image_store = method.get_screenshot(dr)
+            img_list.append(image_store)
 
         # 切换frame
         elif step_action.pk == 7:
@@ -220,9 +213,8 @@ def execute_step(step, case_result, result_path, step_order, user, execute_str, 
             else:
                 from .execute_case import execute_case
                 case_result_ = execute_case(case=step.other_sub_case, suite_result=case_result.suite_result,
-                                            result_path=result_path, case_order=None, user=user, execute_str=execute_id,
-                                            variables=variables, step_result=step_result,
-                                            parent_case_pk_list=parent_case_pk_list, dr=dr)
+                                            case_order=None, user=user, execute_str=execute_id, variables=variables,
+                                            step_result=step_result, parent_case_pk_list=parent_case_pk_list, dr=dr)
                 if case_result_.error_count > 0:
                     raise RuntimeError('子用例运行中出现错误')
                 elif case_result_.fail_count > 0:
@@ -242,6 +234,43 @@ def execute_step(step, case_result, result_path, step_order, user, execute_str, 
         step_result.result_error = traceback.format_exc()
         logger.error('{}\t执行出错'.format(execute_id), exc_info=True)
 
+    # 获取错误截图
+    if step_result.result_status != 1 and step_action.type_id == 1 and dr is not None:
+        try:
+            run_result, image_store = method.get_screenshot(dr)
+            img_list.append(image_store)
+        except Exception:
+            logger.warning('无法获取错误截图', exc_info=True)
+
+    # 关联截图
+    for img in img_list:
+        step_result.imgs.add(img)
+
     step_result.end_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
     step_result.save()
     return step_result
+
+
+def debug(log_level=10):
+    from main.models import Config, Step, CaseResult
+    import logging
+    from django.contrib.auth.models import User
+
+    logger = logging.getLogger('py_test')
+    logger.setLevel(log_level)
+    # 设置线程日志level
+    thread_log.THREAD_LEVEL = log_level
+
+    config = Config.objects.get(pk=5)
+
+    step = Step.objects.get(pk=5)
+    case_result = CaseResult.objects.all()[0]
+
+    step_order = 1
+    user = User.objects.all()[0]
+    execute_str = '<debug>'
+    variables = vic_variables.Variables()
+    parent_case_pk_list = None
+    dr = method.get_driver(config)
+
+    return execute_step(step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr)

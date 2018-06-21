@@ -14,8 +14,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 
-from django.contrib import admin
 from django.urls import path
+from django.conf.urls.static import static
+from . import settings
+from django.contrib import admin
 import main.views.general as general
 import main.views.case as case
 import main.views.step as step
@@ -27,8 +29,9 @@ import main.views.result as result
 
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
-    path('run/', general.run, name='run'),
+
     path('home/', case.cases, name='home'),
+    path('', case.cases),
 
     path('cases/', case.cases, name='cases'),
     path('case/add/', case.case_add, name='case_add'),
@@ -73,10 +76,16 @@ urlpatterns = [
     path('result/<int:pk>/delete/', result.result_delete, name='result_delete'),
     path('result/<int:pk>/quick_update/', result.result_quick_update, name='result_quick_update'),
 
-    path('step_result/<int:pk>/', result.step_result, name='step_result'),
+    path('step_img/<int:pk>/', result.step_img, name='step_img'),
 
-    path('test1/', general.test1, name='test1'),
-    path('test2/', general.test2, name='test2'),
     path('logout/', general.logout, name='logout'),
 
+    path('debug/', general.debug, name='debug'),
+    path('test1/', general.test1, name='test1'),
+    path('test2/', general.test2, name='test2'),
+    path('debug1/', general.debug1, name='debug1'),
+
 ]
+
+# 添加media文件映射
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

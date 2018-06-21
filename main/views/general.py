@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.db import connection
 from django.db.models import Q
@@ -30,9 +30,14 @@ def execute_query(sql):
     return result
 
 
-def run(request):
-    return render(request,
-                  'automation_test/result/Automation_Test_Report_2017-02-14_115725/Automation_Test_Report_2017-02-14_115725.html')
+@login_required
+def logout(request):
+    auth.logout(request)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/cases'))
+
+
+def debug(request):
+    return render(request, 'main/debug.html')
 
 
 def test1(request):
@@ -43,7 +48,10 @@ def test2(request):
     return render(request, 'main/test2.html')
 
 
-@login_required
-def logout(request):
-    auth.logout(request)
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/cases'))
+def debug1(request):
+    from py_test.general.execute_step import debug
+    result = debug()
+    return HttpResponse(result)
+
+
+

@@ -237,8 +237,7 @@ def case_list_temp(request):
 def suite_execute(request, pk):
     try:
         suite_ = Suite.objects.get(pk=pk, is_active=True)
-        result_path = os.path.join(PROJECT_ROOT, 'test_result')
-        suite_result = execute_suite(request, suite_, result_path)
+        suite_result = execute_suite(request, suite_)
         return JsonResponse({'statue': 1, 'message': 'OK', 'data': model_to_dict(suite_result)})
     except Suite.DoesNotExist:
         return JsonResponse({'statue': 2, 'message': 'Suite does not exist', 'data': None})
