@@ -1,0 +1,38 @@
+{% include 'main/include/result_time.html' with start_date=case_result.start_date end_date=case_result.end_date elapsed_time_str=case_result.elapsed_time_str%}
+<div class="row">
+    <div class="col"><span class="font-weight-bold">{{ case_result.name }}</span></div>
+</div>
+<div class="row">
+    <div class="col"><span class="small">{{ case_result.description }}</span></div>
+</div>
+<div class="table-responsive" id='result_table'>
+    <table class="table table-bordered table-hover">
+        <colgroup>
+            <col style='width: 60px;'>
+            <col style='width: 60px;'>
+            <col>
+            <col style='width: 200px;'>
+            <col style='width: 200px;'>
+        </colgroup>
+        <thead class="thead-light middle">
+            <tr>
+                <th>结果</th>
+                <th>顺序</th>
+                <th>步骤名称</th>
+                <th>Action</th>
+                <th>耗时</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for step_result in case_result.stepresult_set.all %}
+                <tr pk="{{ step_result.pk }}" step_img_url="{% url 'step_img' step_result.pk %}">
+                    <td class="middle">{% include 'main/include/status_icon.html' with status=step_result.result_status %}</td>
+                    <td class="middle">{{ forloop.counter }}</td>
+                    <td><a name="step_result" step_result_pk={{ step_result.pk }} href="javascript:">{{ step_result.name }}</a></td>
+                    <td>{{ step_result.action }}</td>
+                    <td class="middle">{{ step_result.elapsed_time_str }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

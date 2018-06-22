@@ -5,11 +5,7 @@
 {% endblock %}
 {% block style %}
     <style type='text/css' media='screen'>
-        @media (min-width: 1024px) {
-          .modal-lg {
-            max-width: 80%;
-          }
-        }
+
     </style>
 {% endblock %}
 {% block script %}
@@ -20,30 +16,47 @@
             window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
             // 关闭遮罩
             $('#mask').hide();
-            $('[name=step_result_name]').on('click', function() {
+            step_detail_popup(1);
+        });
+        // 步骤详情弹窗
+        function step_detail_popup() {
+            $('[name=step_result]').off('click').on('click', function() {
+                var step_result_pk = $(this).attr('step_result_pk');
                 var csrf_token = window.$csrf_input.val();
                 var url = $(this).parents('tr').attr('step_img_url');
                 var title = $(this).text();
-                var msg = '<div class="middle"><i class="icon-spinner icon-spin icon-5x"></i></div>';
+                var msg = '<div step_result_pk=' +  step_result_pk + ' class="middle"><i class="icon-spinner icon-spin icon-5x"></i></div>';
                 bootbox.dialog({
                     title: title,
                     message: msg,
                     size: 'large',
                     init: $.post(url, {'csrfmiddlewaretoken': csrf_token}, function(data) {
-                        console.log(data);
-                        var div = $('<div></div>')
-                        div.append($('<h4></h4>').text(data.data.result_message));
-                        div.append($('<pre></pre>').text(data.data.result_error));
+                        var div = $('<div>').attr('step_result_pk', step_result_pk);
+                        div.append($(data.data.step_time));
+                        var message_div = $('<div>');
+                        message_div.append($('<span>').addClass('lead').text(data.data.result_message));
+                        if (data.data.result_error) {
+                            message_div.append($('<div>').append($('<pre>').addClass('text-danger pre-scrollable').text(data.data.result_error)));
+                        }
+                        div.append(message_div);
+                        if (data.data.sub_case) {
+                            div.append($('<hr>'));
+                            div.append($('<div>').addClass('text-center small').text('子用例信息'));
+                            div.append($('<div>').html(data.data.sub_case));
+                        }
                         $.each(data.data.imgs, function(index, value){
-                            div.append($('<br>'));
-                            div.append($('<a></a>').attr('href', value).attr('target', '_blank').append($('<img>').attr('src', value).addClass('img-thumbnail')));
+                            var span = $('<span>').addClass('small').text(value.name);
+                            var img = $('<img>').attr('src', value.url).addClass('img-thumbnail');
+                            var a  = $('<a>').attr('href', value.url).attr('target', '_blank').append(img);
+                            var img_div = $('<div>').addClass('middle').append(span).append(a);
+                            div.append(img_div);
                         });
-
-                        $('.bootbox-body').empty().append(div);
+                        $('.bootbox-body div[step_result_pk='+ step_result_pk +']').parent('.bootbox-body').empty().append(div);
+                        step_detail_popup();
                     })
                 });
             });
-        });
+        }
     </script>
 {% endblock %}
 
@@ -80,46 +93,27 @@
         <input name="redirect" hidden value="{{ redirect }}">
         <input name="redirect_url" hidden value="{{ redirect_url }}">
 
-        <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">用例执行情况</div>
-            <div class="col" form_data>
-                <ul class="nav nav-tabs" role="tablist">
-                    {% for case_result in sub_objects %}
-                        <li class="nav-item">
-                            <a class="nav-link {% if forloop.counter == 1 %}active{% endif %}" data-toggle="tab" href="#case_result_{{ case_result.pk }}">{{ case_result.name }}</a>
-                        </li>
-                    {% endfor %}
-                </ul>
-                <div class="tab-content bg-light">
-                    {% for case_result in sub_objects %}
-                        <div id="case_result_{{ case_result.pk }}" class="container-fluid tab-pane {% if forloop.counter == 1 %}active{% endif %}" style="padding: 1em">
-                            <div class="table-responsive" id='result_table'>
-                                <table class="table table-hover">
-                                    <colgroup>
-                                        <col style='width: 50px;'>
-                                        <col>
-                                        <col style='width: 200px;'>
-                                        <col style='width: 200px;'>
-                                    </colgroup>
-                                    <tbody>
-                                        {% for step_result in case_result.stepresult_set.all %}
-                                            <tr pk="{{ step_result.pk }}" step_img_url="{% url 'step_img' step_result.pk %}">
-                                                <td class="middle">{% if step_result.result_status == 1 %}<i class="icon-ok-sign text-success"></i>{% elif step_result.result_status == 2 %}<i class="icon-remove-sign text-warning"></i>{% else %}<i class="icon-exclamation-sign text-danger"></i>{% endif %}</td>
-                                                <td><a name="step_result_name" href="javascript:">{{ step_result.name }}</a></td>
-                                                <td>{{ step_result.action }}</td>
-                                                <td>{{ step_result.start_date }}</td>
-                                            </tr>
-                                        {% endfor %}
-
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-
         {% include 'main/include/submit_button_group.html' %}
     </form>
+    <div class="row align-items-center">
+        <div class="col-1 text-center font-weight-bold">用例执行情况</div>
+        <div class="col" form_data>
+            <ul class="nav nav-tabs" role="tablist">
+                {% for case_result in sub_objects %}
+                    <li class="nav-item">
+                        <a class="nav-link {% if forloop.counter == 1 %}active{% endif %}" data-toggle="tab" href="#case_result_{{ case_result.pk }}">{% include 'main/include/status_icon.html' with status=case_result.result_status %}{{ forloop.counter }}.&nbsp;{{ case_result.name|truncatechars_html:10 }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+            <div class="tab-content bg-light">
+                {% for case_result in sub_objects %}
+                    <div id="case_result_{{ case_result.pk }}" class="tab-pane {% if forloop.counter == 1 %}active{% endif %}" style="padding: 1em">
+                        <div>
+                            {% include 'main/include/case_result_content.html' with case_result=case_result %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
 {% endblock %}

@@ -48,7 +48,10 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
     try:
         step_action = step.action
         run_result = ('p', '成功')
+        elements = list()
+        fail_elements = list()
         timeout = step.timeout if step.timeout else case_result.suite_result.base_timeout
+        ui_get_ss = case_result.suite_result.ui_get_ss
         save_as = step.save_as
         ui_by_dict = {
             0: '',
@@ -110,34 +113,38 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
 
         # 截图
         elif step_action.pk == 6:
+            image = None
             if ui_by != '' and ui_locator != '':
                 run_result_temp, visible_elements, _ = method.wait_for_element_visible(dr=dr, by=ui_by,
                                                                                        locator=ui_locator,
                                                                                        timeout=timeout,
                                                                                        base_element=ui_base_element)
                 if len(visible_elements) > 0:
-                    run_result, image_store = method.get_screenshot(dr, visible_elements[0])
+                    run_result, image = method.get_screenshot(dr, visible_elements[0])
                 else:
                     run_result = ('f', '截图失败，原因为{}'.format(run_result_temp[1]))
             else:
-                run_result, image_store = method.get_screenshot(dr)
-            img_list.append(image_store)
+                run_result, image = method.get_screenshot(dr)
+            if image:
+                img_list.append(image)
 
         # 切换frame
         elif step_action.pk == 7:
-            pass
+            run_result = method.try_to_switch_to_frame(dr=dr, by=ui_by, locator=ui_locator, index=ui_index, timeout=timeout, base_element=ui_base_element)
 
         # 退出frame
         elif step_action.pk == 8:
-            pass
+            dr.switch_to.default_content()
 
         # 切换窗口
         elif step_action.pk == 9:
-            pass
+            run_result, new_window_handle = method.try_to_switch_to_window(dr=dr, by=ui_by, locator=ui_locator,
+                                                                           timeout=timeout,
+                                                                           base_element=ui_base_element)
 
         # 关闭窗口
         elif step_action.pk == 10:
-            pass
+            dr.close()
 
         # 重置浏览器
         elif step_action.pk == 11:
@@ -185,7 +192,10 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
 
         # 验证URL
         elif step_action.pk == 16:
-            pass
+            if ui_data == '':
+                raise ValueError('无验证内容')
+            else:
+                run_result, new_url = method.wait_for_page_redirect(dr=dr, new_url=ui_data, timeout=timeout)
 
         # 验证文字
         elif step_action.pk == 17:
@@ -209,20 +219,44 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
             if step.other_sub_case is None:
                 raise ValueError('子用例为空或不存在')
             elif step.other_sub_case.pk in parent_case_pk_list:
-                raise ValueError('子用例【{} | {}】不允许递归调用'.format(step.other_sub_case.pk, step.other_sub_case.name))
+                raise ValueError('子用例[ID:{}]【{}】被递归调用'.format(step.other_sub_case.pk, step.other_sub_case.name))
             else:
                 from .execute_case import execute_case
                 case_result_ = execute_case(case=step.other_sub_case, suite_result=case_result.suite_result,
                                             case_order=None, user=user, execute_str=execute_id, variables=variables,
                                             step_result=step_result, parent_case_pk_list=parent_case_pk_list, dr=dr)
+                step_result.has_sub_case = True
                 if case_result_.error_count > 0:
                     raise RuntimeError('子用例运行中出现错误')
                 elif case_result_.fail_count > 0:
                     run_result = ('f', '子用例中出现验证失败的步骤')
                 else:
                     run_result = ('p', '子用例运行成功')
+        # 无效的关键字
         else:
             raise ValueError('未知的action')
+
+        # 获取UI验证截图
+        if step_action.pk in (16, 17, 18):
+            if ui_get_ss:
+                highlight_elements_map = {}
+                if len(elements) > 0:
+                    highlight_elements_map = method.highlight(dr, elements, 'green')
+                if len(fail_elements) > 0:
+                    highlight_elements_map = {**highlight_elements_map, **method.highlight(dr, fail_elements, 'red')}
+                try:
+                    run_result, image = method.get_screenshot(dr)
+                    img_list.append(image)
+                except Exception:
+                    logger.warning('无法获取UI验证截图', exc_info=True)
+                if len(highlight_elements_map) > 0:
+                    method.cancel_highlight(dr, highlight_elements_map)
+            else:
+                if len(elements) > 0:
+                    method.highlight_for_a_moment(dr, elements, 'green')
+                if len(fail_elements) > 0:
+                    method.highlight_for_a_moment(dr, fail_elements, 'red')
+
         if run_result[0] == 'p':
             step_result.result_status = 1
         else:
@@ -237,8 +271,8 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
     # 获取错误截图
     if step_result.result_status != 1 and step_action.type_id == 1 and dr is not None:
         try:
-            run_result, image_store = method.get_screenshot(dr)
-            img_list.append(image_store)
+            run_result, image = method.get_screenshot(dr)
+            img_list.append(image)
         except Exception:
             logger.warning('无法获取错误截图', exc_info=True)
 

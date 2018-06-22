@@ -1,0 +1,32 @@
+{% include 'main/include/result_time.html' with start_date=suite_result.start_date end_date=suite_result.end_date elapsed_time_str=suite_result.elapsed_time_str%}
+<div class="row">
+    <div class="col"><span class="font-weight-bold">{{ suite_result.name }}</span></div>
+</div>
+<div class="row">
+    <div class="col"><span class="small">{{ suite_result.description }}</span></div>
+</div>
+<div class="table-responsive" id='result_table'>
+    <table class="table table-bordered table-hover">
+        <colgroup>
+            <col style='width: 60px;'>
+            <col>
+            <col style='width: 200px;'>
+        </colgroup>
+        <thead class="thead-light middle">
+            <tr>
+                <th>结果</th>
+                <th>用例名称</th>
+                <th>耗时</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for case_result in sub_objects %}
+                <tr pk="{{ case_result.pk }}">
+                    <td class="middle">{% include 'main/include/status_icon.html' with status=case_result.result_status %}</td>
+                    <td>{{ case_result.name }}</td>
+                    <td class="middle">{{ case_result.elapsed_time_str }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

@@ -20,7 +20,7 @@
                 <col>
                 <col style='width: 200px;'>
                 <col style='width: 200px;'>
-                <col style='width: 100px;'>
+                <col style='width: 60px;'>
                 <col style='width: 120px;'>
             </colgroup>
             <thead class="thead-light middle">
@@ -41,11 +41,11 @@
                         <td quick_update col_name='keyword' class="align-middle">{{ object.keyword }}</td>
                         <td col_name='start_date' class="middle">{{ object.start_date }}</td>
                         {% if object.result_status == 1 %}
-                            <td col_name='step_count' class="middle text-success"><i class="icon-ok-sign"></i>&nbsp;{{ object.result_status_str }}</td>
+                            <td class="middle"><span class="badge badge-pill badge-success">{{ object.result_status_str }}</span></td>
                         {% elif object.result_status == 2 %}
-                            <td col_name='step_count' class="middle text-warning"><i class="icon-remove-sign"></i>&nbsp;{{ object.result_status_str }}</td>
+                            <td class="middle"><span class="badge badge-pill badge-warning">{{ object.result_status_str }}</span></td>
                         {% else %}
-                            <td col_name='step_count' class="middle text-danger"><i class="icon-exclamation-sign"></i>&nbsp;{{ object.result_status_str }}</td>
+                            <td class="middle"><span class="badge badge-pill badge-danger">{{ object.result_status_str }}</span></td>
                         {% endif %}
                         <td>
                             <div class="middle">

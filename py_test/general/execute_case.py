@@ -19,19 +19,6 @@ public_elements = vic_public_elements.public_elements
 def execute_case(case, suite_result, case_order, user, execute_str, variables=None, step_result=None, parent_case_pk_list=None, dr=None):
     start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
     logger = thread_log.get_thread_logger()
-    logger.debug('=================== 试试debug =====================')
-    logger.warning('=================== 试试warning =====================')
-    logger.error('=================== 试试error =====================')
-    logger.critical('=================== 试试critical =====================')
-    # 创建截图保存目录
-    # if result_dir == None:
-    #     result_dir = project_dir
-    # if not os.path.exists(result_dir):
-    #     # 防止多线程运行时，创建同名文件夹报错
-    #     try:
-    #         os.makedirs(result_dir)
-    #     except FileExistsError:
-    #         pass
 
     # 初始化case result
     case_result = CaseResult.objects.create(
@@ -119,7 +106,7 @@ def execute_case(case, suite_result, case_order, user, execute_str, variables=No
 
     if case_result.error_count > 0:
         case_result.result_status = 3
-    if case_result.fail_count > 0:
+    elif case_result.fail_count > 0:
         case_result.result_status = 2
         case_result.result_message = '失败'
     else:

@@ -19,10 +19,6 @@ def execute_suite(request, suite):
     thread_log.THREAD_LEVEL = suite.log_level
 
     logger.info('开始')
-    logger.info(logger.level)
-    logger.info('========================================')
-    logger.debug('===================debug=====================')
-    logger.warning('===================warning=====================')
 
     # 读取公共变量及元素组
     if suite.variable_group:
@@ -73,7 +69,7 @@ def execute_suite(request, suite):
     logger.info('准备运行下列【%s】个用例:' % len(cases))
     i = 1
     for case in cases:
-        logger.info('%s.\t%s' % (i, case.name))
+        logger.info('{}.\t[id:{}]{}'.format(i, case.pk, case.name))
         i += 1
 
     futures = list()
@@ -81,6 +77,7 @@ def execute_suite(request, suite):
     case_order = 0
 
     for case in cases:
+        case_order += 1
         futures.append(pool.submit(
             execute_case.execute_case,
             case=case,
@@ -89,7 +86,6 @@ def execute_suite(request, suite):
             user=request.user,
             execute_str=case_order,
         ))
-        case_order += 1
 
     future_results = wait(futures)
     for future_result in future_results.done:
@@ -104,7 +100,7 @@ def execute_suite(request, suite):
 
     if suite_result.error_count > 0:
         suite_result.result_status = 3
-    if suite_result.fail_count > 0:
+    elif suite_result.fail_count > 0:
         suite_result.result_status = 2
     else:
         suite_result.result_status = 1

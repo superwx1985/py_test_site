@@ -789,11 +789,11 @@ def get_screenshot(dr, element=None):
     img.save(bio, format='png')
 
     name = datetime.datetime.now().strftime('%Y%m%d_%H%M%S.png')
-    image_store = Image(name=name, img=UploadedFile(bio, name=name))
-    image_store.save()
+    image = Image(name=name, img=UploadedFile(bio, name=name))
+    image.save()
     bio.close()
     run_result = ('p', '截图成功')
-    return run_result, image_store
+    return run_result, image
 
 
 # chrome截长图

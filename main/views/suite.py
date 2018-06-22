@@ -15,6 +15,7 @@ from main.views.general import get_query_condition
 from django.forms.models import model_to_dict
 from manage import PROJECT_ROOT
 from py_test.general.execute_suite import execute_suite
+from django.template.loader import render_to_string
 
 logger = logging.getLogger('django.request')
 
@@ -238,6 +239,11 @@ def suite_execute(request, pk):
     try:
         suite_ = Suite.objects.get(pk=pk, is_active=True)
         suite_result = execute_suite(request, suite_)
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': model_to_dict(suite_result)})
+        sub_objects = suite_result.caseresult_set.filter(step_result=None).order_by('case_order')
+        suite_result_content = render_to_string('main/include/suite_result_content.html', locals())
+        data_dict = dict()
+        data_dict['suite_result_content'] = suite_result_content
+        data_dict['suite_result_url'] = reverse('result', args=[suite_result.pk])
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': data_dict})
     except Suite.DoesNotExist:
         return JsonResponse({'statue': 2, 'message': 'Suite does not exist', 'data': None})

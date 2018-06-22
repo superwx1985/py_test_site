@@ -11,6 +11,11 @@
             <link rel="stylesheet" href="{% static 'main/css/toastr-2.1.4/toastr.css' %}">
             <link rel="stylesheet" href="{% static 'main/css/font-awesome/font-awesome.css' %}">
             <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
+            <style type='text/css' media='screen'>
+                div.row {
+                    padding: 5px 0;
+                }
+            </style>
         {% endblock %}
         {% block style %}
         {% endblock %}
@@ -99,6 +104,8 @@
                     {% if prompt == 'success' %}
                         toastr.success('保存成功');
                     {% endif %}
+                    // 关闭遮罩
+                    $('#mask').hide();
                 })
             </script>
         {% endblock %}
@@ -106,6 +113,7 @@
         {% endblock %}
     </head>
     <body>
+        {% include 'main/include/mask.html' %}
         {% include 'main/include/navbar.html' %}
         <div class="container-fluid" style="padding-top: 60px; padding-bottom: 40px">
             <form method="post" id="objects_form" class="form-inline">

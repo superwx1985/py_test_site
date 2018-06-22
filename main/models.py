@@ -328,6 +328,21 @@ class SuiteResult(models.Model):
     )
     result_status = models.IntegerField(blank=True, null=True)
 
+    @property
+    def elapsed_time(self):
+        if self.end_date is None or self.start_date is None:
+            return None
+        else:
+            return self.end_date - self.start_date
+
+    @property
+    def elapsed_time_str(self):
+        if self.elapsed_time is None:
+            return 'N/A'
+        else:
+            from py_test.vic_tools.vic_date_handle import get_timedelta_str
+            return get_timedelta_str(self.elapsed_time, 1)
+
 
 # case测试结果
 class CaseResult(models.Model):
@@ -359,6 +374,21 @@ class CaseResult(models.Model):
     result_message = models.TextField(blank=True)
     result_error = models.TextField(blank=True)
 
+    @property
+    def elapsed_time(self):
+        if self.end_date is None or self.start_date is None:
+            return None
+        else:
+            return self.end_date - self.start_date
+
+    @property
+    def elapsed_time_str(self):
+        if self.elapsed_time is None:
+            return 'N/A'
+        else:
+            from py_test.vic_tools.vic_date_handle import get_timedelta_str
+            return get_timedelta_str(self.elapsed_time, 1)
+
 
 # step测试结果
 class StepResult(models.Model):
@@ -384,8 +414,24 @@ class StepResult(models.Model):
     result_error = models.TextField(blank=True)
 
     step_snapshot = models.TextField(blank=True, null=True)
+    has_sub_case = models.BooleanField(default=False)
 
     imgs = models.ManyToManyField(to='Image')
+
+    @property
+    def elapsed_time(self):
+        if self.end_date is None or self.start_date is None:
+            return None
+        else:
+            return self.end_date - self.start_date
+
+    @property
+    def elapsed_time_str(self):
+        if self.elapsed_time is None:
+            return 'N/A'
+        else:
+            from py_test.vic_tools.vic_date_handle import get_timedelta_str
+            return get_timedelta_str(self.elapsed_time, 1)
 
 
 class Image(models.Model):

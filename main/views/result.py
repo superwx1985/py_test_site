@@ -9,12 +9,13 @@ from django.db.models import F, CharField, Value, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from main.models import SuiteResult, StepResult
+from main.models import SuiteResult, StepResult, CaseResult
 from main.forms import PaginatorForm, SuiteResultForm
 from main.views.general import get_query_condition
 from django.forms.models import model_to_dict
 from manage import PROJECT_ROOT
 from py_test.general.execute_suite import execute_suite
+from django.template.loader import render_to_string
 
 logger = logging.getLogger('django.request')
 
@@ -40,7 +41,9 @@ def results(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = SuiteResult.objects.filter(q, is_active=True).order_by('-start_date').values('pk', 'name', 'keyword', 'start_date', 'result_status')
+    objects = SuiteResult.objects.filter(q, is_active=True).order_by('-start_date').values('pk', 'name', 'keyword',
+                                                                                           'start_date',
+                                                                                           'result_status')
     result_status_list = SuiteResult.result_status_list
     d = {l[0]: l[1] for l in result_status_list}
     for o in objects:
@@ -65,7 +68,7 @@ def result(request, pk):
         obj = SuiteResult.objects.select_related('creator', 'modifier').get(pk=pk)
     except SuiteResult.DoesNotExist:
         raise Http404('SuiteResult does not exist')
-    sub_objects = obj.caseresult_set.all().order_by('case_order')
+    sub_objects = obj.caseresult_set.filter(step_result=None).order_by('case_order')
     if request.method == 'GET':
         form = SuiteResultForm(initial={'name': obj.name, 'description': obj.description, 'keyword': obj.keyword})
         if request.session.get('status', None) == 'success':
@@ -90,57 +93,6 @@ def result(request, pk):
                 return HttpResponseRedirect(reverse('result', args=[pk]) + '?redirect_url=' + redirect_url)
             else:
                 return HttpResponseRedirect(redirect_url)
-        redirect_url = request.POST.get('redirect_url', '')
-        is_success = False
-        return render(request, 'main/result/detail.html', locals())
-
-
-@login_required
-def result_add(request):
-    if request.method == 'GET':
-        form = SuiteForm()
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
-        return render(request, 'main/suite/detail.html', locals())
-    elif request.method == 'POST':
-        form = SuiteForm(data=request.POST)
-        try:
-            m2m_list = json.loads(request.POST.get('case', 'null'))
-        except json.decoder.JSONDecodeError:
-            logger.warning('无法获取m2m值', exc_info=True)
-            m2m_list = None
-        if form.is_valid():
-            form_ = form.save(commit=False)
-            form_.creator = request.user
-            form_.modifier = request.user
-            form_.is_active = True
-            form_.save()
-            # form.save_m2m()
-            obj = form_
-            pk = obj.id
-            if m2m_list:
-                order = 0
-                for m2m_pk in m2m_list:
-                    if m2m_pk.strip() == '':
-                        continue
-                    order += 1
-                    m2m_object = Case.objects.get(pk=m2m_pk)
-                    SuiteVsCase.objects.create(suite=obj, case=m2m_object, order=order, creator=request.user,
-                                               modifier=request.user)
-            request.session['status'] = 'success'
-            redirect = request.POST.get('redirect')
-            redirect_url = request.POST.get('redirect_url', '')
-            if not redirect or not redirect_url:
-                return HttpResponseRedirect(reverse('suite', args=[pk]) + '?redirect_url=' + redirect_url)
-            elif redirect == 'add_another':
-                return HttpResponseRedirect(reverse('suite_add') + '?redirect_url=' + redirect_url)
-            else:
-                return HttpResponseRedirect(redirect_url)
-        else:
-            if m2m_list:
-                temp_list_json = json.dumps(m2m_list)
         redirect_url = request.POST.get('redirect_url', '')
         is_success = False
         return render(request, 'main/result/detail.html', locals())
@@ -188,8 +140,21 @@ def step_img(request, pk):
     data_dict['name'] = obj.name
     data_dict['result_message'] = obj.result_message
     data_dict['result_error'] = obj.result_error
-    data_dict['start_date'] = obj.start_date
+    data_dict['step_time'] = render_to_string('main/include/result_time.html', {'start_date': obj.start_date, 'end_date': obj.end_date, 'elapsed_time_str': obj.elapsed_time_str})
+
+    data_dict['step_url'] = reverse('step', args=[obj.step.pk])
     data_dict['imgs'] = list()
+    if obj.has_sub_case:
+        try:
+            case_result = CaseResult.objects.get(step_result=pk)
+        except CaseResult.DoesNotExist:
+            data_dict['sub_case'] = '找不到子用例数据！'
+        else:
+            data_dict['sub_case'] = render_to_string('main/include/case_result_content.html',
+                                                     {'case_result': case_result})
     for img in obj.imgs.all():
-        data_dict['imgs'].append(img.img.url)
+        img_dict = dict()
+        img_dict['name'] = img.name
+        img_dict['url'] = img.img.url
+        data_dict['imgs'].append(img_dict)
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': data_dict})

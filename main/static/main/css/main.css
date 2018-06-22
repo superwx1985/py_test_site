@@ -63,3 +63,15 @@ div.paginator input {
 	right: 1%;
 	z-index: 1030;
 }
+
+/*把弹出框宽度放大*/
+@media (min-width: 576px) and (max-width: 1366px) {
+  .modal-lg {
+	max-width: 87%;
+  }
+}
+@media (min-width: 1366px) {
+  .modal-lg {
+	max-width: 1188px;
+  }
+}
