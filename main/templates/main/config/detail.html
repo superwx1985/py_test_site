@@ -153,9 +153,7 @@
             </div>
         </div>
 
-        <input name="redirect" hidden value="{{ redirect }}">
-        <input name="redirect_url" hidden value="{{ redirect_url }}">
-
+        {% include 'main/include/detail_redirect.html' %}
         {% include 'main/include/submit_button_group.html' %}
     </form>
 {% endblock %}

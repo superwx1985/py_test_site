@@ -16,7 +16,7 @@ $.extend({
 // 快速修改
 function quick_update(tds, func, callback_func) {
     // 注册鼠标双击事件
-    tds.off('dblclick').dblclick(function () {
+    tds.off('dblclick').on('dblclick', function () {
         //找到当前鼠标双击的td
         var td = $(this);
         var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
@@ -234,13 +234,13 @@ function show_info(msg, class_list, time) {
 }*/
 
 // 获取结果集
-function getList(url, csrf_token, callback_func, condition) {
+function getList(url, csrf_token, callback_func, condition_json) {
 	$.ajax({
         url: url,
         type: "POST",
         data: {
             csrfmiddlewaretoken: csrf_token,
-            condition: condition
+            condition: condition_json
         },
         dataType: "json",
         success: function (data, textStatus) {

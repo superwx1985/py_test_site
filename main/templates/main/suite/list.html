@@ -63,11 +63,11 @@
             </colgroup>
             <thead class="thead-light middle">
                 <tr>
-                    <th>ID</th>
-                    <th>名称</th>
-                    <th>关键字</th>
-                    <th>配置</th>
-                    <th>用例数</th>
+                    <th order_by_text="pk">ID</th>
+                    <th order_by_text="name">名称</th>
+                    <th order_by_text="keyword">关键字</th>
+                    <th order_by_text="config__name">配置</th>
+                    <th order_by_text="m2m_count">用例数</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -89,7 +89,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center bg-warning">查无数据</td>
+                        <td colspan="6" class="text-center bg-secondary">查无数据</td>
                     </tr>
                 {% endfor %}
             </tbody>

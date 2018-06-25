@@ -15,6 +15,7 @@
         <table class="table table-bordered table-hover">
             <colgroup>
                 <col style='width: 80px;'>
+                <col style='width: 80px;'>
                 <col>
                 <col style='width: 200px;'>
                 <col style='width: 100px;'>
@@ -22,16 +23,18 @@
             </colgroup>
             <thead class="thead-light middle">
                 <tr>
-                    <th>ID</th>
-                    <th>名称</th>
-                    <th>关键字</th>
-                    <th>步骤数</th>
+                    <th>序号</th>
+                    <th order_by_text="pk">ID</th>
+                    <th order_by_text="name">名称</th>
+                    <th order_by_text="keyword">关键字</th>
+                    <th order_by_text="m2m_count">步骤数</th>
                     <th>操作</th>
                 </tr>
             </thead>
             <tbody>
                 {% for object in objects %}
                     <tr pk="{{ object.pk }}" edit_url="{% url 'case' object.pk %}" quick_update_url="{% url 'case_quick_update' object.pk %}" del_url="{% url 'case_delete' object.pk %}">
+                        <td col_name='index' class="middle"></td>
                         <td col_name='id' class="middle">{{ object.pk }}</td>
                         <td quick_update col_name='name' class="align-middle">{{ object.name }}</td>
                         <td quick_update col_name='keyword' class="align-middle">{{ object.keyword }}</td>
@@ -45,7 +48,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center bg-warning">查无数据</td>
+                        <td colspan="6" class="text-center bg-secondary">查无数据</td>
                     </tr>
                 {% endfor %}
             </tbody>

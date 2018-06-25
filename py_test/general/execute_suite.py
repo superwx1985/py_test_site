@@ -65,7 +65,6 @@ def execute_suite(request, suite):
         logger.info('结束')
         return suite_result
 
-
     logger.info('准备运行下列【%s】个用例:' % len(cases))
     i = 1
     for case in cases:

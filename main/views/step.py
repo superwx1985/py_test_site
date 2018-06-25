@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.core import serializers
 # from django.views.decorators.csrf import csrf_exempt
 from main.models import Step, Action
-from main.forms import PaginatorForm, StepForm
+from main.forms import OrderByForm, PaginatorForm, StepForm
 from main.views.general import get_query_condition
 
 logger = logging.getLogger('django.request')
@@ -29,10 +29,16 @@ def steps(request):
             page = 1
         size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
         search_text = str(request.POST.get('search_text', ''))
+        order_by = request.POST.get('order_by', 'pk')
+        order_by_reverse = request.POST.get('order_by_reverse', False)
+        own = request.POST.get('own_checkbox')
     else:
         page = int(request.COOKIES.get('page', 1))
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
+        order_by = 'pk'
+        order_by_reverse = True
+        own = True
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
@@ -42,13 +48,29 @@ def steps(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
+    if own:
+        objects = Step.objects.filter(q, is_active=True, creator=request.user).values(
+            'pk', 'name', 'keyword').annotate(
+            action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+    else:
+        objects = Step.objects.filter(q, is_active=True).values('pk', 'name', 'keyword').annotate(
+            action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
     # 使用join的方式把多个model结合起来
-    objects = Step.objects.filter(q, is_active=True).order_by('id').select_related('action__type')
+    # objects = Step.objects.filter(q, is_active=True).order_by('id').select_related('action__type')
     # 分割为多条SQL，然后把结果集用python结合起来
     # objects = Step.objects.filter(q, is_active=True).order_by('id').prefetch_related('action__type')
     # 两者结合使用
     # objects = Step.objects.filter(q, is_active=True).order_by('id').select_related('action').prefetch_related(
     #     'action__type')
+    # 排序
+    if objects:
+        if order_by not in objects[0]:
+            order_by = 'pk'
+        if order_by_reverse is True or order_by_reverse == 'True':
+            order_by_reverse = True
+        else:
+            order_by_reverse = False
+        objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)
@@ -58,6 +80,7 @@ def steps(request):
     except EmptyPage:
         objects = paginator.page(paginator.num_pages)
         page = paginator.num_pages
+    order_by_form = OrderByForm(initial={'order_by': order_by, 'order_by_reverse': order_by_reverse})
     paginator_form = PaginatorForm(initial={'page': page, 'size': size}, page_max_value=paginator.num_pages)
     return render(request, 'main/step/list.html', locals())
 
@@ -176,8 +199,38 @@ def step_quick_update(request, pk):
 # 获取全部step
 @login_required
 def step_list_all(request):
-    objects = Step.objects.filter(is_active=True).order_by('pk').values('pk', 'name').annotate(
-        action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+    condition = request.POST.get('condition', '{}')
+    try:
+        condition = json.loads(condition)
+    except json.decoder.JSONDecodeError:
+        condition = dict()
+
+    search_text = condition.get('search_text', '')
+    order_by = condition.get('order_by', 'pk')
+    order_by_reverse = condition.get('order_by_reverse', False)
+    own = condition.get('own_checkbox')
+    keyword_list_temp = search_text.split(' ')
+    keyword_list = list()
+    for keyword in keyword_list_temp:
+        if keyword.strip() != '':
+            keyword_list.append(keyword)
+    q = get_query_condition(keyword_list)
+    if own:
+        objects = Step.objects.filter(q, is_active=True, creator=request.user).values(
+            'pk', 'name', 'keyword').annotate(
+            action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+    else:
+        objects = Step.objects.filter(q, is_active=True).values('pk', 'name', 'keyword').annotate(
+            action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+    # 排序
+    if objects:
+        if order_by not in objects[0]:
+            order_by = 'pk'
+        if order_by_reverse is True or order_by_reverse == 'True':
+            order_by_reverse = True
+        else:
+            order_by_reverse = False
+        objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 

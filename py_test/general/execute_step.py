@@ -169,7 +169,18 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
 
         # 双击
         elif step_action.pk == 13:
-            pass
+            if ui_by == 0 or ui_locator == '':
+                raise ValueError('无效的定位方式或定位符')
+            variable_elements = None
+            if ui_by == 'variable':
+                variable_elements = vic_variables.get_elements(ui_locator, variables)
+            elif ui_by == 'public element':
+                ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
+            run_result, elements = method.try_to_double_click(dr=dr, by=ui_by, locator=ui_locator, timeout=timeout,
+                                                              index_=ui_index, base_element=ui_base_element,
+                                                              variable_elements=variable_elements)
+            if save_as != '':
+                variables.set_variable(save_as, elements)
 
         # 输入
         elif step_action.pk == 14:
@@ -188,7 +199,19 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
 
         # 特殊动作
         elif step_action.pk == 15:
-            pass
+            variable_elements = None
+            if ui_by == 'variable':
+                variable_elements = vic_variables.get_elements(ui_locator, variables)
+            elif ui_by == 'public element':
+                ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
+            run_result, elements = method.perform_special_action(dr=dr, by=ui_by, locator=ui_locator, data=ui_data,
+                                                                 timeout=timeout, index_=ui_index,
+                                                                 base_element=ui_base_element,
+                                                                 special_action=ui_special_action, variables=variables,
+                                                                 variable_elements=variable_elements)
+
+            if save_as != '':
+                variables.set_variable(save_as, elements)
 
         # 验证URL
         elif step_action.pk == 16:
@@ -199,7 +222,28 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
 
         # 验证文字
         elif step_action.pk == 17:
-            pass
+            if ui_data == '':
+                run_result = ('p',  '无验证内容')
+                logger.warning('无验证内容')
+            else:
+                if ui_by != 0 and ui_locator != '':
+                    variable_elements = None
+                    if ui_by == 'variable':
+                        variable_elements = vic_variables.get_elements(ui_locator, variables)
+                    elif ui_by == 'public element':
+                        ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
+                    run_result, elements, fail_elements = method.wait_for_text_present_with_locator(dr=dr, by=ui_by,
+                                                                                                    locator=ui_locator,
+                                                                                                    text=ui_data,
+                                                                                                    timeout=timeout,
+                                                                                                    index_=ui_index,
+                                                                                                    base_element=ui_base_element,
+                                                                                                    variable_elements=variable_elements)
+                else:
+                    run_result, elements = method.wait_for_text_present(dr=dr, text=ui_data, timeout=timeout,
+                                                                        base_element=ui_base_element)
+                if save_as != '':
+                    variables.set_variable(save_as, elements)
 
         # 验证元素可见
         elif step_action.pk == 18:

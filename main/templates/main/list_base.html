@@ -93,6 +93,31 @@
                     };
                     // 注册添加按钮
                     $('#add_button').on('click', function () {window.open(window.addUrl, '_self');});
+                    // 注册只看自己复选框
+                    $('#own_checkbox').on('click', function() {$('#objects_form').submit()});
+                    // 更新序号
+                    $('#result_table td[col_name=index]').each(function(i,v) {$(v).text((window.page - 1) * window.size + 1 + i)});
+                    // 注册排序
+                    $('#result_table th[order_by_text]').on('dblclick', function () {
+                        var order_by_text = $(this).attr('order_by_text');
+                        var order_by = $('input[name=order_by]');
+                        var order_by_reverse = $('input[name=order_by_reverse]');
+                        if (order_by.val() === order_by_text) {
+                            if (order_by_reverse.val() === 'True') {
+                                order_by_reverse.val('False');
+                            } else {
+                                order_by_reverse.val('True');
+                            }
+                        } else {
+                            order_by_reverse.val('False');
+                            order_by.val(order_by_text);
+                        }
+                        // 更新排序标志
+                        update_sort_icon();
+                        $('#objects_form').submit();
+                    });
+                    // 更新排序标志
+                    update_sort_icon();
                     // 注册快速更新事件
                     var tds = $('#result_table tbody td[quick_update]');
                     quick_update(tds, update_single_column, refresh_single_column);
@@ -106,7 +131,17 @@
                     {% endif %}
                     // 关闭遮罩
                     $('#mask').hide();
-                })
+                });
+                // 更新排序标志
+                function update_sort_icon() {
+                    $('#result_table th[order_by_text]').find('i').remove();
+                    var sort_col = $('#result_table th[order_by_text=' + $('input[name=order_by]').val() + ']');
+                    if ($('input[name=order_by_reverse]').val() === 'True') {
+                        sort_col.prepend('<i class="icon-circle-arrow-down">&nbsp;</i>');
+                    } else {
+                        sort_col.prepend('<i class="icon-circle-arrow-up">&nbsp;</i>');
+                    }
+                }
             </script>
         {% endblock %}
         {% block script %}
@@ -121,6 +156,8 @@
                 {% block search_tools %}
                     {% include 'main/include/search_tools.html' %}
                 {% endblock %}
+                {{ order_by_form.order_by }}
+                {{ order_by_form.order_by_reverse }}
                 {% block result_table %}
                 {% endblock %}
 

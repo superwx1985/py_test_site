@@ -13,7 +13,7 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from main.models import Config
-from main.forms import PaginatorForm, ConfigForm
+from main.forms import OrderByForm, PaginatorForm, ConfigForm
 from main.views.general import get_query_condition
 
 logger = logging.getLogger('django.request')
@@ -25,10 +25,16 @@ def configs(request):
         page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
         size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
         search_text = str(request.POST.get('search_text', ''))
+        order_by = request.POST.get('order_by', 'pk')
+        order_by_reverse = request.POST.get('order_by_reverse', False)
+        own = request.POST.get('own_checkbox')
     else:
         page = int(request.COOKIES.get('page', 1))
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
+        order_by = 'pk'
+        order_by_reverse = True
+        own = True
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
@@ -38,7 +44,19 @@ def configs(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = Config.objects.filter(q, is_active=True).order_by('id')
+    if own:
+        objects = Config.objects.filter(q, is_active=True, creator=request.user).values('pk', 'name', 'keyword')
+    else:
+        objects = Config.objects.filter(q, is_active=True).values('pk', 'name', 'keyword')
+    # 排序
+    if objects:
+        if order_by not in objects[0]:
+            order_by = 'pk'
+        if order_by_reverse is True or order_by_reverse == 'True':
+            order_by_reverse = True
+        else:
+            order_by_reverse = False
+        objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)
@@ -48,6 +66,7 @@ def configs(request):
     except EmptyPage:
         objects = paginator.page(paginator.num_pages)
         page = paginator.num_pages
+    order_by_form = OrderByForm(initial={'order_by': order_by, 'order_by_reverse': order_by_reverse})
     paginator_form = PaginatorForm(initial={'page': page, 'size': size}, page_max_value=paginator.num_pages)
     return render(request, 'main/config/list.html', locals())
 

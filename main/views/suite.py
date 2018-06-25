@@ -10,7 +10,7 @@ from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Suite, Case, SuiteVsCase
-from main.forms import PaginatorForm, SuiteForm
+from main.forms import OrderByForm, PaginatorForm, SuiteForm
 from main.views.general import get_query_condition
 from django.forms.models import model_to_dict
 from manage import PROJECT_ROOT
@@ -28,10 +28,16 @@ def suites(request):
         page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
         size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
         search_text = str(request.POST.get('search_text', ''))
+        order_by = request.POST.get('order_by', 'pk')
+        order_by_reverse = request.POST.get('order_by_reverse', False)
+        own = request.POST.get('own_checkbox')
     else:
         page = int(request.COOKIES.get('page', 1))
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
+        order_by = 'pk'
+        order_by_reverse = True
+        own = True
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
@@ -41,11 +47,24 @@ def suites(request):
         if keyword.strip() != '':
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
-    objects = Suite.objects.filter(q, is_active=True).order_by('id').values('pk', 'name', 'keyword', 'config__name')
+    if own:
+        objects = Suite.objects.filter(q, is_active=True, creator=request.user).values('pk', 'name', 'keyword',
+                                                                                       'config__name')
+    else:
+        objects = Suite.objects.filter(q, is_active=True).values('pk', 'name', 'keyword', 'config__name')
     objects2 = Suite.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(m2m_count=Count('case'))
     count_ = {o['pk']: o['m2m_count'] for o in objects2}
     for o in objects:
         o['m2m_count'] = count_.get(o['pk'], 0)
+    # 排序
+    if objects:
+        if order_by not in objects[0]:
+            order_by = 'pk'
+        if order_by_reverse is True or order_by_reverse == 'True':
+            order_by_reverse = True
+        else:
+            order_by_reverse = False
+        objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)
@@ -55,6 +74,7 @@ def suites(request):
     except EmptyPage:
         objects = paginator.page(paginator.num_pages)
         page = paginator.num_pages
+    order_by_form = OrderByForm(initial={'order_by': order_by, 'order_by_reverse': order_by_reverse})
     paginator_form = PaginatorForm(initial={'page': page, 'size': size}, page_max_value=paginator.num_pages)
     return render(request, 'main/suite/list.html', locals())
 

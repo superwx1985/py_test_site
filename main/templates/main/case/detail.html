@@ -18,8 +18,10 @@
             // 更新导航栏
             $('#nav_case').addClass('active');
             window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
-            // 获取全部m2m
-            getList("{% url 'step_list_all' %}", window.$csrf_input.val(), update_m2m_list_all);
+            // 默认只看自己
+            $('input[name=own_checkbox]').prop('checked', true);
+            // 获取待选m2m
+            submit_m2m_objects_form();
             {% if temp_list_json %}
                 // 获取暂存m2m
                 getList("{% url 'step_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, "{{ temp_list_json|escapejs }}");
@@ -36,13 +38,58 @@
                     update_m2m_selected_index(true);
                 {% endif %}
             {% endif %}
+            // 注册待选m2m排序
+            $('#steps_all th[order_by_text]').on('dblclick', function () {
+                var order_by_text = $(this).attr('order_by_text');
+                var order_by = $('input[name=order_by]');
+                var order_by_reverse = $('input[name=order_by_reverse]');
+                if (order_by.val() === order_by_text) {
+                    if (order_by_reverse.val() === 'True') {
+                        order_by_reverse.val('False');
+                    } else {
+                        order_by_reverse.val('True');
+                    }
+                } else {
+                    order_by_reverse.val('False');
+                    order_by.val(order_by_text);
+                }
+                // 更新排序标志
+                update_sort_icon();
+                $('#m2m_objects_form').submit();
+            });
+            // 更新排序标志
+            update_sort_icon();
+            // 注册只看自己复选框
+            $('#own_checkbox').on('click', function() {$('#m2m_objects_form').submit()});
             // 处理step拖动及排序
             stepHandle();
-            // 还原已选列表
-            $('input[type=reset]').on('click', function() {
-                m2m_list_selected_update(true, $('#steps_selected tbody').data('original_data'))
-            });
         });
+        // 更新排序标志
+        function update_sort_icon() {
+            $('#steps_all th[order_by_text]').find('i').remove();
+            var sort_col = $('#steps_all th[order_by_text=' + $('input[name=order_by]').val() + ']');
+            if ($('input[name=order_by_reverse]').val() === 'True') {
+                sort_col.prepend('<i class="icon-circle-arrow-down">&nbsp;</i>');
+            } else {
+                sort_col.prepend('<i class="icon-circle-arrow-up">&nbsp;</i>');
+            }
+        }
+        // 获取待选m2m
+        function submit_m2m_objects_form() {
+            var search_text = $('input[name=search_text]').val();
+            if ($('input[name=own_checkbox]').prop('checked')) {
+                var own_checkbox = true;
+            } else {
+                var own_checkbox = false;
+            }
+            var order_by = $('input[name=order_by]').val();
+            var order_by_reverse = $('input[name=order_by_reverse]').val();
+            var condition = {'search_text': search_text, 'own_checkbox': own_checkbox, 'order_by_reverse': order_by_reverse, 'order_by': order_by};
+            var condition_json = JSON.stringify(condition);
+            getList("{% url 'step_list_all' %}", window.$csrf_input.val(), update_m2m_list_all, condition_json);
+            return false;
+        }
+
         // 更新全部步骤列表
         function update_m2m_list_all(success, data) {
             if (success) {
@@ -169,7 +216,7 @@
         {% if form.initial %}
             创建时间：{{ obj.created_date }}，创建人：{{ obj.creator }}，上次修改时间：{{ obj.modified_date }}，修改人：{{ obj.modifier }}
         {% else %}
-            添加一个步骤
+            添加一个用例
         {% endif %}
         </li>
     </ol>
@@ -204,45 +251,61 @@
         </div>
 
         <input type="text" name="step" id="id_step" hidden>
-        <input name="redirect" hidden value="{{ redirect }}">
-        <input name="redirect_url" hidden value="{{ redirect_url }}">
-
-        <div id='step' class="row">
-            <div id="steps_selected" class="col-6 text-center">
-                <h5 class="ui-widget-header">关联步骤列表</h5>
-                <div class="ui-widget-content">
-                    <table class="table table-sm table-bordered table-hover" style="width: 100%">
-                        <colgroup>
-                            <col style='width: 1em;'>
-                            <col style='width: 60px;'>
-                            <col style='width: 60px;'>
-                            <col>
-                            <col style='width: 200px;'>
-                        </colgroup>
-                        <thead class="thead-light"><tr><th></th><th>序号</th><th>ID</th><th>名称</th><th>动作</th></tr></thead>
-                        <tbody class="text-left">
-                            <tr placeholder><td colspan="5" class="text-center">无关联数据</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div id="steps_all" class="col-6 text-center">
-                <h5 class="ui-widget-header">可选步骤列表</h5>
-                <div class="ui-widget-content">
-                    <table class="table table-sm table-bordered table-hover" style="width: 100%">
-                        <colgroup>
-                            <col style='width: 1em;'>
-                            <col style='width: 60px;'>
-                            <col>
-                            <col style='width: 200px;'>
-                        </colgroup>
-                        <thead class="thead-light"><tr><th></th><th>ID</th><th>名称</th><th>动作</th></tr></thead>
-                        <tbody class="text-left"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        {% include 'main/include/detail_redirect.html' %}
 
         {% include 'main/include/submit_button_group.html' %}
     </form>
+
 {% endblock %}
+
+{% block detail_inner_list %}
+
+    <div id='step' class="row">
+        <div id="steps_selected" class="col-6 text-center">
+            <h5 class="ui-widget-header">关联步骤列表</h5>
+            <div class="ui-widget-content">
+                <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                    <colgroup>
+                        <col style='width: 1em;'>
+                        <col style='width: 60px;'>
+                        <col style='width: 60px;'>
+                        <col>
+                        <col style='width: 200px;'>
+                    </colgroup>
+                    <thead class="thead-light"><tr><th></th><th>序号</th><th>ID</th><th>名称</th><th>动作</th></tr></thead>
+                    <tbody class="text-left">
+                        <tr placeholder><td colspan="5" class="text-center">无关联数据</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="steps_all" class="col-6 text-center">
+            <h5 class="ui-widget-header">可选步骤列表</h5>
+            <form method="post" id="m2m_objects_form" novalidate onsubmit="return submit_m2m_objects_form();">
+                <input type="hidden" name="order_by" value="pk" id="id_order_by">
+                <input type="hidden" name="order_by_reverse" value="True" id="id_order_by_reverse">
+                {% include 'main/include/search_tools.html' with hide_add_button=True %}
+            </form>
+            <div class="ui-widget-content">
+                <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                    <colgroup>
+                        <col style='width: 1em;'>
+                        <col style='width: 60px;'>
+                        <col>
+                        <col style='width: 200px;'>
+                    </colgroup>
+                    <thead class="thead-light">
+                        <tr>
+                            <th></th>
+                            <th order_by_text="pk">ID</th>
+                            <th order_by_text="name">名称</th>
+                            <th order_by_text="action">动作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-left"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock%}

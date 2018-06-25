@@ -39,6 +39,11 @@ class PaginatorForm(forms.Form):
         #     v.widget.attrs.update({'class': 'form-control', 'style': 'width: 85px'})
 
 
+class OrderByForm(forms.Form):
+    order_by = forms.CharField(max_length=100, required=False, widget=forms.HiddenInput)
+    order_by_reverse = forms.BooleanField(required=False, widget=forms.HiddenInput)
+
+
 class CaseForm(forms.ModelForm):
     # 不验证某些字段
     creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])

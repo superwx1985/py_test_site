@@ -232,8 +232,7 @@
         </div>
 
         <input name="case" hidden>
-        <input name="redirect" hidden value="{{ redirect }}">
-        <input name="redirect_url" hidden value="{{ redirect_url }}">
+        {% include 'main/include/detail_redirect.html' %}
 
         <div id='case' class="row">
             <div id="m2m_selected" class="col-6 text-center">

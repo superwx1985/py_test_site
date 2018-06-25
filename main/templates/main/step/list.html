@@ -22,10 +22,10 @@
             </colgroup>
             <thead class="thead-light middle">
                 <tr>
-                    <th>ID</th>
-                    <th>名称</th>
-                    <th>关键字</th>
-                    <th>Action</th>
+                    <th order_by_text="pk">ID</th>
+                    <th order_by_text="name">名称</th>
+                    <th order_by_text="keyword">关键字</th>
+                    <th order_by_text="action">Action</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -45,7 +45,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center bg-warning">查无数据</td>
+                        <td colspan="5" class="text-center bg-secondary">查无数据</td>
                     </tr>
                 {% endfor %}
             </tbody>
