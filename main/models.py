@@ -260,7 +260,6 @@ class Suite(models.Model):
         (50, 'CRITICAL'),
     )
     log_level = models.IntegerField(choices=log_level_list, default=20)
-    console_log_level = models.IntegerField(choices=log_level_list, default=20)
     thread_count = models.IntegerField(default=1)
     config = models.ForeignKey('main.Config', on_delete=models.DO_NOTHING)
     variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.DO_NOTHING, blank=True, null=True)
@@ -416,6 +415,7 @@ class StepResult(models.Model):
     step_snapshot = models.TextField(blank=True, null=True)
     has_sub_case = models.BooleanField(default=False)
 
+    ui_last_url = models.TextField(blank=True)
     imgs = models.ManyToManyField(to='Image')
 
     @property

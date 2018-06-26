@@ -26,6 +26,8 @@ def suites(request):
     prompt = None
     if request.method == 'POST':
         page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
+        if page <= 0:
+            page = 1
         size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
         search_text = str(request.POST.get('search_text', ''))
         order_by = request.POST.get('order_by', 'pk')

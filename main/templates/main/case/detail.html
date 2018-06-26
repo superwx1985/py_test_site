@@ -20,26 +20,12 @@
             window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
             // 默认只看自己
             $('input[name=own_checkbox]').prop('checked', true);
+            // 注册只看自己复选框
+            $('#own_checkbox').on('click', function() {$('#m2m_objects_form').submit()});
             // 获取待选m2m
             submit_m2m_objects_form();
-            {% if temp_list_json %}
-                // 获取暂存m2m
-                getList("{% url 'step_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, "{{ temp_list_json|escapejs }}");
-                {% if pk %}
-                    // 获取m2m
-                    getList("{% url 'case_steps' pk %}", window.$csrf_input.val(), m2m_list_selected_save);
-                {% endif %}
-            {% else %}
-                {% if pk %}
-                    // 获取m2m
-                    getList("{% url 'case_steps' pk %}", window.$csrf_input.val(), m2m_list_selected_save_and_update);
-                {% else %}
-                    // 初始化m2m字段
-                    update_m2m_selected_index(true);
-                {% endif %}
-            {% endif %}
             // 注册待选m2m排序
-            $('#steps_all th[order_by_text]').on('dblclick', function () {
+            $('#m2m_all th[order_by_text]').on('dblclick', function () {
                 var order_by_text = $(this).attr('order_by_text');
                 var order_by = $('input[name=order_by]');
                 var order_by_reverse = $('input[name=order_by_reverse]');
@@ -59,15 +45,25 @@
             });
             // 更新排序标志
             update_sort_icon();
-            // 注册只看自己复选框
-            $('#own_checkbox').on('click', function() {$('#m2m_objects_form').submit()});
+            {% if temp_list_json %}
+                // 获取暂存m2m
+                getList("{% url 'step_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, "{{ temp_list_json|escapejs }}");
+            {% else %}
+                {% if pk %}
+                    // 获取m2m
+                    getList("{% url 'case_steps' pk %}", window.$csrf_input.val(), m2m_list_selected_update);
+                {% else %}
+                    // 初始化m2m字段
+                    update_m2m_selected_index(true);
+                {% endif %}
+            {% endif %}
             // 处理step拖动及排序
             stepHandle();
         });
         // 更新排序标志
         function update_sort_icon() {
-            $('#steps_all th[order_by_text]').find('i').remove();
-            var sort_col = $('#steps_all th[order_by_text=' + $('input[name=order_by]').val() + ']');
+            $('#m2m_all th[order_by_text]').find('i').remove();
+            var sort_col = $('#m2m_all th[order_by_text=' + $('input[name=order_by]').val() + ']');
             if ($('input[name=order_by_reverse]').val() === 'True') {
                 sort_col.prepend('<i class="icon-circle-arrow-down">&nbsp;</i>');
             } else {
@@ -76,6 +72,8 @@
         }
         // 获取待选m2m
         function submit_m2m_objects_form() {
+            var page = $('input[name=page]').val();
+            var size = $('input[name=size]').val();
             var search_text = $('input[name=search_text]').val();
             if ($('input[name=own_checkbox]').prop('checked')) {
                 var own_checkbox = true;
@@ -84,68 +82,120 @@
             }
             var order_by = $('input[name=order_by]').val();
             var order_by_reverse = $('input[name=order_by_reverse]').val();
-            var condition = {'search_text': search_text, 'own_checkbox': own_checkbox, 'order_by_reverse': order_by_reverse, 'order_by': order_by};
+            var condition = {
+                'page': page,
+                'size': size,
+                'search_text': search_text,
+                'own_checkbox': own_checkbox,
+                'order_by_reverse': order_by_reverse,
+                'order_by': order_by
+            };
             var condition_json = JSON.stringify(condition);
-            getList("{% url 'step_list_all' %}", window.$csrf_input.val(), update_m2m_list_all, condition_json);
+            getList("{% url 'step_list' %}", window.$csrf_input.val(), update_m2m_list_all, condition_json);
             return false;
         }
+        // 更新并注册分页工具
+        function update_and_bind_paginator(page, max_page, size) {
+            var page_input = $('input[name=page]');
+            var form = $('#m2m_objects_form');
+            page_input.val(page);
+            page_input.attr('max', max_page);
+            $('span[name=total_text]').text(' / ' + max_page);
+            $('input[name=size]').val(size);
 
-        // 更新全部步骤列表
-        function update_m2m_list_all(success, data) {
-            if (success) {
-                var tbody = $('#steps_all tbody');
-                tbody.empty();
-                $.each(data.data, function (i, v) {
-                    var tr = $('<tr></tr>');
-                    tr.data("step_data", v);
-                    $('<td moveable><i class="icon-move"></i></td>').appendTo(tr);
-                    $('<td class="text-center"></td>').text(v.pk).appendTo(tr);
-                    // var td = $('<td></td>')
-                    // var a = $('<a href="javascript:"></a>').text(v.fields.name);
-                    // a.attr({'data-toggle': 'popover', 'data-trigger': 'focus' ,'title': v.fields.keyword, 'data-content': v.fields.description})
-                    // td.append(a).appendTo(tr);
-                    $('<td></td>').text(v.name).appendTo(tr);
-                    $('<td></td>').text(v.action).appendTo(tr);
-                    tbody.append(tr);
+            var button = $("button[name=first_page_button]");
+            if (page === 1) {
+                button.addClass('disabled')
+            } else {
+                button.removeClass('disabled').off('click').on('click', function () {
+                    page_input.val(1);
+                    form.submit();
                 });
-
-                // 使得步骤列表可拖动
-                tbody.find('tr').draggable({
-                    appendTo: 'body',
-                    connectToSortable: '#steps_selected tbody',
-                    cursor: "crosshair",
-                    handle: "[moveable]",
-                    distance: 15,
-                    scope: "steps_all",
-                    helper: function() {
-                        var tr = $(this).clone().removeClass().css('background-color', 'lightblue');
-                        tr.children('[moveable]').after($('<td index class="text-center"></td>'));
-                        return tr;
-                    },
-                    stop: function( event, ui ) {
-                        ui.helper.removeAttr('style');
-                    }
+            }
+            var button = $("button[name=prev_page_button]");
+            if (page === 1) {
+                button.addClass('disabled')
+            } else {
+                button.removeClass('disabled').off('click').on('click', function () {
+                    page_input.val(page - 1);
+                    form.submit();
+                });
+            }
+            var button = $("button[name=next_page_button]");
+            if (page === max_page) {
+                button.addClass('disabled')
+            } else {
+                button.removeClass('disabled').off('click').on('click', function () {
+                    page_input.val(page +1);
+                    form.submit();
+                });
+            }
+            var button = $("button[name=last_page_button]");
+            if (page === max_page) {
+                button.addClass('disabled')
+            } else {
+                button.removeClass('disabled').off('click').on('click', function () {
+                    page_input.val(max_page);
+                    form.submit();
                 });
             }
         }
-        // 保存已选步骤初始值
-        function m2m_list_selected_save(success, data){
+        // 更新全部步骤列表
+        function update_m2m_list_all(success, data) {
             if (success) {
-                var tbody = $('#steps_selected tbody');
-                tbody.data('original_data', data);
+                // 更新并注册分页工具
+                update_and_bind_paginator(data.data.page, data.data.max_page, data.data.size);
+                var tbody = $('#m2m_all tbody');
+                tbody.empty();
+                if (data.data.objects.length > 0) {
+                    $.each(data.data.objects, function (i, v) {
+                        var tr = $('<tr></tr>');
+                        tr.data("step_data", v);
+                        $('<td moveable class="middle"><i class="icon-move"></i></td>').appendTo(tr);
+                        $('<td class="text-center" pk></td>').text(v.pk).appendTo(tr);
+                        // var td = $('<td></td>')
+                        // var a = $('<a href="javascript:"></a>').text(v.fields.name);
+                        // a.attr({'data-toggle': 'popover', 'data-trigger': 'focus' ,'title': v.fields.keyword, 'data-content': v.fields.description})
+                        // td.append(a).appendTo(tr);
+                        $('<td></td>').text(v.name).appendTo(tr);
+                        $('<td></td>').text(v.action).appendTo(tr);
+                        tbody.append(tr);
+                    });
+
+                    // 使得步骤列表可拖动
+                    tbody.find('tr').draggable({
+                        appendTo: 'body',
+                        connectToSortable: '#m2m_selected tbody',
+                        cursor: "crosshair",
+                        handle: "[moveable]",
+                        distance: 15,
+                        scope: "m2m_all",
+                        helper: function() {
+                            var tr = $(this).clone().removeClass().css('background-color', 'lightblue');
+                            tr.children('[moveable]').after($('<td index class="text-center"></td>'));
+                            return tr;
+                        },
+                        stop: function( event, ui ) {
+                            ui.helper.removeAttr('style');
+                        }
+                    });
+                } else {
+                    var tr = $('<tr><td colspan="4" class="text-center bg-secondary">无数据</td></tr>');
+                    tbody.append(tr);
+                }
             }
         }
         // 更新已选步骤列表
         function m2m_list_selected_update(success, data) {
             if (success) {
-                var tbody = $('#steps_selected tbody');
+                var tbody = $('#m2m_selected tbody');
                 if (data.data.length > 0) {
                     tbody.empty();
                     $.each(data.data, function (i, v) {
                         var tr = $('<tr></tr>');
-                        $('<td moveable><i class="icon-move"></i></td>').appendTo(tr);
+                        $('<td moveable class="middle"><i class="icon-move"></i></td>').appendTo(tr);
                         $('<td index class="text-center"></td>').text(i + 1).appendTo(tr);
-                        $('<td class="text-center"></td>').text(v.pk).appendTo(tr);
+                        $('<td class="text-center" pk></td>').text(v.pk).appendTo(tr);
                         $('<td></td>').text(v.name).appendTo(tr);
                         $('<td></td>').text(v.action).appendTo(tr);
                         tbody.append(tr);
@@ -154,14 +204,9 @@
                 update_m2m_selected_index(true);
             }
         }
-        // 保存并更新已选步骤列表
-        function m2m_list_selected_save_and_update(success, data) {
-            m2m_list_selected_save(success, data);
-            m2m_list_selected_update(success, data)
-        }
-        // 处理step拖动及排序
+        // 处理m2m拖动及排序
         function stepHandle() {
-            $('#steps_selected tbody').sortable({
+            $('#m2m_selected tbody').sortable({
                 items: "tr:not([placeholder])",
                 distance: 15,
                 handle: "[moveable]",
@@ -170,36 +215,36 @@
                     update_m2m_selected_index();
                 }
             });
-            $('#steps_selected tbody').droppable({
+            $('#m2m_selected tbody').droppable({
                 activeClass: 'ui-state-default',
                 hoverClass: 'ui-state-hover',
                 accept: 'tr',
-                scope: "steps_all",
+                scope: "m2m_all",
                 drop: function (event, ui) {
                     $(this).children('[placeholder]').remove();
                 }
             });
-            $('#steps_all table').droppable({
+            $('#m2m_all table').droppable({
                 activeClass: 'ui-state-default',
                 hoverClass: 'ui-state-hover',
-                accept: '#steps_selected tr:not([placeholder])',
+                accept: '#m2m_selected tr:not([placeholder])',
                 drop: function (event, ui) {
                     ui.draggable.remove();
-                    if ($('#steps_selected tbody tr').length <= 1) {
-                        $('#steps_selected tbody').append($('<tr placeholder><td colspan="5" class="text-center">无关联数据</td></tr>'));
+                    if ($('#m2m_selected tbody tr').length <= 1) {
+                        $('#m2m_selected tbody').append($('<tr placeholder><td colspan="5" class="text-center bg-secondary">无数据</td></tr>'));
                     }
                 }
             })
         }
-        // 更新已选步骤的序号，更新step field内容
+        // 更新已选m2m的序号，更新m2m field内容
         function update_m2m_selected_index(init) {
-            var steps = $('#steps_selected tbody tr');
-            var step_list = [];
-            steps.each(function(i) {
+            var m2m = $('#m2m_selected tbody tr');
+            var m2m_list = [];
+            m2m.each(function(i) {
                 $(this).children('[index]').text(i+1);
-                step_list.push($(this).children('td:nth-of-type(3)').text());
+                m2m_list.push($(this).children('td[pk]').text());
             });
-            var json_str = JSON.stringify(step_list);
+            var json_str = JSON.stringify(m2m_list);
             $('input[name=step]').val(json_str);
             if (init) {
                 $('input[name=step]').attr('value', json_str);
@@ -261,12 +306,12 @@
 {% block detail_inner_list %}
 
     <div id='step' class="row">
-        <div id="steps_selected" class="col-6 text-center">
-            <h5 class="ui-widget-header">关联步骤列表</h5>
+        <div id="m2m_selected" class="col-6 text-center">
+            <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="上下拖动进行排序，拖动到右侧删除"></i>&nbsp;关联步骤列表</h5>
             <div class="ui-widget-content">
                 <table class="table table-sm table-bordered table-hover" style="width: 100%">
                     <colgroup>
-                        <col style='width: 1em;'>
+                        <col style='width: 30px;'>
                         <col style='width: 60px;'>
                         <col style='width: 60px;'>
                         <col>
@@ -274,37 +319,38 @@
                     </colgroup>
                     <thead class="thead-light"><tr><th></th><th>序号</th><th>ID</th><th>名称</th><th>动作</th></tr></thead>
                     <tbody class="text-left">
-                        <tr placeholder><td colspan="5" class="text-center">无关联数据</td></tr>
+                        <tr placeholder><td colspan="5" class="text-center bg-secondary">无数据</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        <div id="steps_all" class="col-6 text-center">
-            <h5 class="ui-widget-header">可选步骤列表</h5>
+        <div id="m2m_all" class="col-6 text-center">
+            <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="拖动到左侧添加"></i>&nbsp;可选步骤列表</h5>
             <form method="post" id="m2m_objects_form" novalidate onsubmit="return submit_m2m_objects_form();">
                 <input type="hidden" name="order_by" value="pk" id="id_order_by">
                 <input type="hidden" name="order_by_reverse" value="True" id="id_order_by_reverse">
-                {% include 'main/include/search_tools.html' with hide_add_button=True %}
+                {% include 'main/include/tools_bar_sub_list.html'%}
+                <div class="ui-widget-content">
+                    <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                        <colgroup>
+                            <col style='width: 30px;'>
+                            <col style='width: 60px;'>
+                            <col>
+                            <col style='width: 200px;'>
+                        </colgroup>
+                        <thead class="thead-light">
+                            <tr>
+                                <th></th>
+                                <th order_by_text="pk">ID</th>
+                                <th order_by_text="name">名称</th>
+                                <th order_by_text="action">动作</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-left"></tbody>
+                    </table>
+                </div>
+                {% include 'main/include/tools/paginator_without_size.html' %}
             </form>
-            <div class="ui-widget-content">
-                <table class="table table-sm table-bordered table-hover" style="width: 100%">
-                    <colgroup>
-                        <col style='width: 1em;'>
-                        <col style='width: 60px;'>
-                        <col>
-                        <col style='width: 200px;'>
-                    </colgroup>
-                    <thead class="thead-light">
-                        <tr>
-                            <th></th>
-                            <th order_by_text="pk">ID</th>
-                            <th order_by_text="name">名称</th>
-                            <th order_by_text="action">动作</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-left"></tbody>
-                </table>
-            </div>
         </div>
     </div>
 

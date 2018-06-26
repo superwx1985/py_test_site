@@ -39,7 +39,7 @@ urlpatterns = [
     path('case/<int:pk>/delete/', case.case_delete, name='case_delete'),
     path('case/<int:pk>/quick_update/', case.case_quick_update, name='case_quick_update'),
     path('case/<int:pk>/steps/', case.case_steps, name='case_steps'),
-    path('case/list_all/', case.case_list_all, name='case_list_all'),
+    path('case/list_all/', case.case_list, name='case_list'),
     path('case/list_temp/', case.case_list_temp, name='case_list_temp'),
 
     path('steps/', step.steps, name='steps'),
@@ -47,7 +47,7 @@ urlpatterns = [
     path('step/<int:pk>/', step.step, name='step'),
     path('step/<int:pk>/delete/', step.step_delete, name='step_delete'),
     path('step/<int:pk>/quick_update/', step.step_quick_update, name='step_quick_update'),
-    path('step/list_all/', step.step_list_all, name='step_list_all'),
+    path('step/list_all/', step.step_list, name='step_list'),
     path('step/list_temp/', step.step_list_temp, name='step_list_temp'),
 
     path('configs/', config.configs, name='configs'),

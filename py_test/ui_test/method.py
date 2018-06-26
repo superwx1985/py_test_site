@@ -134,7 +134,7 @@ def highlight_for_a_moment(dr, elements, color='green', duration=0.5):
     time.sleep(0.5)
 
 
-# 等待元素出现
+# 等待文字出现
 def wait_for_text_present(dr, text, timeout, base_element, print_=True):
     logger = get_thread_logger()
     dr.implicitly_wait(0.5)
@@ -170,7 +170,7 @@ def wait_for_text_present(dr, text, timeout, base_element, print_=True):
                 for element in elements_temp:
                     if element.is_displayed():
                         elements.append(element)
-                if 0 == len(elements):
+                if 0 == len(elements):  # 如果文本不在元素的第一个子节点，用text()可能会找不到
                     elements.append(_body)
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
@@ -236,13 +236,13 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
             now_time = time.time()
             if print_ and now_time - last_print_time >= 1:
                 elapsed_time = str(round(now_time - start_time, 2))
-                logger.debug('经过%s秒 - 找到期望元素%r个，其中包含期望文本的元素%r个' % (elapsed_time, len(elements_temp), len(elements)))
+                logger.debug('经过%s秒 - 找到期望元素%r个，其中有%r个元素包含期望文本' % (elapsed_time, len(elements_temp), len(elements)))
                 last_print_time = now_time
         if len(elements) > 0 and (len(elements) == len(elements_temp) or index_ is not None):
             break
     dr.implicitly_wait(timeout)
     elapsed_time = str(round(time.time() - start_time, 2))
-    msg = '经过%s秒 - 找到期望元素%r个，其中包含期望文本的元素%r个' % (elapsed_time, len(elements_temp), len(elements))
+    msg = '经过%s秒 - 找到期望元素%r个，其中有%r个元素包含期望文本' % (elapsed_time, len(elements_temp), len(elements))
     if len(elements) == 0 or len(elements) < len(elements_temp):
         run_result = ('f', msg)
     else:
@@ -420,11 +420,11 @@ def wait_for_page_redirect(dr, new_url, timeout, print_=True):
     last_print_time = 0
     while (time.time() - start_time) <= timeout:
         current_url = dr.current_url
-        logger.debug('新URL：%s' % new_url)
-        logger.debug('原URL：%s' % current_url)
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
+            logger.debug('新URL：%s' % new_url)
+            logger.debug('原URL：%s' % current_url)
             logger.debug('经过%s秒 - 验证新URL是否符合期望' % elapsed_time)
             last_print_time = now_time
         find_result = vic_find_object.find_with_condition(new_url, current_url)

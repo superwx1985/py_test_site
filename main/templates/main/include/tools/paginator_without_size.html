@@ -1,0 +1,16 @@
+{% load widget_tweaks %}
+<div id="paginator_without_size">
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <button name="first_page_button" type="button" class="btn btn-info"><i class="icon-double-angle-left"></i></button>
+            <button name="prev_page_button" type="button" class="btn btn-info"><i class="icon-angle-left"></i></button>
+        </div>
+        <input type="number" name="page" value="1" class="form-control" id="id_page" min="1">
+        <div class="input-group-append">
+            <span name='total_text' class="input-group-text">&nbsp;/&nbsp;0</span>
+            <button name="next_page_button" type="button" class="btn btn-info"><i class="icon-angle-right"></i></button>
+            <button name="last_page_button" type="button" class="btn btn-info"><i class="icon-double-angle-right"></i></button>
+        </div>
+    </div>
+    <input type="hidden" name="size" value="10">
+</div>

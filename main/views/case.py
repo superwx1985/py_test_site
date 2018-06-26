@@ -20,6 +20,8 @@ logger = logging.getLogger('django.request')
 def cases(request):
     if request.method == 'POST':
         page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
+        if page <= 0:
+            page = 1
         size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
         search_text = str(request.POST.get('search_text', ''))
         order_by = request.POST.get('order_by', 'pk')
@@ -58,6 +60,7 @@ def cases(request):
         else:
             order_by_reverse = False
         objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
+    # 分页
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)
@@ -232,9 +235,51 @@ def case_steps(request, pk):
 
 # 获取全部case
 @login_required
-def case_list_all(request):
-    objects = Case.objects.filter(is_active=True).order_by('pk').values('pk', 'name')
-    return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
+def case_list(request):
+    condition = request.POST.get('condition', '{}')
+    try:
+        condition = json.loads(condition)
+    except json.decoder.JSONDecodeError:
+        condition = dict()
+
+    page = int(condition.get('page', 1)) if condition.get('page') != '' else 1
+    if page <= 0:
+        page = 1
+    size = 10
+    search_text = condition.get('search_text', '')
+    order_by = condition.get('order_by', 'pk')
+    order_by_reverse = condition.get('order_by_reverse', False)
+    own = condition.get('own_checkbox')
+    keyword_list_temp = search_text.split(' ')
+    keyword_list = list()
+    for keyword in keyword_list_temp:
+        if keyword.strip() != '':
+            keyword_list.append(keyword)
+    q = get_query_condition(keyword_list)
+    if own:
+        objects = Case.objects.filter(q, is_active=True, creator=request.user).order_by('pk').values('pk', 'name')
+    else:
+        objects = Case.objects.filter(q, is_active=True).order_by('pk').values('pk', 'name')
+    # 排序
+    if objects:
+        if order_by not in objects[0]:
+            order_by = 'pk'
+        if order_by_reverse is True or order_by_reverse == 'True':
+            order_by_reverse = True
+        else:
+            order_by_reverse = False
+        objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
+    paginator = Paginator(objects, size)
+    try:
+        objects = paginator.page(page)
+    except PageNotAnInteger:
+        objects = paginator.page(1)
+        page = 1
+    except EmptyPage:
+        objects = paginator.page(paginator.num_pages)
+        page = paginator.num_pages
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': {
+        'objects': list(objects), 'page': page, 'max_page': paginator.num_pages, 'size': size}})
 
 
 # 获取临时case

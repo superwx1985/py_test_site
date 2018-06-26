@@ -1,0 +1,13 @@
+<div style="padding: 5px 0" class="container-fluid">
+    <div class="row align-items-center">
+        <div class="col-6">
+            {% include 'main/include/tools/search-tools.html' %}
+        </div>
+        <div class="col-2">
+            {% include 'main/include/tools/see_own.html' %}
+        </div>
+        <div class="col text-right">
+            {% if add_button %}{% include 'main/include/tools/add_button.html' %}{% endif %}
+        </div>
+    </div>
+</div>

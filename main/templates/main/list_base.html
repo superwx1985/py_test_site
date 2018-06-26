@@ -37,13 +37,15 @@
                     set_cookie('page', window.page);
                     set_cookie('size', window.size);
                     // 注册翻页工具条
+                    var input = $('input[name=page]');
+                    var form = $('#objects_form');
                     var button = $("button[name=first_page_button]");
                     if (window.page == 1) {
                         button.addClass('disabled')
                     } else {
                         button.click(function () {
-                            $('input[name=page]').val(1);
-                            $('#objects_form').submit();
+                            input.val(1);
+                            form.submit();
                         });
                     }
                     var button = $("button[name=prev_page_button]");
@@ -51,8 +53,8 @@
                         button.addClass('disabled')
                     } else {
                         button.click(function () {
-                            $('input[name=page]').val({{ page }}-1);
-                            $('#objects_form').submit();
+                            input.val(window.page - 1);
+                            form.submit();
                         });
                     }
                     var button = $("button[name=next_page_button]");
@@ -60,8 +62,8 @@
                         button.addClass('disabled')
                     } else {
                         button.click(function () {
-                            $('input[name=page]').val({{ page }}+1);
-                            $('#objects_form').submit();
+                            input.val(window.page +1);
+                            form.submit();
                         });
                     }
                     var button = $("button[name=last_page_button]");
@@ -69,8 +71,8 @@
                         button.addClass('disabled')
                     } else {
                         button.click(function () {
-                            $('input[name=page]').val({{ paginator.num_pages }});
-                            $('#objects_form').submit();
+                            input.val(window.maxPage);
+                            form.submit();
                         });
                     }
                     // 注册注销按钮
@@ -129,6 +131,8 @@
                     {% if prompt == 'success' %}
                         toastr.success('保存成功');
                     {% endif %}
+                    // 提示框
+                    $('[data-toggle=tooltip]').tooltip();
                     // 关闭遮罩
                     $('#mask').hide();
                 });
@@ -153,15 +157,15 @@
         <div class="container-fluid" style="padding-top: 60px; padding-bottom: 40px">
             <form method="post" id="objects_form" class="form-inline">
                 {% csrf_token %}
-                {% block search_tools %}
-                    {% include 'main/include/search_tools.html' %}
+                {% block tools_bar %}
+                    {% include 'main/include/tools_bar.html' with add_button=True %}
                 {% endblock %}
                 {{ order_by_form.order_by }}
                 {{ order_by_form.order_by_reverse }}
                 {% block result_table %}
                 {% endblock %}
 
-                {% include 'main/include/paginator.html' %}
+                {% include 'main/include/tools/paginator.html' %}
             </form>
         </div>
     </body>

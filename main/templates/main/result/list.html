@@ -9,8 +9,8 @@
         })
     </script>
 {% endblock %}
-{% block search_tools %}
-    {% include 'main/include/search_tools.html' with hide_add_button=True %}
+{% block tools_bar %}
+    {% include 'main/include/tools_bar.html' %}
 {% endblock %}
 {% block result_table %}
     <div class="table-responsive" id='result_table'>
@@ -49,14 +49,14 @@
                         {% endif %}
                         <td>
                             <div class="middle">
-                                <button type="button" name="edit_button" class="btn btn-info"><i class="icon-bar-chart"></i></button>
-                                <button type="button" name="delete_button" class="btn btn-danger"><i class="icon-trash"></i></button>
+                                <button type="button" name="edit_button" class="btn btn-info" data-toggle="tooltip" title="查看详情"><i class="icon-bar-chart"></i></button>
+                                <button type="button" name="delete_button" class="btn btn-danger" data-toggle="tooltip" title="删除"><i class="icon-trash"></i></button>
                             </div>
                         </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center bg-secondary">查无数据</td>
+                        <td colspan="6" class="text-center bg-secondary">无数据</td>
                     </tr>
                 {% endfor %}
             </tbody>

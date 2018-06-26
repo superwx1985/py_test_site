@@ -50,6 +50,8 @@
                     {% elif form.errors %}
                         toastr.error('请更正错误项');
                     {% endif %}
+                    // 提示框
+                    $('[data-toggle=tooltip]').tooltip();
                     // 注册提交并返回
                     $('#saveAndReturn').on('click', function() {$('[name=redirect]').val(true)});
                     $('#AddAnother').on('click', function() {$('[name=redirect]').val('add_another')});

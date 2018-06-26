@@ -26,6 +26,8 @@ def results(request):
     prompt = None
     if request.method == 'POST':
         page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
+        if page <= 0:
+            page = 1
         size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
         search_text = str(request.POST.get('search_text', ''))
         order_by = request.POST.get('order_by', 'pk')
@@ -159,9 +161,10 @@ def step_img(request, pk):
     data_dict['name'] = obj.name
     data_dict['result_message'] = obj.result_message
     data_dict['result_error'] = obj.result_error
-    data_dict['step_time'] = render_to_string('main/include/result_time.html', {'start_date': obj.start_date, 'end_date': obj.end_date, 'elapsed_time_str': obj.elapsed_time_str})
-
+    data_dict['step_time'] = render_to_string('main/include/result_time.html', {
+        'start_date': obj.start_date, 'end_date': obj.end_date, 'elapsed_time_str': obj.elapsed_time_str})
     data_dict['step_url'] = reverse('step', args=[obj.step.pk])
+    data_dict['ui_last_url'] = obj.ui_last_url
     data_dict['imgs'] = list()
     if obj.has_sub_case:
         try:

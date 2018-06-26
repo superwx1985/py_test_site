@@ -81,15 +81,15 @@
                         <td col_name='step_count' class="middle">{{ object.m2m_count }}</td>
                         <td>
                             <div class="middle">
-                                <button type="button" name="edit_button" class="btn btn-info"><i class="icon-edit"></i></button>
-                                <button type="button" name="delete_button" class="btn btn-danger"><i class="icon-trash"></i></button>
-                                <button type="button" name="execute_button" class="btn btn-outline-success"><i class="icon-play"></i></button>
+                                <button type="button" name="edit_button" class="btn btn-info" data-toggle="tooltip" title="编辑"><i class="icon-edit"></i></button>
+                                <button type="button" name="delete_button" class="btn btn-danger" data-toggle="tooltip" title="删除"><i class="icon-trash"></i></button>
+                                <button type="button" name="execute_button" class="btn btn-outline-success" data-toggle="tooltip" title="执行"><i class="icon-play"></i></button>
                             </div>
                         </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center bg-secondary">查无数据</td>
+                        <td colspan="6" class="text-center bg-secondary">无数据</td>
                     </tr>
                 {% endfor %}
             </tbody>

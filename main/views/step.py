@@ -198,13 +198,17 @@ def step_quick_update(request, pk):
 
 # 获取全部step
 @login_required
-def step_list_all(request):
+def step_list(request):
     condition = request.POST.get('condition', '{}')
     try:
         condition = json.loads(condition)
     except json.decoder.JSONDecodeError:
         condition = dict()
 
+    page = int(condition.get('page', 1)) if condition.get('page') != '' else 1
+    if page <= 0:
+        page = 1
+    size = 10
     search_text = condition.get('search_text', '')
     order_by = condition.get('order_by', 'pk')
     order_by_reverse = condition.get('order_by_reverse', False)
@@ -218,10 +222,10 @@ def step_list_all(request):
     if own:
         objects = Step.objects.filter(q, is_active=True, creator=request.user).values(
             'pk', 'name', 'keyword').annotate(
-            action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+            action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
     else:
         objects = Step.objects.filter(q, is_active=True).values('pk', 'name', 'keyword').annotate(
-            action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+            action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
     # 排序
     if objects:
         if order_by not in objects[0]:
@@ -231,7 +235,17 @@ def step_list_all(request):
         else:
             order_by_reverse = False
         objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
-    return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
+    paginator = Paginator(objects, size)
+    try:
+        objects = paginator.page(page)
+    except PageNotAnInteger:
+        objects = paginator.page(1)
+        page = 1
+    except EmptyPage:
+        objects = paginator.page(paginator.num_pages)
+        page = paginator.num_pages
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': {
+        'objects': list(objects), 'page': page, 'max_page': paginator.num_pages, 'size': size}})
 
 
 # 获取临时step
@@ -245,7 +259,7 @@ def step_list_temp(request):
             continue
         order += 1
         objects = Step.objects.filter(pk=pk).values('pk', 'name').annotate(
-            action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+            action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
         objects = list(objects)
         objects[0]['order'] = order
         list_temp.append(objects[0])
