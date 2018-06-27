@@ -30,6 +30,10 @@
             <script src="{% static 'main/js/main.js' %}"></script>
             <script>
                 $(function () {
+                    // 注册注销按钮
+                    $("#logout_btn").click(function () {
+                        window.open('/logout/', '_self');
+                    });
                     // 提示框样式
                     toastr.options = {
                         "closeButton":false,//显示关闭按钮
