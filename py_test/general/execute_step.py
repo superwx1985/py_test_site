@@ -69,7 +69,8 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
     ui_by = ui_by_dict[step.ui_by]
     ui_locator = vic_method.replace_special_value(step.ui_locator, variables)
     ui_index = step.ui_index
-    ui_base_element = step.ui_base_element
+    ui_base_element = vic_method.replace_special_value(step.ui_base_element, variables)
+    ui_base_element = vic_variables.get_elements(ui_base_element, variables)[0] if ui_base_element != '' else None
     ui_data = vic_method.replace_special_value(step.ui_data, variables)
     ui_special_action_dict = {
         0: '',
@@ -89,16 +90,27 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
         14: 'send_keys_to_element',
     }
     ui_special_action = ui_special_action_dict[step.ui_special_action]
-    ui_alert_handle = step.ui_alert_handle
+    ui_alert_handle_dict = {
+        1: 'accept',
+        2: 'dismiss',
+        3: 'ignore',
+    }
+    ui_alert_handle = ui_alert_handle_dict.get(step.ui_alert_handle, 'accept')
 
     api_url = step.api_url
     api_headers = step.api_headers
     api_body = step.api_body
     api_data = step.api_data
 
+    other_data = step.other_data
     other_sub_case = step.other_sub_case
 
     try:
+        # 设置selenium超时时间
+        dr.implicitly_wait(timeout)
+        dr.set_page_load_timeout(timeout)
+        dr.set_script_timeout(timeout)
+
         # ===== UI =====
         # 打开URL
         if step_action.pk == 1:
@@ -118,25 +130,12 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
         elif step_action.pk == 4:
             dr.back()
 
-        # 等待
-        elif step_action.pk == 5:
-            if ui_data == '':
-                time.sleep(1)
-            else:
-                try:
-                    second = change_string_to_digit(ui_data)
-                except ValueError:
-                    raise ValueError('无效的等待时间【{}】'.format(ui_data))
-                time.sleep(second)
-
         # 截图
         elif step_action.pk == 6:
             image = None
             if ui_by != '' and ui_locator != '':
-                run_result_temp, visible_elements, _ = method.wait_for_element_visible(dr=dr, by=ui_by,
-                                                                                       locator=ui_locator,
-                                                                                       timeout=timeout,
-                                                                                       base_element=ui_base_element)
+                run_result_temp, visible_elements, _ = method.wait_for_element_visible(
+                    dr=dr, by=ui_by, locator=ui_locator, timeout=timeout, base_element=ui_base_element)
                 if len(visible_elements) > 0:
                     run_result, image = method.get_screenshot(dr, visible_elements[0])
                 else:
@@ -148,7 +147,8 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
 
         # 切换frame
         elif step_action.pk == 7:
-            run_result = method.try_to_switch_to_frame(dr=dr, by=ui_by, locator=ui_locator, index=ui_index, timeout=timeout, base_element=ui_base_element)
+            run_result = method.try_to_switch_to_frame(
+                dr=dr, by=ui_by, locator=ui_locator, index_=ui_index, timeout=timeout, base_element=ui_base_element)
 
         # 退出frame
         elif step_action.pk == 8:
@@ -156,9 +156,8 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
 
         # 切换窗口
         elif step_action.pk == 9:
-            run_result, new_window_handle = method.try_to_switch_to_window(dr=dr, by=ui_by, locator=ui_locator,
-                                                                           timeout=timeout,
-                                                                           base_element=ui_base_element)
+            run_result, new_window_handle = method.try_to_switch_to_window(
+                dr=dr, by=ui_by, locator=ui_locator, index_=ui_index, timeout=timeout, base_element=ui_base_element)
 
         # 关闭窗口
         elif step_action.pk == 10:
@@ -172,46 +171,46 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
 
         # 单击
         elif step_action.pk == 12:
-            if ui_by == 0 or ui_locator == '':
+            if ui_by == '' or ui_locator == '':
                 raise ValueError('无效的定位方式或定位符')
             variable_elements = None
             if ui_by == 10:
                 variable_elements = vic_variables.get_elements(ui_locator, variables)
             elif ui_by == 9:
                 ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
-            run_result, elements = method.try_to_click(dr=dr, by=ui_by, locator=ui_locator, timeout=timeout,
-                                                       index_=ui_index, base_element=ui_base_element,
-                                                       variable_elements=variable_elements)
+            run_result, elements = method.try_to_click(
+                dr=dr, by=ui_by, locator=ui_locator, timeout=timeout, index_=ui_index, base_element=ui_base_element,
+                variable_elements=variable_elements)
             if save_as != '':
                 variables.set_variable(save_as, elements)
 
         # 双击
         elif step_action.pk == 13:
-            if ui_by == 0 or ui_locator == '':
+            if ui_by == '' or ui_locator == '':
                 raise ValueError('无效的定位方式或定位符')
             variable_elements = None
             if ui_by == 'variable':
                 variable_elements = vic_variables.get_elements(ui_locator, variables)
             elif ui_by == 'public element':
                 ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
-            run_result, elements = method.try_to_double_click(dr=dr, by=ui_by, locator=ui_locator, timeout=timeout,
-                                                              index_=ui_index, base_element=ui_base_element,
-                                                              variable_elements=variable_elements)
+            run_result, elements = method.try_to_double_click(
+                dr=dr, by=ui_by, locator=ui_locator, timeout=timeout, index_=ui_index, base_element=ui_base_element,
+                variable_elements=variable_elements)
             if save_as != '':
                 variables.set_variable(save_as, elements)
 
         # 输入
         elif step_action.pk == 14:
-            if ui_by == 0 or ui_locator == '':
+            if ui_by == '' or ui_locator == '':
                 raise ValueError('无效的定位方式或定位符')
             variable_elements = None
             if ui_by == 'variable':
                 variable_elements = vic_variables.get_elements(ui_locator, variables)
             elif ui_by == 'public element':
                 ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
-            run_result, elements = method.try_to_enter(dr=dr, by=ui_by, locator=ui_locator, data=ui_data,
-                                                       timeout=timeout, index_=ui_index, base_element=ui_base_element,
-                                                       variable_elements=variable_elements)
+            run_result, elements = method.try_to_enter(
+                dr=dr, by=ui_by, locator=ui_locator, data=ui_data, timeout=timeout, index_=ui_index,
+                base_element=ui_base_element, variable_elements=variable_elements)
             if save_as != '':
                 variables.set_variable(save_as, elements)
 
@@ -222,11 +221,10 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
                 variable_elements = vic_variables.get_elements(ui_locator, variables)
             elif ui_by == 'public element':
                 ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
-            run_result, elements = method.perform_special_action(dr=dr, by=ui_by, locator=ui_locator, data=ui_data,
-                                                                 timeout=timeout, index_=ui_index,
-                                                                 base_element=ui_base_element,
-                                                                 special_action=ui_special_action, variables=variables,
-                                                                 variable_elements=variable_elements)
+            run_result, elements = method.perform_special_action(
+                dr=dr, by=ui_by, locator=ui_locator, data=ui_data, timeout=timeout, index_=ui_index,
+                base_element=ui_base_element, special_action=ui_special_action, variables=variables,
+                variable_elements=variable_elements)
 
             if save_as != '':
                 variables.set_variable(save_as, elements)
@@ -254,14 +252,77 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
                         dr=dr, by=ui_by, locator=ui_locator, text=ui_data, timeout=timeout, index_=ui_index,
                         base_element=ui_base_element, variable_elements=variable_elements)
                 else:
-                    run_result, elements = method.wait_for_text_present(dr=dr, text=ui_data, timeout=timeout,
-                                                                        base_element=ui_base_element)
+                    run_result, elements = method.wait_for_text_present(
+                        dr=dr, text=ui_data, timeout=timeout, base_element=ui_base_element)
                 if save_as != '':
                     variables.set_variable(save_as, elements)
 
         # 验证元素可见
         elif step_action.pk == 18:
-            pass
+            if ui_by == '' or ui_locator == '':
+                raise ValueError('无效的定位方式或定位符')
+            variable_elements = None
+            if ui_by == 'variable':
+                variable_elements = vic_variables.get_elements(ui_locator, variables)
+            elif ui_by == 'public element':
+                ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
+            if ui_data == '':
+                run_result, elements, elements_all = method.wait_for_element_visible(
+                    dr=dr, by=ui_by, locator=ui_locator, timeout=timeout, base_element=ui_base_element,
+                    variable_elements=variable_elements)
+            else:
+                run_result, elements = method.wait_for_element_visible_with_data(
+                    dr=dr, by=ui_by, locator=ui_locator, data=ui_data, timeout=timeout, base_element=ui_base_element,
+                    variable_elements=variable_elements)
+            if save_as != '':
+                variables.set_variable(save_as, elements)
+
+        # 验证元素隐藏
+        elif step_action.pk == 19:
+            if ui_by == '' or ui_locator == '':
+                raise ValueError('无效的定位方式或定位符')
+            variable_elements = None
+            if ui_by == 'variable':
+                variable_elements = vic_variables.get_elements(ui_locator, variables)
+            elif ui_by == 'public element':
+                ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
+            run_result, elements = method.wait_for_element_disappear(
+                dr=dr, by=ui_by, locator=ui_locator, timeout=timeout, base_element=ui_base_element,
+                variable_elements=variable_elements)
+            if save_as != '':
+                variables.set_variable(save_as, elements)
+
+        # 运行JavaScript
+        elif step_action.pk == 20:
+            if ui_data == '':
+                raise ValueError('未提供javascript代码')
+            variable_elements = None
+            if ui_by == 'variable':
+                variable_elements = vic_variables.get_elements(ui_locator, variables)
+            elif ui_by == 'public element':
+                ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
+            run_result, js_result = method.run_js(
+                dr=dr, by=ui_by, locator=ui_locator, data=ui_data, timeout=timeout, index_=ui_index,
+                base_element=ui_base_element, variable_elements=variable_elements)
+            if save_as != '':
+                variables.set_variable(save_as, js_result)
+
+        # 验证JavaScript结果
+        elif step_action.pk == 21:
+            if ui_data == '':
+                raise ValueError('未提供javascript代码')
+            variable_elements = None
+            if ui_by == 'variable':
+                variable_elements = vic_variables.get_elements(ui_locator, variables)
+            elif ui_by == 'public element':
+                ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
+            run_result, js_result = method.run_js(
+                dr=dr, by=ui_by, locator=ui_locator, data=ui_data, timeout=timeout, index_=ui_index,
+                base_element=ui_base_element, variable_elements=variable_elements)
+            if js_result is not True:
+                run_result = ('f', run_result[1])
+            if save_as != '':
+                variables.set_variable(save_as, js_result)
 
         # ===== API =====
         elif step_action.pk == 0:
@@ -272,6 +333,84 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
             pass
 
         # ===== OTHER =====
+        # 等待
+        elif step_action.pk == 5:
+            if timeout == '':
+                time.sleep(5)
+            else:
+                time.sleep(timeout)
+
+        # 保存用例变量或全局变量
+        elif step_action.pk in (22, 23):
+            if save_as == '':
+                raise ValueError('Missing value in "save_as" column')
+            if other_data == '' and ui_by == '' and ui_locator == '':
+                if step_action.pk == 23:
+                    msg = global_variables.set_variable(save_as, elements)
+                else:
+                    msg = variables.set_variable(save_as, elements)
+            elif other_data != '':
+                if '#{str}#' not in other_data:  # 尝试转换data为数字
+                    try:
+                        other_data = int(other_data)
+                    except ValueError:
+                        try:
+                            other_data = float(other_data)
+                        except ValueError:
+                            pass
+                else:
+                    other_data = other_data.replace('#{str}#', '')
+                if step_action.pk == 23:
+                    msg = global_variables.set_variable(save_as, other_data)
+                else:
+                    msg = variables.set_variable(save_as, other_data)
+            elif ui_by != '' and ui_locator != '':
+                if dr is None:
+                    raise ValueError('浏览器未启动')
+                run_result, elements = method.wait_for_element_present(
+                    dr=dr, by=ui_by, locator=ui_locator, timeout=timeout, base_element=ui_base_element)
+                if run_result[0] == 'f':
+                    raise NoSuchElementException(run_result[1])
+                if step_action.pk == 23:
+                    msg = global_variables.set_variable(save_as, elements)
+                else:
+                    msg = variables.set_variable(save_as, elements)
+            run_result = ('p', msg)
+
+        # 保存全局变量
+        elif step_action.pk == 23:
+            pass
+
+        # 计算表达式
+        elif step_action.pk == 24:
+            if other_data == '':
+                raise ValueError('未提供表达式')
+            eo = vic_eval.EvalObject(other_data, vic_variables.get_variable_dict(variables))
+            eval_success, eval_result, final_expression = eo.get_eval_result()
+            if eval_success:
+                calculate_result = eval_result
+                run_result = ('p', final_expression + '/n' + str(eval_result))
+                if save_as != '':
+                    variables.set_variable(save_as, calculate_result)
+            else:
+                run_result = (
+                    'f', '不合法的表达式 [' + final_expression + ']\n不合法的变量列表：' + str(eval_result))
+
+        # 验证表达式
+        elif step_action.pk == 25:
+            if other_data == '':
+                raise ValueError('未提供表达式')
+            eo = vic_eval.EvalObject(other_data, vic_variables.get_variable_dict(variables))
+            eval_success, eval_result, final_expression = eo.get_eval_result()
+            if eval_success:
+                if eval_result is True:
+                    run_result = ('p', final_expression + '/n' + str(eval_result))
+                else:
+                    run_result = ('f', final_expression + '/n' + str(eval_result))
+            else:
+                run_result = (
+                    'f', '不合法的表达式 [' + final_expression + ']\n不合法的变量列表：' + str(eval_result))
+
         # 调用子用例
         elif step_action.pk == 26:
             if other_sub_case is None:
@@ -308,7 +447,7 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
             step_result.ui_last_url = last_url if last_url != 'data:,' else ''
 
         # 获取UI验证截图
-        if step_action.pk in (16, 17, 18):
+        if step_action.pk in (16, 17, 18, 19):
             if ui_get_ss:
                 highlight_elements_map = {}
                 if len(elements) > 0:

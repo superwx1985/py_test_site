@@ -68,7 +68,7 @@ def execute_case(case, suite_result, case_order, user, execute_str, variables=No
 
     else:
         base_timeout = suite_result.suite.base_timeout
-        last_alert_handle = ''  # 初始化弹窗处理方式
+        ui_alert_handle = 'accept'  # 初始化弹窗处理方式
         step_order = 0
         for step in steps:
             step_order += 1
@@ -77,18 +77,26 @@ def execute_case(case, suite_result, case_order, user, execute_str, variables=No
 
             timeout = step.timeout if not step.timeout else base_timeout
 
-            alert_handle = last_alert_handle
             # 如有弹窗则处理弹窗
             if dr is not None:
                 try:
                     last_url = dr.current_url
                 except UnexpectedAlertPresentException:
-                    alert_handle_text, alert_text = method.confirm_alert(dr=dr, alert_handle=alert_handle, timeout=timeout)
+                    alert_handle_text, alert_text = method.confirm_alert(dr=dr, alert_handle=ui_alert_handle, timeout=timeout)
                     logger.info('{}\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(execute_id, alert_handle_text, alert_text))
                 if last_url == 'data:,':
                     last_url = ''
 
-            step_result_ = execute_step(step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=dr)
+            step_result_ = execute_step(
+                step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=dr)
+
+            # 获取最后一次弹窗处理方式
+            ui_alert_handle_dict = {
+                1: 'accept',
+                2: 'dismiss',
+                3: 'ignore',
+            }
+            ui_alert_handle = ui_alert_handle_dict.get(step.ui_alert_handle, 'accept')
 
             case_result.execute_count += 1
             if step_result_.result_status == 1:

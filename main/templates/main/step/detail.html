@@ -27,14 +27,46 @@
             var select_text = $actionSelect.find('option:selected').text();
             if (select_text.indexOf('UI') === 0) {
                 if (select_value === '1') {
-                    $('div[name=ui_data] .col-1').text('URL');
-                    $('div[name=ui_alert_handle],div[name=ui_data]').show();
-                } else if ($.inArray(select_value, ["6", "14", "15", "17", "18", "19", "20", "21"]) >= 0) {
+                    $('#introduce').text('打开一个页面，请填入页面URL');
+                    $('[name=ui_data] .col-1').text('URL');
+                    $('[name=ui_alert_handle],[name=ui_data],[name=timeout]').show();
+                } else if ($.inArray(select_value, ["26"]) >= 0) {
+                    $('[other], [ui]').show();
+                } else if (select_value === '2') {
+                    $('#introduce').text('触发浏览器刷新页面操作');
+                    $('[name=ui_alert_handle],[name=timeout]').show();
+                } else if (select_value === '3') {
+                    $('#introduce').text('触发浏览器前进操作');
+                    $('[name=ui_alert_handle],[name=timeout]').show();
+                } else if (select_value === '4') {
+                    $('#introduce').text('触发浏览器后退操作');
+                    $('[name=ui_alert_handle],[name=timeout]').show();
+                } else if (select_value === '6') {
+                    $('#introduce').text('获取当前页面截图，如果提供了定位信息则只截取定位到的元素');
                     $('div[ui]').show();
-                } else if ($.inArray(select_value, ["12", "13"]) >= 0) {
+                    $('div[name=ui_data],div[name=ui_special_action]').hide();
+                    $('[name=timeout]').show();
+                } else if (select_value === '7') {
+                    $('#introduce').text('切换至页面内嵌的frame或iframe。如果提供了定位信息，则切换至定位到的元素绑定的frame，否则切换至索引值对应的frame');
+                    $('div[ui]').show();
+                    $('div[name=ui_data],div[name=ui_special_action]').hide();
+                    $('[name=timeout]').show();
+                } else if (select_value === '8') {
+                    $('#introduce').text('回到frame的上一级页面，如进入了多层frame，请使用多次该动作');
+                    $('[name=ui_alert_handle],[name=timeout]').show();
+                } else if (select_value === '9') {
+                    $('#introduce').text('切换至浏览器的其他窗口或标签。如果提供了定位信息，则尝试在新窗口中定位元素，发现符合的元素则切换到对应的窗口，否则切换至任意一个非当前窗口');
+                    $('div[ui]').show();
+                    $('div[name=ui_data],div[name=ui_special_action]').hide();
+                    $('[name=timeout]').show();
+                } else if ($.inArray(select_value, ["14", "15", "17", "18", "19", "20", "21"]) >= 0) {
+                    $('div[ui]').show();
+                } else if ($.inArray(select_value, ["6", "12", "13"]) >= 0) {
                     $('div[ui]').show();
                     $('div[name=ui_data],div[name=ui_special_action]').hide();
                 } else if ($.inArray(select_value, ["5", "16"]) >= 0) {
+                    $('div[name=ui_alert_handle],div[name=ui_data]').show();
+                } else if ($.inArray(select_value, ["111"]) >= 0) {
                     $('div[name=ui_alert_handle],div[name=ui_data]').show();
                 }
             } else if (select_text.indexOf('API') === 0) {
@@ -47,12 +79,13 @@
         }
         // 还原Action相关内容
         function resetActionField() {
-            $('div[ui][name=ui_data] .col-1').text('数据');
-            $('div[common]').hide();
-            $('div[ui]').hide();
-            $('div[api]').hide();
-            $('div[db]').hide();
-            $('div[other]').hide();
+            $('#introduce').text('请选择动作');
+            $('[name=ui_data] .col-1').text('数据');
+            $('[common]').hide();
+            $('[ui]').hide();
+            $('[api]').hide();
+            $('[db]').hide();
+            $('[other]').hide();
         }
     </script>
 {% endblock %}
@@ -81,7 +114,7 @@
         <div class="row align-items-center" base>
             <div class="col-1 text-center font-weight-bold">描述</div>
             <div class="col" form_data>
-                {% include 'main/include/form_textarea.html' with field=form.description rows='5' %}
+                {% include 'main/include/form_textarea.html' with field=form.description rows='2' %}
             </div>
         </div>
         <div class="row align-items-center" base>
@@ -97,45 +130,39 @@
             </div>
         </div>
         <div class="row align-items-center" base>
-            <div class="col-1 text-center font-weight-bold">超时设置</div>
-            <div class="col" form_data>
-                {% include 'main/include/form_input.html' with field=form.timeout %}
-            </div>
-        </div>
-        <div class="row align-items-center" common name="save_as">
-            <div class="col-1 text-center font-weight-bold">结果另存</div>
-            <div class="col mx-auto" form_data>
-                {% include 'main/include/form_input.html' with field=form.save_as %}
+            <div class="col-1 text-center font-weight-bold">说明</div>
+            <div class="col">
+                <span id="introduce" class="mark">请选择动作</span>
             </div>
         </div>
         <div class="row align-items-center" ui name="ui_by">
-            <div class="col-1 text-center font-weight-bold">定位方式</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="选择要使用的定位方式"></i>&nbsp;定位方式</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.ui_by %}
             </div>
         </div>
         <div class="row align-items-center" ui name="ui_locator">
-            <div class="col-1 text-center font-weight-bold">定位值</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="要传给定位方式的值或表达式。例如：定位方式为id，则此处填入id的值；定位方式为css selector，则此处填入css表达式"></i>&nbsp;定位值</div>
             <div class="col" form_data>
-                {% include 'main/include/form_textarea.html' with field=form.ui_locator rows='5' %}
+                {% include 'main/include/form_textarea.html' with field=form.ui_locator rows='2' %}
             </div>
         </div>
         <div class="row align-items-center" ui name="ui_index">
-            <div class="col-1 text-center font-weight-bold">索引</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="如果提供的定位方式和定位值得到的元素大于1个，可以使用索引来指定唯一元素"></i>&nbsp;索引</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.ui_index %}
             </div>
         </div>
         <div class="row align-items-center" ui name="ui_base_element">
-            <div class="col-1 text-center font-weight-bold">基元素</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="把该元素作为定位的基元素"></i>&nbsp;基元素</div>
             <div class="col" form_data>
-                {% include 'main/include/form_textarea.html' with field=form.ui_base_element rows='5' %}
+                {% include 'main/include/form_input.html' with field=form.ui_base_element %}
             </div>
         </div>
         <div class="row align-items-center" ui name="ui_data">
             <div class="col-1 text-center font-weight-bold">数据</div>
             <div class="col" form_data>
-                {% include 'main/include/form_textarea.html' with field=form.ui_data rows='5' %}
+                {% include 'main/include/form_textarea.html' with field=form.ui_data rows='2' %}
             </div>
         </div>
         <div class="row align-items-center" ui name="ui_special_action">
@@ -145,7 +172,7 @@
             </div>
         </div>
         <div class="row align-items-center" ui name="ui_alert_handle">
-            <div class="col-1 text-center font-weight-bold">浏览器弹出处理</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="选择如果遇到浏览器弹窗（非页面内部弹窗）的处理方式"></i>&nbsp;弹窗处理</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.ui_alert_handle %}
             </div>
@@ -153,31 +180,49 @@
         <div class="row align-items-center" api>
             <div class="col-1 text-center font-weight-bold">请求地址</div>
             <div class="col" form_data>
-                {% include 'main/include/form_textarea.html' with field=form.api_url rows='5' %}
+                {% include 'main/include/form_textarea.html' with field=form.api_url rows='2' %}
             </div>
         </div>
         <div class="row align-items-center" api>
             <div class="col-1 text-center font-weight-bold">请求 Headers</div>
             <div class="col" form_data>
-                {% include 'main/include/form_textarea.html' with field=form.api_headers rows='5' %}
+                {% include 'main/include/form_textarea.html' with field=form.api_headers rows='2' %}
             </div>
         </div>
         <div class="row align-items-center" api>
             <div class="col-1 text-center font-weight-bold">请求 Body</div>
             <div class="col" form_data>
-                {% include 'main/include/form_textarea.html' with field=form.api_body rows='5' %}
+                {% include 'main/include/form_textarea.html' with field=form.api_body rows='2' %}
             </div>
         </div>
         <div class="row align-items-center" api>
             <div class="col-1 text-center font-weight-bold">验证内容</div>
             <div class="col" form_data>
-                {% include 'main/include/form_textarea.html' with field=form.api_data rows='5' %}
+                {% include 'main/include/form_textarea.html' with field=form.api_data rows='2' %}
+            </div>
+        </div>
+        <div class="row align-items-center" other>
+            <div class="col-1 text-center font-weight-bold">表达式</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.other_sub_case %}
             </div>
         </div>
         <div class="row align-items-center" other>
             <div class="col-1 text-center font-weight-bold">子用例</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.other_sub_case %}
+            </div>
+        </div>
+        <div class="row align-items-center" common name="timeout">
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="设置该步骤的超时值，如留空将使用测试套件设置的超时值"></i>&nbsp;超时设置</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.timeout %}
+            </div>
+        </div>
+        <div class="row align-items-center" common name="save_as">
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="尝试把获取的元素或表达式计算结果保存为变量"></i>&nbsp;结果另存</div>
+            <div class="col mx-auto" form_data>
+                {% include 'main/include/form_input.html' with field=form.save_as %}
             </div>
         </div>
 

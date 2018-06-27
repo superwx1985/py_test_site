@@ -550,7 +550,7 @@ def run(excel_file, tc_id=1, variables=None, result_dir=None, base_timeout=10, g
                     variable_elements = vic_variables.get_elements(locator, variables)
                 elif by == 'public element':
                     origin_locator = locator
-                    by, locator = method.get_public_elements(origin_locator, public_elements)
+                    by, locator = method.get_public_elements(locator, public_elements)
                 run_result, js_result = method.run_js(dr=dr, by=by, locator=locator, data=data, timeout=timeout,
                                                       index_=index, base_element=base_element,
                                                       variable_elements=variable_elements)
@@ -575,7 +575,7 @@ def run(excel_file, tc_id=1, variables=None, result_dir=None, base_timeout=10, g
                 if js_result != True:
                     run_result = ('f', run_result[1])
                 if origin_locator is not None:
-                    step_data_dict['locator'] = '%s [%s|%s]' % (origin_locator, by, locator)
+                    step_data_dict['locator'] = '%s [%s|%s]' % (locator, by, locator)
                 if save_as != '':
                     variables.set_variable(save_as, js_result)
 

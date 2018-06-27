@@ -53,7 +53,7 @@ class Step(models.Model):
     ui_by = models.IntegerField(choices=ui_by_list, default=0)
     ui_locator = models.TextField(blank=True)
     ui_index = models.IntegerField(blank=True, null=True)
-    ui_base_element = models.TextField(blank=True)
+    ui_base_element = models.CharField(max_length=1000, blank=True)
     ui_data = models.TextField(blank=True)
     ui_special_action_list = (
         (0, ''),
@@ -74,16 +74,16 @@ class Step(models.Model):
     )
     ui_special_action = models.IntegerField(choices=ui_special_action_list, default=0)
     ui_alert_handle_list = (
-        (0, ''),
-        (1, 'accept'),
-        (2, 'dismiss'),
-        (3, 'ignore'),
+        (1, '确定'),
+        (2, '取消'),
+        (3, '忽略'),
     )
-    ui_alert_handle = models.IntegerField(choices=ui_alert_handle_list, default=0)
+    ui_alert_handle = models.IntegerField(choices=ui_alert_handle_list, default=1)
     api_url = models.TextField(blank=True)
     api_headers = models.TextField(blank=True)
     api_body = models.TextField(blank=True)
     api_data = models.TextField(blank=True)
+    other_data = models.TextField(blank=True)
     other_sub_case = models.ForeignKey('main.Case', on_delete=models.DO_NOTHING, blank=True, null=True, related_name='step_sub_case')
 
     class Meta:
@@ -133,6 +133,11 @@ class Action(models.Model):
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
     type = models.ForeignKey('main.ActionType', on_delete=models.DO_NOTHING)
+    order = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = ('name', 'type')
+        ordering = ['type', 'order']
 
     @property
     def full_name(self):

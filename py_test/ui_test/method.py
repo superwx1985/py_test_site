@@ -669,22 +669,26 @@ def confirm_alert(dr, alert_handle, timeout, print_=True):
 
 
 # 尝试切换window或tap
-def try_to_switch_to_window(dr, by, locator, timeout, base_element, print_=True):
+def try_to_switch_to_window(dr, by, locator, index_, timeout, base_element, print_=True):
     logger = get_thread_logger()
-    current_window = dr.current_window_handle
+    current_window_handle = dr.current_window_handle
     start_time = time.time()
     last_print_time = 0
     success_ = False
     new_window_handle = None
+    if index_ is None:
+        index_ = 0
     from selenium.common.exceptions import NoSuchWindowException
     while (time.time() - start_time) <= timeout:
         for window_handle in dr.window_handles:
-            if window_handle != current_window:
+            if window_handle != current_window_handle:
                 dr.switch_to.window(window_handle)
                 if by != '' and locator != '':
                     run_result_temp, elements = wait_for_element_present(dr, by, locator, 1, base_element=base_element,
                                                                          variable_elements=None, print_=False)
-                    if run_result_temp[0] == 'p':
+                    if index_ > (len(elements) - 1):
+                        continue
+                    else:
                         new_window_handle = window_handle
                         success_ = True
                         break
