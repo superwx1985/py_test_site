@@ -285,37 +285,37 @@
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">基础超时设置</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="设置本次测试的默认超时值。如果步骤单独设置了超时值，将使用步骤的超时值"></i>&nbsp;全局超时设置</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.base_timeout %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">UI测试截图</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试的验证步骤时是否自动截图"></i>&nbsp;自动截图</div>
             <div class="col" form_data>
                 {% include 'main/include/form_checkbox.html' with field=form.ui_get_ss %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">日志级别</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="本次测试的日志详细程度"></i>&nbsp;日志级别</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.log_level %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">启用线程数</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="可同时运行的用例数量。设置更高的值可以加快测试速度，但会打乱用例执行顺序，导致一些意外情况。"></i>&nbsp;测试线程池</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.thread_count %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">测试配置</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的配置项"></i>&nbsp;测试配置</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.config %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">公共变量组</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的公共变量组。如果用例中单独设置了变量组，或测试过程中定义了同名变量，将使用内部变量代替公共变量"></i>&nbsp;公共变量组</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.variable_group %}
             </div>

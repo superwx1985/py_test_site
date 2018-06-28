@@ -23,7 +23,8 @@ class CaseAdmin(admin.ModelAdmin):
 
 
 class ActionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active', 'type')
+    list_display = (
+        'id', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active', 'type', 'order')
     list_display_links = ('id', 'name',)
     list_filter = ('type',)
 

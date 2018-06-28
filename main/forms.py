@@ -145,6 +145,8 @@ class SuiteForm(forms.ModelForm):
     modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
     is_active = forms.CharField(required=False)
     case = forms.CharField(required=False, validators=[])
+    # 限制线程数最大值
+    thread_count = forms.IntegerField(initial=1, min_value=1, max_value=8)
 
     class Meta:
         model = Suite

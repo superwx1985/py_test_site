@@ -324,6 +324,25 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
             if save_as != '':
                 variables.set_variable(save_as, js_result)
 
+        # 保存元素变量
+        elif step_action.pk == 27:
+            if save_as == '':
+                raise ValueError('没有提供变量名')
+            if ui_by == '' or ui_locator == '':
+                raise ValueError('无效的定位方式或定位符')
+            variable_elements = None
+            if ui_by == 'variable':
+                variable_elements = vic_variables.get_elements(ui_locator, variables)
+            elif ui_by == 'public element':
+                ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
+            run_result, elements = method.wait_for_element_present(
+                dr=dr, by=ui_by, locator=ui_locator, timeout=timeout, base_element=ui_base_element,
+                variable_elements=variable_elements)
+            if run_result[0] == 'p':
+                variables.set_variable(save_as, elements)
+            else:
+                raise NoSuchElementException('无法保存变量，{}'.format(run_result[1]))
+
         # ===== API =====
         elif step_action.pk == 0:
             pass
@@ -343,7 +362,7 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
         # 保存用例变量或全局变量
         elif step_action.pk in (22, 23):
             if save_as == '':
-                raise ValueError('Missing value in "save_as" column')
+                raise ValueError('没有提供变量名')
             if other_data == '' and ui_by == '' and ui_locator == '':
                 if step_action.pk == 23:
                     msg = global_variables.set_variable(save_as, elements)

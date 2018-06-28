@@ -22,7 +22,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from PIL import Image
 from py_test.vic_tools import vic_find_object, vic_eval
 from py_test.vic_tools.vic_str_handle import change_string_to_digit
-from py_test.general.thread_log import get_thread_logger
+from py_test.general import thread_log
 
 
 # 获取浏览器driver
@@ -136,7 +136,7 @@ def highlight_for_a_moment(dr, elements, color='green', duration=0.5):
 
 # 等待文字出现
 def wait_for_text_present(dr, text, timeout, base_element, print_=True):
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     dr.implicitly_wait(0.5)
     elements = list()
     start_time = time.time()
@@ -192,7 +192,7 @@ def wait_for_text_present(dr, text, timeout, base_element, print_=True):
 # 等待字符串出现，包含定位符
 def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, base_element, variable_elements=None,
                                        print_=True):
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     dr.implicitly_wait(0.5)
     start_time = time.time()
     last_print_time = 0
@@ -252,7 +252,7 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
 
 # 等待元素出现
 def wait_for_element_present(dr, by, locator, timeout, base_element, variable_elements=None, print_=True):
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     elements = list()
     dr.implicitly_wait(0.5)
     start_time = time.time()
@@ -284,7 +284,7 @@ def wait_for_element_present(dr, by, locator, timeout, base_element, variable_el
 
 # 等待元素可见
 def wait_for_element_visible(dr, by, locator, timeout, base_element, variable_elements=None, print_=True):
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     elements = list()
     visible_elements = list()
     dr.implicitly_wait(0.5)
@@ -323,7 +323,7 @@ def wait_for_element_visible(dr, by, locator, timeout, base_element, variable_el
 # 等待元素可见，包含数量限制
 def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_element, variable_elements=None,
                                        print_=True):
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     start_time = time.time()
     last_print_time = 0
     compare_result = False
@@ -365,7 +365,7 @@ def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_elem
 
 # 等待元素消失
 def wait_for_element_disappear(dr, by, locator, timeout, base_element, variable_elements=None, print_=True):
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     visible_elements = list()
     dr.implicitly_wait(0.5)
     start_time = time.time()
@@ -414,7 +414,7 @@ def go_to_url(dr, url):
 
 # 等待页面跳转
 def wait_for_page_redirect(dr, new_url, timeout, print_=True):
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     is_passed = False
     start_time = time.time()
     last_print_time = 0
@@ -512,10 +512,30 @@ def try_to_enter(dr, by, locator, data, timeout, index_, base_element, variable_
     return run_result, elements
 
 
+# 获取特殊键组合
+def get_special_keys(data_):
+    logger = thread_log.get_thread_logger()
+    data_ = data_.replace('\\+', '#{$plus}#')
+    data_list = data_.split('+')
+    keys = list()
+    from selenium.webdriver.common.keys import Keys
+    for key_str in data_list:
+        key_str = key_str.replace('#{$plus}#', '+')
+        if key_str.find('$') == 0 and len(key_str) > 1:
+            try:
+                key_str = getattr(Keys, key_str.replace('$', '', 1).upper())
+            except AttributeError:
+                logger.warning('【{}】不是一个合法的特殊键，不进行转换'.format(key_str))
+            keys.append(key_str)
+        else:
+            keys.append(key_str)
+    return keys
+
+
 # 特殊动作
 def perform_special_action(dr, by, locator, data, timeout, index_, base_element, special_action, variables,
                            variable_elements=None, print_=True):
-    if variable_elements is None and by == '':
+    if by == '':
         elements = list()
         element = None
     else:
@@ -535,23 +555,6 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
         else:
             element = elements[index_]
 
-    def get_special_key(data_):
-        valid_keys = (
-            'NULL', 'CANCEL', 'HELP', 'BACKSPACE', 'BACK_SPACE', 'TAB', 'CLEAR', 'RETURN', 'ENTER', 'SHIFT',
-            'LEFT_SHIFT', 'CONTROL', 'LEFT_CONTROL', 'ALT', 'LEFT_ALT', 'PAUSE', 'ESCAPE', 'SPACE', 'PAGE_UP',
-            'PAGE_DOWN', 'END', 'HOME', 'LEFT', 'ARROW_LEFT', 'UP', 'ARROW_UP', 'RIGHT', 'ARROW_RIGHT', 'DOWN',
-            'ARROW_DOWN', 'INSERT', 'DELETE', 'SEMICOLON', 'EQUALS', 'NUMPAD0', 'NUMPAD1', 'NUMPAD2', 'NUMPAD3',
-            'NUMPAD4', 'NUMPAD5', 'NUMPAD6', 'NUMPAD7', 'NUMPAD8', 'NUMPAD9', 'MULTIPLY', 'ADD', 'SEPARATOR',
-            'SUBTRACT', 'DECIMAL', 'DIVIDE', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
-            'META', 'COMMAND')
-        if data_.find('$') == 0:
-            key = data_[1:]
-            if key.upper() in valid_keys:
-                from selenium.webdriver.common.keys import Keys
-                data_ = eval('Keys.%s' % key, {'Keys': Keys})
-
-        return data_
-
     if special_action == 'click':
         ActionChains(dr).click(element).perform()
 
@@ -570,29 +573,29 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
     elif special_action == 'move_by_offset':
         data = data.split(',')
         if len(data) < 2:
-            raise ValueError('必须指定一组目标坐标')
+            raise ValueError('必须指定一组偏移坐标')
         xoffset = change_string_to_digit(data[0].strip())
         yoffset = change_string_to_digit(data[1].strip())
         ActionChains(dr).move_by_offset(xoffset, yoffset).perform()
 
     elif special_action == 'move_to_element':
         if not isinstance(element, WebElement):
-            raise ValueError('必须指定一个被操作元素')
+            raise ValueError('必须指定一个元素')
         ActionChains(dr).move_to_element(element).perform()
 
     elif special_action == 'move_to_element_with_offset':
         if not isinstance(element, WebElement):
-            raise ValueError('必须指定一个被操作元素')
+            raise ValueError('必须指定一个元素')
         data = data.split(',')
         if len(data) < 2:
-            raise ValueError('必须指定一组目标坐标')
+            raise ValueError('必须指定一组偏移坐标')
         xoffset = change_string_to_digit(data[0].strip())
         yoffset = change_string_to_digit(data[1].strip())
         ActionChains(dr).move_to_element_with_offset(element, xoffset, yoffset).perform()
 
     elif special_action == 'drag_and_drop':
         if not isinstance(element, WebElement):
-            raise ValueError('必须指定一个被操作元素')
+            raise ValueError('必须指定一个元素')
         target_element = variables.get_elements(data)[0]
         if not isinstance(target_element, WebElement):
             raise ValueError('必须指定一个目标元素')
@@ -600,7 +603,7 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
 
     elif special_action == 'drag_and_drop_by_offset':
         if not isinstance(element, WebElement):
-            raise ValueError('必须指定一个被操作元素')
+            raise ValueError('必须指定一个元素')
         data = data.split(',')
         if len(data) < 2:
             raise ValueError('必须指定一组目标坐标')
@@ -615,17 +618,17 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
         ActionChains(dr).key_up(element).perform()
 
     elif special_action == 'send_keys':
-        data = get_special_key(data)
-        ActionChains(dr).send_keys(data).perform()
+        keys = get_special_keys(data)
+        ActionChains(dr).send_keys(keys).perform()
 
     elif special_action == 'send_keys_to_element':
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个被操作元素')
-        data = get_special_key(data)
-        ActionChains(dr).send_keys_to_element(element, data).perform()
+        keys = get_special_keys(data)
+        ActionChains(dr).send_keys_to_element(element, keys).perform()
 
     else:
-        raise ValueError('无法处理的特殊操作关键字[%s]' % special_action)
+        raise ValueError('无法处理的特殊操作[%s]' % special_action)
 
     run_result = ('p', '操作成功')
     return run_result, elements
@@ -633,7 +636,7 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
 
 # 处理浏览器弹窗
 def confirm_alert(dr, alert_handle, timeout, print_=True):
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     start_time = time.time()
     last_print_time = 0
     done = False
@@ -670,7 +673,7 @@ def confirm_alert(dr, alert_handle, timeout, print_=True):
 
 # 尝试切换window或tap
 def try_to_switch_to_window(dr, by, locator, index_, timeout, base_element, print_=True):
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     current_window_handle = dr.current_window_handle
     start_time = time.time()
     last_print_time = 0
@@ -713,7 +716,7 @@ def try_to_switch_to_window(dr, by, locator, index_, timeout, base_element, prin
 
 # 尝试切换frame
 def try_to_switch_to_frame(dr, by, locator, index_, timeout, base_element, print_=True):
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     if index_ is None:
         index_ = 0
     start_time = time.time()
@@ -751,7 +754,7 @@ def try_to_switch_to_frame(dr, by, locator, index_, timeout, base_element, print
 
 # 运行javascript
 def run_js(dr, by, locator, data, timeout, index_, base_element, variable_elements=None, print_=True):
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     if by in (None, ''):
         js_result = dr.execute_script(data)
     else:
@@ -880,7 +883,7 @@ def get_image_on_element(dr, element):
 
 # 下拉加载更多内容
 def scroll_down_for_loading(driver, wait_time=30, print_=True):
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     # driver.execute_script("arguments[0].scrollIntoView();")
     driver.execute_script("""
         (function () {
@@ -934,7 +937,7 @@ def scroll_to_height(dr, _to, _step, delay):
 
 # 生成截图路径
 def get_screenshot_full_name(file_name, base_path=os.getcwd()):
-    logger = get_thread_logger()
+    logger = thread_log.get_thread_logger()
     _name_list = os.path.splitext(file_name)
     from py_test.general.vic_method import check_name
     _name_result = check_name(_name_list[0])

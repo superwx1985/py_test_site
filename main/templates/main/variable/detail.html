@@ -74,7 +74,7 @@
                             'click', function() {
                                 delVariable(tr);
                             }).appendTo(tr);
-                        $('<td class="middle" col_del><i class="icon-trash icon-2x"></i></td>').on(
+                        $('<td class="middle" col_del><i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i></td>').on(
                             'click', function() {
                                 delVariable(tr);
                             }).appendTo(tr);
@@ -94,6 +94,8 @@
                     });
                 }
                 updateVariableIndex(true);
+                // 注册提示框
+                $('[data-toggle=tooltip]').tooltip();
             }
         }
         // 保存并更新变量列表
@@ -115,7 +117,7 @@
                 // 改变新增按钮为排序按钮
                 new_variable.children('td[col_move]').attr('moveable', '').empty().append('<i class="icon-sort icon-2x"></i>');
                 // 添加删除按钮
-                new_variable.children('td[col_del]').empty().append('<i class="icon-trash icon-2x"></i>').on(
+                new_variable.children('td[col_del]').empty().append('<i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i>').on(
                     'click', function() {
                         delVariable(new_variable);
                     });
@@ -125,6 +127,8 @@
                 $('#new_helper td[col_name] input').val('').focus();
                 $('#new_helper td[col_value] input').val('');
                 updateVariableIndex();
+                // 注册提示框
+                $('[data-toggle=tooltip]').tooltip();
                 return true;
             } else {
                 var errorDiv = $('<div class="invalid-feedback">' + checkResult + '</div>');
@@ -281,7 +285,7 @@
 {% block detail_inner_list %}
     <div id='variable' class="row">
         <div class="col text-center">
-            <h5 class="ui-widget-header">变量列表</h5>
+            <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="变量的加载是有序的，先加载的变量可以被后加载的变量调用"></i>&nbsp;变量列表</h5>
             <div class="ui-widget-content">
                 <table class="table table-sm table-bordered" style="width: 100%">
                     <colgroup>
@@ -291,10 +295,10 @@
                         <col style='width: 20%;'>
                         <col>
                     </colgroup>
-                    <thead class="thead-light"><tr><th></th><th></th><th>序号</th><th>名称</th><th>值</th></tr></thead>
+                    <thead class="thead-light"><tr><th></th><th></th><th>顺序</th><th>名称</th><th>值</th></tr></thead>
                     <tbody class="text-left">
                         <tr id="new_helper">
-                            <td class="middle" col_move><i class="icon-save icon-2x"></i></td>
+                            <td class="middle" col_move><i class="icon-save icon-2x" data-toggle="tooltip" title="保存"></i></td>
                             <td class="middle" col_del></td>
                             <td class="middle" col_index><span></span></td>
                             <td col_name><input placeholder="请输入变量名" class="form-control"></td>

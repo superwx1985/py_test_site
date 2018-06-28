@@ -37,8 +37,8 @@ class EvalObject:
         for k in self.__variable_dict.keys():
             if not isinstance(k, str):
                 raise ValueError('Variables\' key should be str class')
-            k = self.__left_separator + k.replace(self.__left_separator, '').replace(self.__right_separator,
-                                                                                     '') + self.__right_separator
+            k = self.__left_separator + k.replace(self.__left_separator, '').replace(
+                self.__right_separator, '') + self.__right_separator
             expression = expression.replace(k, '')
         return expression
 

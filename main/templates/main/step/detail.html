@@ -11,63 +11,113 @@
         $(function () {
             // 更新导航栏
             $('#nav_step').addClass('active');
-            // 触发展示Action相关内容
-            showActionField($('#id_action'));
-            // 注册Action变更
+            // 触发展示special_action相关内容，注意必须在触发action前触发
+            show_special_action_field($('#id_ui_special_action'));
+            // 注册special_action变更
+            $('#id_ui_special_action').off('change').change(function () {
+                show_special_action_field($(this));
+            });
+            // 触发展示action相关内容
+            show_action_field($('#id_action'));
+            // 注册action变更
             $('#id_action').off('change').change(function () {
-                showActionField($(this));
+                show_action_field($(this));
             });
             // 关闭遮罩
             $('#mask').hide();
         });
         // 展示Action相关内容
-        function showActionField($actionSelect) {
-            resetActionField();
+        function show_action_field($actionSelect) {
+            reset_action_field();
             var select_value = $actionSelect.find('option:selected').val();
             var select_text = $actionSelect.find('option:selected').text();
             if (select_text.indexOf('UI') === 0) {
                 if (select_value === '1') {
-                    $('#introduce').text('打开一个页面，请填入页面URL');
-                    $('[name=ui_data] .col-1').text('URL');
-                    $('[name=ui_alert_handle],[name=ui_data],[name=timeout]').show();
+                    $('#introduce span').text('打开一个页面，请填入页面URL');
+                    $('div[name=ui_data] .col-1').text('URL');
+                    $('div[name=ui_alert_handle],div[name=ui_data],div[name=timeout]').show();
                 } else if ($.inArray(select_value, ["26"]) >= 0) {
                     $('[other], [ui]').show();
                 } else if (select_value === '2') {
-                    $('#introduce').text('触发浏览器刷新页面操作');
-                    $('[name=ui_alert_handle],[name=timeout]').show();
+                    $('#introduce span').text('触发浏览器刷新页面操作');
+                    $('div[name=ui_alert_handle],div[name=timeout]').show();
                 } else if (select_value === '3') {
-                    $('#introduce').text('触发浏览器前进操作');
-                    $('[name=ui_alert_handle],[name=timeout]').show();
+                    $('#introduce span').text('触发浏览器前进操作');
+                    $('div[name=ui_alert_handle],div[name=timeout]').show();
                 } else if (select_value === '4') {
-                    $('#introduce').text('触发浏览器后退操作');
-                    $('[name=ui_alert_handle],[name=timeout]').show();
+                    $('#introduce span').text('触发浏览器后退操作');
+                    $('div[name=ui_alert_handle],div[name=timeout]').show();
                 } else if (select_value === '6') {
-                    $('#introduce').text('获取当前页面截图，如果提供了定位信息则只截取定位到的元素');
-                    $('div[ui]').show();
+                    $('#introduce span').text('获取当前页面截图，如果提供了定位信息则只截取定位到的元素');
+                    $('[ui],div[name=timeout]').show();
                     $('div[name=ui_data],div[name=ui_special_action]').hide();
-                    $('[name=timeout]').show();
                 } else if (select_value === '7') {
-                    $('#introduce').text('切换至页面内嵌的frame或iframe。如果提供了定位信息，则切换至定位到的元素绑定的frame，否则切换至索引值对应的frame');
-                    $('div[ui]').show();
+                    $('#introduce span').text('切换至页面内嵌的frame或iframe。如果提供了定位信息，则切换至定位到的元素绑定的frame，否则切换至索引值对应的frame');
+                    $('[ui],div[name=timeout]').show();
                     $('div[name=ui_data],div[name=ui_special_action]').hide();
-                    $('[name=timeout]').show();
                 } else if (select_value === '8') {
-                    $('#introduce').text('回到frame的上一级页面，如进入了多层frame，请使用多次该动作');
-                    $('[name=ui_alert_handle],[name=timeout]').show();
+                    $('#introduce span').text('回到frame的上一级页面，如进入了多层frame，请使用多次该动作');
+                    $('div[name=ui_alert_handle],div[name=timeout]').show();
                 } else if (select_value === '9') {
-                    $('#introduce').text('切换至浏览器的其他窗口或标签。如果提供了定位信息，则尝试在新窗口中定位元素，发现符合的元素则切换到对应的窗口，否则切换至任意一个非当前窗口');
-                    $('div[ui]').show();
+                    $('#introduce span').text('切换至浏览器的其他窗口或标签。如果提供了定位信息，则尝试在新窗口中定位元素，发现符合的元素则切换到对应的窗口，否则切换至任意一个非当前窗口');
+                    $('[ui],div[name=timeout]').show();
                     $('div[name=ui_data],div[name=ui_special_action]').hide();
-                    $('[name=timeout]').show();
-                } else if ($.inArray(select_value, ["14", "15", "17", "18", "19", "20", "21"]) >= 0) {
-                    $('div[ui]').show();
-                } else if ($.inArray(select_value, ["6", "12", "13"]) >= 0) {
-                    $('div[ui]').show();
+                } else if (select_value === '10') {
+                    $('#introduce span').text('关闭当前浏览器窗口或标签。如果关闭后需要继续测试，请使用切换窗口动作切换至正确的窗口再进行后续操作');
+                    $('div[name=ui_alert_handle],div[name=timeout]').show();
+                } else if (select_value === '11') {
+                    $('#introduce span').text('关闭浏览器，清空所有缓存，再重新打开浏览器');
+                    $('div[name=ui_alert_handle],div[name=timeout]').show();
+                } else if (select_value === '12') {
+                    $('#introduce span').text('在指定的元素上触发单击，如果找不到元素或元素当前不可用会报错');
+                    $('[ui],div[name=timeout]').show();
                     $('div[name=ui_data],div[name=ui_special_action]').hide();
-                } else if ($.inArray(select_value, ["5", "16"]) >= 0) {
-                    $('div[name=ui_alert_handle],div[name=ui_data]').show();
-                } else if ($.inArray(select_value, ["111"]) >= 0) {
-                    $('div[name=ui_alert_handle],div[name=ui_data]').show();
+                } else if (select_value === '13') {
+                    $('#introduce span').text('在指定的元素上触发双击，如果找不到元素或元素当前不可用会报错');
+                    $('[ui],div[name=timeout]').show();
+                    $('div[name=ui_data],div[name=ui_special_action]').hide();
+                } else if (select_value === '14') {
+                    $('#introduce span').text('在指定的元素里输入文字，如果找不到元素或元素当前不可用会报错');
+                    $('[ui],div[name=timeout]').show();
+                    $('div[name=ui_special_action]').hide();
+                    $('div[name=ui_data] .col-1').text('文字内容');
+                } else if (select_value === '15') {
+                    $('#introduce span').text('执行一些特殊的互动操作。请选择具体的特殊动作');
+                    $('div[name=ui_special_action],div[name=timeout]').show();
+                    show_special_action_field($('#id_ui_special_action'));
+                } else if (select_value === '16') {
+                    $('#introduce span').text('验证当前页面的URL是否匹配，待验证内容可以为字符串或表达式');
+                    $('div[name=ui_data] .col-1').text('待验证内容');
+                    $('div[name=ui_alert_handle],div[name=ui_data],div[name=timeout]').show();
+                } else if (select_value === '17') {
+                    $('#introduce span').text('验证页面是否包含文字（如果待验证内容是表达式，建议指定元素后验证）。如果指定了元素，则验证该元素是否包含文字');
+                    $('[ui],div[name=timeout]').show();
+                    $('div[name=ui_special_action]').hide();
+                    $('div[name=ui_data] .col-1').text('待验证内容');
+                } else if (select_value === '18') {
+                    $('#introduce span').text('验证页面是否包含指定元素，且该元素可见。可以通过数量表达式验证找到的元素数量，如果不提供表达式则表示找到任意数量的元素都可以通过验证');
+                    $('[ui],div[name=timeout]').show();
+                    $('div[name=ui_special_action]').hide();
+                    $('div[name=ui_data] .col-1').html('<i class="icon-question-sign" data-toggle="tooltip" title="在表达式中以$[x]$代表找到的元素数量，例如：1 < $[x]$ <= 5 代表找到的元素数量必须大于1且小于等于5"></i>&nbsp;数量表达式');
+                } else if (select_value === '19') {
+                    $('#introduce span').text('验证页面是否包含指定元素，且该元素不可见');
+                    $('[ui],div[name=timeout]').show();
+                    $('div[name=ui_special_action],div[name=ui_data]').hide();
+                } else if (select_value === '20') {
+                    $('#introduce span').text('在当前页面执行JavaScript代码。如果指定了元素，可以在代码中通过 arguments[0] 调用，例如：arguments[0].click()');
+                    $('[ui],div[name=timeout]').show();
+                    $('div[name=ui_special_action]').hide();
+                    $('div[name=ui_data] .col-1').text('js代码');
+                } else if (select_value === '21') {
+                    $('#introduce span').text('在当前页面执行JavaScript代码并验证结果是否为真。验证通过的条件是js代码执行后返回True，如果指定了元素，可以在代码中通过 arguments[0] 调用，例如：arguments[0].click()');
+                    $('[ui],div[name=timeout]').show();
+                    $('div[name=ui_special_action]').hide();
+                    $('div[name=ui_data] .col-1').text('js代码');
+                } else if (select_value === '27') {
+                    $('#introduce span').text('把指定的元素组保存为变量。为统一变量类型，即使定位到唯一元素也会作为元素组保存');
+                    $('[ui],div[name=timeout],div[name=save_as]').show();
+                    $('div[name=ui_special_action],div[name=ui_data]').hide();
+                } else if ($.inArray(select_value, ["test"]) >= 0) {
                 }
             } else if (select_text.indexOf('API') === 0) {
                 $('div[api]').show();
@@ -76,16 +126,92 @@
             } else if (select_text.indexOf('OTHER') === 0) {
                 $('div[other]').show();
             }
+            // 注册提示框
+            $('[data-toggle=tooltip]').tooltip();
         }
         // 还原Action相关内容
-        function resetActionField() {
-            $('#introduce').text('请选择动作');
-            $('[name=ui_data] .col-1').text('数据');
+        function reset_action_field() {
+            $('#introduce').empty().append($('<span>').addClass('mark').text('请选择动作'));
+            $('div[name=ui_data] .col-1').html('数据');
             $('[common]').hide();
             $('[ui]').hide();
             $('[api]').hide();
             $('[db]').hide();
             $('[other]').hide();
+            // 注册提示框
+            $('[data-toggle=tooltip]').tooltip();
+        }
+        // 展示SpecialAction相关内容
+        function show_special_action_field($actionSelect) {
+            reset_special_action_field();
+            var select_value = $actionSelect.find('option:selected').val();
+            if (select_value === '1') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('在指定的元素上触发单击，不指定元素则在当前鼠标位置触发'));
+                $('[ui]').show();
+                $('div[name=ui_data]').hide();
+            } else if (select_value === '2') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('在指定的元素上点击后不释放，不指定元素则在当前鼠标位置触发'));
+                $('[ui]').show();
+                $('div[name=ui_data]').hide();
+            } else if (select_value === '3') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('在指定的元素上触发右键单击，不指定元素则在当前鼠标位置触发'));
+                $('[ui]').show();
+                $('div[name=ui_data]').hide();
+            } else if (select_value === '4') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('在指定的元素上触发双击，不指定元素则在当前鼠标位置触发'));
+                $('[ui]').show();
+                $('div[name=ui_data]').hide();
+            } else if (select_value === '5') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('释放鼠标按键'));
+                $('div[name=ui_alert_handle]').show();
+            } else if (select_value === '6') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('鼠标从当前位置偏移一定距离。偏移量x,y为一对半角逗号分隔的数字（单位：像素，水平方向为x轴，左负右正，垂直方向为y轴，上正下负），例如：300,200'));
+                $('div[name=ui_alert_handle],div[name=ui_data]').show();
+                $('div[name=ui_data] .col-1').text('偏移量');
+            } else if (select_value === '7') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('鼠标从当前位置移动到一个元素（通过定位信息指定）的中间'));
+                $('[ui]').show();
+                $('div[name=ui_data]').hide();
+            } else if (select_value === '8') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('鼠标从当前位置移动到一个元素（通过定位信息指定）的左上角，然后偏移一定距离。偏移量x,y为一对半角逗号分隔的数字（单位：像素，水平方向为x轴，左负右正，垂直方向为y轴，上正下负），例如：300,200'));
+                $('[ui]').show();
+                $('div[name=ui_data] .col-1').text('偏移量');
+            } else if (select_value === '9') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('把一个元素（通过定位信息指定）拖动到目标元素（一个已预先保存为变量的元素）中间'));
+                $('[ui]').show();
+                $('div[name=ui_data] .col-1').html('<i class="icon-question-sign" data-toggle="tooltip" title="需在之前的步骤预先保存，使用${变量名}$调用"></i>&nbsp;目标元素');
+            } else if (select_value === '10') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('把一个元素（通过定位信息指定）拖动偏移一定距离。偏移量x,y为一对半角逗号分隔的数字（单位：像素，水平方向为x轴，左负右正，垂直方向为y轴，上正下负），例如：300,200'));
+                $('[ui]').show();
+                $('div[name=ui_data] .col-1').text('偏移量');
+            } else if (select_value === '11') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('在指定的元素里按下某个键盘按钮不释放，该方法应只用于发送修饰键（shift，ctrl，alt），否则会导致输入的字符长度不可预期。不指定元素则在当前焦点所在元素触发'));
+                $('[ui]').show();
+                $('div[name=ui_data] .col-1').html('<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头"></i>&nbsp;文字内容');
+            } else if (select_value === '12') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('在指定的元素里释放某个键盘按钮。不指定元素则在当前焦点所在元素触发'));
+                $('[ui]').show();
+                $('div[name=ui_data] .col-1').html('<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头"></i>&nbsp;文字内容');
+            } else if (select_value === '13') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('向当前焦点所在元素里发送按键（组），修饰键发送一次后一直有效，直到出现相同的修饰键'));
+                $('div[name=ui_alert_handle],div[name=ui_data]').show();
+                $('div[name=ui_data] .col-1').html('<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头，多个特殊按键以+分隔，连续的普通按键可以不分隔，如需输入正常的$和+请用\\转义，如\\$，\\+"></i>&nbsp;按键（组）');
+            } else if (select_value === '14') {
+                $('#introduce').empty().append($('<span>').addClass('mark').text('向指定的元素发送按键（组），修饰键发送一次后一直有效，直到出现相同的修饰键'));
+                $('[ui]').show();
+                $('div[name=ui_data] .col-1').html('<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头，多个特殊按键以+分隔，连续的普通按键可以不分隔，如需输入正常的$和+请用\\转义，如\\$，\\+"></i>&nbsp;按键（组）');
+            }
+            // 注册提示框
+            $('[data-toggle=tooltip]').tooltip();
+        }
+        // 还原special_action相关内容
+        function reset_special_action_field() {
+            $('#introduce').empty().append($('<span>').addClass('mark').text('执行一些特殊的互动操作。请选择具体的特殊动作'));
+            $('div[name=ui_data] .col-1').html('数据');
+            $('[ui]').hide();
+            $('div[name=ui_special_action]').show();
+            // 注册提示框
+            $('[data-toggle=tooltip]').tooltip();
         }
     </script>
 {% endblock %}
@@ -132,7 +258,13 @@
         <div class="row align-items-center" base>
             <div class="col-1 text-center font-weight-bold">说明</div>
             <div class="col">
-                <span id="introduce" class="mark">请选择动作</span>
+                <div id="introduce"><span class="mark">请选择动作</span></div>
+            </div>
+        </div>
+        <div class="row align-items-center" ui name="ui_special_action">
+            <div class="col-1 text-center font-weight-bold">特殊动作</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.ui_special_action %}
             </div>
         </div>
         <div class="row align-items-center" ui name="ui_by">
@@ -163,12 +295,6 @@
             <div class="col-1 text-center font-weight-bold">数据</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.ui_data rows='2' %}
-            </div>
-        </div>
-        <div class="row align-items-center" ui name="ui_special_action">
-            <div class="col-1 text-center font-weight-bold">特殊动作</div>
-            <div class="col" form_data>
-                {% include 'main/include/form_input.html' with field=form.ui_special_action %}
             </div>
         </div>
         <div class="row align-items-center" ui name="ui_alert_handle">
@@ -204,7 +330,7 @@
         <div class="row align-items-center" other>
             <div class="col-1 text-center font-weight-bold">表达式</div>
             <div class="col" form_data>
-                {% include 'main/include/form_input.html' with field=form.other_sub_case %}
+                {% include 'main/include/form_textarea.html' with field=form.other_data rows='2'%}
             </div>
         </div>
         <div class="row align-items-center" other>
@@ -214,13 +340,13 @@
             </div>
         </div>
         <div class="row align-items-center" common name="timeout">
-            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="设置该步骤的超时值，如留空将使用测试套件设置的超时值"></i>&nbsp;超时设置</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="设置该步骤的超时值，如留空将使用测试套件设置的全局超时值"></i>&nbsp;超时设置</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.timeout %}
             </div>
         </div>
         <div class="row align-items-center" common name="save_as">
-            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="尝试把获取的元素或表达式计算结果保存为变量"></i>&nbsp;结果另存</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="填入要保存的变量名称，不能包含 ${  }$"></i>&nbsp;变量名</div>
             <div class="col mx-auto" form_data>
                 {% include 'main/include/form_input.html' with field=form.save_as %}
             </div>
