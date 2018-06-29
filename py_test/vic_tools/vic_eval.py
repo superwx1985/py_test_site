@@ -107,13 +107,13 @@ class EvalObject:
             if value != '':
                 try:
                     ast.literal_eval(value)
-                except ValueError:
+                except:
                     result = False
                     invalid_value_list.append(value)
                     self.logger.error('Invalid value [%s] ' % value)
                     if self.logger.level < 10:
                         raise
-        e = ValueError('Invalid value list:\n' + str(invalid_value_list))
+        e = ValueError('Invalid value list: {}'.format(invalid_value_list))
         return result, e
 
     # 替换表达式中的变量
@@ -155,7 +155,7 @@ class EvalObject:
                 if self.logger.level < 10:
                     raise
             else:
-                self.logger.debug('Final expression:', final_expression)
+                self.logger.debug('Final expression:{}'.format(final_expression))
                 try:
                     eval_result = eval(final_expression)
                     success = True

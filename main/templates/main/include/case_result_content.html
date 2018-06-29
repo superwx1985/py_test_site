@@ -1,10 +1,18 @@
 {% include 'main/include/result_time.html' with start_date=case_result.start_date end_date=case_result.end_date elapsed_time_str=case_result.elapsed_time_str%}
 <div class="row">
-    <div class="col"><span class="font-weight-bold">{{ case_result.name }}</span></div>
+    <div class="col"><span class="font-weight-bold">用例名称：</span><span>{{ case_result.name }}</span></div>
 </div>
 <div class="row">
     <div class="col"><span class="small">{{ case_result.description }}</span></div>
 </div>
+{% if case_result.result_error %}
+    <div class="row">
+        <div class="col"><pre class="lead">{{ case_result.result_message }}</pre></div>
+    </div>
+    <div class="row">
+        <div class="col"><pre class="text-danger pre-scrollable">{{ case_result.result_error }}</pre></div>
+    </div>
+{% endif %}
 <div class="table-responsive" id='result_table'>
     <table class="table table-bordered table-hover">
         <colgroup>

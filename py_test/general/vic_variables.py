@@ -78,7 +78,7 @@ def get_variable_dict(variables=None):
     dict_ = global_variables.variable_dict
     if isinstance(variables, Variables):
         local_dict_ = variables.variable_dict
-    {**dict_, **local_dict_}
+        dict_ = {**dict_, **local_dict_}
     return dict_
 
 

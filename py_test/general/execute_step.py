@@ -107,9 +107,10 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
 
     try:
         # 设置selenium超时时间
-        dr.implicitly_wait(timeout)
-        dr.set_page_load_timeout(timeout)
-        dr.set_script_timeout(timeout)
+        if dr is not None:
+            dr.implicitly_wait(timeout)
+            dr.set_page_load_timeout(timeout)
+            dr.set_script_timeout(timeout)
 
         # ===== UI =====
         # 打开URL
@@ -359,61 +360,53 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
             else:
                 time.sleep(timeout)
 
-        # 保存用例变量或全局变量
-        elif step_action.pk in (22, 23):
+        # 保存用例变量
+        elif step_action.pk == 22:
             if save_as == '':
                 raise ValueError('没有提供变量名')
-            if other_data == '' and ui_by == '' and ui_locator == '':
-                if step_action.pk == 23:
-                    msg = global_variables.set_variable(save_as, elements)
+            elif other_data == '':
+                raise ValueError('没有提供表达式')
+            else:
+                eo = vic_eval.EvalObject(other_data, vic_variables.get_variable_dict(variables))
+                eval_success, eval_result, final_expression = eo.get_eval_result()
+                if eval_success:
+                    variables.set_variable(save_as, eval_result)
+                    run_result = (
+                        'p', '计算表达式：{}\n结果为：{}\n保存到局部变量【{}】'.format(final_expression, eval_result, save_as))
+
                 else:
-                    msg = variables.set_variable(save_as, elements)
-            elif other_data != '':
-                if '#{str}#' not in other_data:  # 尝试转换data为数字
-                    try:
-                        other_data = int(other_data)
-                    except ValueError:
-                        try:
-                            other_data = float(other_data)
-                        except ValueError:
-                            pass
-                else:
-                    other_data = other_data.replace('#{str}#', '')
-                if step_action.pk == 23:
-                    msg = global_variables.set_variable(save_as, other_data)
-                else:
-                    msg = variables.set_variable(save_as, other_data)
-            elif ui_by != '' and ui_locator != '':
-                if dr is None:
-                    raise ValueError('浏览器未启动')
-                run_result, elements = method.wait_for_element_present(
-                    dr=dr, by=ui_by, locator=ui_locator, timeout=timeout, base_element=ui_base_element)
-                if run_result[0] == 'f':
-                    raise NoSuchElementException(run_result[1])
-                if step_action.pk == 23:
-                    msg = global_variables.set_variable(save_as, elements)
-                else:
-                    msg = variables.set_variable(save_as, elements)
-            run_result = ('p', msg)
+                    raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
 
         # 保存全局变量
         elif step_action.pk == 23:
-            pass
+            if save_as == '':
+                raise ValueError('没有提供变量名')
+            elif other_data == '':
+                raise ValueError('没有提供表达式')
+            else:
+                eo = vic_eval.EvalObject(other_data, vic_variables.get_variable_dict(variables))
+                eval_success, eval_result, final_expression = eo.get_eval_result()
+                if eval_success:
+                    global_variables.set_variable(save_as, eval_result)
+                    run_result = (
+                        'p', '计算表达式：{}\n结果为：{}\n保存到全局变量【{}】'.format(final_expression, eval_result, save_as))
+                else:
+                    raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
 
         # 计算表达式
-        elif step_action.pk == 24:
-            if other_data == '':
-                raise ValueError('未提供表达式')
-            eo = vic_eval.EvalObject(other_data, vic_variables.get_variable_dict(variables))
-            eval_success, eval_result, final_expression = eo.get_eval_result()
-            if eval_success:
-                calculate_result = eval_result
-                run_result = ('p', final_expression + '/n' + str(eval_result))
-                if save_as != '':
-                    variables.set_variable(save_as, calculate_result)
-            else:
-                run_result = (
-                    'f', '不合法的表达式 [' + final_expression + ']\n不合法的变量列表：' + str(eval_result))
+        # elif step_action.pk == 24:
+        #     if other_data == '':
+        #         run_result = ('f', '没有提供表达式')
+        #     else:
+        #         eo = vic_eval.EvalObject(other_data, vic_variables.get_variable_dict(variables))
+        #         eval_success, eval_result, final_expression = eo.get_eval_result()
+        #         if eval_success:
+        #             calculate_result = eval_result
+        #             run_result = ('p', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result))
+        #             if save_as != '':
+        #                 variables.set_variable(save_as, calculate_result)
+        #         else:
+        #             run_result = ('f', '不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
 
         # 验证表达式
         elif step_action.pk == 25:
@@ -423,12 +416,11 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
             eval_success, eval_result, final_expression = eo.get_eval_result()
             if eval_success:
                 if eval_result is True:
-                    run_result = ('p', final_expression + '/n' + str(eval_result))
+                    run_result = ('p', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result))
                 else:
-                    run_result = ('f', final_expression + '/n' + str(eval_result))
+                    run_result = ('f', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result))
             else:
-                run_result = (
-                    'f', '不合法的表达式 [' + final_expression + ']\n不合法的变量列表：' + str(eval_result))
+                raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
 
         # 调用子用例
         elif step_action.pk == 26:

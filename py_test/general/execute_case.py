@@ -112,7 +112,7 @@ def execute_case(case, suite_result, case_order, user, execute_str, variables=No
         dr.quit()
         del dr
 
-    if case_result.error_count > 0:
+    if case_result.error_count > 0 or case_result.result_error != '':
         case_result.result_status = 3
     elif case_result.fail_count > 0:
         case_result.result_status = 2

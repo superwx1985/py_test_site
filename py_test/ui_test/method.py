@@ -773,7 +773,7 @@ def run_js(dr, by, locator, data, timeout, index_, base_element, variable_elemen
             js_result = dr.execute_script(data, elements[index_])
     if isinstance(js_result, WebElement):
         js_result = [js_result]
-    msg = 'js执行完毕，返回值为：\n%s' % js_result
+    msg = 'JavaScript执行完毕，返回值为：\n%s' % js_result
     if print_:
         logger.debug(msg)
     run_result = ('p', msg)
