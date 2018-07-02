@@ -294,6 +294,12 @@
                 {% include 'main/include/form_input.html' with field=form.variable_group %}
             </div>
         </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">项目</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.project %}
+            </div>
+        </div>
 
         <input type="text" name="step" id="id_step" hidden>
         {% include 'main/include/detail_redirect.html' %}

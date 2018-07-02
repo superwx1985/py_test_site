@@ -14,6 +14,7 @@ class Case(models.Model):
     is_active = models.BooleanField(default=True)
     variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.DO_NOTHING, blank=True, null=True)
     step = models.ManyToManyField('Step', through='CaseVsStep', through_fields=('case', 'step'))
+    project = models.ForeignKey('main.Project', on_delete=models.DO_NOTHING)
 
     class Meta:
         pass
@@ -85,6 +86,7 @@ class Step(models.Model):
     api_data = models.TextField(blank=True)
     other_data = models.TextField(blank=True)
     other_sub_case = models.ForeignKey('main.Case', on_delete=models.DO_NOTHING, blank=True, null=True, related_name='step_sub_case')
+    project = models.ForeignKey('main.Project', on_delete=models.DO_NOTHING)
 
     class Meta:
         # db_table = 'test_case_step'
@@ -269,6 +271,7 @@ class Suite(models.Model):
     config = models.ForeignKey('main.Config', on_delete=models.DO_NOTHING)
     variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.DO_NOTHING, blank=True, null=True)
     case = models.ManyToManyField('Case', through='SuiteVsCase', through_fields=('suite', 'case'))
+    project = models.ForeignKey('main.Project', on_delete=models.DO_NOTHING)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return self.name
@@ -310,6 +313,7 @@ class SuiteResult(models.Model):
     thread_count = models.IntegerField(default=1)
     config = models.TextField(blank=True, null=True)
     variable_group = models.TextField(blank=True, null=True)
+    project = models.ForeignKey('main.Project', on_delete=models.DO_NOTHING)
 
     suite = models.ForeignKey('main.Suite', on_delete=models.DO_NOTHING)
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='suite_result_creator',
@@ -442,3 +446,16 @@ class StepResult(models.Model):
 class Image(models.Model):
     name = models.CharField(max_length=100)
     img = models.ImageField(upload_to='img')
+
+
+class Project(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(blank=True, max_length=100)
+    order = models.FloatField(default=0)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.name

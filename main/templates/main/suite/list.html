@@ -55,17 +55,21 @@
         <table class="table table-bordered table-hover">
             <colgroup>
                 <col style='width: 80px;'>
+                <col style='width: 80px;'>
                 <col>
                 <col style='width: 200px;'>
-                <col style='width: 400px;'>
-                <col style='width: 100px;'>
+                <col style='width: 150px;'>
+                <col style='width: 300px;'>
+                <col style='width: 80px;'>
                 <col style='width: 160px;'>
             </colgroup>
             <thead class="thead-light middle">
                 <tr>
+                    <th>序号</th>
                     <th order_by_text="pk">ID</th>
                     <th order_by_text="name">名称</th>
                     <th order_by_text="keyword">关键字</th>
+                    <th order_by_text="project__name">项目</th>
                     <th order_by_text="config__name">配置</th>
                     <th order_by_text="m2m_count">用例数</th>
                     <th>操作</th>
@@ -74,9 +78,11 @@
             <tbody>
                 {% for object in objects %}
                     <tr pk="{{ object.pk }}" edit_url="{% url 'suite' object.pk %}" quick_update_url="{% url 'suite_quick_update' object.pk %}" del_url="{% url 'suite_delete' object.pk %}" exe_url="{% url 'suite_execute' object.pk %}">
+                        <td col_name='index' class="middle"></td>
                         <td col_name='id' class="middle">{{ object.pk }}</td>
                         <td quick_update col_name='name' class="align-middle">{{ object.name }}</td>
                         <td quick_update col_name='keyword' class="align-middle">{{ object.keyword }}</td>
+                        <td col_name='project__name' class="middle">{{ object.project__name }}</td>
                         <td col_name='config__name' class="align-middle">{{ object.config__name }}</td>
                         <td col_name='step_count' class="middle">{{ object.m2m_count }}</td>
                         <td>

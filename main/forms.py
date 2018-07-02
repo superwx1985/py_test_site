@@ -1,5 +1,5 @@
 from django import forms
-from .models import *
+from main.models import *
 from django.contrib.auth.models import User
 
 
@@ -157,3 +157,7 @@ class SuiteResultForm(forms.Form):
     name = forms.CharField(max_length=100)
     description = forms.CharField(required=False, widget=forms.Textarea())
     keyword = forms.CharField(required=False, max_length=100)
+    project_list = list()
+    project_list.append((None, '---------'))
+    project_list.extend(list(Project.objects.values_list('pk', 'name')))
+    project = forms.ChoiceField(choices=project_list)

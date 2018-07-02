@@ -9,7 +9,7 @@ from django.db.models import F, CharField, Value, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from main.models import SuiteResult, StepResult, CaseResult
+from main.models import SuiteResult, StepResult, CaseResult, Project
 from main.forms import OrderByForm, PaginatorForm, SuiteResultForm
 from main.views.general import get_query_condition
 from django.forms.models import model_to_dict
@@ -51,10 +51,10 @@ def results(request):
     q = get_query_condition(keyword_list)
     if own:
         objects = SuiteResult.objects.filter(q, is_active=True, creator=request.user).order_by('-start_date').values(
-            'pk', 'name', 'keyword', 'start_date', 'result_status')
+            'pk', 'name', 'keyword', 'project__name', 'start_date', 'result_status')
     else:
         objects = SuiteResult.objects.filter(q, is_active=True).order_by('-start_date').values(
-            'pk', 'name', 'keyword',  'start_date', 'result_status')
+            'pk', 'name', 'keyword', 'project__name',  'start_date', 'result_status')
     result_status_list = SuiteResult.result_status_list
     d = {l[0]: l[1] for l in result_status_list}
     for o in objects:
@@ -91,7 +91,8 @@ def result(request, pk):
         raise Http404('SuiteResult does not exist')
     sub_objects = obj.caseresult_set.filter(step_result=None).order_by('case_order')
     if request.method == 'GET':
-        form = SuiteResultForm(initial={'name': obj.name, 'description': obj.description, 'keyword': obj.keyword})
+        form = SuiteResultForm(initial={
+            'name': obj.name, 'description': obj.description, 'keyword': obj.keyword, 'project': obj.project.pk})
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
@@ -104,6 +105,12 @@ def result(request, pk):
             obj.name = form.data['name']
             obj.description = form.data['description']
             obj.keyword = form.data['keyword']
+            project_pk = form.data['project']
+            try:
+                project = Project.objects.get(pk=project_pk)
+                obj.project = project
+            except Project.DoesNotExist:
+                logger.warning('ID为[{}]的项目不存在'.format(project_pk))
             obj.modifier = request.user
             obj.clean_fields()
             obj.save()

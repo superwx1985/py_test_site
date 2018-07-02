@@ -50,10 +50,11 @@ def suites(request):
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
     if own:
-        objects = Suite.objects.filter(q, is_active=True, creator=request.user).values('pk', 'name', 'keyword',
-                                                                                       'config__name')
+        objects = Suite.objects.filter(q, is_active=True, creator=request.user).values(
+            'pk', 'name', 'keyword', 'project__name', 'config__name')
     else:
-        objects = Suite.objects.filter(q, is_active=True).values('pk', 'name', 'keyword', 'config__name')
+        objects = Suite.objects.filter(q, is_active=True).values(
+            'pk', 'name', 'keyword', 'project__name', 'config__name')
     objects2 = Suite.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(m2m_count=Count('case'))
     count_ = {o['pk']: o['m2m_count'] for o in objects2}
     for o in objects:

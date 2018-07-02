@@ -72,7 +72,19 @@ class SuiteVsCaseAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'suite_id', 'suite', 'case_id', 'case', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',
         'order')
-    list_display_links = ('id', 'suite', 'case')
+    list_display_links = ('id', 'suite', 'case',)
+
+
+class ImageAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 'name', 'img')
+    list_display_links = ('id', 'name',)
+
+
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = (
+        'id', 'name', 'keyword', 'order')
+    list_display_links = ('id', 'name',)
 
 
 admin.site.register(Case, CaseAdmin)
@@ -85,3 +97,5 @@ admin.site.register(VariableGroup, VariableGroupAdmin)
 admin.site.register(Variable, VariableAdmin)
 admin.site.register(Suite, SuiteAdmin)
 admin.site.register(SuiteVsCase, SuiteVsCaseAdmin)
+admin.site.register(Image, ImageAdmin)
+admin.site.register(Project, ProjectAdmin)

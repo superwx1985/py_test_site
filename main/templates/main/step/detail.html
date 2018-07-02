@@ -265,6 +265,12 @@
             </div>
         </div>
         <div class="row align-items-center" base>
+            <div class="col-1 text-center font-weight-bold">项目</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.project %}
+            </div>
+        </div>
+        <div class="row align-items-center" base>
             <div class="col-1 text-center font-weight-bold">动作</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.action %}

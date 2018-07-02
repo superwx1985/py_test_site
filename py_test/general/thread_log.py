@@ -27,14 +27,14 @@ def get_thread_logger(level=None):
     if logger_name not in thread_loggers:
         thread_logger = logging.getLogger('py_test.{}'.format(logger_name))
 
-        debug_trfh = logging.handlers.TimedRotatingFileHandler(
-            filename=os.path.join(THREAD_LOG_DIR, '{}_debug.log'.format(logger_name)), when='d', interval=1,
-            backupCount=7, encoding='utf-8')
+        debug_trfh = logging.handlers.RotatingFileHandler(
+            filename=os.path.join(THREAD_LOG_DIR, '{}_debug.log'.format(logger_name)), maxBytes=1024*1024*100,
+            backupCount=1, encoding='utf-8')
         debug_trfh.setLevel(logging.DEBUG)
 
-        error_trfh = logging.handlers.TimedRotatingFileHandler(
-            filename=os.path.join(THREAD_LOG_DIR, '{}_error.log'.format(logger_name)), when='d', interval=1,
-            backupCount=30, encoding='utf-8')
+        error_trfh = logging.handlers.RotatingFileHandler(
+            filename=os.path.join(THREAD_LOG_DIR, '{}_error.log'.format(logger_name)), maxBytes=1024*1024*100,
+            backupCount=1, encoding='utf-8')
         error_trfh.setLevel(logging.ERROR)
 
         thread_logger.addHandler(debug_trfh)

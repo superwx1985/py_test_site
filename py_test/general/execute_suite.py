@@ -47,6 +47,7 @@ def execute_suite(request, suite):
         thread_count=suite.thread_count,
         config=json.dumps(model_to_dict(suite.config)) if suite.config else None,
         variable_group=json.dumps(model_to_dict(suite.variable_group)) if suite.variable_group else None,
+        project=suite.project,
 
         suite=suite,
         creator=request.user,

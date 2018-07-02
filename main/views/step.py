@@ -50,11 +50,12 @@ def steps(request):
     q = get_query_condition(keyword_list)
     if own:
         objects = Step.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword').annotate(
-            action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+            'pk', 'name', 'keyword', 'project__name', 'creator__username').annotate(
+            action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
     else:
-        objects = Step.objects.filter(q, is_active=True).values('pk', 'name', 'keyword').annotate(
-            action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+        objects = Step.objects.filter(q, is_active=True).values(
+            'pk', 'name', 'keyword', 'project__name', 'creator__username').annotate(
+            action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
     # 使用join的方式把多个model结合起来
     # objects = Step.objects.filter(q, is_active=True).order_by('id').select_related('action__type')
     # 分割为多条SQL，然后把结果集用python结合起来

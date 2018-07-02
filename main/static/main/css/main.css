@@ -59,8 +59,8 @@ div.paginator input {
 /*悬浮按钮*/
 .float-button {
 	position: fixed;
-	bottom: 2%;
-	right: 1%;
+	top: 84px;
+	right: 15px;
 	z-index: 1030;
 }
 

@@ -372,6 +372,7 @@ def wait_for_element_disappear(dr, by, locator, timeout, base_element, variable_
     last_print_time = 0
     elements = list()
     while (time.time() - start_time) <= timeout:
+        visible_elements = list()
         if variable_elements is not None:
             elements = variable_elements
         else:

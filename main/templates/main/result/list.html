@@ -17,17 +17,21 @@
         <table class="table table-bordered table-hover">
             <colgroup>
                 <col style='width: 80px;'>
+                <col style='width: 80px;'>
                 <col>
                 <col style='width: 200px;'>
+                <col style='width: 150px;'>
                 <col style='width: 200px;'>
                 <col style='width: 80px;'>
                 <col style='width: 120px;'>
             </colgroup>
             <thead class="thead-light middle">
                 <tr>
+                    <th>序号</th>
                     <th order_by_text="pk">ID</th>
                     <th order_by_text="name">名称</th>
                     <th order_by_text="keyword">关键字</th>
+                    <th order_by_text="project__name">项目</th>
                     <th order_by_text="start_date">测试时间</th>
                     <th order_by_text="result_status_str">结果</th>
                     <th>操作</th>
@@ -36,9 +40,11 @@
             <tbody>
                 {% for object in objects %}
                     <tr pk="{{ object.pk }}" edit_url="{% url 'result' object.pk %}" quick_update_url="{% url 'result_quick_update' object.pk %}" del_url="{% url 'result_delete' object.pk %}">
+                        <td col_name='index' class="middle"></td>
                         <td col_name='id' class="middle">{{ object.pk }}</td>
                         <td quick_update col_name='name' class="align-middle">{{ object.name }}</td>
                         <td quick_update col_name='keyword' class="align-middle">{{ object.keyword }}</td>
+                        <td col_name='project__name' class="middle">{{ object.project__name }}</td>
                         <td col_name='start_date' class="middle">{{ object.start_date }}</td>
                         {% if object.result_status == 1 %}
                             <td class="middle"><span class="badge badge-pill badge-success">{{ object.result_status_str }}</span></td>

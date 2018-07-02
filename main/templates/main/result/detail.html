@@ -41,16 +41,19 @@
                         div.append(message_div);
                         if (data.data.ui_last_url) {
                             var url_div = $('<div>').addClass('row', 'small');
-                            url_div.append($('<div>').addClass('col').text('当前URL：').append($('<span>').text(data.data.ui_last_url)));
+                            url_div.append($('<div>').addClass('col').append($('<span>').addClass('font-weight-bold').text('当前URL：')).append($('<span>').text(data.data.ui_last_url)));
                             div.append(url_div);
                         }
-                        $.each(data.data.imgs, function(index, value){
-                            var span = $('<span>').addClass('small').text(value.name);
-                            var img = $('<img>').attr('src', value.url).addClass('img-thumbnail');
-                            var a  = $('<a>').attr('href', value.url).attr('target', '_blank').append(img);
-                            var img_div = $('<div>').addClass('middle').append(span).append($('<br>')).append(a);
-                            div.append(img_div).append($('<br>'));
-                        });
+                        if (data.data.imgs.length > 0) {
+                            div.append($('<div>').addClass('row', 'small').append($('<div>').addClass('col').append($('<span>').addClass('font-weight-bold').text('截图：'))));
+                            $.each(data.data.imgs, function(index, value){
+                                var span = $('<span>').addClass('small').text(value.name);
+                                var img = $('<img>').attr('src', value.url).addClass('img-thumbnail');
+                                var a  = $('<a>').attr('href', value.url).attr('target', '_blank').append(img);
+                                var img_div = $('<div>').addClass('middle').append(span).append($('<br>')).append(a);
+                                div.append(img_div).append($('<br>'));
+                            });
+                        }
                         if (data.data.sub_case) {
                             div.append($('<hr>'));
                             div.append($('<div>').addClass('text-center small').text('子用例信息'));
@@ -92,6 +95,13 @@
             <div class="col-1 text-center font-weight-bold">关键字</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.keyword %}
+            </div>
+        </div>
+        <div class="row align-items-center" base>
+            <div class="col-1 text-center font-weight-bold">项目</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.project %}
+{#                {{ form.project }}#}
             </div>
         </div>
 

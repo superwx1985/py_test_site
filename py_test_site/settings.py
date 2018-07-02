@@ -172,21 +172,30 @@ LOGGING = {
             'stream': sys.stderr,
         },
         # 全部日志文件
+        # 'default': {
+        #     'level': 'DEBUG',
+        #     'class': 'logging.handlers.RotatingFileHandler',
+        #     'filename': 'log/all.log',    # 日志输出文件
+        #     'maxBytes': 1024*1024*10,     # 文件大小
+        #     'backupCount': 10,            # 保留日志数量
+        #     'formatter': 'standard',      # 使用哪种formatters日志格式
+        # },
         'default': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'log/all.log',     # 日志输出文件
-            'maxBytes': 1024*1024*5,        # 文件大小
-            'backupCount': 5,               # 备份份数
-            'formatter': 'standard',        # 使用哪种formatters日志格式
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': 'log/all.log',  # 日志输出文件
+            'when': 'D',                # 时间间隔单位
+            'interval': 1,              # 时间间隔值
+            'backupCount': 30,          # 保留日志数量
+            'formatter': 'standard',    # 使用哪种formatters日志格式
         },
         # 错误日志文件
         'error': {
             'level': 'ERROR',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': 'log/error.log',
-            'maxBytes': 1024*1024*5,
-            'backupCount': 5,
+            'maxBytes': 1024*1024*10,
+            'backupCount': 10,
             'formatter': 'standard',
         },
         # 邮件通知
@@ -200,8 +209,8 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': 'log/request.log',
-            'maxBytes': 1024*1024*5,
-            'backupCount': 5,
+            'maxBytes': 1024*1024*10,
+            'backupCount': 10,
             'formatter': 'standard',
         },
         # sql日志文件
@@ -209,17 +218,18 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': 'log/sql.log',
-            'maxBytes': 1024*1024*5,
-            'backupCount': 5,
+            'maxBytes': 1024*1024*10,
+            'backupCount': 10,
             'formatter': 'standard',
         },
         # 测试日志文件
         'py_test_file_handler': {
             'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': 'log/py_test.log',
-            'maxBytes': 1024*1024*5,
-            'backupCount': 5,
+            'when': 'D',
+            'interval': 1,
+            'backupCount': 30,
             'formatter': 'standard',
         }
     },

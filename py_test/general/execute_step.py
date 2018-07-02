@@ -5,7 +5,7 @@ import traceback
 import pytz
 from py_test.general import vic_variables, vic_public_elements, thread_log, vic_method
 from py_test.ui_test import method
-from selenium.common.exceptions import UnexpectedAlertPresentException, NoSuchElementException
+from selenium.common.exceptions import UnexpectedAlertPresentException, NoSuchElementException, TimeoutException, WebDriverException
 from py_test.vic_tools import vic_eval
 from py_test.vic_tools.vic_str_handle import change_digit_to_string, change_string_to_digit
 from main.models import StepResult
@@ -46,66 +46,66 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
         step_snapshot=json.dumps(model_to_dict(step)) if step else None,
     )
 
-    step_action = step.action
-    run_result = ('p', '成功')
-    elements = list()
-    fail_elements = list()
-    timeout = step.timeout if step.timeout else case_result.suite_result.base_timeout
-    ui_get_ss = case_result.suite_result.ui_get_ss
-    save_as = step.save_as
-    ui_by_dict = {
-        0: '',
-        1: 'id',
-        2: 'xpath',
-        3: 'link text',
-        4: 'partial link text',
-        5: 'name',
-        6: 'tag name',
-        7: 'class name',
-        8: 'css selector',
-        9: 'public element',
-        10: 'variable',
-    }
-    ui_by = ui_by_dict[step.ui_by]
-    ui_locator = vic_method.replace_special_value(step.ui_locator, variables)
-    ui_index = step.ui_index
-    ui_base_element = vic_method.replace_special_value(step.ui_base_element, variables)
-    ui_base_element = vic_variables.get_elements(ui_base_element, variables)[0] if ui_base_element != '' else None
-    ui_data = vic_method.replace_special_value(step.ui_data, variables)
-    ui_special_action_dict = {
-        0: '',
-        1: 'click',
-        2: 'click_and_hold',
-        3: 'context_click',
-        4: 'double_click',
-        5: 'release',
-        6: 'move_by_offset',
-        7: 'move_to_element',
-        8: 'move_to_element_with_offset',
-        9: 'drag_and_drop',
-        10: 'drag_and_drop_by_offset',
-        11: 'key_down',
-        12: 'key_up',
-        13: 'send_keys',
-        14: 'send_keys_to_element',
-    }
-    ui_special_action = ui_special_action_dict[step.ui_special_action]
-    ui_alert_handle_dict = {
-        1: 'accept',
-        2: 'dismiss',
-        3: 'ignore',
-    }
-    ui_alert_handle = ui_alert_handle_dict.get(step.ui_alert_handle, 'accept')
-
-    api_url = step.api_url
-    api_headers = step.api_headers
-    api_body = step.api_body
-    api_data = step.api_data
-
-    other_data = step.other_data
-    other_sub_case = step.other_sub_case
-
     try:
+        step_action = step.action
+        run_result = ('p', '成功')
+        elements = list()
+        fail_elements = list()
+        timeout = step.timeout if step.timeout else case_result.suite_result.base_timeout
+        ui_get_ss = case_result.suite_result.ui_get_ss
+        save_as = step.save_as
+        ui_by_dict = {
+            0: '',
+            1: 'id',
+            2: 'xpath',
+            3: 'link text',
+            4: 'partial link text',
+            5: 'name',
+            6: 'tag name',
+            7: 'class name',
+            8: 'css selector',
+            9: 'public element',
+            10: 'variable',
+        }
+        ui_by = ui_by_dict[step.ui_by]
+        ui_locator = vic_method.replace_special_value(step.ui_locator, variables)
+        ui_index = step.ui_index
+        ui_base_element = vic_method.replace_special_value(step.ui_base_element, variables)
+        ui_base_element = vic_variables.get_elements(ui_base_element, variables)[0] if ui_base_element != '' else None
+        ui_data = vic_method.replace_special_value(step.ui_data, variables)
+        ui_special_action_dict = {
+            0: '',
+            1: 'click',
+            2: 'click_and_hold',
+            3: 'context_click',
+            4: 'double_click',
+            5: 'release',
+            6: 'move_by_offset',
+            7: 'move_to_element',
+            8: 'move_to_element_with_offset',
+            9: 'drag_and_drop',
+            10: 'drag_and_drop_by_offset',
+            11: 'key_down',
+            12: 'key_up',
+            13: 'send_keys',
+            14: 'send_keys_to_element',
+        }
+        ui_special_action = ui_special_action_dict[step.ui_special_action]
+        ui_alert_handle_dict = {
+            1: 'accept',
+            2: 'dismiss',
+            3: 'ignore',
+        }
+        ui_alert_handle = ui_alert_handle_dict.get(step.ui_alert_handle, 'accept')
+
+        api_url = step.api_url
+        api_headers = step.api_headers
+        api_body = step.api_body
+        api_data = step.api_data
+
+        other_data = step.other_data
+        other_sub_case = step.other_sub_case
+
         # 设置selenium超时时间
         if dr is not None:
             dr.implicitly_wait(timeout)
@@ -484,9 +484,14 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
         else:
             step_result.result_status = 2
         step_result.result_message = run_result[1]
+    except TimeoutException:
+        step_result.result_status = 3
+        step_result.result_message = '执行超时，请增大超时值'
+        step_result.result_error = traceback.format_exc()
+        logger.error('{}\t执行超时'.format(execute_id), exc_info=True)
     except Exception as e:
         step_result.result_status = 3
-        step_result.result_message = str(e)
+        step_result.result_message = '执行出错'
         step_result.result_error = traceback.format_exc()
         logger.error('{}\t执行出错'.format(execute_id), exc_info=True)
 
