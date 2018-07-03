@@ -51,10 +51,10 @@ def results(request):
     q = get_query_condition(keyword_list)
     if own:
         objects = SuiteResult.objects.filter(q, is_active=True, creator=request.user).order_by('-start_date').values(
-            'pk', 'name', 'keyword', 'project__name', 'start_date', 'result_status')
+            'pk', 'name', 'keyword', 'project__name', 'start_date', 'result_status', 'creator', 'creator__username')
     else:
         objects = SuiteResult.objects.filter(q, is_active=True).order_by('-start_date').values(
-            'pk', 'name', 'keyword', 'project__name',  'start_date', 'result_status')
+            'pk', 'name', 'keyword', 'project__name',  'start_date', 'result_status', 'creator', 'creator__username')
     result_status_list = SuiteResult.result_status_list
     d = {l[0]: l[1] for l in result_status_list}
     for o in objects:

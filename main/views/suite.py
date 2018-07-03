@@ -51,10 +51,10 @@ def suites(request):
     q = get_query_condition(keyword_list)
     if own:
         objects = Suite.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword', 'project__name', 'config__name')
+            'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username')
     else:
         objects = Suite.objects.filter(q, is_active=True).values(
-            'pk', 'name', 'keyword', 'project__name', 'config__name')
+            'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username')
     objects2 = Suite.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(m2m_count=Count('case'))
     count_ = {o['pk']: o['m2m_count'] for o in objects2}
     for o in objects:

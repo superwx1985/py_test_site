@@ -85,7 +85,6 @@ urlpatterns = [
     path('test1/', general.test1, name='test1'),
     path('test2/', general.test2, name='test2'),
     path('debug1/', general.debug1, name='debug1'),
-
 ]
 
 # 添加media文件映射

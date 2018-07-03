@@ -47,9 +47,11 @@ def configs(request):
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
     if own:
-        objects = Config.objects.filter(q, is_active=True, creator=request.user).values('pk', 'name', 'keyword')
+        objects = Config.objects.filter(q, is_active=True, creator=request.user).values(
+            'pk', 'name', 'keyword', 'creator', 'creator__username')
     else:
-        objects = Config.objects.filter(q, is_active=True).values('pk', 'name', 'keyword')
+        objects = Config.objects.filter(q, is_active=True).values(
+            'pk', 'name', 'keyword', 'creator', 'creator__username')
     # 排序
     if objects:
         if order_by not in objects[0]:

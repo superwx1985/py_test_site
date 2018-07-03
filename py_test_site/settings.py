@@ -129,10 +129,14 @@ USE_TZ = True
 
 # 静态文件地址
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
+# 媒体文件地址
+MEDIA_URL = '/media/'
 
 # 默认上传位置
-MEDIA_ROOT = 'media/'
-MEDIA_URL = '/media/'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # 登陆页面
 LOGIN_URL = '/admin/login/'

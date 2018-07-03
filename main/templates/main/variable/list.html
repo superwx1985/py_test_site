@@ -40,8 +40,8 @@
                     <tr pk="{{ obj.pk }}" edit_url="{% url 'variable_group' obj.pk %}" quick_update_url="{% url 'variable_group_quick_update' obj.pk %}" del_url="{% url 'variable_group_delete' obj.pk %}">
                         <td col_name='index' class="middle"></td>
                         <td col_name='id' class="middle">{{ obj.pk }}</td>
-                        <td quick_update col_name='name' class="align-middle">{{ obj.name }}</td>
-                        <td quick_update col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
+                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
+                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='keyword' class="middle">{{ obj.variable_count }}</td>
                         <td col_name='creator__username' class="middle">{{ obj.creator__username }}</td>

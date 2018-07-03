@@ -48,10 +48,12 @@ def variable_groups(request):
     q = get_query_condition(keyword_list)
     if own:
         objects = VariableGroup.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword', 'project__name', 'creator__username').annotate(variable_count=Count('variable'))
+            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username').annotate(
+            variable_count=Count('variable'))
     else:
         objects = VariableGroup.objects.filter(q, is_active=True).values(
-            'pk', 'name', 'keyword', 'project__name', 'creator__username').annotate(variable_count=Count('variable'))
+            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username').annotate(
+            variable_count=Count('variable'))
     # 排序
     if objects:
         if order_by not in objects[0]:

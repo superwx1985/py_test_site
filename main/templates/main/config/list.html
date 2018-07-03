@@ -18,6 +18,7 @@
                 <col style='width: 80px;'>
                 <col>
                 <col style='width: 200px;'>
+                <col style='width: 80px;'>
                 <col style='width: 120px;'>
             </colgroup>
             <thead class="thead-light middle">
@@ -26,6 +27,7 @@
                     <th order_by_text="pk">ID</th>
                     <th order_by_text="name">名称</th>
                     <th order_by_text="keyword">关键字</th>
+                    <th order_by_text="creator__username">作者</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -34,8 +36,9 @@
                     <tr pk="{{ obj.pk }}" edit_url="{% url 'config' obj.pk %}" quick_update_url="{% url 'config_quick_update' obj.pk %}" del_url="{% url 'config_delete' obj.pk %}">
                         <td col_name='index' class="middle"></td>
                         <td col_name='id' class="middle">{{ obj.pk }}</td>
-                        <td quick_update col_name='name' class="align-middle">{{ obj.name }}</td>
-                        <td quick_update col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
+                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
+                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
+                        <td col_name='creator__username' class="middle">{{ obj.creator__username }}</td>
                         <td>
                             <div class="middle">
                                 <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="编辑"><i class="icon-edit"></i></button>
