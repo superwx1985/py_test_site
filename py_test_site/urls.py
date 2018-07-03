@@ -44,10 +44,10 @@ urlpatterns = [
 
     path('steps/', step.list_, name='steps'),
     path('step/add/', step.add, name='step_add'),
-    path('step/<int:pk>/', step.detail, name='step'),
-    path('step/<int:pk>/delete/', step.delete, name='step_delete'),
-    path('step/<int:pk>/quick_update/', step.quick_update, name='step_quick_update'),
-    path('step/<int:pk>/copy/', step.copy, name='step_copy'),
+    path('step/<str:pk>/', step.detail, name='step'),
+    path('step/<str:pk>/delete/', step.delete, name='step_delete'),
+    path('step/<str:pk>/quick_update/', step.quick_update, name='step_quick_update'),
+    path('step/<str:pk>/copy/', step.copy, name='step_copy'),
     path('step/list_json/', step.list_json, name='step_list_json'),
     path('step/list_temp/', step.list_temp, name='step_list_temp'),
 

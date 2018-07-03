@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+import uuid
 
 
 # 用例表
@@ -27,6 +28,7 @@ class Case(models.Model):
 
 # 步骤表
 class Step(models.Model):
+    id = models.UUIDField(primary_key=True, auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)

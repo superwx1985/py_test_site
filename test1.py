@@ -1,7 +1,13 @@
-project_list = list()
-project_list.append((0, ''))
+import uuid
 
 
-project_list.extend(((1, 'a'), (2, 'b')))
+a = "update main_stepresult set step_id = '000000000000000000000000000000{}' where step_id = {};"
 
-print(project_list)
+b = "update main_casevsstep set step_id = '000000000000000000000000000000{}' where step_id = {};"
+
+c = "update main_step set id = '000000000000000000000000000000{}' where id = {};"
+
+for i in range(10, 100):
+    print(a.format(i, i))
+    print(b.format(i, i))
+    print(c.format(i, i))
