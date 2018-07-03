@@ -22,7 +22,7 @@ logger = logging.getLogger('django.request')
 
 # 步骤列表
 @login_required
-def steps(request):
+def list_(request):
     if request.method == 'POST':
         page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
         if page <= 0:
@@ -87,7 +87,7 @@ def steps(request):
 
 
 @login_required
-def step(request, pk):
+def detail(request, pk):
     try:
         obj = Step.objects.select_related('creator', 'modifier').get(pk=pk)
     except Step.DoesNotExist:
@@ -123,7 +123,7 @@ def step(request, pk):
 
 
 @login_required
-def step_add(request):
+def add(request):
     if request.method == 'GET':
         form = StepForm()
         if request.session.get('status', None) == 'success':
@@ -156,7 +156,7 @@ def step_add(request):
 
 
 @login_required
-def step_delete(request, pk):
+def delete(request, pk):
     if request.method == 'POST':
         Step.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
         return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
@@ -165,7 +165,7 @@ def step_delete(request, pk):
 
 
 @login_required
-def step_quick_update(request, pk):
+def quick_update(request, pk):
     if request.method == 'POST':
         try:
             col_name = request.POST['col_name']
@@ -197,9 +197,9 @@ def step_quick_update(request, pk):
 #     return JsonResponse({'statue': 1, 'message': 'OK', 'data': json_})
 
 
-# 获取全部step
+# 获取step list json
 @login_required
-def step_list(request):
+def list_json(request):
     condition = request.POST.get('condition', '{}')
     try:
         condition = json.loads(condition)
@@ -251,7 +251,7 @@ def step_list(request):
 
 # 获取临时step
 @login_required
-def step_list_temp(request):
+def list_temp(request):
     list_ = json.loads(request.POST.get('condition', ''))
     order = 0
     list_temp = list()
@@ -265,3 +265,19 @@ def step_list_temp(request):
         objects[0]['order'] = order
         list_temp.append(objects[0])
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list_temp})
+
+
+# 复制
+@login_required
+def copy(request, pk):
+    name = request.POST.get('name', '')
+    try:
+        obj = Step.objects.get(pk=pk)
+        obj.pk = None
+        obj.name = name
+        obj.creator = obj.modifier = request.user
+        obj.clean_fields()
+        obj.save()
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': obj.pk})
+    except Step.DoesNotExist as e:
+        return JsonResponse({'statue': 1, 'message': 'ERROR', 'data': str(e)})

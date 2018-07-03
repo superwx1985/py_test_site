@@ -99,8 +99,8 @@ class Step(models.Model):
 
 # 用例和步骤关系表
 class CaseVsStep(models.Model):
-    case = models.ForeignKey('main.Case', on_delete=models.DO_NOTHING)
-    step = models.ForeignKey('main.Step', on_delete=models.DO_NOTHING)
+    case = models.ForeignKey('main.Case', on_delete=models.CASCADE)
+    step = models.ForeignKey('main.Step', on_delete=models.CASCADE)
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='case_vs_step_creator',
                                 on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
@@ -213,6 +213,7 @@ class VariableGroup(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
+    project = models.ForeignKey('main.Project', on_delete=models.DO_NOTHING)
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='variable_group_creator',
                                 on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
@@ -234,7 +235,7 @@ class Variable(models.Model):
     description = models.TextField(blank=True)
     value = models.TextField(blank=True)
     order = models.IntegerField(default=0)
-    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.DO_NOTHING)
+    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.CASCADE)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return self.name
@@ -282,8 +283,8 @@ class Suite(models.Model):
 
 # 测试套件和用例的对应关系
 class SuiteVsCase(models.Model):
-    suite = models.ForeignKey('main.Suite', on_delete=models.DO_NOTHING)
-    case = models.ForeignKey('main.Case', on_delete=models.DO_NOTHING)
+    suite = models.ForeignKey('main.Suite', on_delete=models.CASCADE)
+    case = models.ForeignKey('main.Case', on_delete=models.CASCADE)
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='suite_vs_case_creator',
                                 on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
@@ -315,15 +316,15 @@ class SuiteResult(models.Model):
     variable_group = models.TextField(blank=True, null=True)
     project = models.ForeignKey('main.Project', on_delete=models.DO_NOTHING)
 
-    suite = models.ForeignKey('main.Suite', on_delete=models.DO_NOTHING)
+    suite = models.ForeignKey('main.Suite', on_delete=models.SET_NULL, null=True, blank=True)
     creator = models.ForeignKey(User, verbose_name='创建人', related_name='suite_result_creator',
                                 on_delete=models.DO_NOTHING)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(User, verbose_name='修改人', related_name='suite_result_modifier',
                                  on_delete=models.DO_NOTHING)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    start_date = models.DateTimeField(blank=True, null=True)
-    end_date = models.DateTimeField(blank=True, null=True)
+    start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
+    end_date = models.DateTimeField(verbose_name='结束时间', blank=True, null=True)
     execute_count = models.IntegerField(blank=True, null=True)
     pass_count = models.IntegerField(blank=True, null=True)
     fail_count = models.IntegerField(blank=True, null=True)
@@ -360,14 +361,14 @@ class CaseResult(models.Model):
 
     variable_group = models.TextField(blank=True, null=True)
 
-    suite_result = models.ForeignKey('main.SuiteResult', on_delete=models.DO_NOTHING)
-    step_result = models.ForeignKey('main.StepResult', on_delete=models.DO_NOTHING, blank=True, null=True)
+    suite_result = models.ForeignKey('main.SuiteResult', on_delete=models.CASCADE)
+    step_result = models.ForeignKey('main.StepResult', on_delete=models.CASCADE, null=True, blank=True)
     parent_case_pk_list = models.TextField(blank=True, null=True)
-    case = models.ForeignKey('main.Case', on_delete=models.DO_NOTHING)
+    case = models.ForeignKey('main.Case', on_delete=models.SET_NULL, null=True, blank=True)
     case_order = models.IntegerField(blank=True, null=True)
     creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.DO_NOTHING)
-    start_date = models.DateTimeField(blank=True, null=True)
-    end_date = models.DateTimeField(blank=True, null=True)
+    start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
+    end_date = models.DateTimeField(verbose_name='结束时间', blank=True, null=True)
     execute_count = models.IntegerField(blank=True, null=True)
     pass_count = models.IntegerField(blank=True, null=True)
     fail_count = models.IntegerField(blank=True, null=True)
@@ -405,13 +406,13 @@ class StepResult(models.Model):
     keyword = models.CharField(blank=True, max_length=100)
     action = models.CharField(blank=True, max_length=100)
 
-    case_result = models.ForeignKey('main.CaseResult', on_delete=models.DO_NOTHING)
-    step = models.ForeignKey('main.Step', on_delete=models.DO_NOTHING)
+    case_result = models.ForeignKey('main.CaseResult', on_delete=models.CASCADE)
+    step = models.ForeignKey('main.Step', on_delete=models.SET_NULL, null=True, blank=True)
     step_order = models.IntegerField(blank=True, null=True)
 
     creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.DO_NOTHING)
-    start_date = models.DateTimeField(blank=True, null=True)
-    end_date = models.DateTimeField(blank=True, null=True)
+    start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
+    end_date = models.DateTimeField(verbose_name='结束时间', blank=True, null=True)
     result_status_list = (
         (1, '成功'),
         (2, '失败'),

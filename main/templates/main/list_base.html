@@ -15,6 +15,9 @@
                 div.row {
                     padding: 5px 0;
                 }
+                .list_button {
+                    width: 45px;
+                }
             </style>
         {% endblock %}
         {% block style %}
@@ -29,6 +32,7 @@
             <script src="{% static 'main/js/main.js' %}"></script>
             <script>
                 $(function () {
+                    window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
                     // 获取分页信息
                     window.page = {{ paginator_form.page.value|default:1 }}
                     window.maxPage = {{ paginator.num_pages|default:0 }}
@@ -127,6 +131,10 @@
                     bind_edit_button();
                     // 注册删除按钮
                     bind_delete_button();
+                    // 注册复制按钮
+                    $('[name=copy_button]').on('click', function() {
+                        copy_obj($(this));  // 复制对象
+                    });
                     // 触发操作提示
                     {% if prompt == 'success' %}
                         toastr.success('保存成功');
@@ -145,6 +153,32 @@
                     } else {
                         sort_col.prepend('<i class="icon-circle-arrow-up">&nbsp;</i>');
                     }
+                }
+                // 复制对象
+                function copy_obj(that) {
+                    window.a = that
+                    bootbox.prompt({
+                        size: 'large',
+                        title: '<i class="icon-exclamation-sign">&nbsp;</i>请输入新名称',
+                        value: that.parents('tr').children('[col_name=name]').text(),
+                        buttons: {
+                            confirm: {
+                                label: '<i class="icon-copy">&nbsp;</i>复制',
+                                className: 'btn-warning'
+                            },
+                            cancel: {
+                                label: '<i class="icon-undo">&nbsp;</i>取消',
+                                className: 'btn-secondary'
+                            }
+                        },
+                        callback: function (result) {
+                            if (result) {
+                                $.post(that.attr('copy_url'), {'csrfmiddlewaretoken': $csrf_input.val(), 'name': result}, function(data) {
+                                    $('#objects_form').submit();
+                                });
+                            }
+                        }
+                    });
                 }
             </script>
         {% endblock %}

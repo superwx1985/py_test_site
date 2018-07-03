@@ -21,7 +21,7 @@
                 <col style='width: 150px;'>
                 <col style='width: 250px;'>
                 <col style='width: 80px;'>
-                <col style='width: 120px;'>
+                <col style='width: 170px;'>
             </colgroup>
             <thead class="thead-light middle">
                 <tr>
@@ -36,19 +36,20 @@
                 </tr>
             </thead>
             <tbody>
-                {% for object in objects %}
-                    <tr pk="{{ object.pk }}" edit_url="{% url 'step' object.pk %}" quick_update_url="{% url 'step_quick_update' object.pk %}" del_url="{% url 'step_delete' object.pk %}">
+                {% for obj in objects %}
+                    <tr pk="{{ obj.pk }}" edit_url="{% url 'step' obj.pk %}" quick_update_url="{% url 'step_quick_update' obj.pk %}" del_url="{% url 'step_delete' obj.pk %}">
                         <td col_name='index' class="middle"></td>
-                        <td col_name='id' class="middle">{{ object.pk }}</td>
-                        <td quick_update col_name='name' class="align-middle">{{ object.name }}</td>
-                        <td quick_update col_name='keyword' class="align-middle">{{ object.keyword }}</td>
-                        <td col_name='project__name' class="middle">{{ object.project__name }}</td>
-                        <td col_name='action' class="align-middle">{{ object.action }}</td>
-                        <td col_name='creator__username' class="middle">{{ object.creator__username }}</td>
+                        <td col_name='id' class="middle">{{ obj.pk }}</td>
+                        <td quick_update col_name='name' class="align-middle">{{ obj.name }}</td>
+                        <td quick_update col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
+                        <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
+                        <td col_name='action' class="align-middle">{{ obj.action }}</td>
+                        <td col_name='creator__username' class="middle">{{ obj.creator__username }}</td>
                         <td>
                             <div class="middle">
-                                <button type="button" name="edit_button" class="btn btn-info" data-toggle="tooltip" title="编辑"><i class="icon-edit"></i></button>
-                                <button type="button" name="delete_button" class="btn btn-danger" data-toggle="tooltip" title="删除"><i class="icon-trash"></i></button>
+                                <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="编辑"><i class="icon-edit"></i></button>
+                                <button copy_url="{% url 'step_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
+                                <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除"><i class="icon-trash"></i></button>
                             </div>
                         </td>
                     </tr>

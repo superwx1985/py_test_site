@@ -38,25 +38,25 @@
                 </tr>
             </thead>
             <tbody>
-                {% for object in objects %}
-                    <tr pk="{{ object.pk }}" edit_url="{% url 'result' object.pk %}" quick_update_url="{% url 'result_quick_update' object.pk %}" del_url="{% url 'result_delete' object.pk %}">
+                {% for obj in objects %}
+                    <tr pk="{{ obj.pk }}" edit_url="{% url 'result' obj.pk %}" quick_update_url="{% url 'result_quick_update' obj.pk %}" del_url="{% url 'result_delete' obj.pk %}">
                         <td col_name='index' class="middle"></td>
-                        <td col_name='id' class="middle">{{ object.pk }}</td>
-                        <td quick_update col_name='name' class="align-middle">{{ object.name }}</td>
-                        <td quick_update col_name='keyword' class="align-middle">{{ object.keyword }}</td>
-                        <td col_name='project__name' class="middle">{{ object.project__name }}</td>
-                        <td col_name='start_date' class="middle">{{ object.start_date }}</td>
-                        {% if object.result_status == 1 %}
-                            <td class="middle"><span class="badge badge-pill badge-success">{{ object.result_status_str }}</span></td>
-                        {% elif object.result_status == 2 %}
-                            <td class="middle"><span class="badge badge-pill badge-warning">{{ object.result_status_str }}</span></td>
+                        <td col_name='id' class="middle">{{ obj.pk }}</td>
+                        <td quick_update col_name='name' class="align-middle">{{ obj.name }}</td>
+                        <td quick_update col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
+                        <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
+                        <td col_name='start_date' class="middle">{{ obj.start_date }}</td>
+                        {% if obj.result_status == 1 %}
+                            <td class="middle"><span class="badge badge-pill badge-success">{{ obj.result_status_str }}</span></td>
+                        {% elif obj.result_status == 2 %}
+                            <td class="middle"><span class="badge badge-pill badge-warning">{{ obj.result_status_str }}</span></td>
                         {% else %}
-                            <td class="middle"><span class="badge badge-pill badge-danger">{{ object.result_status_str }}</span></td>
+                            <td class="middle"><span class="badge badge-pill badge-danger">{{ obj.result_status_str }}</span></td>
                         {% endif %}
                         <td>
                             <div class="middle">
-                                <button type="button" name="edit_button" class="btn btn-info" data-toggle="tooltip" title="查看详情"><i class="icon-bar-chart"></i></button>
-                                <button type="button" name="delete_button" class="btn btn-danger" data-toggle="tooltip" title="删除"><i class="icon-trash"></i></button>
+                                <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="查看详情"><i class="icon-bar-chart"></i></button>
+                                <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除"><i class="icon-trash"></i></button>
                             </div>
                         </td>
                     </tr>

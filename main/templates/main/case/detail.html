@@ -91,7 +91,7 @@
                 'order_by': order_by
             };
             var condition_json = JSON.stringify(condition);
-            getList("{% url 'step_list' %}", window.$csrf_input.val(), update_m2m_list_all, condition_json);
+            getList("{% url 'step_list_json' %}", window.$csrf_input.val(), update_m2m_list_all, condition_json);
             return false;
         }
         // 更新并注册分页工具
@@ -265,6 +265,7 @@
         {% endif %}
         </li>
     </ol>
+    <div copystyle="display: none"></div>
 {% endblock %}
 
 {% block detail_form %}

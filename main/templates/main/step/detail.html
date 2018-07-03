@@ -23,6 +23,7 @@
             $('#id_action').off('change').change(function () {
                 show_action_field($(this));
             });
+            // 注册复制按钮
             // 关闭遮罩
             $('#mask').hide();
         });
@@ -374,6 +375,6 @@
         </div>
 
         {% include 'main/include/detail_redirect.html' %}
-        {% include 'main/include/submit_button_group.html' %}
+        {% include 'main/include/submit_button_group.html' with copy_url='step_copy' %}
     </form>
 {% endblock %}

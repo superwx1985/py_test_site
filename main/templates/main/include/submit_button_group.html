@@ -1,16 +1,20 @@
 <div class="text-center float-button">
     <div class="btn-group btn-group-lg">
         {% if request.user == obj.creator %}
-            <td><button type="button" class="btn btn-secondary" id="back"><i class="icon-reply">&nbsp;</i>返回</button></td>
-            <td><button type="submit" class="btn btn-primary" id="save"><i class="icon-ok">&nbsp;</i>应用</button></td>
-            <td><button type="submit" class="btn btn-success" id="saveAndReturn"><i class="icon-upload-alt">&nbsp;</i>提交</button></td>
+            <td><button type="button" name="return_button" class="btn btn-secondary"><i class="icon-reply">&nbsp;</i>返回</button></td>
+            {% if copy_url %}
+                <td><button copy_url="{% url copy_url obj.pk %}" type="button" name="copy_button" class="btn btn-warning"><i class="icon-copy">&nbsp;</i>复制</button></td>
+            {% endif %}
+            <td><button type="submit" name="save_button" class="btn btn-primary"><i class="icon-ok">&nbsp;</i>应用</button></td>
+            <td><button type="submit" name="save_and_return_button" class="btn btn-success"><i class="icon-upload-alt">&nbsp;</i>提交</button></td>
         {% else %}
-            <td><button type="button" class="btn btn-secondary" id="back"><i class="icon-reply">&nbsp;</i>返回</button></td>
-            <td><button type="button" class="btn btn-success" id="copy"><i class="icon-copy">&nbsp;</i>复制</button></td>
+            <td><button type="button" name="return_button" class="btn btn-secondary"><i class="icon-reply">&nbsp;</i>返回</button></td>
+            {% if copy_url %}
+                <td><button copy_url="{% url copy_url obj.pk %}" type="button" name="copy_button" class="btn btn-warning"><i class="icon-copy">&nbsp;</i>复制</button></td>
+            {% endif %}
         {% endif %}
-
         {% if not pk %}
-            <td><button type="submit" class="btn btn-info" id="AddAnother"><i class="icon-plus">&nbsp;</i>继续添加</button></td>
+            <td><button type="submit" name="add_another_button" class="btn btn-info"><i class="icon-plus">&nbsp;</i>继续添加</button></td>
         {% endif %}
     </div>
 </div>

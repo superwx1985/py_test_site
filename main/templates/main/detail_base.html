@@ -30,6 +30,7 @@
             <script src="{% static 'main/js/main.js' %}"></script>
             <script>
                 $(function () {
+                    window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
                     // 注册注销按钮
                     $("#logout_btn").click(function () {
                         window.open('/logout/', '_self');
@@ -57,10 +58,38 @@
                     // 提示框
                     $('[data-toggle=tooltip]').tooltip();
                     // 注册按钮功能
-                    $('#back').on('click', function() {$('#navbar .navbar-nav>li.active>a')[0].click()});
-                    $('#saveAndReturn').on('click', function() {$('[name=redirect]').val(true)});
-                    $('#AddAnother').on('click', function() {$('[name=redirect]').val('add_another')});
+                    $('[name=return_button]').on('click', function() {$('#navbar .navbar-nav>li.active>a')[0].click()});
+                    $('[name=save_and_return_button]').on('click', function() {$('[name=redirect]').val(true)});
+                    $('[name=add_another_button]').on('click', function() {$('[name=redirect]').val('add_another')});
+                    $('[name=copy_button]').on('click', function() {
+                        copy_obj($(this).attr('copy_url'));  // 复制对象
+                    });
                 });
+                // 复制对象
+                function copy_obj(copy_url) {
+                    bootbox.prompt({
+                        size: 'large',
+                        title: '<i class="icon-exclamation-sign">&nbsp;</i>请输入新名称',
+                        value: $('#id_name').val(),
+                        buttons: {
+                            confirm: {
+                                label: '<i class="icon-copy">&nbsp;</i>复制',
+                                className: 'btn-warning'
+                            },
+                            cancel: {
+                                label: '<i class="icon-undo">&nbsp;</i>取消',
+                                className: 'btn-secondary'
+                            }
+                        },
+                        callback: function (result) {
+                            if (result) {
+                                $.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name': result}, function(data) {
+                                    console.log(data)
+                                });
+                            }
+                        }
+                    });
+                }
             </script>
         {% endblock %}
         {% block script %}
