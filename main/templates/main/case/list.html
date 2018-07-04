@@ -14,24 +14,24 @@
     <div class="table-responsive" id='result_table'>
         <table class="table table-bordered table-hover">
             <colgroup>
-                <col style='width: 80px;'>
-                <col style='width: 80px;'>
+                <col style='width: 60px;'>
                 <col>
                 <col style='width: 200px;'>
                 <col style='width: 150px;'>
                 <col style='width: 80px;'>
                 <col style='width: 80px;'>
+                <col style='width: 180px;'>
                 <col style='width: 120px;'>
             </colgroup>
             <thead class="thead-light middle">
                 <tr>
                     <th>序号</th>
-                    <th order_by_text="pk">ID</th>
                     <th order_by_text="name">名称</th>
                     <th order_by_text="keyword">关键字</th>
                     <th order_by_text="project__name">项目</th>
                     <th order_by_text="m2m_count">步骤数</th>
                     <th order_by_text="creator__username">作者</th>
+                    <th order_by_text="modified_date">最后更新时间</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -39,12 +39,12 @@
                 {% for obj in objects %}
                     <tr pk="{{ obj.pk }}" edit_url="{% url 'case' obj.pk %}" quick_update_url="{% url 'case_quick_update' obj.pk %}" del_url="{% url 'case_delete' obj.pk %}">
                         <td col_name='index' class="middle"></td>
-                        <td col_name='id' class="middle">{{ obj.pk }}</td>
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='step_count' class="middle">{{ obj.m2m_count }}</td>
                         <td col_name='creator__username' class="middle">{{ obj.creator__username }}</td>
+                        <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
                         <td>
                             <div class="middle">
                                 <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="编辑"><i class="icon-edit"></i></button>
@@ -54,7 +54,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center bg-secondary">无数据</td>
+                        <td colspan="8" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
                     </tr>
                 {% endfor %}
             </tbody>

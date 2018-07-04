@@ -1,6 +1,6 @@
-import os
 import json
 import logging
+import copy
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -20,7 +20,7 @@ from django.template.loader import render_to_string
 logger = logging.getLogger('django.request')
 
 
-# 用例列表
+# 列表
 @login_required
 def suites(request):
     prompt = None
@@ -30,14 +30,14 @@ def suites(request):
             page = 1
         size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
         search_text = str(request.POST.get('search_text', ''))
-        order_by = request.POST.get('order_by', 'pk')
+        order_by = request.POST.get('order_by', 'modified_date')
         order_by_reverse = request.POST.get('order_by_reverse', False)
         own = request.POST.get('own_checkbox')
     else:
         page = int(request.COOKIES.get('page', 1))
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
-        order_by = 'pk'
+        order_by = 'modified_date'
         order_by_reverse = True
         own = True
         if request.session.get('status', None) == 'success':
@@ -51,10 +51,10 @@ def suites(request):
     q = get_query_condition(keyword_list)
     if own:
         objects = Suite.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username')
+            'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username', 'modified_date')
     else:
         objects = Suite.objects.filter(q, is_active=True).values(
-            'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username')
+            'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username', 'modified_date')
     objects2 = Suite.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(m2m_count=Count('case'))
     count_ = {o['pk']: o['m2m_count'] for o in objects2}
     for o in objects:
@@ -62,7 +62,7 @@ def suites(request):
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'pk'
+            order_by = 'modified_date'
         if order_by_reverse is True or order_by_reverse == 'True':
             order_by_reverse = True
         else:
@@ -82,7 +82,7 @@ def suites(request):
     return render(request, 'main/suite/list.html', locals())
 
 
-# 用例详情
+# 详情
 @login_required
 def suite(request, pk):
     try:
@@ -97,8 +97,8 @@ def suite(request, pk):
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/suite/detail.html', locals())
     elif request.method == 'POST':
-        creator = obj.creator
-        form = SuiteForm(data=request.POST, instance=obj)
+        obj_temp = copy.deepcopy(obj)
+        form = SuiteForm(data=request.POST, instance=obj_temp)
         try:
             m2m_list = json.loads(request.POST.get('case', 'null'))
         except json.decoder.JSONDecodeError:
@@ -106,12 +106,12 @@ def suite(request, pk):
             m2m_list = None
         if form.is_valid():
             form_ = form.save(commit=False)
-            form_.creator = creator
+            form_.creator = obj.creator
             form_.modifier = request.user
             form_.is_active = obj.is_active
             form_.save()
             # form.save_m2m()
-            if m2m_list:
+            if m2m_list is not None:
                 m2m = SuiteVsCase.objects.filter(suite=obj).order_by('order')
                 original_m2m_list = list()
                 for dict_ in m2m.values('case'):
@@ -120,7 +120,7 @@ def suite(request, pk):
                     m2m.delete()
                     order = 0
                     for m2m_pk in m2m_list:
-                        if m2m_pk.strip() == '':
+                        if m2m_pk is None or m2m_pk.strip() == '':
                             continue
                         order += 1
                         m2m_object = Case.objects.get(pk=m2m_pk)
@@ -134,7 +134,7 @@ def suite(request, pk):
             else:
                 return HttpResponseRedirect(redirect_url)
         else:
-            if m2m_list:
+            if m2m_list is not None:
                 # 暂存step列表
                 m2m = SuiteVsCase.objects.filter(suite=obj).order_by('order')
                 original_m2m_list = list()
@@ -174,10 +174,10 @@ def suite_add(request):
             # form.save_m2m()
             obj = form_
             pk = obj.id
-            if m2m_list:
+            if m2m_list is not None:
                 order = 0
                 for m2m_pk in m2m_list:
-                    if m2m_pk.strip() == '':
+                    if m2m_pk is None or m2m_pk.strip() == '':
                         continue
                     order += 1
                     m2m_object = Case.objects.get(pk=m2m_pk)
@@ -193,7 +193,7 @@ def suite_add(request):
             else:
                 return HttpResponseRedirect(redirect_url)
         else:
-            if m2m_list:
+            if m2m_list is not None:
                 temp_list_json = json.dumps(m2m_list)
         redirect_url = request.POST.get('redirect_url', '')
         is_success = False
@@ -234,7 +234,8 @@ def suite_quick_update(request, pk):
 # 获取选中的case
 @login_required
 def suite_cases(request, pk):
-    objects = Case.objects.filter(suite=pk, is_active=True).order_by('suitevscase__order').values('pk', 'name', order=F('suitevscase__order'))
+    objects = Case.objects.filter(suite=pk, is_active=True).order_by('suitevscase__order').values(
+        'pk', 'name', 'keyword', 'project__name', order=F('suitevscase__order'))
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 

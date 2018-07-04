@@ -1,5 +1,6 @@
 import json
 import logging
+import copy
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
 from django.shortcuts import render, get_object_or_404
 from django.core.serializers import serialize
@@ -27,14 +28,14 @@ def variable_groups(request):
             page = 1
         size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
         search_text = str(request.POST.get('search_text', ''))
-        order_by = request.POST.get('order_by', 'pk')
+        order_by = request.POST.get('order_by', 'modified_date')
         order_by_reverse = request.POST.get('order_by_reverse', False)
         own = request.POST.get('own_checkbox')
     else:
         page = int(request.COOKIES.get('page', 1))
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
-        order_by = 'pk'
+        order_by = 'modified_date'
         order_by_reverse = True
         own = True
         if request.session.get('status', None) == 'success':
@@ -48,16 +49,16 @@ def variable_groups(request):
     q = get_query_condition(keyword_list)
     if own:
         objects = VariableGroup.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username').annotate(
+            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
             variable_count=Count('variable'))
     else:
         objects = VariableGroup.objects.filter(q, is_active=True).values(
-            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username').annotate(
+            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
             variable_count=Count('variable'))
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'pk'
+            order_by = 'modified_date'
         if order_by_reverse is True or order_by_reverse == 'True':
             order_by_reverse = True
         else:
@@ -91,8 +92,8 @@ def variable_group(request, pk):
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/variable/detail.html', locals())
     elif request.method == 'POST':
-        creator = obj.creator
-        form = VariableGroupForm(data=request.POST, instance=obj)
+        obj_temp = copy.deepcopy(obj)
+        form = VariableGroupForm(data=request.POST, instance=obj_temp)
         variable_list = json.loads(request.POST.get('variable', '[]'))
         try:
             variable_list = json.loads(request.POST.get('variable', 'null'))
@@ -101,12 +102,12 @@ def variable_group(request, pk):
             variable_list = None
         if form.is_valid():
             form_ = form.save(commit=False)
-            form_.creator = creator
+            form_.creator = obj.creator
             form_.modifier = request.user
             form_.is_active = obj.is_active
             form_.save()
             form.save_m2m()
-            if variable_list:
+            if variable_list is not None:
                 objects = Variable.objects.filter(variable_group=obj)
                 object_values = objects.order_by('order').values('name', 'value')
                 object_values = list(object_values)
@@ -114,10 +115,12 @@ def variable_group(request, pk):
                     objects.delete()
                     order = 0
                     for v in variable_list:
-                        if not v:
+                        if not v or v['name'] is None or v['name'].strip() == '':
                             continue
-                        order += 1
-                        Variable.objects.create(variable_group=obj, name=v['name'], value=v['value'], order=order)
+                        else:
+                            order += 1
+                            Variable.objects.create(
+                                variable_group=obj, name=v['name'].strip(), value=v['value'], order=order)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
             redirect_url = request.POST.get('redirect_url', '')
@@ -126,7 +129,7 @@ def variable_group(request, pk):
             else:
                 return HttpResponseRedirect(redirect_url)
         else:
-            if variable_list:
+            if variable_list is not None:
                 # 暂存variable列表
                 temp_dict = dict()
                 temp_dict['data'] = variable_list
@@ -167,7 +170,11 @@ def variable_group_add(request):
                     if not v:
                         continue
                     order += 1
-                    Variable.objects.create(variable_group=obj, name=v['name'], value=v['value'], order=order)
+                    if v['name'] is None:
+                        continue
+                    else:
+                        Variable.objects.create(
+                            variable_group=obj, name=v['name'].strip(), value=v['value'], order=order)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
             redirect_url = request.POST.get('redirect_url', '')

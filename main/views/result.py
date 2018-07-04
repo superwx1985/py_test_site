@@ -1,6 +1,6 @@
-import os
 import json
 import logging
+import copy
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -30,14 +30,14 @@ def results(request):
             page = 1
         size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
         search_text = str(request.POST.get('search_text', ''))
-        order_by = request.POST.get('order_by', 'pk')
+        order_by = request.POST.get('order_by', 'modified_date')
         order_by_reverse = request.POST.get('order_by_reverse', False)
         own = request.POST.get('own_checkbox')
     else:
         page = int(request.COOKIES.get('page', 1))
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
-        order_by = 'pk'
+        order_by = 'modified_date'
         order_by_reverse = True
         own = True
         if request.session.get('status', None) == 'success':
@@ -51,10 +51,12 @@ def results(request):
     q = get_query_condition(keyword_list)
     if own:
         objects = SuiteResult.objects.filter(q, is_active=True, creator=request.user).order_by('-start_date').values(
-            'pk', 'name', 'keyword', 'project__name', 'start_date', 'result_status', 'creator', 'creator__username')
+            'pk', 'name', 'keyword', 'project__name', 'start_date', 'result_status', 'creator', 'creator__username',
+            'modified_date')
     else:
         objects = SuiteResult.objects.filter(q, is_active=True).order_by('-start_date').values(
-            'pk', 'name', 'keyword', 'project__name',  'start_date', 'result_status', 'creator', 'creator__username')
+            'pk', 'name', 'keyword', 'project__name',  'start_date', 'result_status', 'creator', 'creator__username',
+            'modified_date')
     result_status_list = SuiteResult.result_status_list
     d = {l[0]: l[1] for l in result_status_list}
     for o in objects:
@@ -62,7 +64,7 @@ def results(request):
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'pk'
+            order_by = 'modified_date'
         if order_by_reverse is True or order_by_reverse == 'True':
             order_by_reverse = True
         else:
@@ -99,7 +101,6 @@ def result(request, pk):
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/result/detail.html', locals())
     elif request.method == 'POST':
-        creator = obj.creator
         form = SuiteResultForm(data=request.POST)
         if form.is_valid():
             obj.name = form.data['name']

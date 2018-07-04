@@ -1,5 +1,6 @@
 import json
 import logging
+import copy
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -24,14 +25,14 @@ def cases(request):
             page = 1
         size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
         search_text = str(request.POST.get('search_text', ''))
-        order_by = request.POST.get('order_by', 'pk')
+        order_by = request.POST.get('order_by', 'modified_date')
         order_by_reverse = request.POST.get('order_by_reverse', False)
         own = request.POST.get('own_checkbox')
     else:
         page = int(request.COOKIES.get('page', 1))
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
-        order_by = 'pk'
+        order_by = 'modified_date'
         order_by_reverse = True
         own = True
         if request.session.get('status', None) == 'success':
@@ -45,10 +46,10 @@ def cases(request):
     q = get_query_condition(keyword_list)
     if own:
         objects = Case.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username')
+            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date')
     else:
         objects = Case.objects.filter(q, is_active=True).values(
-            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username')
+            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date')
     objects2 = Case.objects.filter(is_active=True, step__is_active=True).values('pk').annotate(m2m_count=Count('step'))
     count_ = {o['pk']: o['m2m_count'] for o in objects2}
     for o in objects:
@@ -56,7 +57,7 @@ def cases(request):
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'pk'
+            order_by = 'modified_date'
         if order_by_reverse is True or order_by_reverse == 'True':
             order_by_reverse = True
         else:
@@ -92,8 +93,8 @@ def case(request, pk):
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/case/detail.html', locals())
     elif request.method == 'POST':
-        creator = obj.creator
-        form = CaseForm(data=request.POST, instance=obj)
+        obj_temp = copy.deepcopy(obj)
+        form = CaseForm(data=request.POST, instance=obj_temp)
         try:
             m2m_list = json.loads(request.POST.get('step', 'null'))
         except json.decoder.JSONDecodeError:
@@ -101,12 +102,12 @@ def case(request, pk):
             m2m_list = None
         if form.is_valid():
             form_ = form.save(commit=False)
-            form_.creator = creator
+            form_.creator = obj.creator
             form_.modifier = request.user
             form_.is_active = obj.is_active
             form_.save()
             # form.save_m2m()
-            if m2m_list:
+            if m2m_list is not None:
                 m2m = CaseVsStep.objects.filter(case=obj).order_by('order')
                 original_m2m_list = list()
                 for dict_ in m2m.values('step'):
@@ -115,7 +116,7 @@ def case(request, pk):
                     m2m.delete()
                     order = 0
                     for m2m_pk in m2m_list:
-                        if m2m_pk.strip() == '':
+                        if m2m_pk is None or m2m_pk.strip() == '':
                             continue
                         order += 1
                         m2m_object = Step.objects.get(pk=m2m_pk)
@@ -129,7 +130,7 @@ def case(request, pk):
             else:
                 return HttpResponseRedirect(redirect_url)
         else:
-            if m2m_list:
+            if m2m_list is not None:
                 # 暂存step列表
                 m2m = CaseVsStep.objects.filter(case=obj).order_by('order')
                 original_m2m_list = list()
@@ -169,10 +170,10 @@ def case_add(request):
             # form.save_m2m()
             obj = form_
             pk = obj.id
-            if m2m_list:
+            if m2m_list is not None:
                 order = 0
                 for m2m_pk in m2m_list:
-                    if m2m_pk.strip() == '':
+                    if m2m_pk is None or m2m_pk.strip() == '':
                         continue
                     order += 1
                     m2m_object = Step.objects.get(pk=m2m_pk)
@@ -188,7 +189,7 @@ def case_add(request):
             else:
                 return HttpResponseRedirect(redirect_url)
         else:
-            if m2m_list:
+            if m2m_list is not None:
                 temp_list_json = json.dumps(m2m_list)
         redirect_url = request.POST.get('redirect_url', '')
         is_success = False
@@ -230,7 +231,7 @@ def case_quick_update(request, pk):
 @login_required
 def case_steps(request, pk):
     objects = Step.objects.filter(case=pk, is_active=True).order_by('casevsstep__order').values(
-        'pk', 'name', order=F('casevsstep__order')).annotate(
+        'pk', 'name', 'keyword', 'project__name', order=F('casevsstep__order')).annotate(
         action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
@@ -259,9 +260,10 @@ def case_list(request):
             keyword_list.append(keyword)
     q = get_query_condition(keyword_list)
     if own:
-        objects = Case.objects.filter(q, is_active=True, creator=request.user).order_by('pk').values('pk', 'name')
+        objects = Case.objects.filter(q, is_active=True, creator=request.user).order_by('pk').values(
+            'pk', 'name', 'keyword', 'project__name')
     else:
-        objects = Case.objects.filter(q, is_active=True).order_by('pk').values('pk', 'name')
+        objects = Case.objects.filter(q, is_active=True).order_by('pk').values('pk', 'name', 'keyword', 'project__name')
     # 排序
     if objects:
         if order_by not in objects[0]:
@@ -291,7 +293,7 @@ def case_list_temp(request):
     order = 0
     list_temp = list()
     for pk in list_:
-        if pk.strip() == '':
+        if pk is None or pk.strip() == '':
             continue
         order += 1
         objects = Case.objects.filter(pk=pk).values('pk', 'name')

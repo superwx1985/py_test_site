@@ -46,10 +46,10 @@ class OrderByForm(forms.Form):
 
 class CaseForm(forms.ModelForm):
     # 不验证某些字段
-    creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-    modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-    is_active = forms.CharField(required=False)
+    is_active = forms.CharField(required=False, validators=[])
     step = forms.CharField(required=False, validators=[])
+    # 限制project为必选
+    project = forms.ModelChoiceField(queryset=Project.objects, required=True)
 
     class Meta:
         model = Case
@@ -61,17 +61,17 @@ class CaseForm(forms.ModelForm):
             # 'ui_alert_handle': forms.RadioSelect,
         }
 
-    # def __init__(self, *args, **kwargs):
-    #     super(CaseForm, self).__init__(*args, **kwargs)
-    #
-    #     for k, v in self.fields.items():
-    #         if k == 'name':
-    #             v.widget.attrs.update({'placeholder': '请输入名称'})
-    #         # 如果widget是Textarea，rows属性设置为空
-    #         if isinstance(v.widget, forms.Textarea):
-    #             v.widget.attrs.update({'rows': '', 'class': 'form-control'})
-    #         else:
-    #             v.widget.attrs.update({'class': 'form-control'})
+    def __init__(self, *args, **kwargs):
+        super(CaseForm, self).__init__(*args, **kwargs)
+
+        for k, v in self.fields.items():
+            if k == 'name':
+                v.widget.attrs.update({'placeholder': '请输入名称'})
+            # 如果widget是Textarea，rows属性设置为空
+            if isinstance(v.widget, forms.Textarea):
+                v.widget.attrs.update({'rows': '', 'class': 'form-control'})
+            else:
+                v.widget.attrs.update({'class': 'form-control'})
 
 
 class StepForm(forms.ModelForm):
@@ -81,9 +81,9 @@ class StepForm(forms.ModelForm):
     # 排序子用例
     other_sub_case = forms.ModelChoiceField(queryset=Case.objects.filter(is_active=True).order_by('pk'), required=False)
     # 不验证某些字段
-    creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-    modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-    is_active = forms.CharField(required=False)
+    is_active = forms.CharField(required=False, validators=[])
+    # 限制project为必选
+    project = forms.ModelChoiceField(queryset=Project.objects, required=True)
 
     class Meta:
         model = Step
@@ -108,9 +108,7 @@ class StepForm(forms.ModelForm):
 
 class ConfigForm(forms.ModelForm):
     # 不验证某些字段
-    creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-    modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-    is_active = forms.CharField(required=False)
+    is_active = forms.CharField(required=False, validators=[])
 
     class Meta:
         model = Config
@@ -119,34 +117,36 @@ class ConfigForm(forms.ModelForm):
 
 class VariableGroupForm(forms.ModelForm):
     # 不验证某些字段
-    creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-    modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-    is_active = forms.CharField(required=False)
+    is_active = forms.CharField(required=False, validators=[])
+    # 限制project为必选
+    project = forms.ModelChoiceField(queryset=Project.objects, required=True)
 
     class Meta:
         model = VariableGroup
         fields = '__all__'
 
 
-class VariableForm(forms.ModelForm):
-    # 不验证某些字段
-    creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-    modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-    is_active = forms.CharField(required=False)
-
-    class Meta:
-        model = Variable
-        fields = '__all__'
+# class VariableForm(forms.ModelForm):
+#     # 不验证某些字段
+#     creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+#     modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
+#     is_active = forms.CharField(required=False, validators=[])
+#
+#     class Meta:
+#         model = Variable
+#         fields = '__all__'
 
 
 class SuiteForm(forms.ModelForm):
     # 不验证某些字段
-    creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-    modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-    is_active = forms.CharField(required=False)
+    is_active = forms.CharField(required=False, validators=[])
     case = forms.CharField(required=False, validators=[])
     # 限制线程数最大值
     thread_count = forms.IntegerField(initial=1, min_value=1, max_value=8)
+    # 限制config为必选
+    config = forms.ModelChoiceField(queryset=Config.objects, required=True)
+    # 限制project为必选
+    project = forms.ModelChoiceField(queryset=Project.objects, required=True)
 
     class Meta:
         model = Suite
@@ -160,4 +160,4 @@ class SuiteResultForm(forms.Form):
     project_list = list()
     project_list.append((None, '---------'))
     project_list.extend(list(Project.objects.values_list('pk', 'name')))
-    project = forms.ChoiceField(choices=project_list)
+    project = forms.ChoiceField(choices=project_list, required=False)

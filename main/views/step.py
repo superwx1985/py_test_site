@@ -1,5 +1,6 @@
 import json
 import logging
+import copy
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
 from django.shortcuts import render, get_object_or_404
 from django.core.serializers import serialize
@@ -66,7 +67,7 @@ def list_(request):
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'pk'
+            order_by = 'modified_date'
         if order_by_reverse is True or order_by_reverse == 'True':
             order_by_reverse = True
         else:
@@ -101,11 +102,11 @@ def detail(request, pk):
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/step/detail.html', locals())
     elif request.method == 'POST':
-        creator = obj.creator
-        form = StepForm(data=request.POST, instance=obj)
+        obj_temp = copy.deepcopy(obj)
+        form = StepForm(data=request.POST, instance=obj_temp)
         if form.is_valid():
             form_ = form.save(commit=False)
-            form_.creator = creator
+            form_.creator = obj.creator
             form_.modifier = request.user
             form_.is_active = obj.is_active
             form_.save()
@@ -222,10 +223,10 @@ def list_json(request):
     q = get_query_condition(keyword_list)
     if own:
         objects = Step.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword').annotate(
+            'pk', 'name', 'keyword', 'project__name').annotate(
             action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
     else:
-        objects = Step.objects.filter(q, is_active=True).values('pk', 'name', 'keyword').annotate(
+        objects = Step.objects.filter(q, is_active=True).values('pk', 'name', 'keyword', 'project__name').annotate(
             action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
     # 排序
     if objects:

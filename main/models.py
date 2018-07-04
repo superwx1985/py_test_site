@@ -5,22 +5,25 @@ import uuid
 
 # 用例表
 class Case(models.Model):
+    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    creator = models.ForeignKey(User, verbose_name='创建人', related_name='case_creator', on_delete=models.DO_NOTHING)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='case_creator', on_delete=models.SET_NULL, blank=True, null=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='case_modifier', on_delete=models.DO_NOTHING)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='case_modifier', on_delete=models.SET_NULL, blank=True, null=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
-    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.DO_NOTHING, blank=True, null=True)
+    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.SET_NULL, blank=True, null=True)
     step = models.ManyToManyField('Step', through='CaseVsStep', through_fields=('case', 'step'))
-    project = models.ForeignKey('main.Project', on_delete=models.DO_NOTHING)
 
     class Meta:
         pass
         # db_table = 'test_case_step'
-        ordering = ['-pk']  # 这个字段是告诉Django模型对象返回的记录结果集是按照哪个字段排序的,-xxx表示降序，?xxx表示随机
+        ordering = ['-modified_date']  # 这个字段是告诉Django模型对象返回的记录结果集是按照哪个字段排序的,-xxx表示降序，?xxx表示随机
 
     def __str__(self):
         return self.name
@@ -28,16 +31,19 @@ class Case(models.Model):
 
 # 步骤表
 class Step(models.Model):
-    id = models.UUIDField(primary_key=True, auto_created=True, default=uuid.uuid1, editable=False)
+    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    creator = models.ForeignKey(User, verbose_name='创建人', related_name='step_creator', on_delete=models.DO_NOTHING)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='step_creator', on_delete=models.SET_NULL, blank=True, null=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='step_modifier', on_delete=models.DO_NOTHING)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='step_modifier', on_delete=models.SET_NULL, blank=True, null=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
-    action = models.ForeignKey('main.Action', on_delete=models.DO_NOTHING)
+    action = models.ForeignKey('main.Action', on_delete=models.SET_NULL, blank=True, null=True)
     timeout = models.FloatField(blank=True, null=True)
     save_as = models.CharField(blank=True, max_length=100)
     ui_by_list = (
@@ -87,12 +93,12 @@ class Step(models.Model):
     api_body = models.TextField(blank=True)
     api_data = models.TextField(blank=True)
     other_data = models.TextField(blank=True)
-    other_sub_case = models.ForeignKey('main.Case', on_delete=models.DO_NOTHING, blank=True, null=True, related_name='step_sub_case')
-    project = models.ForeignKey('main.Project', on_delete=models.DO_NOTHING)
+    other_sub_case = models.ForeignKey(
+        'main.Case', on_delete=models.SET_NULL, blank=True, null=True, related_name='step_sub_case')
 
     class Meta:
         # db_table = 'test_case_step'
-        ordering = ['-pk']
+        ordering = ['-modified_date']
         pass
 
     def __str__(self):
@@ -103,18 +109,20 @@ class Step(models.Model):
 class CaseVsStep(models.Model):
     case = models.ForeignKey('main.Case', on_delete=models.CASCADE)
     step = models.ForeignKey('main.Step', on_delete=models.CASCADE)
-    creator = models.ForeignKey(User, verbose_name='创建人', related_name='case_vs_step_creator',
-                                on_delete=models.DO_NOTHING)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='case_vs_step_creator', on_delete=models.SET_NULL, blank=True,
+        null=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='case_vs_step_modifier',
-                                 on_delete=models.DO_NOTHING)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='case_vs_step_modifier', on_delete=models.SET_NULL, blank=True,
+        null=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
     order = models.IntegerField(default=0)
 
     class Meta:
         unique_together = ('case', 'step', 'order')
-        ordering = ['case', 'order']
+        ordering = ['-modified_date']
 
     # def case_id(self):
     #     return self.case.id
@@ -126,22 +134,25 @@ class CaseVsStep(models.Model):
         return '{} [{}]<===>{} [{}]'.format(self.case.id, self.case.name, self.step.id, self.step.name)
 
 
-# 动作（关键字）表
+# 动作表
 class Action(models.Model):
+    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    creator = models.ForeignKey(User, verbose_name='创建人', related_name='action_creator', on_delete=models.DO_NOTHING)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='action_creator', on_delete=models.SET_NULL, blank=True, null=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='action_modifier', on_delete=models.DO_NOTHING)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='action_modifier', on_delete=models.SET_NULL, blank=True, null=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
-    type = models.ForeignKey('main.ActionType', on_delete=models.DO_NOTHING)
+    type = models.ForeignKey('main.ActionType', on_delete=models.SET_NULL, blank=True, null=True)
     order = models.FloatField(default=0)
 
     class Meta:
         unique_together = ('name', 'type')
-        ordering = ['type', 'order']
+        ordering = ['order']
 
     @property
     def full_name(self):
@@ -159,6 +170,7 @@ class Action(models.Model):
 
 # 步骤类型字典表
 class ActionType(models.Model):
+    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
 
@@ -171,12 +183,15 @@ class ActionType(models.Model):
 
 # 配置表
 class Config(models.Model):
+    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    creator = models.ForeignKey(User, verbose_name='创建人', related_name='config_creator', on_delete=models.DO_NOTHING)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='config_creator', on_delete=models.SET_NULL, blank=True, null=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='config_modifier', on_delete=models.DO_NOTHING)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='config_modifier', on_delete=models.SET_NULL, blank=True, null=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
     ui_selenium_client_list = (
@@ -212,15 +227,18 @@ class Config(models.Model):
 
 # 变量组表
 class VariableGroup(models.Model):
+    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    project = models.ForeignKey('main.Project', on_delete=models.DO_NOTHING)
-    creator = models.ForeignKey(User, verbose_name='创建人', related_name='variable_group_creator',
-                                on_delete=models.DO_NOTHING)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='variable_group_creator', on_delete=models.SET_NULL, blank=True,
+        null=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='variable_group_modifier',
-                                 on_delete=models.DO_NOTHING)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='variable_group_modifier', on_delete=models.SET_NULL, blank=True,
+        null=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
 
@@ -233,6 +251,7 @@ class VariableGroup(models.Model):
 
 # 变量表
 class Variable(models.Model):
+    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     value = models.TextField(blank=True)
@@ -251,12 +270,16 @@ class Variable(models.Model):
 
 # 测试套件
 class Suite(models.Model):
+    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    creator = models.ForeignKey(User, verbose_name='创建人', related_name='suite_creator', on_delete=models.DO_NOTHING)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='suite_creator', on_delete=models.SET_NULL, blank=True, null=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='suite_modifier', on_delete=models.DO_NOTHING)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='suite_modifier', on_delete=models.SET_NULL, blank=True, null=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
     base_timeout = models.FloatField(default=10)
@@ -271,10 +294,9 @@ class Suite(models.Model):
     )
     log_level = models.IntegerField(choices=log_level_list, default=20)
     thread_count = models.IntegerField(default=1)
-    config = models.ForeignKey('main.Config', on_delete=models.DO_NOTHING)
-    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.DO_NOTHING, blank=True, null=True)
+    config = models.ForeignKey('main.Config', on_delete=models.SET_NULL, blank=True, null=True)
+    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.SET_NULL, blank=True, null=True)
     case = models.ManyToManyField('Case', through='SuiteVsCase', through_fields=('suite', 'case'))
-    project = models.ForeignKey('main.Project', on_delete=models.DO_NOTHING)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return self.name
@@ -287,18 +309,20 @@ class Suite(models.Model):
 class SuiteVsCase(models.Model):
     suite = models.ForeignKey('main.Suite', on_delete=models.CASCADE)
     case = models.ForeignKey('main.Case', on_delete=models.CASCADE)
-    creator = models.ForeignKey(User, verbose_name='创建人', related_name='suite_vs_case_creator',
-                                on_delete=models.DO_NOTHING)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='suite_vs_case_creator', on_delete=models.SET_NULL, blank=True,
+        null=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='suite_vs_case_modifier',
-                                 on_delete=models.DO_NOTHING)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='suite_vs_case_modifier', on_delete=models.SET_NULL, blank=True,
+        null=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
     order = models.IntegerField(default=0)
 
     class Meta:
         unique_together = ('suite', 'case', 'order')
-        ordering = ['suite', 'order']
+        ordering = ['-modified_date']
 
     def __str__(self):
         return '{} [{}]<===>{} [{}]'.format(self.suite.id, self.suite.name, self.case.id, self.case.name)
@@ -306,6 +330,7 @@ class SuiteVsCase(models.Model):
 
 # suite测试结果
 class SuiteResult(models.Model):
+    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
@@ -316,14 +341,16 @@ class SuiteResult(models.Model):
     thread_count = models.IntegerField(default=1)
     config = models.TextField(blank=True, null=True)
     variable_group = models.TextField(blank=True, null=True)
-    project = models.ForeignKey('main.Project', on_delete=models.DO_NOTHING)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
 
     suite = models.ForeignKey('main.Suite', on_delete=models.SET_NULL, null=True, blank=True)
-    creator = models.ForeignKey(User, verbose_name='创建人', related_name='suite_result_creator',
-                                on_delete=models.DO_NOTHING)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='suite_result_creator', on_delete=models.SET_NULL, blank=True,
+        null=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(User, verbose_name='修改人', related_name='suite_result_modifier',
-                                 on_delete=models.DO_NOTHING)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='suite_result_modifier', on_delete=models.SET_NULL, blank=True,
+        null=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
     end_date = models.DateTimeField(verbose_name='结束时间', blank=True, null=True)
@@ -357,6 +384,7 @@ class SuiteResult(models.Model):
 
 # case测试结果
 class CaseResult(models.Model):
+    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
@@ -368,7 +396,7 @@ class CaseResult(models.Model):
     parent_case_pk_list = models.TextField(blank=True, null=True)
     case = models.ForeignKey('main.Case', on_delete=models.SET_NULL, null=True, blank=True)
     case_order = models.IntegerField(blank=True, null=True)
-    creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.DO_NOTHING)
+    creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.SET_NULL, blank=True, null=True)
     start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
     end_date = models.DateTimeField(verbose_name='结束时间', blank=True, null=True)
     execute_count = models.IntegerField(blank=True, null=True)
@@ -403,6 +431,7 @@ class CaseResult(models.Model):
 
 # step测试结果
 class StepResult(models.Model):
+    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
@@ -412,7 +441,7 @@ class StepResult(models.Model):
     step = models.ForeignKey('main.Step', on_delete=models.SET_NULL, null=True, blank=True)
     step_order = models.IntegerField(blank=True, null=True)
 
-    creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.DO_NOTHING)
+    creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.SET_NULL, blank=True, null=True)
     start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
     end_date = models.DateTimeField(verbose_name='结束时间', blank=True, null=True)
     result_status_list = (
@@ -447,11 +476,13 @@ class StepResult(models.Model):
 
 
 class Image(models.Model):
+    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     img = models.ImageField(upload_to='img')
 
 
 class Project(models.Model):
+    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)

@@ -68,4 +68,7 @@ def debug1(request):
     return HttpResponse(result)
 
 
+def debug2(request):
+    return HttpResponse('ok')
+
 

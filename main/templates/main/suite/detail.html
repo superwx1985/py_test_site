@@ -149,11 +149,11 @@
                 tbody.empty();
                 if (data.data.objects.length > 0) {
                     $.each(data.data.objects, function (i, v) {
-                        var tr = $('<tr></tr>');
-                        tr.data("m2m_data", v);
+                        var tr = $('<tr>').attr('pk', v.pk);
                         $('<td moveable class="middle"><i class="icon-move"></i></td>').appendTo(tr);
-                        $('<td class="text-center" pk></td>').text(v.pk).appendTo(tr);
-                        $('<td></td>').text(v.name).appendTo(tr);
+                        $('<td>').text(v.name).appendTo(tr);
+                        $('<td>').text(v.keyword).appendTo(tr);
+                        $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
                         tbody.append(tr);
                     });
 
@@ -175,7 +175,7 @@
                         }
                     });
                 } else {
-                    var tr = $('<tr><td colspan="3" class="text-center bg-secondary">无数据</td></tr>');
+                    var tr = $('<tr placeholder><td colspan="4" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
                     tbody.append(tr);
                 }
             }
@@ -188,11 +188,12 @@
                 if (data.data.length > 0) {
                     tbody.empty();
                     $.each(data.data, function (i, v) {
-                        var tr = $('<tr></tr>');
+                        var tr = $('<tr>').attr('pk', v.pk);
                         $('<td moveable class="middle"><i class="icon-move"></i></td>').appendTo(tr);
                         $('<td index class="text-center"></td>').text(i + 1).appendTo(tr);
-                        $('<td class="text-center" pk></td>').text(v.pk).appendTo(tr);
-                        $('<td></td>').text(v.name).appendTo(tr);
+                        $('<td>').text(v.name).appendTo(tr);
+                        $('<td>').text(v.keyword).appendTo(tr);
+                        $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
                         tbody.append(tr);
                     });
                 }
@@ -219,14 +220,13 @@
                     $(this).children('[placeholder]').remove();
                 }
             });
-            $('#m2m_all table').droppable({
-                activeClass: 'ui-state-default',
+            $('#m2m_all tbody').droppable({
                 hoverClass: 'ui-state-hover',
                 accept: '#m2m_selected tr:not([placeholder])',
                 drop: function (event, ui) {
                     ui.draggable.remove();
                     if ($('#m2m_selected tbody tr').length <= 1) {
-                        $('#m2m_selected tbody').append($('<tr placeholder><td colspan="4" class="text-center bg-secondary">无数据</td></tr>'));
+                        $('#m2m_selected tbody').append($('<tr placeholder><td colspan="5" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>'));
                     }
                 }
             })
@@ -238,7 +238,7 @@
 
             m2m.each(function(i) {
                 $(this).children('[index]').text(i+1);
-                m2m_list.push($(this).children('td[pk]').text());
+                m2m_list.push($(this).attr('pk'));
             });
             var json_str = JSON.stringify(m2m_list);
             $('input[name=case]').val(json_str);
@@ -324,48 +324,61 @@
 
 {% block detail_inner_list %}
     <div id='case' class="row">
-        <div id="m2m_selected" class="col-6 text-center">
-            <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="上下拖动进行排序，拖动到右侧删除"></i>&nbsp;关联用例列表</h5>
-            <div class="ui-widget-content">
-                <table class="table table-sm table-bordered table-hover" style="width: 100%">
-                    <colgroup>
-                        <col style='width: 30px;'>
-                        <col style='width: 60px;'>
-                        <col style='width: 60px;'>
-                        <col>
-                    </colgroup>
-                    <thead class="thead-light"><tr><th></th><th>序号</th><th>ID</th><th>名称</th></tr></thead>
-                    <tbody class="text-left">
-                        <tr placeholder><td colspan="4" class="text-center bg-secondary">无数据</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
         <div id="m2m_all" class="col-6 text-center">
-            <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="拖动到左侧添加"></i>&nbsp;可选用例列表</h5>
+            <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="拖动到右侧添加"></i>&nbsp;可选用例列表</h5>
             <form method="post" id="m2m_objects_form" novalidate onsubmit="return submit_m2m_objects_form();">
                 <input type="hidden" name="order_by" value="pk" id="id_order_by">
                 <input type="hidden" name="order_by_reverse" value="True" id="id_order_by_reverse">
-                {% include 'main/include/tools_bar_sub_list.html'%}
-                <div class="ui-widget-content">
+                <div class="small">
                     <table class="table table-sm table-bordered table-hover" style="width: 100%">
                         <colgroup>
                             <col style='width: 30px;'>
-                            <col style='width: 60px;'>
                             <col>
+                            <col style='width: 120px;'>
+                            <col style='width: 120px;'>
                         </colgroup>
                         <thead class="thead-light">
                             <tr>
                                 <th></th>
-                                <th order_by_text="pk">ID</th>
                                 <th order_by_text="name">名称</th>
+                                <th order_by_text="keyword">关键字</th>
+                                <th order_by_text="project__name">项目</th>
                             </tr>
                         </thead>
-                        <tbody class="text-left"></tbody>
+                        <tbody class="text-left">
+                            <tr placeholder><td colspan="4" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>
+                        </tbody>
                     </table>
+                    {% include 'main/include/tools_bar_sub_list.html'%}
+                    {% include 'main/include/tools/paginator_without_size.html' %}
                 </div>
-                {% include 'main/include/tools/paginator_without_size.html' %}
             </form>
+        </div>
+        <div id="m2m_selected" class="col-6 text-center">
+            <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="上下拖动进行排序，拖动到左侧删除"></i>&nbsp;关联用例列表</h5>
+            <div class="small">
+                <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                    <colgroup>
+                        <col style='width: 30px;'>
+                        <col style='width: 40px;'>
+                        <col>
+                        <col style='width: 120px;'>
+                        <col style='width: 120px;'>
+                    </colgroup>
+                    <thead class="thead-light">
+                        <tr>
+                            <th></th>
+                            <th>顺序</th>
+                            <th>名称</th>
+                            <th>关键字</th>
+                            <th>项目</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-left">
+                        <tr placeholder><td colspan="5" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 {% endblock%}

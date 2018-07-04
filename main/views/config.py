@@ -1,5 +1,6 @@
 import json
 import logging
+import copy
 from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
 from django.shortcuts import render, get_object_or_404
 from django.core.serializers import serialize
@@ -27,14 +28,14 @@ def configs(request):
             page = 1
         size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
         search_text = str(request.POST.get('search_text', ''))
-        order_by = request.POST.get('order_by', 'pk')
+        order_by = request.POST.get('order_by', 'modified_date')
         order_by_reverse = request.POST.get('order_by_reverse', False)
         own = request.POST.get('own_checkbox')
     else:
         page = int(request.COOKIES.get('page', 1))
         size = int(request.COOKIES.get('size', 10))
         search_text = ''
-        order_by = 'pk'
+        order_by = 'modified_date'
         order_by_reverse = True
         own = True
         if request.session.get('status', None) == 'success':
@@ -48,14 +49,14 @@ def configs(request):
     q = get_query_condition(keyword_list)
     if own:
         objects = Config.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword', 'creator', 'creator__username')
+            'pk', 'name', 'keyword', 'creator', 'creator__username', 'modified_date')
     else:
         objects = Config.objects.filter(q, is_active=True).values(
-            'pk', 'name', 'keyword', 'creator', 'creator__username')
+            'pk', 'name', 'keyword', 'creator', 'creator__username', 'modified_date')
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'pk'
+            order_by = 'modified_date'
         if order_by_reverse is True or order_by_reverse == 'True':
             order_by_reverse = True
         else:
@@ -89,11 +90,11 @@ def config(request, pk):
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/config/detail.html', locals())
     elif request.method == 'POST':
-        creator = obj.creator
-        form = ConfigForm(data=request.POST, instance=obj)
+        obj_temp = copy.deepcopy(obj)
+        form = ConfigForm(data=request.POST, instance=obj_temp)
         if form.is_valid():
             form_ = form.save(commit=False)
-            form_.creator = creator
+            form_.creator = obj.creator
             form_.modifier = request.user
             form_.is_active = obj.is_active
             form_.save()
