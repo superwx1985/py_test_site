@@ -106,8 +106,11 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
         other_data = step.other_data
         other_sub_case = step.other_sub_case
 
-        # 设置selenium超时时间
-        if dr is not None:
+        # ===== UI 初始化检查 =====
+        if step_action.type.pk == 1:
+            if dr is None:
+                raise WebDriverException('浏览器未初始化，请检查是否配置有误或被关闭')
+            # 设置selenium超时时间
             dr.implicitly_wait(timeout)
             dr.set_page_load_timeout(timeout)
             dr.set_script_timeout(timeout)
@@ -491,7 +494,7 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
         logger.error('{}\t执行超时'.format(execute_id), exc_info=True)
     except Exception as e:
         step_result.result_status = 3
-        step_result.result_message = '执行出错'
+        step_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
         step_result.result_error = traceback.format_exc()
         logger.error('{}\t执行出错'.format(execute_id), exc_info=True)
 
