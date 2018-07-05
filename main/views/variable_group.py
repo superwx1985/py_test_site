@@ -21,7 +21,7 @@ logger = logging.getLogger('django.request')
 
 
 @login_required
-def variable_groups(request):
+def list_(request):
     if request.method == 'POST':
         page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
         if page <= 0:
@@ -41,12 +41,7 @@ def variable_groups(request):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-    keyword_list_temp = search_text.split(' ')
-    keyword_list = list()
-    for keyword in keyword_list_temp:
-        if keyword.strip() != '':
-            keyword_list.append(keyword)
-    q = get_query_condition(keyword_list)
+    q = get_query_condition(search_text)
     if own:
         objects = VariableGroup.objects.filter(q, is_active=True, creator=request.user).values(
             'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
@@ -75,11 +70,11 @@ def variable_groups(request):
         page = paginator.num_pages
     order_by_form = OrderByForm(initial={'order_by': order_by, 'order_by_reverse': order_by_reverse})
     paginator_form = PaginatorForm(initial={'page': page, 'size': size}, page_max_value=paginator.num_pages)
-    return render(request, 'main/variable/list.html', locals())
+    return render(request, 'main/variable_group/list.html', locals())
 
 
 @login_required
-def variable_group(request, pk):
+def detail(request, pk):
     try:
         obj = VariableGroup.objects.select_related('creator', 'modifier').get(pk=pk)
     except VariableGroup.DoesNotExist:
@@ -90,7 +85,7 @@ def variable_group(request, pk):
             prompt = 'success'
         request.session['status'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
-        return render(request, 'main/variable/detail.html', locals())
+        return render(request, 'main/variable_group/detail.html', locals())
     elif request.method == 'POST':
         obj_temp = copy.deepcopy(obj)
         form = VariableGroupForm(data=request.POST, instance=obj_temp)
@@ -136,18 +131,18 @@ def variable_group(request, pk):
                 temp_list_json = json.dumps(temp_dict)
         redirect_url = request.POST.get('redirect_url', '')
         is_success = False
-        return render(request, 'main/variable/detail.html', locals())
+        return render(request, 'main/variable_group/detail.html', locals())
 
 
 @login_required
-def variable_group_add(request):
+def add(request):
     if request.method == 'GET':
         form = VariableGroupForm()
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
-        return render(request, 'main/variable/detail.html', locals())
+        return render(request, 'main/variable_group/detail.html', locals())
     elif request.method == 'POST':
         form = VariableGroupForm(data=request.POST)
         try:
@@ -192,11 +187,11 @@ def variable_group_add(request):
                 temp_list_json = json.dumps(temp_dict)
         redirect_url = request.POST.get('redirect_url', '')
         is_success = False
-        return render(request, 'main/variable/detail.html', locals())
+        return render(request, 'main/variable_group/detail.html', locals())
 
 
 @login_required
-def variable_group_delete(request, pk):
+def delete(request, pk):
     if request.method == 'POST':
         VariableGroup.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
         return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
@@ -205,7 +200,7 @@ def variable_group_delete(request, pk):
 
 
 @login_required
-def variable_group_quick_update(request, pk):
+def quick_update(request, pk):
     if request.method == 'POST':
         try:
             col_name = request.POST['col_name']
@@ -228,6 +223,6 @@ def variable_group_quick_update(request, pk):
 
 # 获取变量组中的变量
 @login_required
-def variable_group_variables(request, pk):
+def variables(request, pk):
     objects = Variable.objects.filter(variable_group=pk).order_by('order').values('pk', 'name', 'value')
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})

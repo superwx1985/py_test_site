@@ -89,9 +89,14 @@
                         <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
                         <td>
                             <div class="middle">
-                                <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="编辑"><i class="icon-edit"></i></button>
-                                <button type="button" name="execute_button" class="btn btn-outline-success list_button" data-toggle="tooltip" title="执行"><i class="icon-play"></i></button>
-                                <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除"><i class="icon-trash"></i></button>
+                                {% if request.user.pk == obj.creator %}
+                                    <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="编辑"><i class="icon-edit"></i></button>
+                                    <button type="button" name="execute_button" class="btn btn-outline-success list_button" data-toggle="tooltip" title="执行"><i class="icon-play"></i></button>
+                                    <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除"><i class="icon-trash"></i></button>
+                                {% else %}
+                                    <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="查看"><i class="icon-list"></i></button>
+                                    <button type="button" name="execute_button" class="btn btn-outline-success list_button" data-toggle="tooltip" title="执行"><i class="icon-play"></i></button>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>

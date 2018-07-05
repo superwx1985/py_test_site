@@ -33,7 +33,7 @@
         </thead>
         <tbody>
             {% for step_result in case_result.stepresult_set.all %}
-                <tr pk="{{ step_result.pk }}" step_img_url="{% url 'step_img' step_result.pk %}">
+                <tr pk="{{ step_result.pk }}" step_img_url="{% url 'step_result_img' step_result.pk %}">
                     <td class="middle">{% include 'main/include/status_icon.html' with status=step_result.result_status %}</td>
                     <td class="middle">{{ forloop.counter }}</td>
                     <td><a name="step_result" step_result_pk={{ step_result.pk }} href="javascript:">{{ step_result.name }}</a></td>

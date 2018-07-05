@@ -22,7 +22,7 @@ import main.views.general as general
 import main.views.case as case
 import main.views.step as step
 import main.views.config as config
-import main.views.variable as variable
+import main.views.variable_group as variable_group
 import main.views.suite as suite
 import main.views.result as result
 
@@ -30,17 +30,17 @@ import main.views.result as result
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
 
-    path('home/', case.cases, name='home'),
-    path('', case.cases),
+    path('home/', result.list_, name='home'),
+    path('', result.list_),
 
-    path('cases/', case.cases, name='cases'),
-    path('case/add/', case.case_add, name='case_add'),
-    path('case/list_all/', case.case_list, name='case_list'),
+    path('cases/', case.list_, name='cases'),
+    path('case/add/', case.add, name='case_add'),
+    path('case/list_json/', case.list_json, name='case_list_json'),
     path('case/list_temp/', case.case_list_temp, name='case_list_temp'),
-    path('case/<str:pk>/', case.case, name='case'),
-    path('case/<str:pk>/delete/', case.case_delete, name='case_delete'),
-    path('case/<str:pk>/quick_update/', case.case_quick_update, name='case_quick_update'),
-    path('case/<str:pk>/steps/', case.case_steps, name='case_steps'),
+    path('case/<str:pk>/', case.detail, name='case'),
+    path('case/<str:pk>/delete/', case.delete, name='case_delete'),
+    path('case/<str:pk>/quick_update/', case.quick_update, name='case_quick_update'),
+    path('case/<str:pk>/steps/', case.steps, name='case_steps'),
 
     path('steps/', step.list_, name='steps'),
     path('step/add/', step.add, name='step_add'),
@@ -49,35 +49,35 @@ urlpatterns = [
     path('step/<str:pk>/', step.detail, name='step'),
     path('step/<str:pk>/delete/', step.delete, name='step_delete'),
     path('step/<str:pk>/quick_update/', step.quick_update, name='step_quick_update'),
-    path('step/<str:pk>/copy/', step.copy, name='step_copy'),
+    path('step/<str:pk>/copy/', step.copy_, name='step_copy'),
 
-    path('configs/', config.configs, name='configs'),
-    path('config/add/', config.config_add, name='config_add'),
-    path('config/<str:pk>/', config.config, name='config'),
-    path('config/<str:pk>/delete/', config.config_delete, name='config_delete'),
-    path('config/<str:pk>/quick_update/', config.config_quick_update, name='config_quick_update'),
+    path('configs/', config.list_, name='configs'),
+    path('config/add/', config.add, name='config_add'),
+    path('config/<str:pk>/', config.detail, name='config'),
+    path('config/<str:pk>/delete/', config.delete, name='config_delete'),
+    path('config/<str:pk>/quick_update/', config.quick_update, name='config_quick_update'),
 
-    path('variable_groups/', variable.variable_groups, name='variable_groups'),
-    path('variable_group/add/', variable.variable_group_add, name='variable_group_add'),
-    path('variable_group/<str:pk>/', variable.variable_group, name='variable_group'),
-    path('variable_group/<str:pk>/delete/', variable.variable_group_delete, name='variable_group_delete'),
-    path('variable_group/<str:pk>/quick_update/', variable.variable_group_quick_update, name='variable_group_quick_update'),
-    path('variable_group/<str:pk>/variables/', variable.variable_group_variables, name='variable_group_variables'),
+    path('variable_groups/', variable_group.list_, name='variable_groups'),
+    path('variable_group/add/', variable_group.add, name='variable_group_add'),
+    path('variable_group/<str:pk>/', variable_group.detail, name='variable_group'),
+    path('variable_group/<str:pk>/delete/', variable_group.delete, name='variable_group_delete'),
+    path('variable_group/<str:pk>/quick_update/', variable_group.quick_update, name='variable_group_quick_update'),
+    path('variable_group/<str:pk>/variables/', variable_group.variables, name='variable_group_variables'),
 
-    path('suites/', suite.suites, name='suites'),
-    path('suite/add/', suite.suite_add, name='suite_add'),
-    path('suite/<str:pk>/', suite.suite, name='suite'),
-    path('suite/<str:pk>/delete/', suite.suite_delete, name='suite_delete'),
-    path('suite/<str:pk>/quick_update/', suite.suite_quick_update, name='suite_quick_update'),
-    path('suite/<str:pk>/cases/', suite.suite_cases, name='suite_cases'),
-    path('suite/<str:pk>/execute/', suite.suite_execute, name='suite_execute'),
+    path('suites/', suite.list_, name='suites'),
+    path('suite/add/', suite.add, name='suite_add'),
+    path('suite/<str:pk>/', suite.detail, name='suite'),
+    path('suite/<str:pk>/delete/', suite.delete, name='suite_delete'),
+    path('suite/<str:pk>/quick_update/', suite.quick_update, name='suite_quick_update'),
+    path('suite/<str:pk>/cases/', suite.cases, name='suite_cases'),
+    path('suite/<str:pk>/execute/', suite.execute_, name='suite_execute'),
 
-    path('results/', result.results, name='results'),
-    path('result/<str:pk>/', result.result, name='result'),
-    path('result/<str:pk>/delete/', result.result_delete, name='result_delete'),
-    path('result/<str:pk>/quick_update/', result.result_quick_update, name='result_quick_update'),
+    path('results/', result.list_, name='results'),
+    path('result/<str:pk>/', result.detail, name='result'),
+    path('result/<str:pk>/delete/', result.delete, name='result_delete'),
+    path('result/<str:pk>/quick_update/', result.quick_update, name='result_quick_update'),
 
-    path('step_img/<str:pk>/', result.step_img, name='step_img'),
+    path('step_result/<str:pk>/img', result.step_result_img, name='step_result_img'),
 
     path('logout/', general.logout, name='logout'),
 

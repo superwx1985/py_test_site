@@ -152,14 +152,11 @@ class Action(models.Model):
 
     class Meta:
         unique_together = ('name', 'type')
-        ordering = ['order']
+        ordering = ['type', 'order']
 
     @property
     def full_name(self):
         return '{} - {}'.format(self.type, self.name)
-
-    class Meta:
-        unique_together = ('name', 'type')
 
     def __str__(self):
         return self.full_name

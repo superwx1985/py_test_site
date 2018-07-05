@@ -175,7 +175,7 @@
         }
         // 验证并添加变量名
         function checkVariableName(name) {
-            if (!name || ''===name) {
+            if (!name || ''===name.trim()) {
                 return '变量名不能为空'
             }
             var index = $.inArray(name, window.variableNames);

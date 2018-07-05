@@ -22,7 +22,7 @@ logger = logging.getLogger('django.request')
 
 # 用例列表
 @login_required
-def results(request):
+def list_(request):
     prompt = None
     if request.method == 'POST':
         page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
@@ -43,12 +43,7 @@ def results(request):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-    keyword_list_temp = search_text.split(' ')
-    keyword_list = list()
-    for keyword in keyword_list_temp:
-        if keyword.strip() != '':
-            keyword_list.append(keyword)
-    q = get_query_condition(keyword_list)
+    q = get_query_condition(search_text)
     if own:
         objects = SuiteResult.objects.filter(q, is_active=True, creator=request.user).order_by('-start_date').values(
             'pk', 'name', 'keyword', 'project__name', 'start_date', 'result_status', 'creator', 'creator__username',
@@ -86,7 +81,7 @@ def results(request):
 
 # 用例详情
 @login_required
-def result(request, pk):
+def detail(request, pk):
     try:
         obj = SuiteResult.objects.select_related('creator', 'modifier').get(pk=pk)
     except SuiteResult.DoesNotExist:
@@ -128,7 +123,7 @@ def result(request, pk):
 
 
 @login_required
-def result_delete(request, pk):
+def delete(request, pk):
     if request.method == 'POST':
         SuiteResult.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
         return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
@@ -137,7 +132,7 @@ def result_delete(request, pk):
 
 
 @login_required
-def result_quick_update(request, pk):
+def quick_update(request, pk):
     if request.method == 'POST':
         try:
             col_name = request.POST['col_name']
@@ -159,7 +154,7 @@ def result_quick_update(request, pk):
 
 
 @login_required
-def step_img(request, pk):
+def step_result_img(request, pk):
     try:
         obj = StepResult.objects.get(pk=pk)
     except StepResult.DoesNotExist:

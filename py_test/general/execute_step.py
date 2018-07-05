@@ -488,15 +488,15 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
             step_result.result_status = 2
         step_result.result_message = run_result[1]
     except TimeoutException:
+        logger.error('{}\t执行超时'.format(execute_id), exc_info=True)
         step_result.result_status = 3
         step_result.result_message = '执行超时，请增大超时值'
         step_result.result_error = traceback.format_exc()
-        logger.error('{}\t执行超时'.format(execute_id), exc_info=True)
     except Exception as e:
+        logger.error('{}\t执行出错'.format(execute_id), exc_info=True)
         step_result.result_status = 3
         step_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
         step_result.result_error = traceback.format_exc()
-        logger.error('{}\t执行出错'.format(execute_id), exc_info=True)
 
         # 获取报错时截图
         if dr is not None and ui_get_ss and step_action.type_id == 1:

@@ -21,7 +21,7 @@ logger = logging.getLogger('django.request')
 
 
 @login_required
-def configs(request):
+def list_(request):
     if request.method == 'POST':
         page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
         if page <= 0:
@@ -41,12 +41,7 @@ def configs(request):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-    keyword_list_temp = search_text.split(' ')
-    keyword_list = list()
-    for keyword in keyword_list_temp:
-        if keyword.strip() != '':
-            keyword_list.append(keyword)
-    q = get_query_condition(keyword_list)
+    q = get_query_condition(search_text)
     if own:
         objects = Config.objects.filter(q, is_active=True, creator=request.user).values(
             'pk', 'name', 'keyword', 'creator', 'creator__username', 'modified_date')
@@ -77,7 +72,7 @@ def configs(request):
 
 
 @login_required
-def config(request, pk):
+def detail(request, pk):
     try:
         obj = Config.objects.select_related('creator', 'modifier').get(pk=pk)
     except Config.DoesNotExist:
@@ -112,7 +107,7 @@ def config(request, pk):
 
 
 @login_required
-def config_add(request):
+def add(request):
     if request.method == 'GET':
         form = ConfigForm()
         if request.session.get('status', None) == 'success':
@@ -145,7 +140,7 @@ def config_add(request):
 
 
 @login_required
-def config_delete(request, pk):
+def delete(request, pk):
     if request.method == 'POST':
         Config.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
         return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
@@ -154,7 +149,7 @@ def config_delete(request, pk):
 
 
 @login_required
-def config_quick_update(request, pk):
+def quick_update(request, pk):
     if request.method == 'POST':
         try:
             col_name = request.POST['col_name']

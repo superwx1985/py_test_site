@@ -22,7 +22,7 @@ logger = logging.getLogger('django.request')
 
 # 列表
 @login_required
-def suites(request):
+def list_(request):
     prompt = None
     if request.method == 'POST':
         page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
@@ -43,12 +43,7 @@ def suites(request):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-    keyword_list_temp = search_text.split(' ')
-    keyword_list = list()
-    for keyword in keyword_list_temp:
-        if keyword.strip() != '':
-            keyword_list.append(keyword)
-    q = get_query_condition(keyword_list)
+    q = get_query_condition(search_text)
     if own:
         objects = Suite.objects.filter(q, is_active=True, creator=request.user).values(
             'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username', 'modified_date')
@@ -84,7 +79,7 @@ def suites(request):
 
 # 详情
 @login_required
-def suite(request, pk):
+def detail(request, pk):
     try:
         obj = Suite.objects.select_related('creator', 'modifier').get(pk=pk)
     except Suite.DoesNotExist:
@@ -122,8 +117,12 @@ def suite(request, pk):
                     for m2m_pk in m2m_list:
                         if m2m_pk is None or m2m_pk.strip() == '':
                             continue
+                        try:
+                            m2m_object = Case.objects.get(pk=m2m_pk)
+                        except Case.DoesNotExist:
+                            logger.warning('找不到 m2m_object [{}]'.format(m2m_pk), exc_info=True)
+                            continue
                         order += 1
-                        m2m_object = Case.objects.get(pk=m2m_pk)
                         SuiteVsCase.objects.create(suite=obj, case=m2m_object, order=order, creator=request.user,
                                                    modifier=request.user)
             request.session['status'] = 'success'
@@ -150,7 +149,7 @@ def suite(request, pk):
 
 
 @login_required
-def suite_add(request):
+def add(request):
     if request.method == 'GET':
         form = SuiteForm()
         if request.session.get('status', None) == 'success':
@@ -179,8 +178,12 @@ def suite_add(request):
                 for m2m_pk in m2m_list:
                     if m2m_pk is None or m2m_pk.strip() == '':
                         continue
+                    try:
+                        m2m_object = Case.objects.get(pk=m2m_pk)
+                    except Case.DoesNotExist:
+                        logger.warning('找不到 m2m_object [{}]'.format(m2m_pk), exc_info=True)
+                        continue
                     order += 1
-                    m2m_object = Case.objects.get(pk=m2m_pk)
                     SuiteVsCase.objects.create(suite=obj, case=m2m_object, order=order, creator=request.user,
                                                modifier=request.user)
             request.session['status'] = 'success'
@@ -201,7 +204,7 @@ def suite_add(request):
 
 
 @login_required
-def suite_delete(request, pk):
+def delete(request, pk):
     if request.method == 'POST':
         Suite.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
         return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
@@ -210,7 +213,7 @@ def suite_delete(request, pk):
 
 
 @login_required
-def suite_quick_update(request, pk):
+def quick_update(request, pk):
     if request.method == 'POST':
         try:
             col_name = request.POST['col_name']
@@ -233,7 +236,7 @@ def suite_quick_update(request, pk):
 
 # 获取选中的case
 @login_required
-def suite_cases(request, pk):
+def cases(request, pk):
     objects = Case.objects.filter(suite=pk, is_active=True).order_by('suitevscase__order').values(
         'pk', 'name', 'keyword', 'project__name', order=F('suitevscase__order'))
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
@@ -259,7 +262,7 @@ def case_list_temp(request):
 
 # 执行套件
 @login_required
-def suite_execute(request, pk):
+def execute_(request, pk):
     try:
         suite_ = Suite.objects.get(pk=pk, is_active=True)
         suite_result = execute_suite(request, suite_)

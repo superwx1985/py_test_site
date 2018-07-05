@@ -34,7 +34,7 @@
                         var div = $('<div>').attr('step_result_pk', step_result_pk);
                         div.append($(data.data.step_time));
                         var message_div = $('<div>');
-                        message_div.append($('<pre>').addClass('lead').text(data.data.result_message));
+                        message_div.append($('<span>').addClass('lead').text(data.data.result_message));
                         if (data.data.result_error) {
                             message_div.append($('<div>').append($('<pre>').addClass('text-danger pre-scrollable').text(data.data.result_error)));
                         }

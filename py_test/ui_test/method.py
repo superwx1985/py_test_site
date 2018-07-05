@@ -405,11 +405,8 @@ def wait_for_element_disappear(dr, by, locator, timeout, base_element, variable_
 
 # 跳转到url
 def go_to_url(dr, url):
-    try:
-        dr.get(url)
-        run_result = ('p', '成功跳转到url')
-    except exceptions.TimeoutException as e:
-        raise e
+    dr.get(url)
+    run_result = ('p', '成功打开URL')
     return run_result
 
 

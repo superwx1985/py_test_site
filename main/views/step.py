@@ -43,12 +43,7 @@ def list_(request):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-    keyword_list_temp = search_text.split(' ')
-    keyword_list = list()
-    for keyword in keyword_list_temp:
-        if keyword.strip() != '':
-            keyword_list.append(keyword)
-    q = get_query_condition(keyword_list)
+    q = get_query_condition(search_text)
     if own:
         objects = Step.objects.filter(q, is_active=True, creator=request.user).values(
             'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
@@ -212,15 +207,10 @@ def list_json(request):
         page = 1
     size = 10
     search_text = condition.get('search_text', '')
-    order_by = condition.get('order_by', 'pk')
+    order_by = condition.get('order_by', 'create_date')
     order_by_reverse = condition.get('order_by_reverse', False)
     own = condition.get('own_checkbox')
-    keyword_list_temp = search_text.split(' ')
-    keyword_list = list()
-    for keyword in keyword_list_temp:
-        if keyword.strip() != '':
-            keyword_list.append(keyword)
-    q = get_query_condition(keyword_list)
+    q = get_query_condition(search_text)
     if own:
         objects = Step.objects.filter(q, is_active=True, creator=request.user).values(
             'pk', 'name', 'keyword', 'project__name').annotate(
@@ -270,7 +260,7 @@ def list_temp(request):
 
 # 复制
 @login_required
-def copy(request, pk):
+def copy_(request, pk):
     name = request.POST.get('name', '')
     try:
         obj = Step.objects.get(pk=pk)

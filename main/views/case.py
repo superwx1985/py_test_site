@@ -18,7 +18,7 @@ logger = logging.getLogger('django.request')
 
 # 用例列表
 @login_required
-def cases(request):
+def list_(request):
     if request.method == 'POST':
         page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
         if page <= 0:
@@ -38,12 +38,7 @@ def cases(request):
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-    keyword_list_temp = search_text.split(' ')
-    keyword_list = list()
-    for keyword in keyword_list_temp:
-        if keyword.strip() != '':
-            keyword_list.append(keyword)
-    q = get_query_condition(keyword_list)
+    q = get_query_condition(search_text)
     if own:
         objects = Case.objects.filter(q, is_active=True, creator=request.user).values(
             'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date')
@@ -80,7 +75,7 @@ def cases(request):
 
 # 用例详情
 @login_required
-def case(request, pk):
+def detail(request, pk):
     try:
         obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
     except Case.DoesNotExist:
@@ -118,8 +113,12 @@ def case(request, pk):
                     for m2m_pk in m2m_list:
                         if m2m_pk is None or m2m_pk.strip() == '':
                             continue
+                        try:
+                            m2m_object = Step.objects.get(pk=m2m_pk)
+                        except Step.DoesNotExist:
+                            logger.warning('找不到 m2m_object [{}]'.format(m2m_pk), exc_info=True)
+                            continue
                         order += 1
-                        m2m_object = Step.objects.get(pk=m2m_pk)
                         CaseVsStep.objects.create(case=obj, step=m2m_object, order=order, creator=request.user,
                                                   modifier=request.user)
             request.session['status'] = 'success'
@@ -146,7 +145,7 @@ def case(request, pk):
 
 
 @login_required
-def case_add(request):
+def add(request):
     if request.method == 'GET':
         form = CaseForm()
         if request.session.get('status', None) == 'success':
@@ -175,8 +174,12 @@ def case_add(request):
                 for m2m_pk in m2m_list:
                     if m2m_pk is None or m2m_pk.strip() == '':
                         continue
+                    try:
+                        m2m_object = Step.objects.get(pk=m2m_pk)
+                    except Step.DoesNotExist:
+                        logger.warning('找不到 m2m_object [{}]'.format(m2m_pk), exc_info=True)
+                        continue
                     order += 1
-                    m2m_object = Step.objects.get(pk=m2m_pk)
                     CaseVsStep.objects.create(case=obj, step=m2m_object, order=order, creator=request.user,
                                               modifier=request.user)
             request.session['status'] = 'success'
@@ -197,7 +200,7 @@ def case_add(request):
 
 
 @login_required
-def case_delete(request, pk):
+def delete(request, pk):
     if request.method == 'POST':
         Case.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
         return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
@@ -206,7 +209,7 @@ def case_delete(request, pk):
 
 
 @login_required
-def case_quick_update(request, pk):
+def quick_update(request, pk):
     if request.method == 'POST':
         try:
             col_name = request.POST['col_name']
@@ -229,7 +232,7 @@ def case_quick_update(request, pk):
 
 # 获取选中的step
 @login_required
-def case_steps(request, pk):
+def steps(request, pk):
     objects = Step.objects.filter(case=pk, is_active=True).order_by('casevsstep__order').values(
         'pk', 'name', 'keyword', 'project__name', order=F('casevsstep__order')).annotate(
         action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
@@ -238,7 +241,7 @@ def case_steps(request, pk):
 
 # 获取待选
 @login_required
-def case_list(request):
+def list_json(request):
     condition = request.POST.get('condition', '{}')
     try:
         condition = json.loads(condition)
@@ -250,15 +253,10 @@ def case_list(request):
         page = 1
     size = 10
     search_text = condition.get('search_text', '')
-    order_by = condition.get('order_by', 'pk')
+    order_by = condition.get('order_by', 'create_date')
     order_by_reverse = condition.get('order_by_reverse', False)
     own = condition.get('own_checkbox')
-    keyword_list_temp = search_text.split(' ')
-    keyword_list = list()
-    for keyword in keyword_list_temp:
-        if keyword.strip() != '':
-            keyword_list.append(keyword)
-    q = get_query_condition(keyword_list)
+    q = get_query_condition(search_text)
     if own:
         objects = Case.objects.filter(q, is_active=True, creator=request.user).order_by('pk').values(
             'pk', 'name', 'keyword', 'project__name')

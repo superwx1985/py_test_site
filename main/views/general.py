@@ -10,11 +10,24 @@ logger = logging.getLogger('django.request')
 
 
 # 生成查询条件的Q对象
-def get_query_condition(query_str_list):
+def get_query_condition(search_text):
+    search_text = search_text.replace('\\ ', '#{$blank}#')
+    search_text_or_list = search_text.split(' ')
+
     q = Q()
-    for query_str in query_str_list:
-        query_str = str(query_str)
-        q |= Q(name__icontains=query_str) | Q(keyword__icontains=query_str)
+    for search_text_or in search_text_or_list:
+        search_text_or = search_text_or.replace('#{$blank}#', ' ')
+        search_text_and_list = search_text_or.split('#&&#')
+        q1 = Q()
+        q2 = Q()
+        q3 = Q()
+        for search_text_and in search_text_and_list:
+            if search_text_and == '':
+                continue
+            q1 &= Q(name__icontains=search_text_and)
+            q2 &= Q(keyword__icontains=search_text_and)
+            q3 &= Q(project__name__icontains=search_text_and)
+        q |= q1 | q2 | q3
     return q
 
 

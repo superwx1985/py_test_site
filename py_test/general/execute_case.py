@@ -41,8 +41,8 @@ def execute_case(case, suite_result, case_order, user, execute_str, variables=No
     )
 
     # 用例初始化
+    execute_id = '【{}-{}】'.format(execute_str, 0)
     try:
-        execute_id = '【{}-{}】'.format(execute_str, 0)
         logger.info('{}\t初始化用例【{}】'.format(execute_id, case.name))
         config = suite_result.suite.config
         # 初始化driver
@@ -63,7 +63,7 @@ def execute_case(case, suite_result, case_order, user, execute_str, variables=No
 
     except Exception as e:
         logger.error('{}\t初始化出错'.format(execute_id), exc_info=True)
-        case_result.result_message = '初始化出错'
+        case_result.result_message = '初始化出错：{}'.format(execute_id, getattr(e, 'msg', str(e)))
         case_result.result_error = traceback.format_exc()
 
     else:
@@ -80,12 +80,10 @@ def execute_case(case, suite_result, case_order, user, execute_str, variables=No
             # 如有弹窗则处理弹窗
             if dr is not None:
                 try:
-                    last_url = dr.current_url
+                    _ = dr.current_url
                 except UnexpectedAlertPresentException:
                     alert_handle_text, alert_text = method.confirm_alert(dr=dr, alert_handle=ui_alert_handle, timeout=timeout)
                     logger.info('{}\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(execute_id, alert_handle_text, alert_text))
-                if last_url == 'data:,':
-                    last_url = ''
 
             step_result_ = execute_step(
                 step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=dr)

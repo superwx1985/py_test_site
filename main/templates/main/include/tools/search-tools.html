@@ -1,6 +1,6 @@
 <div class="input-group">
-    <input type="text" id="search_text" name="search_text" value="{{ search_text }}" class="form-control" placeholder="多个条件请用空格分隔">
+    <input type="text" id="search_text" name="search_text" value="{{ search_text }}" class="form-control" placeholder="可搜索名称，关键字，项目名">
     <div class="input-group-append">
-        <button type="submit" id='search_button' class="btn btn-primary"><i class="icon-search"></i>&nbsp;搜索</button>
+        <button type="submit" id='search_button' class="btn btn-primary" data-toggle="tooltip" title="多条件并集用空格分隔, 多条件交集用#&&#分隔，要搜索空格用转义加空格表示"><i class="icon-search"></i>&nbsp;搜索</button>
     </div>
 </div>

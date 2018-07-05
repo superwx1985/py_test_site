@@ -91,7 +91,7 @@
                 'order_by': order_by
             };
             var condition_json = JSON.stringify(condition);
-            getList("{% url 'case_list' %}", window.$csrf_input.val(), update_m2m_list_all, condition_json);
+            getList("{% url 'case_list_json' %}", window.$csrf_input.val(), update_m2m_list_all, condition_json);
             return false;
         }
         // 更新并注册分页工具

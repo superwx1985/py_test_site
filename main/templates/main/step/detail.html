@@ -107,7 +107,7 @@
                 $('div[name=ui_special_action]').hide();
                 $('div[name=ui_data] .col-1').text('js代码');
             } else if (select_value === '21') {
-                introduce.children('span').text('在当前页面执行JavaScript代码并验证结果是否为真。验证通过的条件是js代码执行后返回True，如果指定了元素，可以在代码中通过 arguments[0] 调用。例：arguments[0].click()');
+                introduce.children('span').text('在当前页面执行JavaScript代码并验证结果是否为真。验证通过的条件是js代码执行后返回True，如果指定了元素，可以在代码中通过 arguments[0][0] 调用。例：arguments[0][0].click()');
                 $('[ui],div[name=timeout]').show();
                 $('div[name=ui_special_action]').hide();
                 $('div[name=ui_data] .col-1').text('js代码');
