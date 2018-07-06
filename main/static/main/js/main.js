@@ -198,10 +198,13 @@ function update_single_column(url, csrf_token, pk, new_value, old_value, col_nam
 }
 
 // 设置cookie
-function set_cookie(name, value, seconds) {
-	var exp = new Date();
-	exp.setTime(exp.getTime() + seconds*1000);
-	document.cookie = name + "=" + encodeURI(value) + ";expires=" + exp.toUTCString();
+function set_cookie(name, value, seconds, path) {
+    var exp_str = '';
+    var path_str = '';
+    var exp = new Date();
+	if (seconds && seconds > 0) {exp_str = exp.setTime(exp.getTime() + seconds*1000).toUTCString();}
+	if (path) {path_str = path}
+	document.cookie = name + "=" + escape(value) + ";expires=" + exp_str + ";path=" + path_str;
 }
 
 // 获取cookie

@@ -11,9 +11,8 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Suite, Case, SuiteVsCase
 from main.forms import OrderByForm, PaginatorForm, SuiteForm
-from main.views.general import get_query_condition
+from main.views.general import get_query_condition, change_to_positive_integer
 from django.forms.models import model_to_dict
-from manage import PROJECT_ROOT
 from py_test.general.execute_suite import execute_suite
 from django.template.loader import render_to_string
 
@@ -23,26 +22,38 @@ logger = logging.getLogger('django.request')
 # 列表
 @login_required
 def list_(request):
-    prompt = None
     if request.method == 'POST':
-        page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
-        if page <= 0:
-            page = 1
-        size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
-        search_text = str(request.POST.get('search_text', ''))
-        order_by = request.POST.get('order_by', 'modified_date')
-        order_by_reverse = request.POST.get('order_by_reverse', False)
-        own = request.POST.get('own_checkbox')
+        page = request.POST.get('page')
+        size = request.POST.get('size')
+        search_text = request.POST.get('search_text')
+        order_by = request.POST.get('order_by')
+        order_by_reverse = request.POST.get('order_by_reverse')
+        own = request.POST.get('own')
     else:
-        page = int(request.COOKIES.get('page', 1))
-        size = int(request.COOKIES.get('size', 10))
-        search_text = ''
+        page = request.COOKIES.get('page')
+        size = request.COOKIES.get('size')
+        search_text = request.COOKIES.get('search_text')
+        order_by = request.COOKIES.get('order_by')
+        order_by_reverse = request.COOKIES.get('order_by_reverse')
+        own = request.COOKIES.get('own')
+
+    page = change_to_positive_integer(page)
+    size = change_to_positive_integer(size, 10)
+    search_text = str(search_text) if search_text else ''
+    if order_by is None or order_by == '':
         order_by = 'modified_date'
+    if order_by_reverse is None or order_by_reverse == '' or order_by_reverse == 'False':
+        order_by_reverse = False
+    else:
         order_by_reverse = True
+    if own is None or own == '' or own == 'False':
+        own = False
+    else:
         own = True
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
+
+    if request.session.get('status', None) == 'success':
+        prompt = 'success'
+    request.session['status'] = None
     q = get_query_condition(search_text)
     if own:
         objects = Suite.objects.filter(q, is_active=True, creator=request.user).values(

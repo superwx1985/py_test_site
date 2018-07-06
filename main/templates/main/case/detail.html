@@ -19,11 +19,11 @@
             $('#nav_case').addClass('active');
             window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
             // 默认只看自己
-            $('input[name=own_checkbox]').prop('checked', true);
+            $('input[name=own]').prop('checked', true);
             // 注册只看自己复选框
-            $('#own_checkbox').on('click', function() {$('#m2m_objects_form').submit()});
+            $('#own').on('click', function() {$('#m2m_objects_form').submit()});
             // 获取待选m2m
-            submit_m2m_objects_form();
+            submit_m2m_objects_form(get_cookie('last_condition_json'));
             // 注册待选m2m排序
             $('#m2m_all th[order_by_text]').on('dblclick', function () {
                 var order_by_text = $(this).attr('order_by_text');
@@ -71,26 +71,45 @@
             }
         }
         // 获取待选m2m
-        function submit_m2m_objects_form() {
-            var page = $('input[name=page]').val();
-            var size = $('input[name=size]').val();
-            var search_text = $('input[name=search_text]').val();
-            if ($('input[name=own_checkbox]').prop('checked')) {
-                var own_checkbox = true;
+        function submit_m2m_objects_form(last_condition_json) {
+            var condition_json = '{}';
+            // 如果传入了上次的条件，则使用上次的条件初始化搜索信息
+            if (last_condition_json) {
+                var last_condition = $.parseJSON(last_condition_json);
+                console.log(last_condition);
+                $('input[name=search_text]').val(last_condition.search_text);
+                if (last_condition.own === 1) {
+                    $('input[name=own]').prop('checked', true);
+                } else {
+                    $('input[name=own]').prop('checked', false);
+                }
+                $('input[name=order_by]').val(last_condition.order_by);
+                $('input[name=order_by_reverse]').val(last_condition.order_by_reverse);
+                condition_json = last_condition_json;
             } else {
-                var own_checkbox = false;
+                var page = $('input[name=page]').val();
+                var size = $('input[name=size]').val();
+                var max_page = $('input[name=size]').data('max_page');
+                var search_text = $('input[name=search_text]').val();
+                if ($('input[name=own]').prop('checked')) {
+                    var own = 1;
+                } else {
+                    var own = 0;
+                }
+                var order_by = $('input[name=order_by]').val();
+                var order_by_reverse = $('input[name=order_by_reverse]').val();
+                var condition = {
+                    'page': page,
+                    'size': size,
+                    'max_page': max_page,
+                    'search_text': search_text,
+                    'own': own,
+                    'order_by_reverse': order_by_reverse,
+                    'order_by': order_by
+                };
+                condition_json = JSON.stringify(condition);
             }
-            var order_by = $('input[name=order_by]').val();
-            var order_by_reverse = $('input[name=order_by_reverse]').val();
-            var condition = {
-                'page': page,
-                'size': size,
-                'search_text': search_text,
-                'own_checkbox': own_checkbox,
-                'order_by_reverse': order_by_reverse,
-                'order_by': order_by
-            };
-            var condition_json = JSON.stringify(condition);
+            set_cookie('last_condition_json', condition_json, 0, '/case');
             getList("{% url 'step_list_json' %}", window.$csrf_input.val(), update_m2m_list_all, condition_json);
             return false;
         }
@@ -101,7 +120,7 @@
             page_input.val(page);
             page_input.attr('max', max_page);
             $('span[name=total_text]').text(' / ' + max_page);
-            $('input[name=size]').val(size);
+            $('input[name=size]').val(size).data('max_page', max_page);
 
             var button = $("button[name=first_page_button]");
             if (page === 1) {

@@ -40,6 +40,10 @@
                     // 更新cookie
                     set_cookie('page', window.page);
                     set_cookie('size', window.size);
+                    set_cookie('search_text', '{{ search_text }}');
+                    set_cookie('order_by', '{{ order_by }}');
+                    set_cookie('order_by_reverse', '{{ order_by_reverse }}');
+                    set_cookie('own', '{{ own }}');
                     // 注册翻页工具条
                     var input = $('input[name=page]');
                     var form = $('#objects_form');
@@ -100,7 +104,7 @@
                     // 注册添加按钮
                     $('#add_button').on('click', function () {window.open(window.addUrl, '_self');});
                     // 注册只看自己复选框
-                    $('#own_checkbox').on('click', function() {$('#objects_form').submit()});
+                    $('#own').on('click', function() {$('#objects_form').submit()});
                     // 更新序号
                     $('#result_table td[col_name=index]').each(function(i,v) {$(v).text((window.page - 1) * window.size + 1 + i)});
                     // 注册排序

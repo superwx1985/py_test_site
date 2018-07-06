@@ -153,11 +153,16 @@ class SuiteForm(forms.ModelForm):
         fields = '__all__'
 
 
+# 动态获取project
+def get_project_list():
+    project_list = list()
+    project_list.append((None, '---------'))
+    project_list.extend(list(Project.objects.values_list('pk', 'name')))
+    return project_list
+
+
 class SuiteResultForm(forms.Form):
     name = forms.CharField(max_length=100)
     description = forms.CharField(required=False, widget=forms.Textarea())
     keyword = forms.CharField(required=False, max_length=100)
-    project_list = list()
-    project_list.append((None, '---------'))
-    project_list.extend(list(Project.objects.values_list('pk', 'name')))
-    project = forms.ChoiceField(choices=project_list, required=False)
+    project = forms.ChoiceField(choices=get_project_list, required=False)

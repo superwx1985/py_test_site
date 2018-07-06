@@ -10,8 +10,8 @@ from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Case, Step, CaseVsStep
-from main.forms import OrderByForm, PaginatorForm, CaseForm
-from main.views.general import get_query_condition, check_order_by
+from main.forms import OrderByForm, PaginatorForm, CaseForm, get_project_list
+from main.views.general import get_query_condition, change_to_positive_integer
 
 logger = logging.getLogger('django.request')
 
@@ -20,24 +20,37 @@ logger = logging.getLogger('django.request')
 @login_required
 def list_(request):
     if request.method == 'POST':
-        page = int(request.POST.get('page', 1)) if request.POST.get('page') != '' else 1
-        if page <= 0:
-            page = 1
-        size = int(request.POST.get('size', 5)) if request.POST.get('size') != '' else 10
-        search_text = str(request.POST.get('search_text', ''))
-        order_by = request.POST.get('order_by', 'modified_date')
-        order_by_reverse = request.POST.get('order_by_reverse', False)
-        own = request.POST.get('own_checkbox')
+        page = request.POST.get('page')
+        size = request.POST.get('size')
+        search_text = request.POST.get('search_text')
+        order_by = request.POST.get('order_by')
+        order_by_reverse = request.POST.get('order_by_reverse')
+        own = request.POST.get('own')
     else:
-        page = int(request.COOKIES.get('page', 1))
-        size = int(request.COOKIES.get('size', 10))
-        search_text = ''
+        page = request.COOKIES.get('page')
+        size = request.COOKIES.get('size')
+        search_text = request.COOKIES.get('search_text')
+        order_by = request.COOKIES.get('order_by')
+        order_by_reverse = request.COOKIES.get('order_by_reverse')
+        own = request.COOKIES.get('own')
+
+    page = change_to_positive_integer(page)
+    size = change_to_positive_integer(size, 10)
+    search_text = str(search_text) if search_text else ''
+    if order_by is None or order_by == '':
         order_by = 'modified_date'
+    if order_by_reverse is None or order_by_reverse == '' or order_by_reverse == 'False':
+        order_by_reverse = False
+    else:
         order_by_reverse = True
+    if own is None or own == '' or own == 'False':
+        own = False
+    else:
         own = True
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
+
+    if request.session.get('status', None) == 'success':
+        prompt = 'success'
+    request.session['status'] = None
     q = get_query_condition(search_text)
     if own:
         objects = Case.objects.filter(q, is_active=True, creator=request.user).values(
@@ -70,6 +83,8 @@ def list_(request):
         page = paginator.num_pages
     order_by_form = OrderByForm(initial={'order_by': order_by, 'order_by_reverse': order_by_reverse})
     paginator_form = PaginatorForm(initial={'page': page, 'size': size}, page_max_value=paginator.num_pages)
+    # 获取项目
+    project_list = get_project_list()
     return render(request, 'main/case/list.html', locals())
 
 
@@ -80,6 +95,7 @@ def detail(request, pk):
         obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
     except Case.DoesNotExist:
         raise Http404('Step does not exist')
+    project_list = get_project_list()
     if request.method == 'GET':
         form = CaseForm(instance=obj)
         if request.session.get('status', None) == 'success':
@@ -129,6 +145,7 @@ def detail(request, pk):
             else:
                 return HttpResponseRedirect(redirect_url)
         else:
+
             if m2m_list is not None:
                 # 暂存step列表
                 m2m = CaseVsStep.objects.filter(case=obj).order_by('order')
@@ -146,6 +163,7 @@ def detail(request, pk):
 
 @login_required
 def add(request):
+    project_list = get_project_list()
     if request.method == 'GET':
         form = CaseForm()
         if request.session.get('status', None) == 'success':
@@ -255,7 +273,7 @@ def list_json(request):
     search_text = condition.get('search_text', '')
     order_by = condition.get('order_by', 'create_date')
     order_by_reverse = condition.get('order_by_reverse', False)
-    own = condition.get('own_checkbox')
+    own = condition.get('own')
     q = get_query_condition(search_text)
     if own:
         objects = Case.objects.filter(q, is_active=True, creator=request.user).order_by('pk').values(

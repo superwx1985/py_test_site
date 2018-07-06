@@ -31,14 +31,13 @@ def get_query_condition(search_text):
     return q
 
 
-# 检查排序条件
-def check_order_by(obj, order_by_text):
-    try:
-        getattr(obj, order_by_text)
-    except AttributeError as e:
-        logger.warning('排序条件异常', exc_info=True)
-        return False
-    return True
+# 把字符串转为正整数
+def change_to_positive_integer(value, default=1):
+    if str(value).isdigit() and int(value) > 0:
+        value = int(value)
+    else:
+        value = default
+    return value
 
 
 # 执行sql
