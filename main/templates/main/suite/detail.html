@@ -303,7 +303,12 @@
         <div class="row align-items-center">
             <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试的验证步骤时是否自动截图"></i>&nbsp;自动截图</div>
             <div class="col" form_data>
-                {% include 'main/include/form_checkbox.html' with field=form.ui_get_ss %}
+                {{ form.ui_get_ss }}
+                {% if field.errors %}
+                    {% for error in field.errors %}
+                        <div class="small text-danger is-invalid">{{ error }}</div>
+                    {% endfor %}
+                {% endif %}
             </div>
         </div>
         <div class="row align-items-center">

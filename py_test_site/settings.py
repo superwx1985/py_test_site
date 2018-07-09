@@ -139,7 +139,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # 登陆页面
-LOGIN_URL = '/admin/login/'
+LOGIN_URL = '/login/'
 
 
 # 日志配置

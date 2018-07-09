@@ -26,6 +26,12 @@ class StepForm0(forms.Form):
     api_data = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
 
 
+class UserForm(forms.Form):
+    username = forms.CharField(label='用户名', max_length=50)
+    password = forms.CharField(label='密码', max_length=50, widget=forms.PasswordInput())
+    remember_me = forms.BooleanField(label='记住我', required=False)
+
+
 class PaginatorForm(forms.Form):
     # page = forms.IntegerField(min_value=1, required=False)
     size = forms.IntegerField(min_value=1, max_value=10000, required=False)

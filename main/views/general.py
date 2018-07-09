@@ -5,8 +5,18 @@ from django.db import connection
 from django.db.models import Q
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 
 logger = logging.getLogger('django.request')
+
+
+class Cookie:
+    def __init__(self, key, value, max_age=None, expires=None, path='/'):
+        self.key = key
+        self.value = value
+        self.max_age = max_age
+        self.expires = expires
+        self.path = path
 
 
 # 生成查询条件的Q对象
@@ -56,10 +66,7 @@ def execute_query(sql):
     return result
 
 
-@login_required
-def logout(request):
-    auth.logout(request)
-    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/cases'))
+
 
 
 def debug(request):

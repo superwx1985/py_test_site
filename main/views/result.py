@@ -108,10 +108,10 @@ def detail(request, pk):
     elif request.method == 'POST':
         form = SuiteResultForm(data=request.POST)
         if form.is_valid():
-            obj.name = form.data['name']
-            obj.description = form.data['description']
-            obj.keyword = form.data['keyword']
-            project_pk = form.data['project']
+            obj.name = form.cleaned_data['name']
+            obj.description = form.cleaned_data['description']
+            obj.keyword = form.cleaned_data['keyword']
+            project_pk = form.cleaned_data['project']
             if project_pk.isdigit():
                 try:
                     project = Project.objects.get(pk=project_pk)

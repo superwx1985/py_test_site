@@ -75,3 +75,18 @@ div.paginator input {
 	max-width: 1188px;
   }
 }
+
+/* div水平居中 */
+div.div_center{
+	margin: 0 auto;
+	text-align: center
+}
+div.div_center>div{
+	float: left;
+    position: relative;
+    left: 50%
+}
+div.div_center>div>div{
+    position: relative;
+    left: -50%;
+}

@@ -1,0 +1,76 @@
+{% load staticfiles %}
+{% load widget_tweaks %}
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        <title>登陆</title>
+
+        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
+        <link rel="stylesheet" href="{% static 'main/css/bootstrap-4.1.1/bootstrap.min.css' %}">
+        <link rel="stylesheet" href="{% static 'main/css/toastr-2.1.4/toastr.css' %}">
+        <link rel="stylesheet" href="{% static 'main/css/font-awesome/font-awesome.css' %}">
+        <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
+        <style type='text/css' media='screen'>
+            div.row {
+                padding: 5px 0;
+                {#min-height: 2em;#}
+            }
+        </style>
+
+        <script src="{% static 'main/js/popper/popper.js' %}"></script>
+        <script src="{% static 'main/js/jquery/jquery-3.3.1.min.js' %}"></script>
+        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+        <script src="{% static 'main/js/bootstrap-4.1.1/bootstrap.min.js' %}"></script>
+        <script src="{% static 'main/js/bootbox/bootbox.min.js' %}"></script>
+        <script src="{% static 'main/js/toastr-2.1.4/toastr.min.js' %}"></script>
+        <script src="{% static 'main/js/main.js' %}"></script>
+        <script>
+            $(function () {
+                // 提示框
+                $('[data-toggle=tooltip]').tooltip();
+            });
+        </script>
+    </head>
+    <body>
+        <div class="container-fluid" style="padding-top: 60px; padding-bottom: 100px">
+            <div class="div_center">
+                <div>
+                    <div>
+                        <h1>自动化测试平台</h1>
+                        <div class="jumbotron" style="width: 400px;">
+                            <form method="post" novalidate>
+                                {% csrf_token %}
+                                <div class="form-group text-left">
+                                    <label for="id_username">用户名：</label>
+                                    {% include 'main/include/form_input.html' with field=form.username %}
+                                </div>
+                                <div class="form-group text-left">
+                                    <label for="id_password">密码：</label>
+                                    {% include 'main/include/form_input.html' with field=form.password %}
+                                </div>
+                                <div class="form-check text-left">
+                                    <label class="form-check-label" data-toggle="tooltip" title="保留登录信息1个月" data-placement="right">
+                                        {% render_field form.remember_me class='form-check-input' %}记住我
+                                        {% if form.remember_me.errors %}
+                                            {% for error in form.remember_me.errors %}
+                                                <div class="small text-danger">{{ error }}</div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </label>
+                                </div>
+                                <div>
+                                    <input type="submit" value="登录" class="btn btn-primary">
+                                </div>
+                                {% if error_msg %}
+                                    <div class="font-weight-bold text-danger">{{ error_msg }}</div>
+                                {% endif %}
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </body>

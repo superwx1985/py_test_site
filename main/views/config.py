@@ -182,3 +182,7 @@ def quick_update(request, pk):
     else:
         return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': None})
 
+
+@login_required
+def list_json_all(request):
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': 1})
