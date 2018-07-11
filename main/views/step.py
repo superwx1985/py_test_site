@@ -24,45 +24,34 @@ logger = logging.getLogger('django.request')
 # 步骤列表
 @login_required
 def list_(request):
-    if request.method == 'POST':
-        page = request.POST.get('page')
-        size = request.POST.get('size')
-        search_text = request.POST.get('search_text')
-        order_by = request.POST.get('order_by')
-        order_by_reverse = request.POST.get('order_by_reverse')
-        own = request.POST.get('own')
-    else:
-        page = request.COOKIES.get('page')
-        size = request.COOKIES.get('size')
-        search_text = request.COOKIES.get('search_text')
-        order_by = request.COOKIES.get('order_by')
-        order_by_reverse = request.COOKIES.get('order_by_reverse')
-        own = request.COOKIES.get('own')
+    page = request.GET.get('page', 1)
+    size = request.GET.get('size', 10)
+    search_text = str(request.GET.get('search_text', ''))
+    order_by = request.GET.get('order_by', 'modified_date')
+    order_by_reverse = request.GET.get('order_by_reverse', 'True')
+    all_ = request.GET.get('all_', 'False')
 
     page = change_to_positive_integer(page)
     size = change_to_positive_integer(size, 10)
-    search_text = str(search_text) if search_text else ''
-    if order_by is None or order_by == '':
-        order_by = 'modified_date'
-    if order_by_reverse is None or order_by_reverse == '' or order_by_reverse == 'False':
-        order_by_reverse = False
-    else:
+    if order_by_reverse == 'True':
         order_by_reverse = True
-    if own is None or own == '' or own == 'False':
-        own = False
     else:
-        own = True
+        order_by_reverse = False
+    if all_ == 'False':
+        all_ = False
+    else:
+        all_ = True
 
     if request.session.get('status', None) == 'success':
         prompt = 'success'
     request.session['status'] = None
     q = get_query_condition(search_text)
-    if own:
-        objects = Step.objects.filter(q, is_active=True, creator=request.user).values(
+    if all_:
+        objects = Step.objects.filter(q, is_active=True).values(
             'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
             action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
     else:
-        objects = Step.objects.filter(q, is_active=True).values(
+        objects = Step.objects.filter(q, is_active=True, creator=request.user).values(
             'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
             action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
     # 使用join的方式把多个model结合起来
@@ -76,10 +65,6 @@ def list_(request):
     if objects:
         if order_by not in objects[0]:
             order_by = 'modified_date'
-        if order_by_reverse is True or order_by_reverse == 'True':
-            order_by_reverse = True
-        else:
-            order_by_reverse = False
         objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     paginator = Paginator(objects, size)
     try:

@@ -42,7 +42,7 @@
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
-                        <td col_name='keyword' class="middle">{{ obj.variable_count }}</td>
+                        <td col_name='variable_count' class="middle">{{ obj.variable_count }}</td>
                         <td col_name='creator__username' class="middle">{{ obj.creator__username }}</td>
                         <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
                         <td>

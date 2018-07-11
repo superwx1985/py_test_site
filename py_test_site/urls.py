@@ -59,12 +59,14 @@ urlpatterns = [
 
     path('configs/', config.list_, name='configs'),
     path('config/add/', config.add, name='config_add'),
+    path('config/select_json/', config.select_json, name='config_select_json'),
     path('config/<str:pk>/', config.detail, name='config'),
     path('config/<str:pk>/delete/', config.delete, name='config_delete'),
     path('config/<str:pk>/quick_update/', config.quick_update, name='config_quick_update'),
 
     path('variable_groups/', variable_group.list_, name='variable_groups'),
     path('variable_group/add/', variable_group.add, name='variable_group_add'),
+    path('variable_group/select_json/', variable_group.select_json, name='variable_group_select_json'),
     path('variable_group/<str:pk>/', variable_group.detail, name='variable_group'),
     path('variable_group/<str:pk>/delete/', variable_group.delete, name='variable_group_delete'),
     path('variable_group/<str:pk>/quick_update/', variable_group.quick_update, name='variable_group_quick_update'),

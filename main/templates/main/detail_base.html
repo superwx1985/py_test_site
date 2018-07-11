@@ -7,6 +7,7 @@
         <title>{% block title %}详情{% endblock %}</title>
         {% block general_style %}
             <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
+            <link rel="stylesheet" href="{% static 'main/css/jquery.dropdown/jquery.dropdown.css' %}">
             <link rel="stylesheet" href="{% static 'main/css/bootstrap-4.1.1/bootstrap.min.css' %}">
             <link rel="stylesheet" href="{% static 'main/css/toastr-2.1.4/toastr.css' %}">
             <link rel="stylesheet" href="{% static 'main/css/font-awesome/font-awesome.css' %}">
@@ -24,10 +25,12 @@
             <script src="{% static 'main/js/popper/popper.js' %}"></script>
             <script src="{% static 'main/js/jquery/jquery-3.3.1.min.js' %}"></script>
             <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
+            <script src="{% static 'main/js/jquery.dropdown/jquery.dropdown.js' %}"></script>
             <script src="{% static 'main/js/bootstrap-4.1.1/bootstrap.min.js' %}"></script>
             <script src="{% static 'main/js/bootbox/bootbox.min.js' %}"></script>
             <script src="{% static 'main/js/toastr-2.1.4/toastr.min.js' %}"></script>
             <script src="{% static 'main/js/main.js' %}"></script>
+            <script src="{% static 'main/js/detail.js' %}"></script>
             <script>
                 $(function () {
                     window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');

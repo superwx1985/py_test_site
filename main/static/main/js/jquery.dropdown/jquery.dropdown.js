@@ -159,8 +159,8 @@
 				if (map[val.groupId]) {
 					map[val.groupId] += temp;
 				} else {
-					// &janking& just a separator
-					map[val.groupId] = val.groupName + '&janking&' + temp;
+					// #{|}# just a separator
+					map[val.groupId] = val.groupName + '#{|}#' + temp;
 				}
 			} else {
 				map[index] = temp;
@@ -168,7 +168,7 @@
 		});
 
 		$.each(map, function (index, val) {
-			var option = val.split('&janking&');
+			var option = val.split('#{|}#');
 			// 判断是否有分组
 			if (option.length === 2) {
 				var groupName = option[0];
@@ -233,34 +233,67 @@
 			var intputValue = $input.val();
 			var data = _dropdown.config.data;
 			var result = [];
-			
+
 			if (event.keyCode > 36 && event.keyCode < 41) {
 				return;
 			}
 			// 用空格分隔多个搜索词实现多条件搜索
-			var keyWords = intputValue.split(" ");
-			$.each(data, function (key, value) {
-				if (1 === keyWords.length) {
-					if (value.name.toLowerCase().indexOf(keyWords[0]) > -1 || '' + value.id === '' + keyWords[0]) {
-						result.push(value);
-					}
-				} else {
-					var matched = 0;
-					var keyWordCount = 0;
-					$.each(keyWords, function (i, keyWord){
-						if (keyWord!=="") {// 关键字为空字符串时忽略本次对比，用于用户刚刚输入完空格还没开始输入下一个关键词时的搜索
-							keyWordCount++;
-							if (value.name.toLowerCase().indexOf(keyWord) > -1 || '' + value.id === '' + keyWord) {
-								matched++;
-							}
-						}
-					});
-					if (matched == keyWordCount) {
-						result.push(value);
-					}
+			var keyWords_ = intputValue.toLowerCase().split(" ");
+			var keyWords = [];
+
+			// 关键字为空字符串时去除该关键字，优化性能
+			$.each(keyWords_, function (i, keyWord){
+				keyWord = $.trim(keyWord);
+				if (keyWord!=="") {
+					keyWords.push(keyWord)
 				}
 			});
-			
+
+			// 判断各选项是否符合条件
+			$.each(data, function (key, value) {
+                var id_ = String(value.id);
+                var name_ = value.name.toLowerCase();
+				var other_ = value.other.toLowerCase();
+				if (keyWords.length === 1 && id_ === keyWords[0]) {
+					result.push(value);
+				} else {
+					// 把name和other合并搜索
+					var matched = 0;
+					$.each(keyWords, function (i, keyWord){
+						if (name_.indexOf(keyWord) > -1) {
+							matched++;
+							// 下次对比不包含已匹配的关键字，只替换一次，保留重复的关键字
+							name_ = name_.replace(keyWord, '');
+                        } else if (other_.indexOf(keyWord) > -1) {
+							matched++;
+							// 下次对比不包含已匹配的关键字，只替换一次，保留重复的关键字
+							other_ = other_.replace(keyWord, '');
+                        }
+					});
+					if (matched === keyWords.length) {
+						result.push(value);
+					}
+
+					// 把name和other分开搜索
+					// var name_matched = 0;
+					// var other_matched = 0;
+					// $.each(keyWords, function (i, keyWord){
+					// 	if (name_.indexOf(keyWord) > -1) {
+					// 		name_matched++;
+					// 		// 下次对比不包含已匹配的关键字，只替换一次，保留重复的关键字
+					// 		name_ = name_.replace(keyWord, '');
+                     //    }
+                     //    if (other_.indexOf(keyWord) > -1) {
+					// 		other_matched++;
+					// 		// 下次对比不包含已匹配的关键字，只替换一次，保留重复的关键字
+					// 		other_ = other_.replace(keyWord, '');
+                     //    }
+					// });
+					// if (name_matched === keyWords.length || other_matched === keyWords.length) {
+					// 	result.push(value);
+					// }
+				}
+			});
 			$el.find('ul').html(selectToDiv(objectToSelect(result)[0]) || _config.searchNoData);
 		}, 300),
 		// 键盘控制
@@ -331,7 +364,7 @@
 					selectedName.push(item.name);
 					_dropdown.selectId[item.id] = {"name": item.name, "url": item.url, "other": item.other};// 在selectId中为选中的id添加name
 					if(item.url) {
-						_dropdown.name.push('<span class="dropdown-selected"><a target="_blan" href=' + item.url + '>' + item.name + '<i class="del" data-id="' + item.id + '"></i></a></span>');
+						_dropdown.name.push('<span class="dropdown-selected"><a target="_blank" href=' + item.url + '>' + item.name + '<i class="del" data-id="' + item.id + '"></i></a></span>');
 					} else {
 						_dropdown.name.push('<span class="dropdown-selected">' + item.name + '<i class="del" data-id="' + item.id + '"></i></span>');
 					}
@@ -373,7 +406,7 @@
 						_dropdown.selectId = {};// 清空selectId
 						_dropdown.selectId[item.id] = {"name": item.name, "url": item.url, "other": item.other};// 在selectId中添加选中的id
 						if(item.url) {
-							_dropdown.name.push('<span class="dropdown-selected"><a target="_blan" href=' + item.url + '>' + item.name + '<i class="del" data-id="' + item.id + '"></i></a></span>');
+							_dropdown.name.push('<span class="dropdown-selected"><a target="_blank" href=' + item.url + '>' + item.name + '<i class="del" data-id="' + item.id + '"></i></a></span>');
 						} else {
 							_dropdown.name.push('<span class="dropdown-selected">' + item.name + '<i class="del" data-id="' + item.id + '"></i></span>');
 						}
@@ -393,7 +426,6 @@
 			var _dropdown = this;
 			var $target = $(event.target);
 			var id = $target.data('id');
-			var $select = _dropdown.$select;
 			var _config = _dropdown.config;
 			// 2017-03-23 15:58:50 测试
 			// 10000条数据测试删除，耗时 ~3ms
@@ -410,7 +442,7 @@
 					return false;
 				}
 			});
-			
+
 			// 在selectId中删除取消的id
 			delete _dropdown.selectId[id];
 
@@ -426,6 +458,8 @@
 				$(el).trigger('click');
 			});
 			this.$el.find('.dropdown-display').removeAttr('title');
+			// 单选时清除select的value
+			if (this.isSingleSelect) { this.$select.val(''); }
 			return false;
 		}
 	};
@@ -578,7 +612,7 @@
 		$('.dropdown-single,.dropdown-multiple,.dropdown-multiple-label').removeClass('active');
 	});
 
-	$.fn.dropdown = function (options) {
+	$.fn.j_dropdown = function (options) {
 		this.each(function (index, el) {
 			$(el).data('dropdown', new Dropdown($.extend(true, {}, settings, options), el));
 		});

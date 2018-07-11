@@ -104,7 +104,7 @@
                     // 注册添加按钮
                     $('#add_button').on('click', function () {window.open(window.addUrl, '_self');});
                     // 注册只看自己复选框
-                    $('#own').on('click', function() {$('#objects_form').submit()});
+                    $('#all_').on('click', function() {$('#objects_form').submit()});
                     // 更新序号
                     $('#result_table td[col_name=index]').each(function(i,v) {$(v).text((window.page - 1) * window.size + 1 + i)});
                     // 注册排序
@@ -192,9 +192,9 @@
     <body>
         {% include 'main/include/mask.html' %}
         {% include 'main/include/navbar.html' %}
+        {% csrf_token %}
         <div class="container-fluid" style="padding-top: 60px; padding-bottom: 40px">
-            <form method="post" id="objects_form" class="form-inline">
-                {% csrf_token %}
+            <form method="get" id="objects_form" class="form-inline">
                 {% block tools_bar %}
                     {% include 'main/include/tools_bar.html' with add_button=True %}
                 {% endblock %}

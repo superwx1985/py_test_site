@@ -18,6 +18,10 @@
             // 更新导航栏
             $('#nav_suite').addClass('active');
             window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
+            // 获取配置下拉项
+            getList("{% url 'config_select_json' %}", window.$csrf_input.val(), update_config_dropdown, '{"selected_pk": "{{ form.config.value }}"}');
+            // 获取变量组下拉项
+            getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_groups_dropdown, '{"selected_pk": "{{ form.variable_group.value }}"}');
             // 默认只看自己
             $('input[name=own]').prop('checked', true);
             // 注册只看自己复选框
@@ -76,7 +80,6 @@
             // 如果传入了上次的条件，则使用上次的条件初始化搜索信息
             if (last_condition_json) {
                 var last_condition = $.parseJSON(last_condition_json);
-                console.log(last_condition);
                 $('input[name=search_text]').val(last_condition.search_text);
                 if (last_condition.own === 1) {
                     $('input[name=own]').prop('checked', true);
@@ -312,7 +315,7 @@
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="本次测试的日志详细程度"></i>&nbsp;日志级别</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="本次测试的日志详细程度，选择DEV将不会自动关闭浏览器"></i>&nbsp;日志级别</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.log_level %}
             </div>
@@ -326,13 +329,13 @@
         <div class="row align-items-center">
             <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的配置项"></i>&nbsp;测试配置</div>
             <div class="col" form_data>
-                {% include 'main/include/form_input.html' with field=form.config %}
+                <div id="config_dropdown" name="config"></div>
             </div>
         </div>
         <div class="row align-items-center">
             <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的公共变量组。如果用例中单独设置了变量组，或测试过程中定义了同名变量，将使用内部变量代替公共变量"></i>&nbsp;公共变量组</div>
             <div class="col" form_data>
-                {% include 'main/include/form_input.html' with field=form.variable_group %}
+                <div id="variable_group_dropdown" name="variable_group"></div>
             </div>
         </div>
 

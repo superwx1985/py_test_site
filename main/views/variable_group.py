@@ -7,7 +7,7 @@ from django.core.serializers import serialize
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
 from django.db import connection
-from django.db.models import Q, F, CharField, Count
+from django.db.models import Q, F, CharField, Value, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib import auth
@@ -22,55 +22,40 @@ logger = logging.getLogger('django.request')
 
 @login_required
 def list_(request):
-    if request.method == 'POST':
-        page = request.POST.get('page')
-        size = request.POST.get('size')
-        search_text = request.POST.get('search_text')
-        order_by = request.POST.get('order_by')
-        order_by_reverse = request.POST.get('order_by_reverse')
-        own = request.POST.get('own')
-    else:
-        page = request.COOKIES.get('page')
-        size = request.COOKIES.get('size')
-        search_text = request.COOKIES.get('search_text')
-        order_by = request.COOKIES.get('order_by')
-        order_by_reverse = request.COOKIES.get('order_by_reverse')
-        own = request.COOKIES.get('own')
+    page = request.GET.get('page', 1)
+    size = request.GET.get('size', 10)
+    search_text = str(request.GET.get('search_text', ''))
+    order_by = request.GET.get('order_by', 'modified_date')
+    order_by_reverse = request.GET.get('order_by_reverse', 'True')
+    all_ = request.GET.get('all_', 'False')
 
     page = change_to_positive_integer(page)
     size = change_to_positive_integer(size, 10)
-    search_text = str(search_text) if search_text else ''
-    if order_by is None or order_by == '':
-        order_by = 'modified_date'
-    if order_by_reverse is None or order_by_reverse == '' or order_by_reverse == 'False':
-        order_by_reverse = False
-    else:
+    if order_by_reverse == 'True':
         order_by_reverse = True
-    if own is None or own == '' or own == 'False':
-        own = False
     else:
-        own = True
+        order_by_reverse = False
+    if all_ == 'False':
+        all_ = False
+    else:
+        all_ = True
 
     if request.session.get('status', None) == 'success':
         prompt = 'success'
     request.session['status'] = None
     q = get_query_condition(search_text)
-    if own:
-        objects = VariableGroup.objects.filter(q, is_active=True, creator=request.user).values(
+    if all_:
+        objects = VariableGroup.objects.filter(q, is_active=True).values(
             'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
             variable_count=Count('variable'))
     else:
-        objects = VariableGroup.objects.filter(q, is_active=True).values(
+        objects = VariableGroup.objects.filter(q, is_active=True, creator=request.user).values(
             'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
             variable_count=Count('variable'))
     # 排序
     if objects:
         if order_by not in objects[0]:
             order_by = 'modified_date'
-        if order_by_reverse is True or order_by_reverse == 'True':
-            order_by_reverse = True
-        else:
-            order_by_reverse = False
         objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     paginator = Paginator(objects, size)
     try:
@@ -236,6 +221,35 @@ def quick_update(request, pk):
 
 # 获取变量组中的变量
 @login_required
-def variables(request, pk):
+def variables(_, pk):
     objects = Variable.objects.filter(variable_group=pk).order_by('order').values('pk', 'name', 'value')
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
+
+
+@login_required
+def select_json(request):
+    condition = request.POST.get('condition', '{}')
+    try:
+        condition = json.loads(condition)
+    except json.decoder.JSONDecodeError:
+        condition = dict()
+    selected_pk = condition.get('selected_pk')
+    # objects = VariableGroup.objects.filter(is_active=True).values('pk').annotate(name_=Concat(
+    #     'pk', Value(' | '), 'name', Value(' | '), 'keyword', Value(' | '), 'project__name', output_field=CharField()),
+    # )
+    objects = VariableGroup.objects.filter(is_active=True).values('pk').annotate(
+        name_=Concat('name', Value(' | '), 'project__name', output_field=CharField()),
+        other=F('keyword'),
+    )
+    objects_list = list(objects)
+    for obj in objects_list:
+        obj['id'] = str(obj.pop('pk'))
+        obj['name'] = obj.pop('name_')
+        obj['disabled'] = False
+        obj['url'] = ''
+        if str(obj['id']) == selected_pk:
+            obj['selected'] = True
+        else:
+            obj['selected'] = False
+
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': objects_list})

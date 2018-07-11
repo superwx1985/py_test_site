@@ -282,7 +282,7 @@ class Suite(models.Model):
     base_timeout = models.FloatField(default=10)
     ui_get_ss = models.BooleanField(default=True)
     log_level_list = (
-        (0, 'NOTSET'),
+        (1, 'DEV'),
         (10, 'DEBUG'),
         (20, 'INFO'),
         (30, 'WARNING'),

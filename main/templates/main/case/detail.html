@@ -19,11 +19,9 @@
             $('#nav_case').addClass('active');
             window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
             // 获取配置下拉项
-            get_config_dropdown_list();
-            // 默认只看自己
-            $('input[name=own]').prop('checked', true);
+            getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_groups_dropdown, '{"selected_pk": "{{ form.variable_group.value }}"}');
             // 注册只看自己复选框
-            $('#own').on('click', function() {$('#m2m_objects_form').submit()});
+            $('#all_').on('click', function() {$('#m2m_objects_form').submit()});
             // 获取待选m2m
             submit_m2m_objects_form(get_cookie('last_condition_json'));
             // 注册待选m2m排序
@@ -62,31 +60,6 @@
             // 处理step拖动及排序
             stepHandle();
         });
-        // 获取配置下拉项
-        function get_config_dropdown_list() {
-			$.ajax({
-				url: {% url '' %},
-				type: "POST",
-				data: {"operate": "get_configuration_dropdown_list", "id": window._id},
-				dataType: "html",
-				success: function(data, textStatus) {
-					//console.log("textStatus: "+textStatus);
-					//console.log("data: "+data);
-					//console.log("data's lenth: " + $.Object.count.call(data));
-					reset_configuration_data($.parseJSON(data)[0].selectSet);
-		        },
-				error: function (XMLHttpRequest, textStatus, errorThrown) {
-					console.log('error');
-					console.log("textStatus: "+textStatus);
-					console.log("errorThrown: "+errorThrown);
-					console.log("XMLHttpRequest: "+XMLHttpRequest);
-					console.log("XMLHttpRequest.status: "+XMLHttpRequest.status);
-					console.log("XMLHttpRequest.statusText: "+XMLHttpRequest.statusText);
-					console.log("XMLHttpRequest.responseText: "+XMLHttpRequest.responseText);
-					//console.log("XMLHttpRequest.responseXML: "+XMLHttpRequest.responseXML);
-				}
-			})
-		}
         // 更新排序标志
         function update_sort_icon() {
             $('#m2m_all th[order_by_text]').find('i').remove();
@@ -103,7 +76,6 @@
             // 如果传入了上次的条件，则使用上次的条件初始化搜索信息
             if (last_condition_json) {
                 var last_condition = $.parseJSON(last_condition_json);
-                console.log(last_condition);
                 $('input[name=search_text]').val(last_condition.search_text);
                 if (last_condition.own === 1) {
                     $('input[name=own]').prop('checked', true);
@@ -325,10 +297,16 @@
                 {% include 'main/include/form_input.html' with field=form.keyword %}
             </div>
         </div>
+{#        <div class="row align-items-center">#}
+{#            <div class="col-1 text-center font-weight-bold">本地变量组</div>#}
+{#            <div class="col" form_data>#}
+{#                {% include 'main/include/form_input.html' with field=form.variable_group %}#}
+{#            </div>#}
+{#        </div>#}
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">本地变量组</div>
+            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="如果用例中单独设置了变量组，或测试过程中定义了同名变量，将使用内部变量代替公共变量"></i>&nbsp;本地变量组</div>
             <div class="col" form_data>
-                {% include 'main/include/form_input.html' with field=form.variable_group %}
+                <div id="variable_group_dropdown" name="variable_group"></div>
             </div>
         </div>
         <div class="row align-items-center">
