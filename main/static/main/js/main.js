@@ -95,7 +95,7 @@ function quick_update(tds, func, callback_func) {
 // 详情
 function bind_edit_button() {
     $('button[name=edit_button]').on('click', function() {
-        var url = $(this).parents('tr').attr('edit_url');
+        var url = $(this).parents('tr').attr('edit_url') + '?next=' + window.next_;
         window.open(url, '_self');
     });
 }
@@ -204,14 +204,14 @@ function set_cookie(name, value, seconds, path) {
     var exp = new Date();
 	if (seconds && seconds > 0) {exp_str = exp.setTime(exp.getTime() + seconds*1000).toUTCString();}
 	if (path) {path_str = path}
-	document.cookie = name + "=" + escape(value) + ";expires=" + exp_str + ";path=" + path_str;
+	document.cookie = name + "=" + encodeURI(value) + ";expires=" + exp_str + ";path=" + path_str;
 }
 
 // 获取cookie
 function get_cookie(name) {
 	var arr,reg = new RegExp("(^|)" + name + "=([^;]*)(;|$)");
 	if (arr=document.cookie.match(reg)) {
-		return unescape(arr[2]);
+		return decodeURI(arr[2]);
 	} else {
 		return null;
 	}

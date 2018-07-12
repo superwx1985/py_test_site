@@ -150,7 +150,7 @@
 				} else {
 					name.push('<span class="dropdown-selected">' + val.name + '<i class="del" data-id="' + val.id + '"></i></span>');
 				}
-				selectId[val.id] = {"name": val.name, "url": val.url, "other": val.other};
+				selectId[val.id] = {"name": val.name, "other": val.other};
 				selectAmount++;
 			}
 
@@ -252,22 +252,16 @@
 			// 判断各选项是否符合条件
 			$.each(data, function (key, value) {
                 var id_ = String(value.id);
-                var name_ = value.name.toLowerCase();
-				var other_ = value.other.toLowerCase();
+				var search_info = value.search_info ? value.search_info.toLowerCase() : value.name.toLowerCase();
 				if (keyWords.length === 1 && id_ === keyWords[0]) {
 					result.push(value);
 				} else {
-					// 把name和other合并搜索
 					var matched = 0;
 					$.each(keyWords, function (i, keyWord){
-						if (name_.indexOf(keyWord) > -1) {
+						if (search_info.indexOf(keyWord) > -1) {
 							matched++;
 							// 下次对比不包含已匹配的关键字，只替换一次，保留重复的关键字
-							name_ = name_.replace(keyWord, '');
-                        } else if (other_.indexOf(keyWord) > -1) {
-							matched++;
-							// 下次对比不包含已匹配的关键字，只替换一次，保留重复的关键字
-							other_ = other_.replace(keyWord, '');
+							search_info = search_info.replace(keyWord, '');
                         }
 					});
 					if (matched === keyWords.length) {
@@ -362,7 +356,7 @@
 				}
 				if (item.selected) {
 					selectedName.push(item.name);
-					_dropdown.selectId[item.id] = {"name": item.name, "url": item.url, "other": item.other};// 在selectId中为选中的id添加name
+					_dropdown.selectId[item.id] = {"name": item.name, "other": item.other};// 在selectId中添加选中的id
 					if(item.url) {
 						_dropdown.name.push('<span class="dropdown-selected"><a target="_blank" href=' + item.url + '>' + item.name + '<i class="del" data-id="' + item.id + '"></i></a></span>');
 					} else {
@@ -404,7 +398,7 @@
 					item.selected = hasSelected ? 0 : 1;
 					if (item.selected) {
 						_dropdown.selectId = {};// 清空selectId
-						_dropdown.selectId[item.id] = {"name": item.name, "url": item.url, "other": item.other};// 在selectId中添加选中的id
+						_dropdown.selectId[item.id] = {"name": item.name, "other": item.other};// 在selectId中添加选中的id
 						if(item.url) {
 							_dropdown.name.push('<span class="dropdown-selected"><a target="_blank" href=' + item.url + '>' + item.name + '<i class="del" data-id="' + item.id + '"></i></a></span>');
 						} else {
@@ -497,6 +491,12 @@
 			_this.selectAmount = processResult[2];
 			_this.$select.html(processResult[0]);
 			_this.selectId = processResult[3];
+
+			// 判断是否没有选项被选中
+			if (_this.$select.children('option[selected]').length === 0) {
+				_this.$select.val(null);
+			}
+
 			_this.renderSelect();
 			// disabled权重高于readonly
 			_this.changeStatus(_config.disabled ? 'disabled' : _config.readonly ? 'readonly' : false);

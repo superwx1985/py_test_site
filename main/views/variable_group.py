@@ -1,35 +1,31 @@
 import json
 import logging
 import copy
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
-from django.shortcuts import render, get_object_or_404
-from django.core.serializers import serialize
+from django.http import HttpResponseRedirect, JsonResponse, Http404
+from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
-from django.db import connection
-from django.db.models import Q, F, CharField, Value, Count
-from django.db.models.functions import Concat
+from django.db.models import Count
 from django.utils import timezone
-from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from django.core import serializers
 from main.models import VariableGroup, Variable
 from main.forms import OrderByForm, PaginatorForm, VariableGroupForm
-from main.views.general import get_query_condition, change_to_positive_integer
+from main.views.general import get_query_condition, change_to_positive_integer, Cookie
+from urllib.parse import quote
 
 logger = logging.getLogger('django.request')
 
 
 @login_required
 def list_(request):
-    page = request.GET.get('page', 1)
-    size = request.GET.get('size', 10)
+    page = request.GET.get('page')
+    size = request.GET.get('size', request.COOKIES.get('size'))
     search_text = str(request.GET.get('search_text', ''))
     order_by = request.GET.get('order_by', 'modified_date')
     order_by_reverse = request.GET.get('order_by_reverse', 'True')
     all_ = request.GET.get('all_', 'False')
 
-    page = change_to_positive_integer(page)
+    page = change_to_positive_integer(page, 1)
     size = change_to_positive_integer(size, 10)
     if order_by_reverse == 'True':
         order_by_reverse = True
@@ -68,11 +64,17 @@ def list_(request):
         page = paginator.num_pages
     order_by_form = OrderByForm(initial={'order_by': order_by, 'order_by_reverse': order_by_reverse})
     paginator_form = PaginatorForm(initial={'page': page, 'size': size}, page_max_value=paginator.num_pages)
-    return render(request, 'main/variable_group/list.html', locals())
+    # 设置cookie
+    cookies = [Cookie('size', size, path=request.path)]
+    respond = render(request, 'main/variable_group/list.html', locals())
+    for cookie in cookies:
+        respond.set_cookie(cookie.key, cookie.value, cookie.max_age, cookie.expires, cookie.path)
+    return respond
 
 
 @login_required
 def detail(request, pk):
+    next_ = request.GET.get('next', '/home/')
     try:
         obj = VariableGroup.objects.select_related('creator', 'modifier').get(pk=pk)
     except VariableGroup.DoesNotExist:
@@ -116,24 +118,24 @@ def detail(request, pk):
                                 variable_group=obj, name=v['name'].strip(), value=v['value'], order=order)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
-            redirect_url = request.POST.get('redirect_url', '')
-            if not redirect or not redirect_url:
-                return HttpResponseRedirect(reverse('variable_group', args=[pk]) + '?redirect_url=' + redirect_url)
+            if redirect:
+                return HttpResponseRedirect(next_)
             else:
-                return HttpResponseRedirect(redirect_url)
+                return HttpResponseRedirect(request.get_full_path())
         else:
             if variable_list is not None:
                 # 暂存variable列表
                 temp_dict = dict()
                 temp_dict['data'] = variable_list
                 temp_list_json = json.dumps(temp_dict)
-        redirect_url = request.POST.get('redirect_url', '')
+
         is_success = False
         return render(request, 'main/variable_group/detail.html', locals())
 
 
 @login_required
 def add(request):
+    next_ = request.GET.get('next', '/home/')
     if request.method == 'GET':
         form = VariableGroupForm()
         if request.session.get('status', None) == 'success':
@@ -170,20 +172,19 @@ def add(request):
                             variable_group=obj, name=v['name'].strip(), value=v['value'], order=order)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
-            redirect_url = request.POST.get('redirect_url', '')
-            if not redirect or not redirect_url:
-                return HttpResponseRedirect(reverse('variable_group', args=[pk]) + '?redirect_url=' + redirect_url)
-            elif redirect == 'add_another':
-                return HttpResponseRedirect(reverse('variable_group_add') + '?redirect_url=' + redirect_url)
+            if redirect == 'add_another':
+                return HttpResponseRedirect(request.get_full_path())
+            elif redirect:
+                return HttpResponseRedirect(next_)
             else:
-                return HttpResponseRedirect(redirect_url)
+                return HttpResponseRedirect('{}?next={}'.format(reverse(detail, args=[pk]), quote(next_)))
         else:
             if variable_list:
                 # 暂存variable列表
                 temp_dict = dict()
                 temp_dict['data'] = variable_list
                 temp_list_json = json.dumps(temp_dict)
-        redirect_url = request.POST.get('redirect_url', '')
+
         is_success = False
         return render(request, 'main/variable_group/detail.html', locals())
 
@@ -237,19 +238,18 @@ def select_json(request):
     # objects = VariableGroup.objects.filter(is_active=True).values('pk').annotate(name_=Concat(
     #     'pk', Value(' | '), 'name', Value(' | '), 'keyword', Value(' | '), 'project__name', output_field=CharField()),
     # )
-    objects = VariableGroup.objects.filter(is_active=True).values('pk').annotate(
-        name_=Concat('name', Value(' | '), 'project__name', output_field=CharField()),
-        other=F('keyword'),
-    )
-    objects_list = list(objects)
-    for obj in objects_list:
-        obj['id'] = str(obj.pop('pk'))
-        obj['name'] = obj.pop('name_')
-        obj['disabled'] = False
-        obj['url'] = ''
-        if str(obj['id']) == selected_pk:
-            obj['selected'] = True
-        else:
-            obj['selected'] = False
+    objects = VariableGroup.objects.filter(is_active=True).values('pk', 'name', 'project__name', 'keyword')
 
-    return JsonResponse({'statue': 1, 'message': 'OK', 'data': objects_list})
+    data = list()
+    for obj in objects:
+        d = dict()
+        d['id'] = str(obj['pk'])
+        d['name'] = '{} | {}'.format(obj['name'], obj['project__name'])
+        d['search_info'] = '{} {} {}'.format(obj['name'], obj['project__name'], obj['keyword'])
+        if str(obj['pk']) == selected_pk:
+            d['selected'] = True
+        else:
+            d['selected'] = False
+        data.append(d)
+
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': data})

@@ -1,22 +1,18 @@
 import json
 import logging
 import copy
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
-from django.shortcuts import render, get_object_or_404
-from django.core.serializers import serialize
+from django.http import HttpResponseRedirect, JsonResponse, Http404
+from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
-from django.db import connection
-from django.db.models import Q, F, CharField, Value, Count
+from django.db.models import CharField, Value
 from django.db.models.functions import Concat
 from django.utils import timezone
-from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from django.core import serializers
-# from django.views.decorators.csrf import csrf_exempt
-from main.models import Step, Action
+from main.models import Step
 from main.forms import OrderByForm, PaginatorForm, StepForm
-from main.views.general import get_query_condition, change_to_positive_integer
+from main.views.general import get_query_condition, change_to_positive_integer, Cookie
+from urllib.parse import quote
 
 logger = logging.getLogger('django.request')
 
@@ -24,14 +20,14 @@ logger = logging.getLogger('django.request')
 # 步骤列表
 @login_required
 def list_(request):
-    page = request.GET.get('page', 1)
-    size = request.GET.get('size', 10)
+    page = request.GET.get('page')
+    size = request.GET.get('size', request.COOKIES.get('size'))
     search_text = str(request.GET.get('search_text', ''))
     order_by = request.GET.get('order_by', 'modified_date')
     order_by_reverse = request.GET.get('order_by_reverse', 'True')
     all_ = request.GET.get('all_', 'False')
 
-    page = change_to_positive_integer(page)
+    page = change_to_positive_integer(page, 1)
     size = change_to_positive_integer(size, 10)
     if order_by_reverse == 'True':
         order_by_reverse = True
@@ -77,11 +73,17 @@ def list_(request):
         page = paginator.num_pages
     order_by_form = OrderByForm(initial={'order_by': order_by, 'order_by_reverse': order_by_reverse})
     paginator_form = PaginatorForm(initial={'page': page, 'size': size}, page_max_value=paginator.num_pages)
-    return render(request, 'main/step/list.html', locals())
+    # 设置cookie
+    cookies = [Cookie('size', size, path=request.path)]
+    respond = render(request, 'main/step/list.html', locals())
+    for cookie in cookies:
+        respond.set_cookie(cookie.key, cookie.value, cookie.max_age, cookie.expires, cookie.path)
+    return respond
 
 
 @login_required
 def detail(request, pk):
+    next_ = request.GET.get('next', '/home/')
     try:
         obj = Step.objects.select_related('creator', 'modifier').get(pk=pk)
     except Step.DoesNotExist:
@@ -106,18 +108,18 @@ def detail(request, pk):
             form.save_m2m()
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
-            redirect_url = request.POST.get('redirect_url', '')
-            if not redirect or not redirect_url:
-                return HttpResponseRedirect(reverse('step', args=[pk]) + '?redirect_url=' + redirect_url)
+            if redirect:
+                return HttpResponseRedirect(next_)
             else:
-                return HttpResponseRedirect(redirect_url)
-        redirect_url = request.POST.get('redirect_url', '')
+                return HttpResponseRedirect(request.get_full_path())
+
         is_success = False
         return render(request, 'main/step/detail.html', locals())
 
 
 @login_required
 def add(request):
+    next_ = request.GET.get('next', '/home/')
     if request.method == 'GET':
         form = StepForm()
         if request.session.get('status', None) == 'success':
@@ -137,14 +139,13 @@ def add(request):
             pk = form_.id
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
-            redirect_url = request.POST.get('redirect_url', '')
-            if not redirect or not redirect_url:
-                return HttpResponseRedirect(reverse('step', args=[pk]) + '?redirect_url=' + redirect_url)
-            elif redirect == 'add_another':
-                return HttpResponseRedirect(reverse('step_add') + '?redirect_url=' + redirect_url)
+            if redirect == 'add_another':
+                return HttpResponseRedirect(request.get_full_path())
+            elif redirect:
+                return HttpResponseRedirect(next_)
             else:
-                return HttpResponseRedirect(redirect_url)
-        redirect_url = request.POST.get('redirect_url', '')
+                return HttpResponseRedirect('{}?next={}'.format(reverse(detail, args=[pk]), quote(next_)))
+
         is_success = False
         return render(request, 'main/step/detail.html', locals())
 
@@ -267,6 +268,8 @@ def copy_(request, pk):
         obj.creator = obj.modifier = request.user
         obj.clean_fields()
         obj.save()
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': obj.pk})
+        return JsonResponse({
+            'statue': 1, 'message': 'OK', 'data': {'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk])}
+        })
     except Step.DoesNotExist as e:
         return JsonResponse({'statue': 1, 'message': 'ERROR', 'data': str(e)})

@@ -1,7 +1,7 @@
 import json
 import logging
 import copy
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
+from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
@@ -10,8 +10,9 @@ from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Case, Step, CaseVsStep
-from main.forms import OrderByForm, PaginatorForm, CaseForm, get_project_list
-from main.views.general import get_query_condition, change_to_positive_integer
+from main.forms import OrderByForm, PaginatorForm, CaseForm
+from main.views.general import get_query_condition, change_to_positive_integer, Cookie
+from urllib.parse import quote
 
 logger = logging.getLogger('django.request')
 
@@ -33,14 +34,14 @@ def list_(request):
     #     order_by = request.COOKIES.get('order_by')
     #     order_by_reverse = request.COOKIES.get('order_by_reverse')
     #     own = request.COOKIES.get('own')
-    page = request.GET.get('page', 1)
-    size = request.GET.get('size', 10)
+    page = request.GET.get('page')
+    size = request.GET.get('size', request.COOKIES.get('size'))
     search_text = str(request.GET.get('search_text', ''))
     order_by = request.GET.get('order_by', 'modified_date')
     order_by_reverse = request.GET.get('order_by_reverse', 'True')
     all_ = request.GET.get('all_', 'False')
 
-    page = change_to_positive_integer(page)
+    page = change_to_positive_integer(page, 1)
     size = change_to_positive_integer(size, 10)
     if order_by_reverse == 'True':
         order_by_reverse = True
@@ -82,25 +83,27 @@ def list_(request):
         page = paginator.num_pages
     order_by_form = OrderByForm(initial={'order_by': order_by, 'order_by_reverse': order_by_reverse})
     paginator_form = PaginatorForm(initial={'page': page, 'size': size}, page_max_value=paginator.num_pages)
-    # 获取项目
-    project_list = get_project_list()
-    return render(request, 'main/case/list.html', locals())
+    # 设置cookie
+    cookies = [Cookie('size', size, path=request.path)]
+    respond = render(request, 'main/case/list.html', locals())
+    for cookie in cookies:
+        respond.set_cookie(cookie.key, cookie.value, cookie.max_age, cookie.expires, cookie.path)
+    return respond
 
 
 # 用例详情
 @login_required
 def detail(request, pk):
+    next_ = request.GET.get('next', '/home/')
     try:
         obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
     except Case.DoesNotExist:
         raise Http404('Step does not exist')
-    project_list = get_project_list()
     if request.method == 'GET':
         form = CaseForm(instance=obj)
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/case/detail.html', locals())
     elif request.method == 'POST':
         obj_temp = copy.deepcopy(obj)
@@ -138,13 +141,11 @@ def detail(request, pk):
                                                   modifier=request.user)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
-            redirect_url = request.POST.get('redirect_url', '')
-            if not redirect or not redirect_url:
-                return HttpResponseRedirect(reverse('case', args=[pk]) + '?redirect_url=' + redirect_url)
+            if redirect:
+                return HttpResponseRedirect(next_)
             else:
-                return HttpResponseRedirect(redirect_url)
+                return HttpResponseRedirect(request.get_full_path())
         else:
-
             if m2m_list is not None:
                 # 暂存step列表
                 m2m = CaseVsStep.objects.filter(case=obj).order_by('order')
@@ -155,20 +156,19 @@ def detail(request, pk):
                 temp_dict = dict()
                 if original_m2m_list != m2m_list:
                     temp_list_json = json.dumps(m2m_list)
-        redirect_url = request.POST.get('redirect_url', '')
+
         is_success = False
         return render(request, 'main/case/detail.html', locals())
 
 
 @login_required
 def add(request):
-    project_list = get_project_list()
+    next_ = request.GET.get('next', '/home/')
     if request.method == 'GET':
         form = CaseForm()
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/case/detail.html', locals())
     elif request.method == 'POST':
         form = CaseForm(data=request.POST)
@@ -201,17 +201,23 @@ def add(request):
                                               modifier=request.user)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
-            redirect_url = request.POST.get('redirect_url', '')
-            if not redirect or not redirect_url:
-                return HttpResponseRedirect(reverse('case', args=[pk]) + '?redirect_url=' + redirect_url)
-            elif redirect == 'add_another':
-                return HttpResponseRedirect(reverse('case_add') + '?redirect_url=' + redirect_url)
+            if redirect == 'add_another':
+                return HttpResponseRedirect(request.get_full_path())
+            elif redirect:
+                return HttpResponseRedirect(next_)
             else:
-                return HttpResponseRedirect(redirect_url)
+                return HttpResponseRedirect('{}?next={}'.format(reverse(detail, args=[pk]), quote(next_)))
+            #
+            # if not redirect or not redirect_url:
+            #     return HttpResponseRedirect(reverse('case', args=[pk]) + '?redirect_url=' + redirect_url)
+            # elif redirect == 'add_another':
+            #     return HttpResponseRedirect(reverse('case_add') + '?redirect_url=' + redirect_url)
+            # else:
+            #     return HttpResponseRedirect(redirect_url)
         else:
             if m2m_list is not None:
                 temp_list_json = json.dumps(m2m_list)
-        redirect_url = request.POST.get('redirect_url', '')
+
         is_success = False
         return render(request, 'main/case/detail.html', locals())
 

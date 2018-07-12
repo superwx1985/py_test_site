@@ -8,7 +8,7 @@ function update_dropdown(data, $base_div) {
 		data: data.data,
 		//multipleMode: 'label',
 		//limitCount: 1,
-		input: '<input type="text" maxLength="20" placeholder="请输入名称搜索">',
+		input: '<input type="text" maxLength="20" placeholder="筛选">',
 		choice: function() {
 			// console.log(this.selectId);
 			// window._selectId = JSON.stringify(this.selectId);

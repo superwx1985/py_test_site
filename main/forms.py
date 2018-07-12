@@ -67,17 +67,17 @@ class CaseForm(forms.ModelForm):
             # 'ui_alert_handle': forms.RadioSelect,
         }
 
-    def __init__(self, *args, **kwargs):
-        super(CaseForm, self).__init__(*args, **kwargs)
-
-        for k, v in self.fields.items():
-            if k == 'name':
-                v.widget.attrs.update({'placeholder': '请输入名称'})
-            # 如果widget是Textarea，rows属性设置为空
-            if isinstance(v.widget, forms.Textarea):
-                v.widget.attrs.update({'rows': '', 'class': 'form-control'})
-            else:
-                v.widget.attrs.update({'class': 'form-control'})
+    # def __init__(self, *args, **kwargs):
+    #     super(CaseForm, self).__init__(*args, **kwargs)
+    #
+    #     for k, v in self.fields.items():
+    #         if k == 'name':
+    #             v.widget.attrs.update({'placeholder': '请输入名称'})
+    #         # 如果widget是Textarea，rows属性设置为空
+    #         if isinstance(v.widget, forms.Textarea):
+    #             v.widget.attrs.update({'rows': '', 'class': 'form-control'})
+    #         else:
+    #             v.widget.attrs.update({'class': 'form-control'})
 
 
 class StepForm(forms.ModelForm):

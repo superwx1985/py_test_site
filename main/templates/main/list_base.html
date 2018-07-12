@@ -34,21 +34,16 @@
                 $(function () {
                     window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
                     // 获取分页信息
-                    window.page = {{ paginator_form.page.value|default:1 }}
-                    window.maxPage = {{ paginator.num_pages|default:0 }}
-                    window.size = {{ paginator_form.size.value|default:10 }}
-                    // 更新cookie
-                    set_cookie('page', window.page);
-                    set_cookie('size', window.size);
-                    set_cookie('search_text', '{{ search_text }}');
-                    set_cookie('order_by', '{{ order_by }}');
-                    set_cookie('order_by_reverse', '{{ order_by_reverse }}');
-                    set_cookie('own', '{{ own }}');
+                    window.page = {{ paginator_form.page.value|default:1 }};
+                    window.maxPage = {{ paginator.num_pages|default:0 }};
+                    window.size = {{ paginator_form.size.value|default:10 }};
+                    // 获取跳转参数
+                    window.next_ = encodeURI(window.location.pathname) + encodeURIComponent(window.location.search);
                     // 注册翻页工具条
                     var input = $('input[name=page]');
                     var form = $('#objects_form');
                     var button = $("button[name=first_page_button]");
-                    if (window.page == 1) {
+                    if (window.page === 1) {
                         button.addClass('disabled')
                     } else {
                         button.click(function () {
@@ -56,8 +51,8 @@
                             form.submit();
                         });
                     }
-                    var button = $("button[name=prev_page_button]");
-                    if (window.page == 1) {
+                    button = $("button[name=prev_page_button]");
+                    if (window.page === 1) {
                         button.addClass('disabled')
                     } else {
                         button.click(function () {
@@ -65,17 +60,17 @@
                             form.submit();
                         });
                     }
-                    var button = $("button[name=next_page_button]");
-                    if (window.page == maxPage) {
+                    button = $("button[name=next_page_button]");
+                    if (window.page === maxPage) {
                         button.addClass('disabled')
                     } else {
                         button.click(function () {
-                            input.val(window.page +1);
+                            input.val(window.page + 1);
                             form.submit();
                         });
                     }
-                    var button = $("button[name=last_page_button]");
-                    if (window.page == maxPage) {
+                    button = $("button[name=last_page_button]");
+                    if (window.page === maxPage) {
                         button.addClass('disabled')
                     } else {
                         button.click(function () {
@@ -102,7 +97,7 @@
                         "hideMethod":"fadeOut"//消失时的动画方式
                     };
                     // 注册添加按钮
-                    $('#add_button').on('click', function () {window.open(window.addUrl, '_self');});
+                    $('#add_button').on('click', function () {window.open(window.addUrl + '?next=' + window.next_, '_self');});
                     // 注册只看自己复选框
                     $('#all_').on('click', function() {$('#objects_form').submit()});
                     // 更新序号
