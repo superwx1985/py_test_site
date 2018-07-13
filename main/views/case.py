@@ -95,6 +95,7 @@ def list_(request):
 @login_required
 def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
+    inside = request.GET.get('inside')
     try:
         obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
     except Case.DoesNotExist:
@@ -271,28 +272,34 @@ def list_json(request):
     except json.decoder.JSONDecodeError:
         condition = dict()
 
-    page = int(condition.get('page', 1)) if condition.get('page') != '' else 1
-    if page <= 0:
-        page = 1
+    page = condition.get('page')
     size = 10
     search_text = condition.get('search_text', '')
-    order_by = condition.get('order_by', 'create_date')
-    order_by_reverse = condition.get('order_by_reverse', False)
-    own = condition.get('own')
+    order_by = condition.get('order_by', 'name')
+    order_by_reverse = condition.get('order_by_reverse', 'False')
+    all_ = condition.get('all_', 'False')
+
+    page = change_to_positive_integer(page, 1)
+    size = change_to_positive_integer(size, 10)
+    if order_by_reverse == 'True':
+        order_by_reverse = True
+    else:
+        order_by_reverse = False
+    if all_ == 'False':
+        all_ = False
+    else:
+        all_ = True
+
     q = get_query_condition(search_text)
-    if own:
-        objects = Case.objects.filter(q, is_active=True, creator=request.user).order_by('pk').values(
+    if all_:
+        objects = Case.objects.filter(q, is_active=True).order_by('pk').values(
             'pk', 'name', 'keyword', 'project__name')
     else:
-        objects = Case.objects.filter(q, is_active=True).order_by('pk').values('pk', 'name', 'keyword', 'project__name')
+        objects = Case.objects.filter(q, is_active=True, creator=request.user).order_by('pk').values('pk', 'name', 'keyword', 'project__name')
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'pk'
-        if order_by_reverse is True or order_by_reverse == 'True':
-            order_by_reverse = True
-        else:
-            order_by_reverse = False
+            order_by = 'name'
         objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     paginator = Paginator(objects, size)
     try:

@@ -16,10 +16,10 @@
             window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
             // 关闭遮罩
             $('#mask').hide();
-            step_detail_popup(1);
+            step_result_detail_popup(1);
         });
         // 步骤详情弹窗
-        function step_detail_popup() {
+        function step_result_detail_popup() {
             $('[name=step_result]').off('click').on('click', function() {
                 var step_result_pk = $(this).attr('step_result_pk');
                 var csrf_token = window.$csrf_input.val();
@@ -60,7 +60,8 @@
                             div.append($('<div>').html(data.data.sub_case)).append($('<br>'));
                         }
                         $('.bootbox-body div[step_result_pk='+ step_result_pk +']').parent('.bootbox-body').empty().append(div);
-                        step_detail_popup();
+                        step_result_detail_popup();
+                        console.log($('[step_result_pk=' +  step_result_pk + ']'))
                     })
                 });
             });
@@ -93,7 +94,6 @@
             <div class="col-1 text-center font-weight-bold">项目</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.project %}
-{#                {{ form.project }}#}
             </div>
         </div>
 

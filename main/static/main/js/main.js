@@ -265,3 +265,13 @@ function getList(url, csrf_token, callback_func, condition_json) {
         }
     })
 }
+
+// 获取元素整体高度
+function get_element_height($e) {
+    return $e.height() + parseInt($e.css('margin-top')) + parseInt($e.css('margin-bottom')) + parseInt($e.css('border-top')) + parseInt($e.css('border-bottom'));
+}
+
+// 获取元素外部边框高度
+function get_element_outside_height($e) {
+    return parseInt($e.css('margin-top')) + parseInt($e.css('margin-bottom')) + parseInt($e.css('border-top')) + parseInt($e.css('border-bottom'));
+}

@@ -23,7 +23,7 @@
             // 注册只看自己复选框
             $('#all_').on('click', function() {$('#m2m_objects_form').submit()});
             // 获取待选m2m
-            submit_m2m_objects_form(get_cookie('last_condition_json'));
+            submit_m2m_all_objects_form(get_cookie('last_condition_json'));
             // 注册待选m2m排序
             $('#m2m_all th[order_by_text]').on('dblclick', function () {
                 var order_by_text = $(this).attr('order_by_text');
@@ -39,12 +39,9 @@
                     order_by_reverse.val('False');
                     order_by.val(order_by_text);
                 }
-                // 更新排序标志
                 update_sort_icon();
                 $('#m2m_objects_form').submit();
             });
-            // 更新排序标志
-            update_sort_icon();
             {% if temp_list_json %}
                 // 获取暂存m2m
                 getList("{% url 'step_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, "{{ temp_list_json|escapejs }}");
@@ -70,39 +67,86 @@
                 sort_col.prepend('<i class="icon-circle-arrow-up">&nbsp;</i>');
             }
         }
+        // m2m详情页
+        function m2m_detail_popup(pk) {
+            var my_modal = $('[name=my_modal]');
+            var my_modal_body = my_modal.find('.modal-body');
+            var body_height = $(window).height() - get_element_outside_height(my_modal.find('.modal-dialog')) - get_element_outside_height(my_modal.find('.modal-content')) - get_element_outside_height(my_modal_body);
+            var body_min_height = 600;
+            var modal_body_div = '<div style="height: 100%;"><iframe name="m2m_iframe" frameborder="0" style="height: 100%; width: 100%;" src="/step/' + pk + '/?inside=1"></iframe></div>';
+            my_modal.find('.modal-header').remove();
+            my_modal_body.empty().css('height', body_height).css('min-height', body_min_height).append(modal_body_div);
+            my_modal.find('.modal-footer').remove();
+            my_modal.off('hide.bs.modal').on('hide.bs.modal', function () {
+                update_m2m_objects();
+            });
+            my_modal.modal()
+        }
+        // 回调更新m2m
+        function update_m2m_objects() {
+            submit_m2m_all_objects_form(get_cookie('last_condition_json'));
+            var temp_list_json = $('[name=step]').val()
+            getList("{% url 'step_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, temp_list_json);
+        }
         // 获取待选m2m
-        function submit_m2m_objects_form(last_condition_json) {
+        function submit_m2m_all_objects_form(last_condition_json) {
             var condition_json = '{}';
             // 如果传入了上次的条件，则使用上次的条件初始化搜索信息
             if (last_condition_json) {
-                var last_condition = $.parseJSON(last_condition_json);
-                $('input[name=search_text]').val(last_condition.search_text);
-                if (last_condition.own === 1) {
-                    $('input[name=own]').prop('checked', true);
-                } else {
-                    $('input[name=own]').prop('checked', false);
+                var last_condition = {};
+                try {
+                    last_condition = $.parseJSON(last_condition_json);
+                    condition_json = last_condition_json;
                 }
-                $('input[name=order_by]').val(last_condition.order_by);
-                $('input[name=order_by_reverse]').val(last_condition.order_by_reverse);
-                condition_json = last_condition_json;
+                catch(err) {
+                    console.log(err);
+                }
+                $('input[name=search_text]').val(last_condition.search_text);
+                if (last_condition.all_ === 'True') {
+                    $('input[name=all_]').prop('checked', true);
+                } else {
+                    $('input[name=all_]').prop('checked', false);
+                }
+                if (last_condition.order_by) {
+                    var order_by = last_condition.order_by;
+                } else {
+                    var order_by = 'name';
+                }
+                $('input[name=order_by]').val(order_by);
+                if (last_condition.order_by_reverse) {
+                    var order_by_reverse = last_condition.order_by_reverse;
+                } else {
+                    var order_by_reverse = 'False';
+                }
+                $('input[name=order_by_reverse]').val(order_by_reverse);
             } else {
                 var page = $('input[name=page]').val();
                 var size = $('input[name=size]').val();
                 var max_page = $('input[name=size]').data('max_page');
                 var search_text = $('input[name=search_text]').val();
-                if ($('input[name=own]').prop('checked')) {
-                    var own = 1;
+                if ($('input[name=all_]').prop('checked')) {
+                    var all_ = 'True';
                 } else {
-                    var own = 0;
+                    var all_ = 'False';
                 }
-                var order_by = $('input[name=order_by]').val();
-                var order_by_reverse = $('input[name=order_by_reverse]').val();
+                if ($('input[name=order_by]').val()) {
+                    var order_by = $('input[name=order_by]').val();
+                } else {
+                    var order_by = 'name';
+                    $('input[name=order_by]').val(order_by)
+                }
+                if ($('input[name=order_by_reverse]').val()) {
+                    var order_by_reverse = $('input[name=order_by_reverse]').val();
+                } else {
+                    var order_by_reverse = 'False';
+                    $('input[name=order_by_reverse]').val(order_by_reverse)
+                }
                 var condition = {
                     'page': page,
                     'size': size,
                     'max_page': max_page,
                     'search_text': search_text,
-                    'own': own,
+                    'all_': all_,
                     'order_by_reverse': order_by_reverse,
                     'order_by': order_by
                 };
@@ -158,7 +202,7 @@
                 });
             }
         }
-        // 更新全部步骤列表
+        // 更新待选m2m列表
         function update_m2m_list_all(success, data) {
             if (success) {
                 // 更新并注册分页工具
@@ -174,7 +218,8 @@
                         // var a = $('<a href="javascript:"></a>').text(v.fields.name);
                         // a.attr({'data-toggle': 'popover', 'data-trigger': 'focus' ,'title': v.fields.keyword, 'data-content': v.fields.description})
                         // td.append(a).appendTo(tr);
-                        $('<td>').text(v.name).appendTo(tr);
+                        var a = $('<a href="javascript:m2m_detail_popup('+v.pk+')">').text(v.name);
+                        $('<td>').append(a).appendTo(tr);
                         $('<td>').text(v.keyword).appendTo(tr);
                         $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
                         $('<td>').text(v.action).appendTo(tr);
@@ -202,6 +247,7 @@
                     var tr = $('<tr placeholder><td colspan="5" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
                     tbody.empty().append(tr);
                 }
+                update_sort_icon();
             }
         }
         // 更新已选步骤列表
@@ -215,7 +261,8 @@
                         $('<td moveable class="middle"><i class="icon-move"></i></td>').appendTo(tr);
                         $('<td index class="text-center"></td>').text(i + 1).appendTo(tr);
                         // $('<td class="text-center" pk></td>').text(v.pk).appendTo(tr);
-                        $('<td>').text(v.name).appendTo(tr);
+                        var a = $('<a href="javascript:m2m_detail_popup('+v.pk+')">').text(v.name);
+                        $('<td>').append(a).appendTo(tr);
                         $('<td>').text(v.keyword).appendTo(tr);
                         $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
                         $('<td>').text(v.action).appendTo(tr);
@@ -326,27 +373,27 @@
 
 {% block detail_inner_list %}
 
-    <div id='step' class="row">
+    <div id='step' class="row" style="min-height: 500px">
         <div id="m2m_all" class="col-6 text-center">
             <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="拖动到右侧添加"></i>&nbsp;可选步骤列表</h5>
-            <form method="post" id="m2m_objects_form" novalidate onsubmit="return submit_m2m_objects_form();">
-                <input type="hidden" name="order_by" value="pk" id="id_order_by">
-                <input type="hidden" name="order_by_reverse" value="True" id="id_order_by_reverse">
+            <form method="post" id="m2m_objects_form" novalidate onsubmit="return submit_m2m_all_objects_form();">
+                <input type="hidden" name="order_by" id="id_order_by">
+                <input type="hidden" name="order_by_reverse" id="id_order_by_reverse">
                 <div class="small">
                     <table class="table table-sm table-bordered table-hover" style="width: 100%">
                         <colgroup>
                             <col style='width: 30px;'>
                             <col>
-                            <col style='width: 120px;'>
-                            <col style='width: 120px;'>
-                            <col style='width: 180px;'>
+                            <col>
+                            <col>
+                            <col>
                         </colgroup>
                         <thead class="thead-light">
                             <tr>
                                 <th></th>
                                 <th order_by_text="name">名称</th>
                                 <th order_by_text="keyword">关键字</th>
-                                <th order_by_text="keyword">项目</th>
+                                <th order_by_text="project__name">项目</th>
                                 <th order_by_text="action">动作</th>
                             </tr>
                         </thead>
@@ -363,14 +410,14 @@
         <div id="m2m_selected" class="col-6 text-center">
             <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="上下拖动进行排序，拖动到左侧删除"></i>&nbsp;关联步骤列表</h5>
             <div class="small">
-                <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                <table class="table table-sm table-bordered table-hover" style="width: 100%;">
                     <colgroup>
                         <col style='width: 30px;'>
                         <col style='width: 40px;'>
                         <col>
-                        <col style='width: 120px;'>
-                        <col style='width: 120px;'>
-                        <col style='width: 180px;'>
+                        <col>
+                        <col>
+                        <col>
                     </colgroup>
                     <thead class="thead-light">
                         <tr>
@@ -389,5 +436,5 @@
             </div>
         </div>
     </div>
-
+    {% include 'main/include/modal.html' %}
 {% endblock%}

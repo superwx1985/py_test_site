@@ -61,14 +61,16 @@
                     // 提示框
                     $('[data-toggle=tooltip]').tooltip();
                     // 注册按钮功能
-                    $('[name=return_button]').on('click', function() {
-                        window.open($('#submit_button_group').attr('next_'), '_self');
-                    });
-                    $('[name=save_and_return_button]').on('click', function() {$('[name=redirect]').val(true)});
-                    $('[name=add_another_button]').on('click', function() {$('[name=redirect]').val('add_another')});
-                    $('[name=copy_button]').on('click', function() {
-                        copy_obj($(this).attr('copy_url'));  // 复制对象
-                    });
+                    {% if not inside %}
+                        $('[name=return_button]').on('click', function() { window.open($('#submit_button_group').attr('next_'), '_self'); });
+                        $('[name=save_and_return_button]').on('click', function() { $('[name=redirect]').val(true) });
+                        $('[name=add_another_button]').on('click', function() { $('[name=redirect]').val('add_another') });
+                        $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url')); });
+                    {% else %}
+                        $('[name=return_button]').on('click', function() { parent.window.$('[name=my_modal]').modal('hide'); });
+                    {% endif %}
+
+
                 });
                 // 复制对象
                 function copy_obj(copy_url) {
@@ -102,8 +104,11 @@
     </head>
     <body>
         {% include 'main/include/mask.html' %}
-        {% include 'main/include/navbar.html' %}
-        <div class="container-fluid" style="padding-top: 60px; padding-bottom: 100px">
+        {% if not inside %}
+            {% include 'main/include/navbar.html' %}
+        {% endif %}
+
+        <div class="container-fluid" style="padding-bottom: 100px; {% if not inside %}padding-top: 60px;{% endif %}">
             {% if errors %}
                 <ul>
                     {% for error in errors %}
