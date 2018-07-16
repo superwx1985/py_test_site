@@ -29,3 +29,19 @@ function update_config_dropdown(success, data) {
 		update_dropdown(data, $("#config_dropdown"));
     }
 }
+
+// m2m详情页
+function m2m_detail_popup(url) {
+	var my_modal = $('[name=my_modal]');
+	var my_modal_body = my_modal.find('.modal-body');
+	var body_height = $(window).height() - get_element_outside_height(my_modal.find('.modal-dialog')) - get_element_outside_height(my_modal.find('.modal-content')) - get_element_outside_height(my_modal_body);
+	var body_min_height = 600;
+	var modal_body_div = '<div style="height: 100%;"><iframe name="m2m_iframe" frameborder="0" style="height: 100%; width: 100%;" src="' + url + '"></iframe></div>';
+	my_modal.find('.modal-header').remove();
+	my_modal_body.empty().css('height', body_height).css('min-height', body_min_height).append(modal_body_div);
+	my_modal.find('.modal-footer').remove();
+	my_modal.off('hide.bs.modal').on('hide.bs.modal', function () {
+		update_m2m_objects();
+	});
+	my_modal.modal()
+}

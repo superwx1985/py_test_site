@@ -85,6 +85,8 @@ def list_(request):
 def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
     inside = request.GET.get('inside')
+    new_pk = request.GET.get('new_pk')
+    order = request.GET.get('order')
     try:
         obj = Step.objects.select_related('creator', 'modifier').get(pk=pk)
     except Step.DoesNotExist:
@@ -121,6 +123,7 @@ def detail(request, pk):
 @login_required
 def add(request):
     next_ = request.GET.get('next', '/home/')
+    inside = request.GET.get('inside')
     if request.method == 'GET':
         form = StepForm()
         if request.session.get('status', None) == 'success':
@@ -145,7 +148,11 @@ def add(request):
             elif redirect:
                 return HttpResponseRedirect(next_)
             else:
-                return HttpResponseRedirect('{}?next={}'.format(reverse(detail, args=[pk]), quote(next_)))
+                # 如果是内嵌网页，则加上内嵌标志后再跳转
+                para = ''
+                if inside:
+                    para = '&inside=1&new_pk={}'.format(pk)
+                return HttpResponseRedirect('{}?next={}{}'.format(reverse(detail, args=[pk]), quote(next_), para))
 
         is_success = False
         return render(request, 'main/step/detail.html', locals())
@@ -242,6 +249,10 @@ def list_json(request):
     except EmptyPage:
         objects = paginator.page(paginator.num_pages)
         page = paginator.num_pages
+
+    for obj in objects:
+        obj['url'] = reverse(detail, args=[obj['pk']])
+
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': {
         'objects': list(objects), 'page': page, 'max_page': paginator.num_pages, 'size': size}})
 
@@ -249,25 +260,30 @@ def list_json(request):
 # 获取临时step
 @login_required
 def list_temp(request):
-    list_ = json.loads(request.POST.get('condition', ''))
+    pk_list = json.loads(request.POST.get('condition', ''))
     order = 0
-    list_temp = list()
-    for pk in list_:
+    data_list = list()
+    for pk in pk_list:
         if pk.strip() == '':
             continue
-        order += 1
         objects = Step.objects.filter(pk=pk).values('pk', 'name').annotate(
             action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
+        if not objects:
+            continue
         objects = list(objects)
+        order += 1
         objects[0]['order'] = order
-        list_temp.append(objects[0])
-    return JsonResponse({'statue': 1, 'message': 'OK', 'data': list_temp})
+        objects[0]['url'] = reverse(detail, args=[pk])
+        data_list.append(objects[0])
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': data_list})
 
 
 # 复制
 @login_required
 def copy_(request, pk):
     name = request.POST.get('name', '')
+    order = request.POST.get('order')
+    order = change_to_positive_integer(order, 0)
     try:
         obj = Step.objects.get(pk=pk)
         obj.pk = None
@@ -276,7 +292,8 @@ def copy_(request, pk):
         obj.clean_fields()
         obj.save()
         return JsonResponse({
-            'statue': 1, 'message': 'OK', 'data': {'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk])}
+            'statue': 1, 'message': 'OK', 'data': {
+                'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
         })
     except Step.DoesNotExist as e:
         return JsonResponse({'statue': 1, 'message': 'ERROR', 'data': str(e)})

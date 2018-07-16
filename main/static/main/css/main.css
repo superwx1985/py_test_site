@@ -76,6 +76,13 @@ div.paginator input {
   }
 }
 
+/*把弹出框宽度放到最大*/
+@media (min-width: 576px) {
+  .modal-max {
+	max-width: calc(100% - (1.75rem * 2));
+  }
+}
+
 /* div水平居中 */
 div.div_center{
 	margin: 0 auto;

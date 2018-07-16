@@ -68,9 +68,19 @@
                         $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url')); });
                     {% else %}
                         $('[name=return_button]').on('click', function() { parent.window.$('[name=my_modal]').modal('hide'); });
+                        $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url')); });
                     {% endif %}
-
-
+                    {#如果是内嵌窗口而且含有成功标志，那么关闭父页面的弹窗#}
+                    {% if inside and prompt == 'success'%}
+                        {#如果有顺序参数，替换m2m字段的值#}
+                        {% if order %}
+                            parent.window.replace_m2m('{{ new_pk }}', {{ order }});
+                        {#如果有新增标志，更新m2m字段的值#}
+                        {% elif new_pk %}
+                            parent.window.add_m2m('{{ new_pk }}');
+                        {% endif %}
+                        parent.window.$('[name=my_modal]').modal('hide');
+                    {% endif %}
                 });
                 // 复制对象
                 function copy_obj(copy_url) {
@@ -90,8 +100,13 @@
                         },
                         callback: function (result) {
                             if (result) {
-                                $.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name': result}, function(data) {
-                                    window.open(data.data.new_url + window.location.search, '_self');
+                                $.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name': result, 'order': '{{ order }}'}, function(data) {
+                                    // 如果返回包含有效order，则添加new_pk及order至参数，用于内嵌窗口复制后更新m2m列表
+                                    if (data.data.order > 0) {
+                                        window.open(data.data.new_url + window.location.search + '&new_pk=' + data.data.new_pk + '&order=' + data.data.order, '_self');
+                                    } else {
+                                        window.open(data.data.new_url + window.location.search, '_self');
+                                    }
                                 });
                             }
                         }

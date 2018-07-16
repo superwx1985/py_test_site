@@ -72,25 +72,10 @@
                 sort_col.prepend('<i class="icon-circle-arrow-up">&nbsp;</i>');
             }
         }
-        // m2m详情页
-        function m2m_detail_popup(pk) {
-            var my_modal = $('[name=my_modal]');
-            var my_modal_body = my_modal.find('.modal-body');
-            var body_height = $(window).height() - get_element_outside_height(my_modal.find('.modal-dialog')) - get_element_outside_height(my_modal.find('.modal-content')) - get_element_outside_height(my_modal_body);
-            var body_min_height = 600;
-            var modal_body_div = '<div style="height: 100%;"><iframe name="m2m_iframe" frameborder="0" style="height: 100%; width: 100%;" src="/case/' + pk + '/?inside=1"></iframe></div>';
-            my_modal.find('.modal-header').remove();
-            my_modal_body.empty().css('height', body_height).css('min-height', body_min_height).append(modal_body_div);
-            my_modal.find('.modal-footer').remove();
-            my_modal.off('hide.bs.modal').on('hide.bs.modal', function () {
-                update_m2m_objects();
-            });
-            my_modal.modal()
-        }
         // 回调更新m2m
         function update_m2m_objects() {
             submit_m2m_all_objects_form(get_cookie('last_condition_json'));
-            var temp_list_json = $('[name=case]').val()
+            var temp_list_json = $('[name=case]').val();
             getList("{% url 'case_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, temp_list_json);
         }
         // 获取待选m2m
@@ -216,7 +201,7 @@
                     $.each(data.data.objects, function (i, v) {
                         var tr = $('<tr>').attr('pk', v.pk);
                         $('<td moveable class="middle"><i class="icon-move"></i></td>').appendTo(tr);
-                        var a = $('<a href="javascript:m2m_detail_popup('+v.pk+')">').text(v.name);
+                        var a = $('<a href="javascript:m2m_detail_popup(\''+v.url+'?inside=1\')">').text(v.name);
                         $('<td>').append(a).appendTo(tr);
                         $('<td>').text(v.keyword).appendTo(tr);
                         $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
@@ -257,7 +242,7 @@
                         var tr = $('<tr>').attr('pk', v.pk);
                         $('<td moveable class="middle"><i class="icon-move"></i></td>').appendTo(tr);
                         $('<td index class="text-center"></td>').text(i + 1).appendTo(tr);
-                        var a = $('<a href="javascript:m2m_detail_popup('+v.pk+')">').text(v.name);
+                        var a = $('<a href="javascript:m2m_detail_popup(\''+v.url+'?inside=1\')">').text(v.name);
                         $('<td>').append(a).appendTo(tr);
                         $('<td>').text(v.keyword).appendTo(tr);
                         $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
@@ -427,7 +412,7 @@
             </form>
         </div>
         <div id="m2m_selected" class="col-6 text-center">
-            <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="上下拖动进行排序，拖动到左侧删除"></i>&nbsp;关联用例列表</h5>
+            <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="上下拖动进行排序，从待选列表拖动到拖动到已选列表进行添加，拖动回待选列表则删除"></i>&nbsp;待选用例列表</h5>
             <div class="small">
                 <table class="table table-sm table-bordered table-hover" style="width: 100%">
                     <colgroup>

@@ -13,6 +13,7 @@ from main.models import Case, Step, CaseVsStep
 from main.forms import OrderByForm, PaginatorForm, CaseForm
 from main.views.general import get_query_condition, change_to_positive_integer, Cookie
 from urllib.parse import quote
+from main.views import step
 
 logger = logging.getLogger('django.request')
 
@@ -256,10 +257,12 @@ def quick_update(request, pk):
 
 # 获取选中的step
 @login_required
-def steps(request, pk):
+def steps(_, pk):
     objects = Step.objects.filter(case=pk, is_active=True).order_by('casevsstep__order').values(
         'pk', 'name', 'keyword', 'project__name', order=F('casevsstep__order')).annotate(
         action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+    for obj in objects:
+        obj['url'] = reverse(step.detail, args=[obj['pk']])
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 
@@ -310,22 +313,29 @@ def list_json(request):
     except EmptyPage:
         objects = paginator.page(paginator.num_pages)
         page = paginator.num_pages
+
+    for obj in objects:
+        obj['url'] = reverse(detail, args=[obj['pk']])
+
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': {
         'objects': list(objects), 'page': page, 'max_page': paginator.num_pages, 'size': size}})
 
 
 # 获取临时case
 @login_required
-def case_list_temp(request):
-    list_ = json.loads(request.POST.get('condition', ''))
+def list_temp(request):
+    pk_list = json.loads(request.POST.get('condition', ''))
     order = 0
-    list_temp = list()
-    for pk in list_:
-        if pk is None or pk.strip() == '':
+    data_list = list()
+    for pk in pk_list:
+        if pk.strip() == '':
             continue
-        order += 1
         objects = Case.objects.filter(pk=pk).values('pk', 'name')
+        if not objects:
+            continue
         objects = list(objects)
+        order += 1
         objects[0]['order'] = order
-        list_temp.append(objects[0])
-    return JsonResponse({'statue': 1, 'message': 'OK', 'data': list_temp})
+        objects[0]['url'] = reverse(detail, args=[pk])
+        data_list.append(objects[0])
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': data_list})
