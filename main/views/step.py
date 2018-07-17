@@ -257,7 +257,7 @@ def list_json(request):
         'objects': list(objects), 'page': page, 'max_page': paginator.num_pages, 'size': size}})
 
 
-# 获取临时step
+# 获取临时m2m
 @login_required
 def list_temp(request):
     pk_list = json.loads(request.POST.get('condition', ''))

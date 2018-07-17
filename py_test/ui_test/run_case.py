@@ -522,8 +522,8 @@ def run(excel_file, tc_id=1, variables=None, result_dir=None, base_timeout=10, g
                 is_verify_step = True
 
             elif action.lower() == 'switch to window':
-                run_result, new_window_handle = method.try_to_switch_to_window(dr=dr, by=by, locator=locator,
-                                                                               timeout=timeout,
+                run_result, new_window_handle = method.try_to_switch_to_window(dr=dr, by=by, locator=locator, data=data,
+                                                                               timeout=timeout, index_=index,
                                                                                base_element=base_element)
 
             elif action.lower() == 'close window':

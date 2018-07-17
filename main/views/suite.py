@@ -15,6 +15,7 @@ from main.views.general import get_query_condition, change_to_positive_integer, 
 from py_test.general.execute_suite import execute_suite
 from django.template.loader import render_to_string
 from urllib.parse import quote
+from main.views import case
 
 logger = logging.getLogger('django.request')
 
@@ -237,9 +238,11 @@ def quick_update(request, pk):
 
 # 获取选中的case
 @login_required
-def cases(request, pk):
+def cases(_, pk):
     objects = Case.objects.filter(suite=pk, is_active=True).order_by('suitevscase__order').values(
         'pk', 'name', 'keyword', 'project__name', order=F('suitevscase__order'))
+    for obj in objects:
+        obj['url'] = reverse(case.detail, args=[obj['pk']])
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 

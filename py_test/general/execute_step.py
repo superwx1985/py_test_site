@@ -161,7 +161,8 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
         # 切换窗口
         elif step_action.pk == 9:
             run_result, new_window_handle = method.try_to_switch_to_window(
-                dr=dr, by=ui_by, locator=ui_locator, index_=ui_index, timeout=timeout, base_element=ui_base_element)
+                dr=dr, by=ui_by, locator=ui_locator, data=ui_data, timeout=timeout, index_=ui_index,
+                base_element=ui_base_element)
 
         # 关闭窗口
         elif step_action.pk == 10:

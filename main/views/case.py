@@ -97,6 +97,7 @@ def list_(request):
 def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
     inside = request.GET.get('inside')
+    new_pk = request.GET.get('new_pk')
     try:
         obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
     except Case.DoesNotExist:
@@ -166,6 +167,7 @@ def detail(request, pk):
 @login_required
 def add(request):
     next_ = request.GET.get('next', '/home/')
+    inside = request.GET.get('inside')
     if request.method == 'GET':
         form = CaseForm()
         if request.session.get('status', None) == 'success':
@@ -208,14 +210,11 @@ def add(request):
             elif redirect:
                 return HttpResponseRedirect(next_)
             else:
-                return HttpResponseRedirect('{}?next={}'.format(reverse(detail, args=[pk]), quote(next_)))
-            #
-            # if not redirect or not redirect_url:
-            #     return HttpResponseRedirect(reverse('case', args=[pk]) + '?redirect_url=' + redirect_url)
-            # elif redirect == 'add_another':
-            #     return HttpResponseRedirect(reverse('case_add') + '?redirect_url=' + redirect_url)
-            # else:
-            #     return HttpResponseRedirect(redirect_url)
+                # 如果是内嵌网页，则加上内嵌标志后再跳转
+                para = ''
+                if inside:
+                    para = '&inside=1&new_pk={}'.format(pk)
+                return HttpResponseRedirect('{}?next={}{}'.format(reverse(detail, args=[pk]), quote(next_), para))
         else:
             if m2m_list is not None:
                 temp_list_json = json.dumps(m2m_list)
@@ -266,7 +265,7 @@ def steps(_, pk):
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 
-# 获取待选
+# 获取m2m json
 @login_required
 def list_json(request):
     condition = request.POST.get('condition', '{}')
@@ -295,10 +294,10 @@ def list_json(request):
 
     q = get_query_condition(search_text)
     if all_:
-        objects = Case.objects.filter(q, is_active=True).order_by('pk').values(
-            'pk', 'name', 'keyword', 'project__name')
+        objects = Case.objects.filter(q, is_active=True).values('pk', 'name', 'keyword', 'project__name')
     else:
-        objects = Case.objects.filter(q, is_active=True, creator=request.user).order_by('pk').values('pk', 'name', 'keyword', 'project__name')
+        objects = Case.objects.filter(q, is_active=True, creator=request.user).values(
+            'pk', 'name', 'keyword', 'project__name')
     # 排序
     if objects:
         if order_by not in objects[0]:
@@ -321,7 +320,7 @@ def list_json(request):
         'objects': list(objects), 'page': page, 'max_page': paginator.num_pages, 'size': size}})
 
 
-# 获取临时case
+# 获取临时m2m
 @login_required
 def list_temp(request):
     pk_list = json.loads(request.POST.get('condition', ''))

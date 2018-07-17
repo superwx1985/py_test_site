@@ -670,7 +670,7 @@ def confirm_alert(dr, alert_handle, timeout, print_=True):
 
 
 # 尝试切换window或tap
-def try_to_switch_to_window(dr, by, locator, index_, timeout, base_element, print_=True):
+def try_to_switch_to_window(dr, by, locator, data, timeout, index_, base_element, print_=True):
     logger = thread_log.get_thread_logger()
     current_window_handle = dr.current_window_handle
     start_time = time.time()
@@ -684,6 +684,10 @@ def try_to_switch_to_window(dr, by, locator, index_, timeout, base_element, prin
         for window_handle in dr.window_handles:
             if window_handle != current_window_handle:
                 dr.switch_to.window(window_handle)
+                # 如果定位信息不全，但提供了data，则把data视为窗口标题
+                if (by == '' or locator == '') and data != '':
+                    by = 'xpath'
+                    locator = './/title[contains(text(), "{}")]'.format(data)
                 if by != '' and locator != '':
                     run_result_temp, elements = wait_for_element_present(dr, by, locator, 1, base_element=base_element,
                                                                          variable_elements=None, print_=False)

@@ -73,7 +73,7 @@
                     {#如果是内嵌窗口而且含有成功标志，那么关闭父页面的弹窗#}
                     {% if inside and prompt == 'success'%}
                         {#如果有顺序参数，替换m2m字段的值#}
-                        {% if order %}
+                        {% if new_pk and order %}
                             parent.window.replace_m2m('{{ new_pk }}', {{ order }});
                         {#如果有新增标志，更新m2m字段的值#}
                         {% elif new_pk %}
