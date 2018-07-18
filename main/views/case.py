@@ -98,6 +98,7 @@ def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
     inside = request.GET.get('inside')
     new_pk = request.GET.get('new_pk')
+    order = request.GET.get('order')
     try:
         obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
     except Case.DoesNotExist:
@@ -135,12 +136,12 @@ def detail(request, pk):
                         if m2m_pk is None or m2m_pk.strip() == '':
                             continue
                         try:
-                            m2m_object = Step.objects.get(pk=m2m_pk)
+                            m2m_obj = Step.objects.get(pk=m2m_pk)
                         except Step.DoesNotExist:
-                            logger.warning('找不到 m2m_object [{}]'.format(m2m_pk), exc_info=True)
+                            logger.warning('找不到m2m对象[{}]'.format(m2m_pk), exc_info=True)
                             continue
                         order += 1
-                        CaseVsStep.objects.create(case=obj, step=m2m_object, order=order, creator=request.user,
+                        CaseVsStep.objects.create(case=obj, step=m2m_obj, order=order, creator=request.user,
                                                   modifier=request.user)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
@@ -196,12 +197,12 @@ def add(request):
                     if m2m_pk is None or m2m_pk.strip() == '':
                         continue
                     try:
-                        m2m_object = Step.objects.get(pk=m2m_pk)
+                        m2m_obj = Step.objects.get(pk=m2m_pk)
                     except Step.DoesNotExist:
-                        logger.warning('找不到 m2m_object [{}]'.format(m2m_pk), exc_info=True)
+                        logger.warning('找不到m2m对象[{}]'.format(m2m_pk), exc_info=True)
                         continue
                     order += 1
-                    CaseVsStep.objects.create(case=obj, step=m2m_object, order=order, creator=request.user,
+                    CaseVsStep.objects.create(case=obj, step=m2m_obj, order=order, creator=request.user,
                                               modifier=request.user)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
@@ -329,7 +330,7 @@ def list_temp(request):
     for pk in pk_list:
         if pk.strip() == '':
             continue
-        objects = Case.objects.filter(pk=pk).values('pk', 'name')
+        objects = Case.objects.filter(pk=pk).values('pk', 'name', 'project__name')
         if not objects:
             continue
         objects = list(objects)
@@ -338,3 +339,37 @@ def list_temp(request):
         objects[0]['url'] = reverse(detail, args=[pk])
         data_list.append(objects[0])
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': data_list})
+
+
+# 复制
+@login_required
+def copy_(request, pk):
+    name = request.POST.get('name', '')
+    order = request.POST.get('order')
+    order = change_to_positive_integer(order, 0)
+    copy_sub_item = request.POST.get('copy_sub_item')
+    try:
+        obj = Case.objects.get(pk=pk)
+        m2m_objects = obj.step.filter(is_active=True).order_by('casevsstep__order')
+        obj.pk = None
+        obj.name = name
+        obj.creator = obj.modifier = request.user
+        obj.clean_fields()
+        obj.save()
+        m2m_order = 0
+        for m2m_obj in m2m_objects:
+            if copy_sub_item:
+                m2m_obj.pk = None
+                m2m_obj.creator = m2m_obj.modifier = request.user
+                m2m_obj.clean_fields()
+                m2m_obj.save()
+            m2m_order += 1
+            CaseVsStep.objects.create(
+                case=obj, step=m2m_obj, order=m2m_order, creator=request.user, modifier=request.user)
+
+        return JsonResponse({
+            'statue': 1, 'message': 'OK', 'data': {
+                'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
+        })
+    except Case.DoesNotExist as e:
+        return JsonResponse({'statue': 1, 'message': 'ERROR', 'data': str(e)})

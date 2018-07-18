@@ -35,9 +35,7 @@ urlpatterns = [
     path('login/', login.login, name='login'),
     path('logout/', login.logout, name='logout'),
 
-
     path('home/', result.list_, name='home'),
-
 
     path('cases/', case.list_, name='cases'),
     path('case/add/', case.add, name='case_add'),
@@ -47,6 +45,7 @@ urlpatterns = [
     path('case/<str:pk>/delete/', case.delete, name='case_delete'),
     path('case/<str:pk>/quick_update/', case.quick_update, name='case_quick_update'),
     path('case/<str:pk>/steps/', case.steps, name='case_steps'),
+    path('case/<str:pk>/copy/', case.copy_, name='case_copy'),
 
     path('steps/', step.list_, name='steps'),
     path('step/add/', step.add, name='step_add'),

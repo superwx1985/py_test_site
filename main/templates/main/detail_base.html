@@ -21,7 +21,7 @@
         {% endblock %}
         {% block style %}
         {% endblock %}
-        {% block general_script %}
+        {% block static_script %}
             <script src="{% static 'main/js/popper/popper.js' %}"></script>
             <script src="{% static 'main/js/jquery/jquery-3.3.1.min.js' %}"></script>
             <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
@@ -31,9 +31,19 @@
             <script src="{% static 'main/js/toastr-2.1.4/toastr.min.js' %}"></script>
             <script src="{% static 'main/js/main.js' %}"></script>
             <script src="{% static 'main/js/detail.js' %}"></script>
+        {% endblock %}
+        {% block general_prepare_script %}
             <script>
                 $(function () {
                     window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
+                })
+            </script>
+        {% endblock %}
+        {% block prepare_script %}
+        {% endblock %}
+        {% block general_script %}
+            <script>
+                $(function () {
                     // 注册注销按钮
                     $("#logout_btn").click(function () {
                         window.open('/logout/', '_self');
@@ -74,43 +84,59 @@
                     {% if inside and prompt == 'success'%}
                         {#如果有顺序参数，替换m2m字段的值#}
                         {% if new_pk and order %}
-                            parent.window.replace_m2m('{{ new_pk }}', {{ order }});
+                            parent.window.replace_m2m(parent.window.$m2m_input, '{{ new_pk }}', {{ order }});
                         {#如果有新增标志，更新m2m字段的值#}
                         {% elif new_pk %}
-                            parent.window.add_m2m('{{ new_pk }}');
+                            parent.window.add_m2m(parent.window.$m2m_input, '{{ new_pk }}');
                         {% endif %}
                         parent.window.$('[name=my_modal]').modal('hide');
                     {% endif %}
                 });
                 // 复制对象
-                function copy_obj(copy_url) {
-                    bootbox.prompt({
-                        size: 'large',
-                        title: '<i class="icon-exclamation-sign">&nbsp;</i>请输入新名称',
-                        value: $('#id_name').val(),
-                        buttons: {
-                            confirm: {
-                                label: '<i class="icon-copy">&nbsp;</i>复制',
-                                className: 'btn-warning'
-                            },
+                function copy_obj(copy_url, sub_item) {
+                    var body = $('<div>').addClass('modal-body');
+                    var input = $('<input class="form-control" autocomplete="off" type="text" id="copy_obj_name">').attr('value', $('#id_name').val());
+                    body.append(input);
+                    if (sub_item) {
+
+                    } else {
+                        var buttons = {
                             cancel: {
                                 label: '<i class="icon-undo">&nbsp;</i>取消',
-                                className: 'btn-secondary'
-                            }
-                        },
-                        callback: function (result) {
-                            if (result) {
-                                $.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name': result, 'order': '{{ order }}'}, function(data) {
-                                    // 如果返回包含有效order，则添加new_pk及order至参数，用于内嵌窗口复制后更新m2m列表
-                                    if (data.data.order > 0) {
-                                        window.open(data.data.new_url + window.location.search + '&new_pk=' + data.data.new_pk + '&order=' + data.data.order, '_self');
-                                    } else {
-                                        window.open(data.data.new_url + window.location.search, '_self');
-                                    }
-                                });
+                                className: 'btn btn-secondary'
+                            },
+                            copy: {
+                                label: '<i class="icon-copy">&nbsp;</i>复制',
+                                className: 'btn btn-warning',
+                                callback: function () { copy_obj_post(copy_url, $('#copy_obj_name').val()) }
+                            },
+                            copy_sub_item: {
+                                label: '<i class="icon-copy">&nbsp;</i>同时复制子对象',
+                                className: 'btn btn-danger',
+                                callback: function () { copy_obj_post(copy_url, $('#copy_obj_name').val(), 1) }
                             }
                         }
+                    }
+
+                    bootbox.dialog({
+                        size: 'large',
+                        title: '<i class="icon-exclamation-sign">&nbsp;</i>请输入新名称',
+                        message: body.html(),
+                        buttons: buttons
                     });
+                }
+                function copy_obj_post(copy_url, name, copy_sub_item) {
+                    $.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name': name, 'order': '{{ order }}', 'copy_sub_item': copy_sub_item}, function(data) {
+                        // 如果返回包含有效order，则添加new_pk及order至参数，用于内嵌窗口复制后更新m2m列表
+                        if (data.data.order > 0) {
+                            window.open(data.data.new_url + window.location.search + '&new_pk=' + data.data.new_pk + '&order=' + data.data.order, '_self');
+                        } else {
+                            window.open(data.data.new_url + window.location.search, '_self');
+                        }
+                    });
+                }
+                function a() {
+                    $('[data-toggle=tooltip]').tooltip()
                 }
             </script>
         {% endblock %}

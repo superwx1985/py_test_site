@@ -23,7 +23,6 @@
             $('#new_helper td[col_move]').on('click', function () {
                 addVariable();
             });
-            window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
             {% if temp_list_json %}
                 // 获取暂存变量
                 variableUpdate(true, $.parseJSON("{{ temp_list_json|escapejs }}"));
@@ -240,6 +239,10 @@
             return false;
         }
     </script>
+{% endblock %}
+
+{% block detail_header %}
+    {% include 'main/include/detail_header.html' with object_name='变量组' %}
 {% endblock %}
 
 {% block detail_form %}

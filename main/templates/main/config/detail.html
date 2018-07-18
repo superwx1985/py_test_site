@@ -59,6 +59,10 @@
     </script>
 {% endblock %}
 
+{% block detail_header %}
+    {% include 'main/include/detail_header.html' with object_name='配置' %}
+{% endblock %}
+
 {% block detail_form %}
     <form method="post" id="object_form" novalidate>
         {% csrf_token %}

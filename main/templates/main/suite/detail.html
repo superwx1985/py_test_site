@@ -1,5 +1,6 @@
 {% extends 'main/detail_base.html' %}
 {% load widget_tweaks %}
+
 {% block title %}
     {% if form.initial %}
         {{ form.initial.name }} - 套件 - {{ block.super }}
@@ -7,17 +8,27 @@
         新套件 - {{ block.super }}
     {% endif %}
 {% endblock %}
+
 {% block style %}
     <style type='text/css' media='screen'>
 
     </style>
 {% endblock %}
+
+{% block prepare_script %}
+    <script>
+        $(function () {
+            // 定义m2m字段
+            window.$m2m_input = $('input[name=case]');
+        })
+    </script>
+{% endblock %}
+
 {% block script %}
     <script>
         $(function () {
             // 更新导航栏
             $('#nav_suite').addClass('active');
-            window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
             // 获取配置下拉项
             getList("{% url 'config_select_json' %}", window.$csrf_input.val(), update_config_dropdown, '{"selected_pk": "{{ form.config.value }}"}');
             // 获取变量组下拉项
@@ -39,22 +50,16 @@
                     getList("{% url 'suite_cases' pk %}", window.$csrf_input.val(), m2m_list_selected_update);
                 {% else %}
                     // 初始化m2m字段
-                    update_m2m_selected_index($('input[name=case]'));
+                    update_m2m_selected_index(window.$m2m_input);
                 {% endif %}
             {% endif %}
             // 处理m2m拖动及排序
-            m2m_handle($('input[name=case]'), 5);
+            m2m_handle(window.$m2m_input, 5);
         });
-        // 新增m2m主键到m2m字段
-        function add_m2m(pk) {
-            var m2m_list = $.parseJSON($('[name=case]').val());
-            m2m_list.push(String(pk));
-            $('[name=case]').val(JSON.stringify(m2m_list))
-        }
         // 回调更新m2m
         function update_m2m_objects() {
             submit_m2m_all_objects_form('/suite', '{% url "case_list_json" %}', get_cookie('last_condition_json'));
-            var temp_list_json = $('[name=case]').val();
+            var temp_list_json = window.$m2m_input.val();
             getList("{% url 'case_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, temp_list_json);
         }
         // 更新待选m2m列表
@@ -115,11 +120,14 @@
                         tbody.append(tr);
                     });
                 }
-                update_m2m_selected_index($('input[name=case]'));
+                update_m2m_selected_index(window.$m2m_input);
             }
         }
-
     </script>
+{% endblock %}
+
+{% block detail_header %}
+    {% include 'main/include/detail_header.html' with object_name='套件' %}
 {% endblock %}
 
 {% block detail_form %}
@@ -202,7 +210,6 @@
 {% endblock %}
 
 {% block detail_inner_list %}
-
     <div id='case' class="row">
         <div id="m2m_all" class="col-6 text-center">
             <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="拖动到右侧添加"></i>&nbsp;可选用例列表</h5>

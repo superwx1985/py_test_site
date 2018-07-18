@@ -233,7 +233,8 @@ def list_json(request):
             'pk', 'name', 'keyword', 'project__name').annotate(
             action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
     else:
-        objects = Step.objects.filter(q, is_active=True, creator=request.user).values('pk', 'name', 'keyword', 'project__name').annotate(
+        objects = Step.objects.filter(q, is_active=True, creator=request.user).values(
+            'pk', 'name', 'keyword', 'project__name').annotate(
             action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
     # 排序
     if objects:

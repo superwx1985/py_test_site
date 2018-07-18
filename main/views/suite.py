@@ -121,12 +121,12 @@ def detail(request, pk):
                         if m2m_pk is None or m2m_pk.strip() == '':
                             continue
                         try:
-                            m2m_object = Case.objects.get(pk=m2m_pk)
+                            m2m_obj = Case.objects.get(pk=m2m_pk)
                         except Case.DoesNotExist:
-                            logger.warning('找不到 m2m_object [{}]'.format(m2m_pk), exc_info=True)
+                            logger.warning('找不到m2m对象[{}]'.format(m2m_pk), exc_info=True)
                             continue
                         order += 1
-                        SuiteVsCase.objects.create(suite=obj, case=m2m_object, order=order, creator=request.user,
+                        SuiteVsCase.objects.create(suite=obj, case=m2m_obj, order=order, creator=request.user,
                                                    modifier=request.user)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
@@ -182,12 +182,12 @@ def add(request):
                     if m2m_pk is None or m2m_pk.strip() == '':
                         continue
                     try:
-                        m2m_object = Case.objects.get(pk=m2m_pk)
+                        m2m_obj = Case.objects.get(pk=m2m_pk)
                     except Case.DoesNotExist:
-                        logger.warning('找不到 m2m_object [{}]'.format(m2m_pk), exc_info=True)
+                        logger.warning('找不到m2m对象[{}]'.format(m2m_pk), exc_info=True)
                         continue
                     order += 1
-                    SuiteVsCase.objects.create(suite=obj, case=m2m_object, order=order, creator=request.user,
+                    SuiteVsCase.objects.create(suite=obj, case=m2m_obj, order=order, creator=request.user,
                                                modifier=request.user)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')

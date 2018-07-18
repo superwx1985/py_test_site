@@ -239,3 +239,17 @@ function m2m_sort(order_by_text) {
 	update_sort_icon();
 	$('#m2m_objects_form').submit();
 }
+
+// 新增m2m主键到m2m字段
+function add_m2m($input, pk) {
+	var m2m_list = $.parseJSON($input.val());
+	m2m_list.push(String(pk));
+	$input.val(JSON.stringify(m2m_list))
+}
+
+// 替换m2m字段里被复制的主键
+function replace_m2m($input, pk, order) {
+	var m2m_list = $.parseJSON($input.val());
+	m2m_list.splice(order-1, 1, String(pk));
+	$input.val(JSON.stringify(m2m_list))
+}
