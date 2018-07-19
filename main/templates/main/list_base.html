@@ -131,9 +131,7 @@
                     // 注册删除按钮
                     bind_delete_button();
                     // 注册复制按钮
-                    $('[name=copy_button]').on('click', function() {
-                        copy_obj($(this));  // 复制对象
-                    });
+                    $('[name=copy_button]').on('click', function() { window.aaa=$(this);copy_obj($(this).parents('tr').children('[col_name=name]').text(), $(this).attr('copy_url'), $(this).attr('copy_sub_item')) });
                     // 触发操作提示
                     {% if prompt == 'success' %}
                         toastr.success('保存成功');
@@ -153,30 +151,20 @@
                         sort_col.prepend('<i class="icon-circle-arrow-up">&nbsp;</i>');
                     }
                 }
+                // 复制对象的回调函数
+                function callback_copy_obj(copy_url, name) {
+                    copy_obj_post(copy_url, name)
+                }
+
+                // 复制对象及子对象的的回调函数
+                function callback_copy_obj_sub_item(copy_url, name) {
+                    copy_obj_post(copy_url, name, 1)
+                }
+
                 // 复制对象
-                function copy_obj(that) {
-                    window.a = that
-                    bootbox.prompt({
-                        size: 'large',
-                        title: '<i class="icon-exclamation-sign">&nbsp;</i>请输入新名称',
-                        value: that.parents('tr').children('[col_name=name]').text(),
-                        buttons: {
-                            confirm: {
-                                label: '<i class="icon-copy">&nbsp;</i>复制',
-                                className: 'btn-warning'
-                            },
-                            cancel: {
-                                label: '<i class="icon-undo">&nbsp;</i>取消',
-                                className: 'btn-secondary'
-                            }
-                        },
-                        callback: function (result) {
-                            if (result) {
-                                $.post(that.attr('copy_url'), {'csrfmiddlewaretoken': $csrf_input.val(), 'name': result}, function(data) {
-                                    $('#objects_form').submit();
-                                });
-                            }
-                        }
+                function copy_obj_post(copy_url, name, copy_sub_item) {
+                    $.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name': name, 'copy_sub_item': copy_sub_item}, function() {
+                        $('#objects_form').submit();
                     });
                 }
             </script>

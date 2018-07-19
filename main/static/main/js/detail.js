@@ -164,13 +164,13 @@ function submit_m2m_all_objects_form(cookie_path, json_url, last_condition_json)
 		if (last_condition.order_by) {
 			var order_by = last_condition.order_by;
 		} else {
-			var order_by = 'name';
+			var order_by = 'modified_date';
 		}
 		$('input[name=order_by]').val(order_by);
 		if (last_condition.order_by_reverse) {
 			var order_by_reverse = last_condition.order_by_reverse;
 		} else {
-			var order_by_reverse = 'False';
+			var order_by_reverse = 'True';
 		}
 		$('input[name=order_by_reverse]').val(order_by_reverse);
 	} else {
@@ -186,13 +186,13 @@ function submit_m2m_all_objects_form(cookie_path, json_url, last_condition_json)
 		if ($('input[name=order_by]').val()) {
 			var order_by = $('input[name=order_by]').val();
 		} else {
-			var order_by = 'name';
+			var order_by = 'modified_date';
 			$('input[name=order_by]').val(order_by)
 		}
 		if ($('input[name=order_by_reverse]').val()) {
 			var order_by_reverse = $('input[name=order_by_reverse]').val();
 		} else {
-			var order_by_reverse = 'False';
+			var order_by_reverse = 'True';
 			$('input[name=order_by_reverse]').val(order_by_reverse)
 		}
 		var condition = {

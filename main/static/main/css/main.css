@@ -97,3 +97,38 @@ div.div_center>div>div{
     position: relative;
     left: -50%;
 }
+
+/*橙色按钮*/
+.btn-warning-dark {
+  color: #212529;
+  background-color: darkorange;
+  border-color: darkorange;
+}
+
+.btn-warning-dark:hover {
+  color: #212529;
+  background-color: #e06e00;
+  border-color: #d36400;
+}
+
+.btn-warning-dark:focus, .btn-warning-dark.focus {
+  box-shadow: 0 0 0 0.2rem rgba(255, 93, 7, 0.5);
+}
+
+.btn-warning-dark.disabled, .btn-warning-dark:disabled {
+  color: #212529;
+  background-color: darkorange;
+  border-color: darkorange;
+}
+
+.btn-warning-dark:not(:disabled):not(.disabled):active, .btn-warning-dark:not(:disabled):not(.disabled).active,
+.show > .btn-warning-dark.dropdown-toggle {
+  color: #212529;
+  background-color: #d36400;
+  border-color: #c85a00;
+}
+
+.btn-warning-dark:not(:disabled):not(.disabled):active:focus, .btn-warning-dark:not(:disabled):not(.disabled).active:focus,
+.show > .btn-warning-dark.dropdown-toggle:focus {
+  box-shadow: 0 0 0 0.2rem rgba(255, 93, 7, 0.5);
+}

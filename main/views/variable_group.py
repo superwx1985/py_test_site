@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
-from django.db.models import Count
+from django.db.models import Q, Count
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import VariableGroup, Variable
@@ -41,13 +41,12 @@ def list_(request):
     request.session['status'] = None
     q = get_query_condition(search_text)
     if all_:
-        objects = VariableGroup.objects.filter(q, is_active=True).values(
-            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
-            variable_count=Count('variable'))
+        q &= Q(is_active=True)
     else:
-        objects = VariableGroup.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
-            variable_count=Count('variable'))
+        q &= Q(is_active=True) & Q(creator=request.user)
+    objects = VariableGroup.objects.filter(q).values(
+        'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
+        variable_count=Count('variable'))
     # 排序
     if objects:
         if order_by not in objects[0]:

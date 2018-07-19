@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
-from django.db.models import F, CharField, Value, Count
+from django.db.models import Q, F, CharField, Value, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -58,11 +58,11 @@ def list_(request):
     request.session['status'] = None
     q = get_query_condition(search_text)
     if all_:
-        objects = Case.objects.filter(q, is_active=True).values(
-            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date')
+        q &= Q(is_active=True)
     else:
-        objects = Case.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date')
+        q &= Q(is_active=True) & Q(creator=request.user)
+    objects = Case.objects.filter(q).values(
+        'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date')
     objects2 = Case.objects.filter(is_active=True, step__is_active=True).values('pk').annotate(m2m_count=Count('step'))
     count_ = {o['pk']: o['m2m_count'] for o in objects2}
     for o in objects:
@@ -99,6 +99,7 @@ def detail(request, pk):
     inside = request.GET.get('inside')
     new_pk = request.GET.get('new_pk')
     order = request.GET.get('order')
+    copy_sub_item = True
     try:
         obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
     except Case.DoesNotExist:
@@ -169,6 +170,7 @@ def detail(request, pk):
 def add(request):
     next_ = request.GET.get('next', '/home/')
     inside = request.GET.get('inside')
+    copy_sub_item = True
     if request.method == 'GET':
         form = CaseForm()
         if request.session.get('status', None) == 'success':
@@ -259,10 +261,12 @@ def quick_update(request, pk):
 @login_required
 def steps(_, pk):
     objects = Step.objects.filter(case=pk, is_active=True).order_by('casevsstep__order').values(
-        'pk', 'name', 'keyword', 'project__name', order=F('casevsstep__order')).annotate(
-        action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date', order=F('casevsstep__order')
+    ).annotate(action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
     for obj in objects:
         obj['url'] = reverse(step.detail, args=[obj['pk']])
+        obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
+        obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 
@@ -278,8 +282,8 @@ def list_json(request):
     page = condition.get('page')
     size = 10
     search_text = condition.get('search_text', '')
-    order_by = condition.get('order_by', 'name')
-    order_by_reverse = condition.get('order_by_reverse', 'False')
+    order_by = condition.get('order_by', 'modified_date')
+    order_by_reverse = condition.get('order_by_reverse', 'True')
     all_ = condition.get('all_', 'False')
 
     page = change_to_positive_integer(page, 1)
@@ -295,14 +299,14 @@ def list_json(request):
 
     q = get_query_condition(search_text)
     if all_:
-        objects = Case.objects.filter(q, is_active=True).values('pk', 'name', 'keyword', 'project__name')
+        q &= Q(is_active=True)
     else:
-        objects = Case.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword', 'project__name')
+        q &= Q(is_active=True) & Q(creator=request.user)
+    objects = Case.objects.filter(q).values('pk', 'name', 'keyword', 'project__name')
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'name'
+            order_by = 'modified_date'
         objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     paginator = Paginator(objects, size)
     try:

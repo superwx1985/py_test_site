@@ -275,3 +275,47 @@ function get_element_height($e) {
 function get_element_outside_height($e) {
     return parseInt($e.css('margin-top')) + parseInt($e.css('margin-bottom')) + parseInt($e.css('border-top')) + parseInt($e.css('border-bottom'));
 }
+
+// 复制对象弹框
+function copy_obj(original_name, copy_url, sub_item) {
+    var body = $('<div>').addClass('modal-body');
+    var input = $('<input class="form-control" autocomplete="off" type="text" id="copy_obj_name">').attr('value', original_name);
+    body.append(input);
+    if (sub_item) {
+        var buttons = {
+            cancel: {
+                label: '<i class="icon-undo">&nbsp;</i>取消',
+                className: 'btn btn-secondary'
+            },
+            copy: {
+                label: '<i class="icon-copy">&nbsp;</i>复制',
+                className: 'btn btn-warning',
+                callback: function () { callback_copy_obj(copy_url, $('#copy_obj_name').val()) }
+            },
+            copy_sub_item: {
+                label: '<i class="icon-copy">&nbsp;</i>同时复制子对象',
+                className: 'btn btn-warning-dark',
+                callback: function () { callback_copy_obj_sub_item(copy_url, $('#copy_obj_name').val()) }
+            }
+        }
+    } else {
+        var buttons = {
+            cancel: {
+                label: '<i class="icon-undo">&nbsp;</i>取消',
+                className: 'btn btn-secondary'
+            },
+            copy: {
+                label: '<i class="icon-copy">&nbsp;</i>复制',
+                className: 'btn btn-warning',
+                callback: function () { callback_copy_obj(copy_url, $('#copy_obj_name').val()) }
+            }
+        }
+    }
+
+    bootbox.dialog({
+        size: 'large',
+        title: '<i class="icon-exclamation-sign">&nbsp;</i>请输入新名称',
+        message: body.html(),
+        buttons: buttons
+    });
+}

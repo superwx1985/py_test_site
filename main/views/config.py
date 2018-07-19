@@ -5,6 +5,7 @@ from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
+from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Config
@@ -40,11 +41,11 @@ def list_(request):
     request.session['status'] = None
     q = get_query_condition(search_text)
     if all_:
-        objects = Config.objects.filter(q, is_active=True).values(
-            'pk', 'name', 'keyword', 'creator', 'creator__username', 'modified_date')
+        q &= Q(is_active=True)
     else:
-        objects = Config.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword', 'creator', 'creator__username', 'modified_date')
+        q &= Q(is_active=True) & Q(creator=request.user)
+    objects = Config.objects.filter(q).values(
+        'pk', 'name', 'keyword', 'creator', 'creator__username', 'modified_date')
     # 排序
     if objects:
         if order_by not in objects[0]:

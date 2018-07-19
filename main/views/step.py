@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
-from django.db.models import CharField, Value
+from django.db.models import Q, CharField, Value
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -43,13 +43,12 @@ def list_(request):
     request.session['status'] = None
     q = get_query_condition(search_text)
     if all_:
-        objects = Step.objects.filter(q, is_active=True).values(
-            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
-            action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
+        q &= Q(is_active=True)
     else:
-        objects = Step.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
-            action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
+        q &= Q(is_active=True) & Q(creator=request.user)
+    objects = Step.objects.filter(q).values(
+        'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
+        action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
     # 使用join的方式把多个model结合起来
     # objects = Step.objects.filter(q, is_active=True).order_by('id').select_related('action__type')
     # 分割为多条SQL，然后把结果集用python结合起来
@@ -212,8 +211,8 @@ def list_json(request):
     page = condition.get('page')
     size = 10
     search_text = condition.get('search_text', '')
-    order_by = condition.get('order_by', 'name')
-    order_by_reverse = condition.get('order_by_reverse', 'False')
+    order_by = condition.get('order_by', 'modified_date')
+    order_by_reverse = condition.get('order_by_reverse', 'True')
     all_ = condition.get('all_', 'False')
 
     page = change_to_positive_integer(page, 1)
@@ -229,17 +228,16 @@ def list_json(request):
 
     q = get_query_condition(search_text)
     if all_:
-        objects = Step.objects.filter(q, is_active=True).values(
-            'pk', 'name', 'keyword', 'project__name').annotate(
-            action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
+        q &= Q(is_active=True)
     else:
-        objects = Step.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword', 'project__name').annotate(
-            action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
+        q &= Q(is_active=True) & Q(creator=request.user)
+    objects = Step.objects.filter(q).values(
+        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date').annotate(
+        action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'name'
+            order_by = 'modified_date'
         objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     paginator = Paginator(objects, size)
     try:
@@ -253,6 +251,8 @@ def list_json(request):
 
     for obj in objects:
         obj['url'] = reverse(detail, args=[obj['pk']])
+        obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
+        obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
 
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': {
         'objects': list(objects), 'page': page, 'max_page': paginator.num_pages, 'size': size}})
@@ -267,15 +267,19 @@ def list_temp(request):
     for pk in pk_list:
         if pk.strip() == '':
             continue
-        objects = Step.objects.filter(pk=pk).values('pk', 'name').annotate(
+        objects = Step.objects.filter(pk=pk).values(
+            'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date').annotate(
             action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
         if not objects:
             continue
         objects = list(objects)
         order += 1
-        objects[0]['order'] = order
-        objects[0]['url'] = reverse(detail, args=[pk])
-        data_list.append(objects[0])
+        obj = objects[0]
+        obj['order'] = order
+        obj['url'] = reverse(detail, args=[pk])
+        obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
+        obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
+        data_list.append(obj)
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': data_list})
 
 

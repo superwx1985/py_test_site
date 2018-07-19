@@ -48,6 +48,7 @@
                     getList("{% url 'case_steps' pk %}", window.$csrf_input.val(), m2m_list_selected_update);
                 {% else %}
                     // 初始化m2m字段
+                    m2m_list_selected_update(true, {'data': []});
                     update_m2m_selected_index(window.$m2m_input);
                 {% endif %}
             {% endif %}
@@ -70,12 +71,15 @@
                 if (data.data.objects.length > 0) {
                     $.each(data.data.objects, function (i, v) {
                         var tr = $('<tr>').attr('pk', v.pk).attr('url', v.url);
-                        $('<td moveable class="middle"><i class="icon-move"></i></td>').appendTo(tr);
+                        $('<td moveable class="middle"><i class="icon-move"></i></td>').addClass('middle').appendTo(tr);
                         var a = $('<a href="javascript:m2m_detail_popup(\''+v.url+'?inside=1\')">').text(v.name);
                         $('<td name>').append(a).appendTo(tr);
                         $('<td>').text(v.keyword).appendTo(tr);
                         $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
-                        $('<td>').text(v.action).appendTo(tr);
+                        $('<td>').addClass('middle').text(v.action).appendTo(tr);
+                        $('<td>').addClass('middle').text(v.creator__username).appendTo(tr);
+                        var span = $('<span>').text(v.modified_date_sort).attr('title', v.modified_date).attr('data-toggle', 'tooltip').tooltip();
+                        $('<td>').addClass('middle').append(span).appendTo(tr);
                         tbody.append(tr);
                     });
                     // 使得步骤列表可拖动
@@ -96,7 +100,7 @@
                         }
                     });
                 } else {
-                    var tr = $('<tr placeholder><td colspan="5" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
+                    var tr = $('<tr placeholder><td colspan="7" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
                     tbody.empty().append(tr);
                 }
                 update_sort_icon();
@@ -110,15 +114,21 @@
                     tbody.empty();
                     $.each(data.data, function (i, v) {
                         var tr = $('<tr>').attr('pk', v.pk).attr('url', v.url);
-                        $('<td moveable class="middle"><i class="icon-move"></i></td>').appendTo(tr);
-                        $('<td index class="text-center"></td>').appendTo(tr);
+                        $('<td moveable class="middle"><i class="icon-move"></i></td>').addClass('middle').appendTo(tr);
+                        $('<td index class="text-center"></td>').addClass('middle').appendTo(tr);
                         var a = $('<a>').text(v.name);
                         $('<td name>').append(a).appendTo(tr);
                         $('<td>').text(v.keyword).appendTo(tr);
                         $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
-                        $('<td>').text(v.action).appendTo(tr);
+                        $('<td>').addClass('middle').text(v.action).appendTo(tr);
+                        $('<td>').addClass('middle').text(v.creator__username).appendTo(tr);
+                        var span = $('<span>').text(v.modified_date_sort).attr('title', v.modified_date).attr('data-toggle', 'tooltip').tooltip();
+                        $('<td>').addClass('middle').append(span).appendTo(tr);
                         tbody.append(tr);
                     });
+                } else {
+                    var tr = $('<tr placeholder><td colspan="8" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
+                    tbody.empty().append(tr);
                 }
                 update_m2m_selected_index(window.$m2m_input);
             }
@@ -152,16 +162,13 @@
                 {% include 'main/include/form_input.html' with field=form.keyword %}
             </div>
         </div>
-{#        <div class="row align-items-center">#}
-{#            <div class="col-1 text-center font-weight-bold">本地变量组</div>#}
-{#            <div class="col" form_data>#}
-{#                {% include 'main/include/form_input.html' with field=form.variable_group %}#}
-{#            </div>#}
-{#        </div>#}
         <div class="row align-items-center">
             <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="如果用例中单独设置了变量组，或测试过程中定义了同名变量，将使用内部变量代替公共变量"></i>&nbsp;本地变量组</div>
             <div class="col" form_data>
                 <div id="variable_group_dropdown" name="variable_group"></div>
+                {% for error in form.variable_group.errors %}
+                    <div class="invalid-feedback" style="display: block">{{ error }}</div>
+                {% endfor %}
             </div>
         </div>
         <div class="row align-items-center">
@@ -196,6 +203,8 @@
                             <col>
                             <col>
                             <col>
+                            <col style='width: 80px;'>
+                            <col style='width: 80px;'>
                         </colgroup>
                         <thead class="thead-light">
                             <tr>
@@ -204,11 +213,11 @@
                                 <th order_by_text="keyword">关键字</th>
                                 <th order_by_text="project__name">项目</th>
                                 <th order_by_text="action">动作</th>
+                                <th order_by_text="creator__username">作者</th>
+                                <th order_by_text="modified_date">修改日期</th>
                             </tr>
                         </thead>
-                        <tbody class="text-left">
-                            <tr placeholder><td colspan="5" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>
-                        </tbody>
+                        <tbody class="text-left"></tbody>
                     </table>
                 </div>
                 {% include 'main/include/tools/paginator_without_size.html' %}
@@ -232,6 +241,8 @@
                         <col>
                         <col>
                         <col>
+                        <col style='width: 80px;'>
+                        <col style='width: 80px;'>
                     </colgroup>
                     <thead class="thead-light">
                         <tr>
@@ -241,11 +252,11 @@
                             <th>关键字</th>
                             <th>项目</th>
                             <th>动作</th>
+                            <th order_by_text="creator__username">作者</th>
+                            <th order_by_text="modified_date">修改日期</th>
                         </tr>
                     </thead>
-                    <tbody class="text-left">
-                        <tr placeholder><td colspan="6" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>
-                    </tbody>
+                    <tbody class="text-left"></tbody>
                 </table>
             </div>
         </div>

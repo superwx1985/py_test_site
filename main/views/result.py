@@ -3,13 +3,13 @@ from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
+from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import SuiteResult, StepResult, CaseResult, Project
 from main.forms import OrderByForm, PaginatorForm, SuiteResultForm
 from main.views.general import get_query_condition, change_to_positive_integer, Cookie
 from django.template.loader import render_to_string
-from urllib.parse import quote
 
 logger = logging.getLogger('django.request')
 
@@ -40,13 +40,12 @@ def list_(request):
     request.session['status'] = None
     q = get_query_condition(search_text)
     if all_:
-        objects = SuiteResult.objects.filter(q, is_active=True).order_by('-start_date').values(
-            'pk', 'name', 'keyword', 'project__name', 'start_date', 'result_status', 'creator', 'creator__username',
-            'modified_date')
+        q &= Q(is_active=True)
     else:
-        objects = SuiteResult.objects.filter(q, is_active=True, creator=request.user).order_by('-start_date').values(
-            'pk', 'name', 'keyword', 'project__name',  'start_date', 'result_status', 'creator', 'creator__username',
-            'modified_date')
+        q &= Q(is_active=True) & Q(creator=request.user)
+    objects = SuiteResult.objects.filter(q).values(
+        'pk', 'name', 'keyword', 'project__name',  'start_date', 'result_status', 'creator', 'creator__username',
+        'modified_date')
     result_status_list = SuiteResult.result_status_list
     d = {l[0]: l[1] for l in result_status_list}
     for o in objects:

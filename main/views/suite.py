@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
-from django.db.models import F, CharField, Value, Count
+from django.db.models import Q, F, CharField, Value, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -46,11 +46,11 @@ def list_(request):
     request.session['status'] = None
     q = get_query_condition(search_text)
     if all_:
-        objects = Suite.objects.filter(q, is_active=True).values(
-            'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username', 'modified_date')
+        q &= Q(is_active=True)
     else:
-        objects = Suite.objects.filter(q, is_active=True, creator=request.user).values(
-            'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username', 'modified_date')
+        q &= Q(is_active=True) & Q(creator=request.user)
+    objects = Suite.objects.filter(q).values(
+        'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username', 'modified_date')
     objects2 = Suite.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(m2m_count=Count('case'))
     count_ = {o['pk']: o['m2m_count'] for o in objects2}
     for o in objects:
