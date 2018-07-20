@@ -6,6 +6,12 @@
         新步骤 - {{ block.super }}
     {% endif %}
 {% endblock %}
+
+{% block style %}
+    <style type='text/css' media='screen'>
+    </style>
+{% endblock %}
+
 {% block script %}
     <script>
         $(function () {
@@ -23,7 +29,8 @@
             $('#id_action').off('change').change(function () {
                 show_action_field($(this));
             });
-            // 注册复制按钮
+            // 获取子用例下拉项
+            getList("{% url 'case_select_json' %}", window.$csrf_input.val(), update_other_sub_case_dropdown, '{"selected_pk": "{{ form.other_sub_case.value }}"}');
             // 关闭遮罩
             $('#mask').hide();
         });
@@ -138,6 +145,7 @@
             } else if (select_value === '26') {
                 introduce.children('span').text('调用一个子用例。子用例会继承母用例的变量和配置项。如果出现递归调用，系统将会中断执行');
                 $('div[name=other_sub_case]').show();
+                $('[name=detail_content]').css('padding-bottom', '350px');
             } else if ($.inArray(select_value, ["test"]) >= 0) {
             }
             // 注册提示框
@@ -152,6 +160,7 @@
             $('[api]').hide();
             $('[db]').hide();
             $('[other]').hide();
+            $('[name=detail_content]').css('padding-bottom', '100px');
         }
         // 展示SpecialAction相关内容
         function show_special_action_field($actionSelect) {
@@ -347,7 +356,10 @@
         <div class="row align-items-center" other name="other_sub_case">
             <div class="col-1 text-center font-weight-bold">子用例</div>
             <div class="col" form_data>
-                {% include 'main/include/form_input.html' with field=form.other_sub_case %}
+                <div id="other_sub_case_dropdown" name="other_sub_case"></div>
+                {% for error in form.other_sub_case.errors %}
+                    <div class="invalid-feedback" style="display: block">{{ error }}</div>
+                {% endfor %}
             </div>
         </div>
         <div class="row align-items-center" common name="timeout">

@@ -13,7 +13,7 @@ from main.models import Case, Step, CaseVsStep
 from main.forms import OrderByForm, PaginatorForm, CaseForm
 from main.views.general import get_query_condition, change_to_positive_integer, Cookie
 from urllib.parse import quote
-from main.views import step
+from main.views import step, suite
 
 logger = logging.getLogger('django.request')
 
@@ -62,7 +62,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Case.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date')
+        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date')
     objects2 = Case.objects.filter(is_active=True, step__is_active=True).values('pk').annotate(m2m_count=Count('step'))
     count_ = {o['pk']: o['m2m_count'] for o in objects2}
     for o in objects:
@@ -99,7 +99,8 @@ def detail(request, pk):
     inside = request.GET.get('inside')
     new_pk = request.GET.get('new_pk')
     order = request.GET.get('order')
-    copy_sub_item = True
+    copy_sub_item = True  # 可以拷贝子对象
+    reference_url = reverse(reference, args=[pk])  # 被其他对象调用
     try:
         obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
     except Case.DoesNotExist:
@@ -302,7 +303,8 @@ def list_json(request):
         q &= Q(is_active=True)
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
-    objects = Case.objects.filter(q).values('pk', 'name', 'keyword', 'project__name')
+    objects = Case.objects.filter(q).values(
+        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date')
     # 排序
     if objects:
         if order_by not in objects[0]:
@@ -320,6 +322,8 @@ def list_json(request):
 
     for obj in objects:
         obj['url'] = reverse(detail, args=[obj['pk']])
+        obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
+        obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
 
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': {
         'objects': list(objects), 'page': page, 'max_page': paginator.num_pages, 'size': size}})
@@ -334,13 +338,16 @@ def list_temp(request):
     for pk in pk_list:
         if pk.strip() == '':
             continue
-        objects = Case.objects.filter(pk=pk).values('pk', 'name', 'project__name')
+        objects = Case.objects.filter(pk=pk).values('pk', 'name', 'project__name', 'creator__username', 'modified_date')
         if not objects:
             continue
         objects = list(objects)
         order += 1
-        objects[0]['order'] = order
-        objects[0]['url'] = reverse(detail, args=[pk])
+        obj = objects[0]
+        obj['order'] = order
+        obj['url'] = reverse(detail, args=[pk])
+        obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
+        obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
         data_list.append(objects[0])
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': data_list})
 
@@ -377,3 +384,50 @@ def copy_(request, pk):
         })
     except Case.DoesNotExist as e:
         return JsonResponse({'statue': 1, 'message': 'ERROR', 'data': str(e)})
+
+
+@login_required
+def select_json(request):
+    condition = request.POST.get('condition', '{}')
+    try:
+        condition = json.loads(condition)
+    except json.decoder.JSONDecodeError:
+        condition = dict()
+    selected_pk = condition.get('selected_pk')
+    objects = Case.objects.filter(is_active=True).values('pk', 'name', 'keyword', 'project__name')
+
+    data = list()
+    for obj in objects:
+        d = dict()
+        d['id'] = str(obj['pk'])
+        d['name'] = '{} | {}'.format(obj['name'], obj['project__name'])
+        d['search_info'] = '{} {} {}'.format(obj['name'], obj['project__name'], obj['keyword'])
+        if str(obj['pk']) == selected_pk:
+            d['selected'] = True
+        else:
+            d['selected'] = False
+        data.append(d)
+
+    return JsonResponse({'statue': 1, 'message': 'OK', 'data': data})
+
+
+# 获取调用列表
+def reference(request, pk):
+    try:
+        obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
+    except Case.DoesNotExist:
+        raise Http404('Case does not exist')
+    objects = obj.suite_set.filter(is_active=True).order_by('-modified_date').values(
+        'pk', 'name', 'keyword', 'creator__username', 'modified_date')
+    for obj_ in objects:
+        obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
+        obj_['type'] = '套件'
+    objects2 = Step.objects.filter(is_active=True, other_sub_case=obj, action=26).order_by('-modified_date').values(
+        'pk', 'name', 'keyword', 'creator__username', 'modified_date')
+    for obj_ in objects2:
+        obj_['url'] = reverse(step.detail, args=[obj_['pk']])
+        obj_['type'] = '步骤'
+    objects = list(objects)
+    objects.extend(list(objects2))
+
+    return render(request, 'main/include/detail_reference.html', locals())

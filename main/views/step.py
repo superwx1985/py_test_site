@@ -13,6 +13,7 @@ from main.models import Step
 from main.forms import OrderByForm, PaginatorForm, StepForm
 from main.views.general import get_query_condition, change_to_positive_integer, Cookie
 from urllib.parse import quote
+from main.views import case
 
 logger = logging.getLogger('django.request')
 
@@ -47,7 +48,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Step.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date').annotate(
         action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
     # 使用join的方式把多个model结合起来
     # objects = Step.objects.filter(q, is_active=True).order_by('id').select_related('action__type')
@@ -86,12 +87,12 @@ def detail(request, pk):
     inside = request.GET.get('inside')
     new_pk = request.GET.get('new_pk')
     order = request.GET.get('order')
+    reference_url = reverse(reference, args=[pk])  # 被其他对象调用
     try:
         obj = Step.objects.select_related('creator', 'modifier').get(pk=pk)
     except Step.DoesNotExist:
         raise Http404('Step does not exist')
     if request.method == 'GET':
-        related_objects = obj.case_set.filter(is_active=True)
         form = StepForm(instance=obj)
         if request.session.get('status', None) == 'success':
             prompt = 'success'
@@ -302,3 +303,17 @@ def copy_(request, pk):
         })
     except Step.DoesNotExist as e:
         return JsonResponse({'statue': 1, 'message': 'ERROR', 'data': str(e)})
+
+
+# 获取调用列表
+def reference(request, pk):
+    try:
+        obj = Step.objects.select_related('creator', 'modifier').get(pk=pk)
+    except Step.DoesNotExist:
+        raise Http404('Step does not exist')
+    objects = obj.case_set.filter(is_active=True).order_by('-modified_date').values(
+        'pk', 'name', 'keyword', 'creator__username', 'modified_date')
+    for obj_ in objects:
+        obj_['url'] = reverse(case.detail, args=[obj_['pk']])
+        obj_['type'] = '用例'
+    return render(request, 'main/include/detail_reference.html', locals())

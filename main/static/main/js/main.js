@@ -112,6 +112,7 @@ function bind_delete_button() {
             title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
             message: msg,
             size: 'large',
+		    backdrop: true,
             buttons: {
                 confirm: {
                     label: '<i class="icon-trash">&nbsp;</i>确定',
@@ -316,6 +317,8 @@ function copy_obj(original_name, copy_url, sub_item) {
         size: 'large',
         title: '<i class="icon-exclamation-sign">&nbsp;</i>请输入新名称',
         message: body.html(),
+        onEscape: true,
+		backdrop: true,
         buttons: buttons
     });
 }

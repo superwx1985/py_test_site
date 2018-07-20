@@ -70,6 +70,8 @@
                     {% endif %}
                     // 提示框
                     $('[data-toggle=tooltip]').tooltip();
+                    // 弹出框
+                    $('[data-toggle=popover]').popover();
                     // 注册按钮功能
                     {% if not inside %}
                         $('[name=return_button]').on('click', function() { window.open($('#submit_button_group').attr('next_'), '_self') });
@@ -77,7 +79,7 @@
                         $('[name=add_another_button]').on('click', function() { $('[name=redirect]').val('add_another') });
                         $('[name=copy_button]').on('click', function() { copy_obj($('#id_name').val(), $(this).attr('copy_url'), $(this).attr('copy_sub_item')) });
                     {% else %}
-                        $('[name=return_button]').on('click', function() { parent.window.$('[name=my_modal]').modal('hide') });
+                        $('[name=return_button]').on('click', function() { parent.window.$('[name=sub_item_modal]').modal('hide') });
                         $('[name=copy_button]').on('click', function() { copy_obj($('#id_name').val(), $(this).attr('copy_url'), $(this).attr('copy_sub_item')) });
                     {% endif %}
                     {#如果是内嵌窗口而且含有成功标志，那么关闭父页面的弹窗#}
@@ -89,7 +91,7 @@
                         {% elif new_pk %}
                             parent.window.add_m2m(parent.window.$m2m_input, '{{ new_pk }}');
                         {% endif %}
-                        parent.window.$('[name=my_modal]').modal('hide');
+                        parent.window.$('[name=sub_item_modal]').modal('hide');
                     {% endif %}
                 });
 
@@ -125,7 +127,7 @@
             {% include 'main/include/navbar.html' %}
         {% endif %}
 
-        <div class="container-fluid" style="padding-bottom: 100px; {% if not inside %}padding-top: 60px;{% endif %}">
+        <div class="container-fluid" style="padding-bottom: 60px; {% if not inside %}padding-top: 60px;{% endif %}" name="detail_content">
             {% if errors %}
                 <ul>
                     {% for error in errors %}

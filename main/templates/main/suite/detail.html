@@ -55,7 +55,7 @@
                 {% endif %}
             {% endif %}
             // 处理m2m拖动及排序
-            m2m_handle(window.$m2m_input, 5);
+            m2m_handle(window.$m2m_input, 7);
         });
         // 回调更新m2m
         function update_m2m_objects() {
@@ -78,6 +78,9 @@
                          $('<td name>').append(a).appendTo(tr);
                         $('<td>').text(v.keyword).appendTo(tr);
                         $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
+                        $('<td>').addClass('middle').text(v.creator__username).appendTo(tr);
+                        var span = $('<span>').text(v.modified_date_sort).attr('title', v.modified_date).attr('data-toggle', 'tooltip').tooltip();
+                        $('<td>').addClass('middle').append(span).appendTo(tr);
                         tbody.append(tr);
                     });
                     // 使得步骤列表可拖动
@@ -98,7 +101,7 @@
                         }
                     });
                 } else {
-                    var tr = $('<tr placeholder><td colspan="4" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
+                    var tr = $('<tr placeholder><td colspan="6" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
                     tbody.empty().append(tr);
                 }
                 update_sort_icon();
@@ -118,10 +121,13 @@
                         $('<td name>').append(a).appendTo(tr);
                         $('<td>').text(v.keyword).appendTo(tr);
                         $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
+                        $('<td>').addClass('middle').text(v.creator__username).appendTo(tr);
+                        var span = $('<span>').text(v.modified_date_sort).attr('title', v.modified_date).attr('data-toggle', 'tooltip').tooltip();
+                        $('<td>').addClass('middle').append(span).appendTo(tr);
                         tbody.append(tr);
                     });
                 } else {
-                    var tr = $('<tr placeholder><td colspan="5" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
+                    var tr = $('<tr placeholder><td colspan="7" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
                     tbody.empty().append(tr);
                 }
                 update_m2m_selected_index(window.$m2m_input);
@@ -231,6 +237,8 @@
                             <col>
                             <col>
                             <col>
+                            <col style='width: 80px;'>
+                            <col style='width: 80px;'>
                         </colgroup>
                         <thead class="thead-light">
                             <tr>
@@ -238,6 +246,8 @@
                                 <th order_by_text="name">名称</th>
                                 <th order_by_text="keyword">关键字</th>
                                 <th order_by_text="project__name">项目</th>
+                                <th order_by_text="creator__username">作者</th>
+                                <th order_by_text="modified_date">修改日期</th>
                             </tr>
                         </thead>
                         <tbody class="text-left"></tbody>
@@ -263,6 +273,8 @@
                         <col>
                         <col>
                         <col>
+                        <col style='width: 80px;'>
+                        <col style='width: 80px;'>
                     </colgroup>
                     <thead class="thead-light">
                         <tr>
@@ -271,6 +283,8 @@
                             <th>名称</th>
                             <th>关键字</th>
                             <th>项目</th>
+                            <th>作者</th>
+                            <th>修改日期</th>
                         </tr>
                     </thead>
                     <tbody class="text-left"></tbody>
@@ -278,5 +292,5 @@
             </div>
         </div>
     </div>
-    {% include 'main/include/modal.html' %}
+    {% include 'main/include/modal.html' with modal_name='sub_item_modal' %}
 {% endblock%}

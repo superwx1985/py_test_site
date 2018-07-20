@@ -8,10 +8,11 @@ from django.urls import reverse
 from django.db.models import Q, Count
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from main.models import VariableGroup, Variable
+from main.models import VariableGroup, Variable, Case, Suite
 from main.forms import OrderByForm, PaginatorForm, VariableGroupForm
 from main.views.general import get_query_condition, change_to_positive_integer, Cookie
 from urllib.parse import quote
+from main.views import case, suite
 
 logger = logging.getLogger('django.request')
 
@@ -45,7 +46,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = VariableGroup.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date').annotate(
         variable_count=Count('variable'))
     # 排序
     if objects:
@@ -74,6 +75,7 @@ def list_(request):
 @login_required
 def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
+    reference_url = reverse(reference, args=[pk])  # 被其他对象调用
     try:
         obj = VariableGroup.objects.select_related('creator', 'modifier').get(pk=pk)
     except VariableGroup.DoesNotExist:
@@ -237,7 +239,7 @@ def select_json(request):
     # objects = VariableGroup.objects.filter(is_active=True).values('pk').annotate(name_=Concat(
     #     'pk', Value(' | '), 'name', Value(' | '), 'keyword', Value(' | '), 'project__name', output_field=CharField()),
     # )
-    objects = VariableGroup.objects.filter(is_active=True).values('pk', 'name', 'project__name', 'keyword')
+    objects = VariableGroup.objects.filter(is_active=True).values('pk', 'name', 'keyword', 'project__name')
 
     data = list()
     for obj in objects:
@@ -252,3 +254,26 @@ def select_json(request):
         data.append(d)
 
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': data})
+
+
+# 获取调用列表
+def reference(request, pk):
+    try:
+        obj = VariableGroup.objects.select_related('creator', 'modifier').get(pk=pk)
+    except VariableGroup.DoesNotExist:
+        raise Http404('VariableGroup does not exist')
+    objects = Case.objects.filter(is_active=True, variable_group=obj).order_by('-modified_date').values(
+        'pk', 'name', 'keyword', 'creator__username', 'modified_date')
+    for obj_ in objects:
+        obj_['url'] = reverse(case.detail, args=[obj_['pk']])
+        obj_['type'] = '用例'
+    objects2 = Suite.objects.filter(is_active=True, variable_group=obj).order_by('-modified_date').values(
+        'pk', 'name', 'keyword', 'creator__username', 'modified_date')
+    for obj_ in objects2:
+        obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
+        obj_['type'] = '套件'
+    objects = list(objects)
+    objects.extend(list(objects2))
+
+    return render(request, 'main/include/detail_reference.html', locals())
+

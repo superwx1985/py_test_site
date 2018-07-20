@@ -8,10 +8,11 @@ from django.urls import reverse
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from main.models import Config
+from main.models import Config, Suite
 from main.forms import OrderByForm, PaginatorForm, ConfigForm
 from main.views.general import get_query_condition, change_to_positive_integer, Cookie
 from urllib.parse import quote
+from main.views import suite
 
 logger = logging.getLogger('django.request')
 
@@ -45,7 +46,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Config.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'creator', 'creator__username', 'modified_date')
+        'pk', 'name', 'keyword', 'creator__username', 'modified_date')
     # 排序
     if objects:
         if order_by not in objects[0]:
@@ -73,6 +74,7 @@ def list_(request):
 @login_required
 def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
+    reference_url = reverse(reference, args=[pk])  # 被其他对象调用
     try:
         obj = Config.objects.select_related('creator', 'modifier').get(pk=pk)
     except Config.DoesNotExist:
@@ -191,3 +193,17 @@ def select_json(request):
         data.append(d)
 
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': data})
+
+
+# 获取调用列表
+def reference(request, pk):
+    try:
+        obj = Config.objects.select_related('creator', 'modifier').get(pk=pk)
+    except Config.DoesNotExist:
+        raise Http404('Config does not exist')
+    objects = Suite.objects.filter(is_active=True, config=obj).order_by('-modified_date').values(
+        'pk', 'name', 'keyword', 'creator__username', 'modified_date')
+    for obj_ in objects:
+        obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
+        obj_['type'] = '套件'
+    return render(request, 'main/include/detail_reference.html', locals())

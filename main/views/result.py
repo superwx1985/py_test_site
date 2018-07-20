@@ -153,7 +153,7 @@ def quick_update(request, pk):
 
 
 @login_required
-def step_result_img(request, pk):
+def step_result_json(_, pk):
     try:
         obj = StepResult.objects.get(pk=pk)
     except StepResult.DoesNotExist:

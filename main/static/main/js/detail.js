@@ -30,9 +30,16 @@ function update_config_dropdown(success, data) {
     }
 }
 
-// m2m详情页
+// 更新子用例下拉项
+function update_other_sub_case_dropdown(success, data) {
+	if (success) {
+		update_dropdown(data, $("#other_sub_case_dropdown"));
+    }
+}
+
+// m2m详情modal
 function m2m_detail_popup(url) {
-	var my_modal = $('[name=my_modal]');
+	var my_modal = $('[name=sub_item_modal]');
 	var my_modal_body = my_modal.find('.modal-body');
 	var body_height = $(window).height() - get_element_outside_height(my_modal.find('.modal-dialog')) - get_element_outside_height(my_modal.find('.modal-content')) - get_element_outside_height(my_modal_body);
 	var body_min_height = 600;
@@ -252,4 +259,19 @@ function replace_m2m($input, pk, order) {
 	var m2m_list = $.parseJSON($input.val());
 	m2m_list.splice(order-1, 1, String(pk));
 	$input.val(JSON.stringify(m2m_list))
+}
+
+// 查看被调用弹窗
+function show_reference(url) {
+	bootbox.dialog({
+		title: '被调用情况',
+		message: '<div id="reference_div" class="middle"><i class="icon-spinner icon-spin icon-5x"></i></div>',
+		size: 'large',
+		onEscape: true,
+		backdrop: true,
+		init: $.get(url, function (data) {
+			console.log(data)
+			$('#reference_div').parent('.bootbox-body').empty().html(data);
+		}, 'html')
+	})
 }

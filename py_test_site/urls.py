@@ -41,11 +41,13 @@ urlpatterns = [
     path('case/add/', case.add, name='case_add'),
     path('case/list_json/', case.list_json, name='case_list_json'),
     path('case/list_temp/', case.list_temp, name='case_list_temp'),
+    path('case/select_json/', case.select_json, name='case_select_json'),
     path('case/<str:pk>/', case.detail, name='case'),
     path('case/<str:pk>/delete/', case.delete, name='case_delete'),
     path('case/<str:pk>/quick_update/', case.quick_update, name='case_quick_update'),
     path('case/<str:pk>/steps/', case.steps, name='case_steps'),
     path('case/<str:pk>/copy/', case.copy_, name='case_copy'),
+    path('case/<str:pk>/reference/', case.reference, name='case_reference'),
 
     path('steps/', step.list_, name='steps'),
     path('step/add/', step.add, name='step_add'),
@@ -55,6 +57,7 @@ urlpatterns = [
     path('step/<str:pk>/delete/', step.delete, name='step_delete'),
     path('step/<str:pk>/quick_update/', step.quick_update, name='step_quick_update'),
     path('step/<str:pk>/copy/', step.copy_, name='step_copy'),
+    path('step/<str:pk>/reference/', step.reference, name='step_reference'),
 
     path('configs/', config.list_, name='configs'),
     path('config/add/', config.add, name='config_add'),
@@ -62,6 +65,7 @@ urlpatterns = [
     path('config/<str:pk>/', config.detail, name='config'),
     path('config/<str:pk>/delete/', config.delete, name='config_delete'),
     path('config/<str:pk>/quick_update/', config.quick_update, name='config_quick_update'),
+    path('config/<str:pk>/reference/', config.reference, name='config_reference'),
 
     path('variable_groups/', variable_group.list_, name='variable_groups'),
     path('variable_group/add/', variable_group.add, name='variable_group_add'),
@@ -70,6 +74,7 @@ urlpatterns = [
     path('variable_group/<str:pk>/delete/', variable_group.delete, name='variable_group_delete'),
     path('variable_group/<str:pk>/quick_update/', variable_group.quick_update, name='variable_group_quick_update'),
     path('variable_group/<str:pk>/variables/', variable_group.variables, name='variable_group_variables'),
+    path('variable_group/<str:pk>/reference/', variable_group.reference, name='variable_group_reference'),
 
     path('suites/', suite.list_, name='suites'),
     path('suite/add/', suite.add, name='suite_add'),
@@ -84,7 +89,7 @@ urlpatterns = [
     path('result/<str:pk>/delete/', result.delete, name='result_delete'),
     path('result/<str:pk>/quick_update/', result.quick_update, name='result_quick_update'),
 
-    path('step_result/<str:pk>/img', result.step_result_img, name='step_result_img'),
+    path('step_result/<str:pk>/json', result.step_result_json, name='step_result_json'),
 
 
 

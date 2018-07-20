@@ -11,8 +11,8 @@
     </script>
 {% endblock %}
 {% block result_table %}
-    <div class="table-responsive" id='result_table'>
-        <table class="table table-bordered table-hover">
+    <div class="table-responsive" id='result_div'>
+        <table class="table table-bordered table-hover" id='result_table'>
             <colgroup>
                 <col style='width: 60px;'>
                 <col>
@@ -31,7 +31,7 @@
                     <th order_by_text="project__name">项目</th>
                     <th order_by_text="m2m_count">步骤数</th>
                     <th order_by_text="creator__username">作者</th>
-                    <th order_by_text="modified_date">最后更新时间</th>
+                    <th order_by_text="modified_date">修改时间</th>
                     <th>操作</th>
                 </tr>
             </thead>

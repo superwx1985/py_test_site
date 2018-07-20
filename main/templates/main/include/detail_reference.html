@@ -1,0 +1,38 @@
+<div class="table-responsive small" id='related_objects_div'>
+    <table class="table table-bordered table-hover table-sm">
+        <colgroup>
+            <col style='width: 60px;'>
+            <col style='width: 100px;'>
+            <col>
+            <col>
+            <col style='width: 100px;'>
+            <col style='width: 180px;'>
+        </colgroup>
+        <thead class="thead-light middle">
+            <tr>
+                <th>序号</th>
+                <th>类型</th>
+                <th>名称</th>
+                <th>关键字</th>
+                <th>作者</th>
+                <th>修改时间</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in objects %}
+                <tr pk="{{ obj.pk }}">
+                    <td col_name='index' class="middle">{{ forloop.counter }}</td>
+                    <td col_name='type' class="middle">{{ obj.type }}</td>
+                    <td col_name='name' class="align-middle"><a href="{{ obj.url }}" target="_blank">{{ obj.name }}</a></td>
+                    <td col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
+                    <td col_name='creator__username' class="middle">{{ obj.creator__username }}</td>
+                    <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

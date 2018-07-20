@@ -9,7 +9,6 @@
             window.addUrl="{% url 'suite_add' %}";
             // 运行按钮
             $('[name=execute_button]').on('click', function () {
-                var csrf_token = window.$csrf_input.val();
                 var url = $(this).parents('tr').attr('exe_url');
                 var name = $(this).parents('tr').find('td[col_name="name"]').text();
                 var msg = '开始执行<span class="mark">' + name + '</span>？';
@@ -17,6 +16,7 @@
                     title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
                     message: msg,
                     size: 'large',
+		            backdrop: true,
                     buttons: {
                         confirm: {
                             label: '<i class="icon-trash">&nbsp;</i>确定',
@@ -30,16 +30,17 @@
                     callback: function (result) {
                         if (result === true) {
                             $('#mask').show();
-                            $.post(url, {'csrfmiddlewaretoken': csrf_token}, function(data) {
+                            $.get(url, function(data) {
                                 $('#mask').hide();
                                 var content_div = $('<div>').html(data.data.suite_result_content);
-                                var a = $('<a>').text('查看详情').addClass('btn btn-primary').attr({'href': data.data.suite_result_url, 'target': 'blank_'})
+                                var a = $('<a>').text('查看详情').addClass('btn btn-primary').attr({'href': data.data.suite_result_url, 'target': 'blank_'});
                                 content_div.append($('<div>').addClass('middle').append(a));
-                                console.log(content_div)
                                 bootbox.dialog({
                                     title: '测试结果',
                                     message: content_div,
-                                    size: 'large'
+                                    size: 'large',
+                                    onEscape: true,
+		                            backdrop: true
                                 });
                             });
                         }
@@ -50,8 +51,8 @@
     </script>
 {% endblock %}
 {% block result_table %}
-    <div class="table-responsive" id='result_table'>
-        <table class="table table-bordered table-hover">
+    <div class="table-responsive" id='result_div'>
+        <table class="table table-bordered table-hover" id='result_table'>
             <colgroup>
                 <col style='width: 60px;'>
                 <col>
@@ -72,7 +73,7 @@
                     <th order_by_text="config__name">配置</th>
                     <th order_by_text="m2m_count">用例数</th>
                     <th order_by_text="creator__username">作者</th>
-                    <th order_by_text="modified_date">最后更新时间</th>
+                    <th order_by_text="modified_date">修改时间</th>
                     <th>操作</th>
                 </tr>
             </thead>

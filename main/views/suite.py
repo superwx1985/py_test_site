@@ -50,7 +50,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Suite.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username', 'modified_date')
+        'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator__username', 'modified_date')
     objects2 = Suite.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(m2m_count=Count('case'))
     count_ = {o['pk']: o['m2m_count'] for o in objects2}
     for o in objects:
@@ -240,9 +240,11 @@ def quick_update(request, pk):
 @login_required
 def cases(_, pk):
     objects = Case.objects.filter(suite=pk, is_active=True).order_by('suitevscase__order').values(
-        'pk', 'name', 'keyword', 'project__name', order=F('suitevscase__order'))
+        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date', order=F('suitevscase__order'))
     for obj in objects:
         obj['url'] = reverse(case.detail, args=[obj['pk']])
+        obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
+        obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 

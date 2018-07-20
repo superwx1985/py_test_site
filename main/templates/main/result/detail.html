@@ -21,15 +21,16 @@
         function step_result_detail_popup() {
             $('[name=step_result]').off('click').on('click', function() {
                 var step_result_pk = $(this).attr('step_result_pk');
-                var csrf_token = window.$csrf_input.val();
-                var url = $(this).parents('tr').attr('step_img_url');
+                var url = $(this).parents('tr').attr('step_result_json_url');
                 var title = $(this).text();
                 var msg = '<div step_result_pk=' +  step_result_pk + ' class="middle"><i class="icon-spinner icon-spin icon-5x"></i></div>';
                 bootbox.dialog({
                     title: title,
                     message: msg,
                     size: 'large',
-                    init: $.post(url, {'csrfmiddlewaretoken': csrf_token}, function(data) {
+                    onEscape: true,
+		            backdrop: true,
+                    init: $.get(url, function(data) {
                         var div = $('<div>').attr('step_result_pk', step_result_pk);
                         div.append($(data.data.step_time));
                         var message_div = $('<div>');
@@ -60,12 +61,15 @@
                         }
                         $('.bootbox-body div[step_result_pk='+ step_result_pk +']').parent('.bootbox-body').empty().append(div);
                         step_result_detail_popup();
-                        console.log($('[step_result_pk=' +  step_result_pk + ']'))
                     })
                 });
             });
         }
     </script>
+{% endblock %}
+
+{% block detail_header %}
+    {% include 'main/include/detail_header.html' with object_name='结果' %}
 {% endblock %}
 
 {% block detail_form %}
