@@ -19,7 +19,7 @@ from django.conf.urls.static import static
 from . import settings
 from django.contrib import admin
 import main.views.general as general
-import main.views.login as login
+import main.views.user as user
 import main.views.case as case
 import main.views.step as step
 import main.views.config as config
@@ -31,9 +31,10 @@ import main.views.result as result
 urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
 
-    path('', login.login_redirect),
-    path('login/', login.login, name='login'),
-    path('logout/', login.logout, name='logout'),
+    path('', user.login_redirect),
+    path('user/login/', user.login, name='user_login'),
+    path('user/logout/', user.logout, name='user_logout'),
+    path('user/', user.detail, name='user'),
 
     path('home/', result.list_, name='home'),
 

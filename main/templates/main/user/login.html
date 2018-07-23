@@ -7,11 +7,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
         <title>登陆</title>
 
-        <link rel="stylesheet" href='{% static "main/js/jquery-ui-1.12.1.custom/jquery-ui.min.css" %}'>
-        <link rel="stylesheet" href="{% static 'main/css/bootstrap-4.1.1/bootstrap.min.css' %}">
-        <link rel="stylesheet" href="{% static 'main/css/toastr-2.1.4/toastr.css' %}">
-        <link rel="stylesheet" href="{% static 'main/css/font-awesome/font-awesome.css' %}">
-        <link rel="stylesheet" href='{% static "main/css/main.css" %}'>
+        {% include 'main/include/general_css.html' %}
         <style type='text/css' media='screen'>
             div.row {
                 padding: 5px 0;
@@ -19,13 +15,7 @@
             }
         </style>
 
-        <script src="{% static 'main/js/popper/popper.js' %}"></script>
-        <script src="{% static 'main/js/jquery/jquery-3.3.1.min.js' %}"></script>
-        <script src="{% static 'main/js/jquery-ui-1.12.1.custom/jquery-ui.min.js' %}"></script>
-        <script src="{% static 'main/js/bootstrap-4.1.1/bootstrap.min.js' %}"></script>
-        <script src="{% static 'main/js/bootbox/bootbox.min.js' %}"></script>
-        <script src="{% static 'main/js/toastr-2.1.4/toastr.min.js' %}"></script>
-        <script src="{% static 'main/js/main.js' %}"></script>
+        {% include 'main/include/general_script.html' %}
         <script>
             $(function () {
                 // 提示框

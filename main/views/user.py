@@ -1,28 +1,18 @@
-import json
 import logging
-import copy
-from django.http import HttpResponseRedirect, JsonResponse, HttpResponse, HttpResponseBadRequest, Http404
-from django.shortcuts import render, get_object_or_404
-from django.core.serializers import serialize
-from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse
-from django.db import connection
-from django.db.models import Q, F, CharField, Value
-from django.db.models.functions import Concat
-from django.utils import timezone
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from django.core import serializers
+from main.forms import LoginForm, UserForm
 from django.contrib.auth.models import User
-from main.forms import UserForm
-from main.views.general import get_query_condition, change_to_positive_integer, Cookie
 
 logger = logging.getLogger('django.request')
 
 
 def login(request):
     redirect_url = request.GET.get('next', reverse('home'))
-    if redirect_url == reverse('logout'):
+    if redirect_url == reverse('user_logout'):
         redirect_url = reverse('home')
     if request.user.is_authenticated:
         return HttpResponseRedirect(redirect_url)
@@ -30,7 +20,7 @@ def login(request):
     delete_cookies = list()
     response = None
     if request.method == 'POST':
-        form = UserForm(request.POST)
+        form = LoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data['username']
             password = form.cleaned_data['password']
@@ -59,9 +49,9 @@ def login(request):
         #     remember_me = True
         # else:
         #     remember_me = False
-        form = UserForm(initial={'remember_me': False})
+        form = LoginForm(initial={'remember_me': False})
 
-    response = render(request, 'main/login/login.html', locals()) if not response else response
+    response = render(request, 'main/user/login.html', locals()) if not response else response
     for cookie in cookies:
         response.set_cookie(cookie.key, cookie.value, max_age=cookie.max_age, expires=cookie.expires, path=cookie.path)
     for cookie in delete_cookies:
@@ -71,10 +61,47 @@ def login(request):
 
 # 跟目录跳转，防止直接使用根目录，污染cookie
 def login_redirect(_):
-    return HttpResponseRedirect(reverse('login'))
+    return HttpResponseRedirect(reverse('user_login'))
 
 
 @login_required
 def logout(request):
     auth.logout(request)
     return HttpResponseRedirect(request.META.get('HTTP_REFERER', reverse('home')))
+
+
+@login_required
+def detail(request):
+    obj = request.user
+    pk = obj.pk
+    if request.method == 'GET':
+        form = UserForm(obj, initial={
+            'first_name': obj.first_name,
+            'last_name': obj.last_name,
+        })
+        if request.session.get('status', None) == 'success':
+            prompt = 'success'
+        request.session['status'] = None
+        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
+        return render(request, 'main/user/detail.html', locals())
+
+    elif request.method == 'POST':
+        form = UserForm(obj, request.POST)
+        if form.is_valid():
+            original_password = form.cleaned_data.get('original_password')
+            new_password = form.cleaned_data.get('new_password')
+
+            if new_password:
+                if obj.check_password(original_password):
+                    obj.set_password(new_password)
+                    obj.save()
+                    auth.login(request, obj)
+                    request.session['status'] = 'success'
+                    return HttpResponseRedirect(request.get_full_path())
+                else:
+                    form.add_error('original_password', '原密码不正确')
+            else:
+                return HttpResponseRedirect(request.get_full_path())
+
+        print(form.errors)
+        return render(request, 'main/user/detail.html', locals())

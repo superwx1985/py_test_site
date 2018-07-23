@@ -25,7 +25,7 @@
        <div class="justify-content-end">
             <div class="">
                 <span class="navbar-text" style="color: powderblue;">当前用户</span>
-                <span class="navbar-text" style="color: yellow; padding: 0 0.5em">{{ request.user }}</span>
+                <a class="navbar-text" style="color: yellow; padding: 0 0.5em" href="{% url 'user' %}">{{ request.user }}</a>
                 <button id="logout_btn" class="btn btn-secondary" type="button"><i class="icon-signout">&nbsp;</i>注销</button>
             </div>
        </div>

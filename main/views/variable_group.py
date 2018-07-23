@@ -130,7 +130,6 @@ def detail(request, pk):
                 temp_dict['data'] = variable_list
                 temp_list_json = json.dumps(temp_dict)
 
-        is_success = False
         return render(request, 'main/variable_group/detail.html', locals())
 
 
@@ -186,7 +185,6 @@ def add(request):
                 temp_dict['data'] = variable_list
                 temp_list_json = json.dumps(temp_dict)
 
-        is_success = False
         return render(request, 'main/variable_group/detail.html', locals())
 
 

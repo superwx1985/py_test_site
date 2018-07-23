@@ -117,7 +117,6 @@ def detail(request, pk):
             else:
                 return HttpResponseRedirect(request.get_full_path())
 
-        is_success = False
         return render(request, 'main/result/detail.html', locals())
 
 

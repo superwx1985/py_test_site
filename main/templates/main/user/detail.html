@@ -1,0 +1,93 @@
+{% load staticfiles %}
+{% load widget_tweaks %}
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        <title>登陆</title>
+
+        {% include 'main/include/general_css.html' %}
+        <style type='text/css' media='screen'>
+            div.row {
+                padding: 5px 0;
+                {#min-height: 2em;#}
+            }
+        </style>
+
+        {% include 'main/include/general_script.html' %}
+        <script>
+            $(function () {
+                // 反馈框提示样式
+                toastr.options = {
+                    "closeButton":false,//显示关闭按钮
+                    "debug":false,//启用debug
+                    "positionClass":"toast-top-center",//弹出的位置
+                    "showDuration":"300",//显示的时间
+                    "hideDuration":"1000",//消失的时间
+                    "timeOut":"5000",//停留的时间
+                    "extendedTimeOut":"1000",//控制时间
+                    "showEasing":"swing",//显示时的动画缓冲方式
+                    "hideEasing":"linear",//消失时的动画缓冲方式
+                    "showMethod":"fadeIn",//显示时的动画方式
+                    "hideMethod":"fadeOut"//消失时的动画方式
+                };
+                // 触发反馈框提示
+                {% if prompt == 'success' %}
+                    toastr.success('保存成功');
+                {% elif form.errors %}
+                    toastr.error('请更正错误项');
+                {% endif %}
+                // 提示框
+                $('[data-toggle=tooltip]').tooltip();
+            });
+        </script>
+    </head>
+    <body>
+        <div class="container" style="max-width: 600px">
+            <form method="post" id="object_form" novalidate>
+                {% csrf_token %}
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text font-weight-bold" style="min-width: 8em;">用户名</span>
+                    </div>
+                    <input type="text" name="username" id="id_username" value="{{ obj.username }}" disabled class="form-control">
+                </div>
+                <br>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text font-weight-bold" style="min-width: 8em;">姓名</span>
+                    </div>
+                    {% include 'main/include/form_input.html' with field=form.last_name placeholder='姓'%}
+                    {% include 'main/include/form_input.html' with field=form.first_name placeholder='名'%}
+                </div>
+                <br>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text font-weight-bold" style="min-width: 8em;">原密码</span>
+                    </div>
+                    {% include 'main/include/form_input.html' with field=form.original_password placeholder='如需修改密码请输入原密码' %}
+                </div>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text font-weight-bold" style="min-width: 8em;">新密码</span>
+                    </div>
+                    {% include 'main/include/form_input.html' with field=form.new_password %}
+                </div>
+                <div class="input-group">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text font-weight-bold" style="min-width: 8em;">确认新密码</span>
+                    </div>
+                    {% include 'main/include/form_input.html' with field=form.confirm_password %}
+                </div>
+                <br>
+                <div class='middle'>
+                    <input type="submit" value="确定" class="btn btn-primary">
+                    <input type="reset" value="取消" class="btn btn-secondary">
+                </div>
+
+
+            </form>
+        </div>
+    </body>
+</html>

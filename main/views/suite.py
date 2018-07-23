@@ -146,7 +146,6 @@ def detail(request, pk):
                 if original_m2m_list != m2m_list:
                     temp_list_json = json.dumps(m2m_list)
 
-        is_success = False
         return render(request, 'main/suite/detail.html', locals())
 
 
@@ -201,7 +200,6 @@ def add(request):
             if m2m_list is not None:
                 temp_list_json = json.dumps(m2m_list)
 
-        is_success = False
         return render(request, 'main/suite/detail.html', locals())
 
 

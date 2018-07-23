@@ -1,6 +1,8 @@
 from django import forms
 from main.models import *
 from django.contrib.auth.models import User
+from django.contrib.auth import password_validation
+from django.utils.translation import gettext_lazy as _
 
 
 class StepForm0(forms.Form):
@@ -26,10 +28,47 @@ class StepForm0(forms.Form):
     api_data = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
 
 
-class UserForm(forms.Form):
+class LoginForm(forms.Form):
     username = forms.CharField(label='用户名', max_length=50)
     password = forms.CharField(label='密码', max_length=50, widget=forms.PasswordInput())
     remember_me = forms.BooleanField(label='记住我', required=False)
+
+
+class UserForm(forms.Form):
+    last_name = forms.CharField(label='姓', max_length=50)
+    first_name = forms.CharField(label='名', max_length=50)
+    original_password = forms.CharField(
+        label='原密码', max_length=50, widget=forms.PasswordInput(), required=False)
+    new_password = forms.CharField(
+        label='新密码', max_length=50, required=False, strip=False)
+    confirm_password = forms.CharField(
+        label='确认密码', max_length=50, required=False, strip=False)
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    # def clean(self):
+    #     new_password = self.cleaned_data.get('new_password')
+    #     if new_password and self.cleaned_data['new_password'] != self.cleaned_data['confirm_password']:
+    #         raise forms.ValidationError(_("The two password fields didn't match."))
+    #         # raise forms.ValidationError('两次输入的密码不一致')
+    #     else:
+    #         cleaned_data = super(UserForm, self).clean()
+    #     return cleaned_data
+
+    def clean_new_password(self):
+        new_password = self.cleaned_data.get('new_password')
+        if new_password:
+            password_validation.validate_password(new_password, self.user)
+        return new_password
+
+    def clean_confirm_password(self):
+        new_password = self.cleaned_data.get('new_password')
+        confirm_password = self.cleaned_data.get('confirm_password')
+        if new_password and new_password != confirm_password:
+            raise forms.ValidationError(_("The two password fields didn't match."))
+        return confirm_password
 
 
 class PaginatorForm(forms.Form):

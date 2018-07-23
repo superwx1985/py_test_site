@@ -102,7 +102,6 @@ def detail(request, pk):
             else:
                 return HttpResponseRedirect(request.get_full_path())
 
-        is_success = False
         return render(request, 'main/config/detail.html', locals())
 
 
@@ -135,7 +134,6 @@ def add(request):
             else:
                 return HttpResponseRedirect('{}?next={}'.format(reverse(detail, args=[pk]), quote(next_)))
 
-        is_success = False
         return render(request, 'main/config/detail.html', locals())
 
 
