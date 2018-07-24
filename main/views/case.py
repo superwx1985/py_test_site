@@ -62,7 +62,8 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Case.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date')
+        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date').annotate(
+        real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     objects2 = Case.objects.filter(is_active=True, step__is_active=True).values('pk').annotate(m2m_count=Count('step'))
     count_ = {o['pk']: o['m2m_count'] for o in objects2}
     for o in objects:
@@ -261,7 +262,8 @@ def quick_update(request, pk):
 def steps(_, pk):
     objects = Step.objects.filter(case=pk, is_active=True).order_by('casevsstep__order').values(
         'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date', order=F('casevsstep__order')
-    ).annotate(action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
+    ).annotate(action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()),
+               real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj in objects:
         obj['url'] = reverse(step.detail, args=[obj['pk']])
         obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
@@ -302,7 +304,8 @@ def list_json(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Case.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date')
+        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date').annotate(
+        real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     # 排序
     if objects:
         if order_by not in objects[0]:
@@ -336,7 +339,9 @@ def list_temp(request):
     for pk in pk_list:
         if pk.strip() == '':
             continue
-        objects = Case.objects.filter(pk=pk).values('pk', 'name', 'project__name', 'creator__username', 'modified_date')
+        objects = Case.objects.filter(pk=pk).values(
+            'pk', 'name', 'project__name', 'creator__username', 'modified_date').annotate(
+            real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
         if not objects:
             continue
         objects = list(objects)
@@ -416,12 +421,14 @@ def reference(request, pk):
     except Case.DoesNotExist:
         raise Http404('Case does not exist')
     objects = obj.suite_set.filter(is_active=True).order_by('-modified_date').values(
-        'pk', 'name', 'keyword', 'creator__username', 'modified_date')
+        'pk', 'name', 'keyword', 'creator__username', 'modified_date').annotate(
+        real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
         obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
         obj_['type'] = '套件'
     objects2 = Step.objects.filter(is_active=True, other_sub_case=obj, action=26).order_by('-modified_date').values(
-        'pk', 'name', 'keyword', 'creator__username', 'modified_date')
+        'pk', 'name', 'keyword', 'creator__username', 'modified_date').annotate(
+        real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects2:
         obj_['url'] = reverse(step.detail, args=[obj_['pk']])
         obj_['type'] = '步骤'

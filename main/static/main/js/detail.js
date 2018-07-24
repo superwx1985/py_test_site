@@ -38,7 +38,7 @@ function update_other_sub_case_dropdown(success, data) {
 }
 
 // m2m详情modal
-function m2m_detail_popup(url) {
+function m2m_detail_popup1(url) {
 	var my_modal = $('[name=sub_item_modal]');
 	var my_modal_body = my_modal.find('.modal-body');
 	var body_height = $(window).height() - get_element_outside_height(my_modal.find('.modal-dialog')) - get_element_outside_height(my_modal.find('.modal-content')) - get_element_outside_height(my_modal_body);
@@ -51,6 +51,10 @@ function m2m_detail_popup(url) {
 		update_m2m_objects();
 	});
 	my_modal.modal()
+}
+
+function m2m_detail_popup(url) {
+	modal_with_iframe_max('m2m_detail_modal', '', url, update_m2m_objects)
 }
 
 // 更新已选m2m的序号，更新m2m field内容

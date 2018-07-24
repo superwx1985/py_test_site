@@ -40,6 +40,18 @@
                 {% endif %}
                 // 提示框
                 $('[data-toggle=tooltip]').tooltip();
+                {% if inside %}
+                    {% if prompt == 'success' %}
+                        {% if form.last_name.value or form.first_name.value %}
+                            var new_name = '{{ obj.last_name }}{{ obj.first_name }}';
+                        {% else %}
+                            var new_name = '{{ obj.username }}';
+                        {% endif %}
+                        parent.window.$('#user_link').text(new_name);
+                        parent.window.$('[name=user_modal]').modal('hide');
+                    {% endif %}
+                    $('[name=cancel_button]').on('click', function() { parent.window.$('[name=user_modal]').modal('hide') });
+                {% endif %}
             });
         </script>
     </head>
@@ -82,8 +94,8 @@
                 </div>
                 <br>
                 <div class='middle'>
-                    <input type="submit" value="确定" class="btn btn-primary">
-                    <input type="reset" value="取消" class="btn btn-secondary">
+                    <input type="submit" value="确定" class="btn btn-primary" name="submit_button">
+                    <input type="reset" value="取消" class="btn btn-secondary" name="cancel_button">
                 </div>
 
 

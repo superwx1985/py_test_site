@@ -67,11 +67,11 @@
                         $('[name=add_another_button]').on('click', function() { $('[name=redirect]').val('add_another') });
                         $('[name=copy_button]').on('click', function() { copy_obj($('#id_name').val(), $(this).attr('copy_url'), $(this).attr('copy_sub_item')) });
                     {% else %}
-                        $('[name=return_button]').on('click', function() { parent.window.$('[name=sub_item_modal]').modal('hide') });
+                        $('[name=return_button]').on('click', function() { parent.window.$('[name=m2m_detail_modal]').modal('hide') });
                         $('[name=copy_button]').on('click', function() { copy_obj($('#id_name').val(), $(this).attr('copy_url'), $(this).attr('copy_sub_item')) });
                     {% endif %}
                     {#如果是内嵌窗口而且含有成功标志，那么关闭父页面的弹窗#}
-                    {% if inside and prompt == 'success'%}
+                    {% if inside and prompt == 'success' %}
                         {#如果有顺序参数，替换m2m字段的值#}
                         {% if new_pk and order %}
                             parent.window.replace_m2m(parent.window.$m2m_input, '{{ new_pk }}', {{ order }});
@@ -79,7 +79,7 @@
                         {% elif new_pk %}
                             parent.window.add_m2m(parent.window.$m2m_input, '{{ new_pk }}');
                         {% endif %}
-                        parent.window.$('[name=sub_item_modal]').modal('hide');
+                        parent.window.$('[name=m2m_detail_modal]').modal('hide');
                     {% endif %}
                 });
 
@@ -115,7 +115,7 @@
             {% include 'main/include/navbar.html' %}
         {% endif %}
 
-        <div class="container-fluid" style="padding-bottom: 60px; {% if not inside %}padding-top: 60px;{% endif %}" name="detail_content">
+        <div class="container-fluid" style="padding-bottom: 50px; {% if not inside %}padding-top: 50px;{% endif %}" name="detail_content">
             {% if errors %}
                 <ul>
                     {% for error in errors %}

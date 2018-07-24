@@ -322,3 +322,41 @@ function copy_obj(original_name, copy_url, sub_item) {
         buttons: buttons
     });
 }
+
+// 弹出内嵌页面
+function modal_with_iframe(modal_name, modal_class, modal_style, modal_body_style, modal_title, url, callback) {
+    var html_ =
+        '<div class="modal fade" name="'+ modal_name +'">\n' +
+        '    <div class="modal-dialog '+ modal_class +'" style="' + modal_style + '">\n' +
+        '        <div class="modal-content">\n' +
+        '            <div class="modal-header">\n' +
+        '                <span class="modal-title lead">' + modal_title + '</span>\n' +
+        '                <button type="button" class="close" data-dismiss="modal">&times;</button>\n' +
+        '            </div>\n' +
+        '            <div class="modal-body" style="' + modal_body_style + '"></div>\n' +
+        '        </div>\n' +
+        '    </div>\n' +
+        '</div>';
+	var my_modal = $(html_);
+	$('body').append(my_modal);
+	// 如果未提供title，不显示header
+	if (!modal_title) { my_modal.find('.modal-header').remove() }
+	var my_modal_body = my_modal.find('.modal-body');
+    var modal_body_div = '<div style="height: 100%;"><iframe name="' + modal_name + '_iframe" frameborder="0" style="height: 100%; width: 100%;" src="' + url + '"></iframe></div>';
+    my_modal_body.empty().append(modal_body_div);
+    // 如果body未指定高度，则使用当前页面高度来确定
+    if (!parseInt(my_modal_body.css('height'))){
+        var body_height = $(window).height() - get_element_outside_height(my_modal.find('.modal-dialog')) - get_element_outside_height(my_modal.find('.modal-content')) - get_element_outside_height(my_modal_body);
+        my_modal_body.css('height', body_height);
+    }
+	my_modal.off('hide.bs.modal').on('hide.bs.modal', function () {
+	    if (callback) {callback();}
+	    my_modal.remove();
+	});
+	my_modal.modal()
+}
+
+// 弹出内嵌页面最大化
+function modal_with_iframe_max(modal_name, modal_title, url, callback) {
+    modal_with_iframe(modal_name, 'modal-max', '', 'min-height: 600px', modal_title, url, callback)
+}

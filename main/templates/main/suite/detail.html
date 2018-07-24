@@ -78,7 +78,7 @@
                          $('<td name>').append(a).appendTo(tr);
                         $('<td>').text(v.keyword).appendTo(tr);
                         $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
-                        $('<td>').addClass('middle').text(v.creator__username).appendTo(tr);
+                        $('<td>').addClass('middle').text(v.real_name).appendTo(tr);
                         var span = $('<span>').text(v.modified_date_sort).attr('title', v.modified_date).attr('data-toggle', 'tooltip').tooltip();
                         $('<td>').addClass('middle').append(span).appendTo(tr);
                         tbody.append(tr);
@@ -121,7 +121,7 @@
                         $('<td name>').append(a).appendTo(tr);
                         $('<td>').text(v.keyword).appendTo(tr);
                         $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
-                        $('<td>').addClass('middle').text(v.creator__username).appendTo(tr);
+                        $('<td>').addClass('middle').text(v.real_name).appendTo(tr);
                         var span = $('<span>').text(v.modified_date_sort).attr('title', v.modified_date).attr('data-toggle', 'tooltip').tooltip();
                         $('<td>').addClass('middle').append(span).appendTo(tr);
                         tbody.append(tr);
@@ -246,7 +246,7 @@
                                 <th order_by_text="name">名称</th>
                                 <th order_by_text="keyword">关键字</th>
                                 <th order_by_text="project__name">项目</th>
-                                <th order_by_text="creator__username">作者</th>
+                                <th order_by_text="real_name">作者</th>
                                 <th order_by_text="modified_date">修改日期</th>
                             </tr>
                         </thead>
@@ -258,10 +258,12 @@
         </div>
         <div id="m2m_selected" class="col-6 text-center">
             <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="上下拖动进行排序，从待选列表拖动到拖动到已选列表进行添加，拖动回待选列表则删除"></i>&nbsp;待选用例列表</h5>
-            <div style="padding: 5px 0" class="container-fluid">
-                <div class="row align-items-center">
-                    <div class="col text-left">
-                        <button type="button" id="m2m_add_button" class="btn btn-success"><i class="icon-plus"></i>&nbsp;新增</button>
+            <div style="padding-bottom: 10px">
+                <div style="padding: 0" class="container-fluid">
+                    <div class="row align-items-center">
+                        <div class="col text-left">
+                            <button type="button" id="m2m_add_button" class="btn btn-success"><i class="icon-plus"></i>&nbsp;新增</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -292,5 +294,4 @@
             </div>
         </div>
     </div>
-    {% include 'main/include/modal.html' with modal_name='sub_item_modal' %}
 {% endblock%}

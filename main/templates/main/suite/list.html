@@ -72,7 +72,7 @@
                     <th order_by_text="project__name">项目</th>
                     <th order_by_text="config__name">配置</th>
                     <th order_by_text="m2m_count">用例数</th>
-                    <th order_by_text="creator__username">作者</th>
+                    <th order_by_text="real_name">作者</th>
                     <th order_by_text="modified_date">修改时间</th>
                     <th>操作</th>
                 </tr>
@@ -85,8 +85,8 @@
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='config__name' class="align-middle">{{ obj.config__name }}</td>
-                        <td col_name='step_count' class="middle">{{ obj.m2m_count }}</td>
-                        <td col_name='creator__username' class="middle">{{ obj.creator__username }}</td>
+                        <td col_name='m2m_count' class="middle">{{ obj.m2m_count }}</td>
+                        <td col_name='real_name' class="middle">{{ obj.real_name|default:obj.creator__username }}</td>
                         <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
                         <td>
                             <div class="middle">

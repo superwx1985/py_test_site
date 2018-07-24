@@ -49,7 +49,8 @@ def list_(request):
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Step.objects.filter(q).values(
         'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date').annotate(
-        action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
+        action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()),
+        real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     # 使用join的方式把多个model结合起来
     # objects = Step.objects.filter(q, is_active=True).order_by('id').select_related('action__type')
     # 分割为多条SQL，然后把结果集用python结合起来
@@ -232,7 +233,8 @@ def list_json(request):
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Step.objects.filter(q).values(
         'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date').annotate(
-        action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
+        action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()),
+        real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     # 排序
     if objects:
         if order_by not in objects[0]:
@@ -268,7 +270,8 @@ def list_temp(request):
             continue
         objects = Step.objects.filter(pk=pk).values(
             'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date').annotate(
-            action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()))
+            action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()),
+            real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
         if not objects:
             continue
         objects = list(objects)
@@ -310,7 +313,8 @@ def reference(request, pk):
     except Step.DoesNotExist:
         raise Http404('Step does not exist')
     objects = obj.case_set.filter(is_active=True).order_by('-modified_date').values(
-        'pk', 'name', 'keyword', 'creator__username', 'modified_date')
+        'pk', 'name', 'keyword', 'creator__username', 'modified_date').annotate(
+        real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
         obj_['url'] = reverse(case.detail, args=[obj_['pk']])
         obj_['type'] = '用例'

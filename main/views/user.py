@@ -72,6 +72,7 @@ def logout(request):
 
 @login_required
 def detail(request):
+    inside = request.GET.get('inside')
     obj = request.user
     pk = obj.pk
     if request.method == 'GET':
@@ -88,6 +89,9 @@ def detail(request):
     elif request.method == 'POST':
         form = UserForm(obj, request.POST)
         if form.is_valid():
+            obj.first_name = form.cleaned_data.get('first_name', '')
+            obj.last_name = form.cleaned_data.get('last_name', '')
+
             original_password = form.cleaned_data.get('original_password')
             new_password = form.cleaned_data.get('new_password')
 
@@ -101,7 +105,8 @@ def detail(request):
                 else:
                     form.add_error('original_password', '原密码不正确')
             else:
+                obj.save()
+                request.session['status'] = 'success'
                 return HttpResponseRedirect(request.get_full_path())
 
-        print(form.errors)
         return render(request, 'main/user/detail.html', locals())

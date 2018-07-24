@@ -1,7 +1,7 @@
 <ol class="breadcrumb my-4">
     <li class="breadcrumb-item active">
     {% if form.initial %}
-        {{ object_name }}[<a href="#" data-toggle="popover" title="CODE" data-content="{{ obj.code }}">{{ obj.pk }}</a>]&nbsp;&nbsp;&nbsp;&nbsp;作者：{{ obj.creator }}&nbsp;&nbsp;&nbsp;&nbsp;创建时间：{{ obj.created_date }}&nbsp;&nbsp;&nbsp;&nbsp;修改时间：{{ obj.modified_date }}{% if reference_url %}&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:show_reference('{{ reference_url }}')">被调用情况</a>{% endif %}
+        {{ object_name }}[<a href="#" data-toggle="popover" title="CODE" data-content="{{ obj.code }}">{{ obj.pk }}</a>]&nbsp;&nbsp;&nbsp;&nbsp;作者：{{ obj.creator.last_name }}{{ obj.creator.first_name }}[{{ obj.creator.username }}]&nbsp;&nbsp;&nbsp;&nbsp;创建时间：{{ obj.created_date }}&nbsp;&nbsp;&nbsp;&nbsp;修改时间：{{ obj.modified_date }}{% if reference_url %}&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:show_reference('{{ reference_url }}')">被调用情况</a>{% endif %}
     {% else %}
         添加{{ object_name }}
     {% endif %}

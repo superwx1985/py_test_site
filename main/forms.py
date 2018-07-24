@@ -35,8 +35,8 @@ class LoginForm(forms.Form):
 
 
 class UserForm(forms.Form):
-    last_name = forms.CharField(label='姓', max_length=50)
-    first_name = forms.CharField(label='名', max_length=50)
+    last_name = forms.CharField(label='姓', max_length=50, required=False)
+    first_name = forms.CharField(label='名', max_length=50, required=False)
     original_password = forms.CharField(
         label='原密码', max_length=50, widget=forms.PasswordInput(), required=False)
     new_password = forms.CharField(

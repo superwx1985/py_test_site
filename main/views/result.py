@@ -3,7 +3,8 @@ from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
-from django.db.models import Q
+from django.db.models import Q, CharField
+from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import SuiteResult, StepResult, CaseResult, Project
@@ -45,7 +46,8 @@ def list_(request):
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = SuiteResult.objects.filter(q).values(
         'pk', 'name', 'keyword', 'project__name',  'start_date', 'result_status', 'creator', 'creator__username',
-        'modified_date')
+        'modified_date').annotate(
+        real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     result_status_list = SuiteResult.result_status_list
     d = {l[0]: l[1] for l in result_status_list}
     for o in objects:
