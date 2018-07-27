@@ -19,7 +19,7 @@
                 <col style='width: 150px;'>
                 <col style='width: 150px;'>
                 <col style='width: 250px;'>
-                <col style='width: 100px;'>
+                <col style='width: 105px;'>
                 <col style='width: 180px;'>
                 <col style='width: 170px;'>
             </colgroup>
@@ -42,7 +42,7 @@
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
-                        <td col_name='action' class="align-middle">{{ obj.action }}</td>
+                        <td col_name='action' class="middle">{{ obj.action }}</td>
                         <td col_name='real_name' class="middle">{{ obj.real_name }}</td>
                         <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
                         <td>

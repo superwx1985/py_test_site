@@ -21,7 +21,6 @@ class Case(models.Model):
     step = models.ManyToManyField('Step', through='CaseVsStep', through_fields=('case', 'step'))
 
     class Meta:
-        pass
         # db_table = 'test_case_step'
         ordering = ['-modified_date']  # 这个字段是告诉Django模型对象返回的记录结果集是按照哪个字段排序的,-xxx表示降序，?xxx表示随机
 
@@ -99,7 +98,6 @@ class Step(models.Model):
     class Meta:
         # db_table = 'test_case_step'
         ordering = ['-modified_date']
-        pass
 
     def __str__(self):
         return self.name
@@ -218,6 +216,9 @@ class Config(models.Model):
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return self.name
 
+    class Meta:
+        ordering = ['-modified_date']
+
     def __str__(self):
         return self.name
 
@@ -241,6 +242,9 @@ class VariableGroup(models.Model):
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return self.name
+
+    class Meta:
+        ordering = ['-modified_date']
 
     def __str__(self):
         return self.name
@@ -297,6 +301,9 @@ class Suite(models.Model):
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return self.name
+
+    class Meta:
+        ordering = ['-modified_date']
 
     def __str__(self):
         return self.name
@@ -377,6 +384,9 @@ class SuiteResult(models.Model):
         else:
             from py_test.vic_tools.vic_date_handle import get_timedelta_str
             return get_timedelta_str(self.elapsed_time, 1)
+
+    class Meta:
+        ordering = ['-modified_date']
 
 
 # case测试结果

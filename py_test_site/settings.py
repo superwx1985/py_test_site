@@ -34,6 +34,8 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -145,6 +147,9 @@ LOGIN_URL = reverse_lazy('user_login')
 
 
 # 日志配置
+# log_level = 'DEBUG' if DEBUG else 'INFO'
+log_level = 'INFO'
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -152,6 +157,9 @@ LOGGING = {
     'formatters': {
        'standard': {
             'format': '%(asctime)s [%(threadName)s:%(thread)d] [%(name)s] [%(module)s:%(funcName)s:%(lineno)d] [%(levelname)s] - %(message)s'
+       },
+       'detail': {
+            'format': '%(asctime)s [%(threadName)s:%(thread)d] [%(name)s] [%(pathname)s:%(funcName)s:%(lineno)d] [%(levelname)s] - %(message)s'
        },
     },
     # 过滤器
@@ -243,24 +251,39 @@ LOGGING = {
         'django': {
             'handlers': ['default', 'console_normal', 'console_warning'],
             # 'level': 'DEBUG' if DEBUG else 'INFO',  # 如果DEBUG打开则启动DEBUG日志
-            'level': 'INFO',
+            'level': log_level,
             'propagate': False
         },
         # sql日志
         'django.db.backends': {
             'handlers': ['sql_handler'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
+            'level': 'DEBUG',
             'propagate': True
         },
         # 请求日志
         'django.request': {
             'handlers': ['request_handler'],
+            'level': log_level,
             'propagate': True,
+        },
+        # channels日志
+        'django.channels': {
+            'level': log_level,
+            'propagate': True,
+        },
+        # daphne服务日志
+        'daphne': {
+            'handlers': ['default', 'console_normal', 'console_warning'],
+            'level': log_level,
+            'propagate': False,
         },
         'py_test': {
             'handlers': ['console_normal', 'console_warning', 'py_test_file_handler'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
+            'level': log_level,
             'propagate': False
         },
     },
 }
+
+# Channels
+ASGI_APPLICATION = 'py_test_site.routing.application'

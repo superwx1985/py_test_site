@@ -1,6 +1,7 @@
 import hashlib, uuid, json
 
-a = ' '
+a = 'aaa\n'
 
-if a:
-    print(111)
+if a[-1] == '\n':
+    print(1)
+    print(a[0:-1])
