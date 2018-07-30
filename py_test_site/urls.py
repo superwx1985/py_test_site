@@ -83,7 +83,8 @@ urlpatterns = [
     path('suite/<str:pk>/delete/', suite.delete, name='suite_delete'),
     path('suite/<str:pk>/quick_update/', suite.quick_update, name='suite_quick_update'),
     path('suite/<str:pk>/cases/', suite.cases, name='suite_cases'),
-    path('suite/<str:pk>/execute/', suite.execute_, name='suite_execute'),
+    # path('suite/<str:pk>/execute/', suite.execute_, name='suite_execute'),
+    path('ws/suite_execute/<int:suite_pk>', suite.execute_, name='suite_execute'),
 
     path('results/', result.list_, name='results'),
     path('result/<str:pk>/', result.detail, name='result'),

@@ -1,14 +1,11 @@
 import datetime
 import json
 import logging
-from py_test.general import vic_variables, vic_public_elements, vic_config, execute_case, thread_log, vic_log
+from py_test.general import vic_variables, vic_public_elements, vic_config, execute_case, vic_log
 from concurrent.futures import ThreadPoolExecutor, wait
 from py_test.general.vic_method import load_public_data
-from main.models import Suite, Case, SuiteResult
+from main.models import Case, SuiteResult
 from django.forms.models import model_to_dict
-
-
-
 
 
 def execute_suite(suite, user, websocket_sender=None):
@@ -19,11 +16,11 @@ def execute_suite(suite, user, websocket_sender=None):
     logger.setLevel(suite.log_level)
 
     # 设置线程日志level
-    thread_log.THREAD_LEVEL = suite.log_level
+    vic_log.THREAD_LEVEL = suite.log_level
 
     # 是否推送websocket
     if websocket_sender:
-        logger = VicLogger(logger, websocket_sender)
+        logger = vic_log.VicLogger(logger, websocket_sender)
 
     logger.info('开始')
 
@@ -92,6 +89,7 @@ def execute_suite(suite, user, websocket_sender=None):
             case_order=case_order,
             user=user,
             execute_str=case_order,
+            websocket_sender=websocket_sender,
         ))
 
     future_results = wait(futures)

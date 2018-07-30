@@ -2,7 +2,7 @@ import datetime
 import json
 import traceback
 import pytz
-from py_test.general import vic_variables, vic_public_elements, vic_method, thread_log
+from py_test.general import vic_variables, vic_public_elements, vic_method, vic_log
 from py_test.ui_test import method
 from selenium.common.exceptions import UnexpectedAlertPresentException
 from main.models import CaseResult, Step
@@ -16,9 +16,15 @@ global_variables = vic_variables.global_variables
 public_elements = vic_public_elements.public_elements
 
 
-def execute_case(case, suite_result, case_order, user, execute_str, variables=None, step_result=None, parent_case_pk_list=None, dr=None):
+def execute_case(
+        case, suite_result, case_order, user, execute_str, variables=None, step_result=None, parent_case_pk_list=None,
+        dr=None, websocket_sender=None):
+
     start_date = datetime.datetime.now()
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
+    # 是否推送websocket
+    if websocket_sender:
+        logger = vic_log.VicLogger(logger, websocket_sender)
 
     # 初始化case result
     case_result = CaseResult.objects.create(
@@ -86,7 +92,7 @@ def execute_case(case, suite_result, case_order, user, execute_str, variables=No
                     logger.info('{}\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(execute_id, alert_handle_text, alert_text))
 
             step_result_ = execute_step(
-                step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=dr)
+                step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=dr, websocket_sender=websocket_sender)
 
             # 获取最后一次弹窗处理方式
             ui_alert_handle_dict = {

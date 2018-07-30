@@ -7,7 +7,7 @@ from py_test.general import vic_variables, test_result
 from py_test.general import vic_method, import_test_data
 from py_test.vic_tools import vic_eval
 from py_test.vic_tools.vic_str_handle import change_digit_to_string, change_string_to_digit
-from py_test.general.thread_log import get_thread_logger
+from py_test.general.vic_log import get_thread_logger
 
 # 获取全局变量
 global_variables = vic_variables.global_variables
@@ -321,7 +321,7 @@ def run(excel_file, tc_id=1, variables=None, result_dir=None, base_timeout=30, g
 
 if __name__ == '__main__':
     import logging
-    from py_test.general.thread_log import init_logger
+    from py_test.general.vic_log import init_logger
 
     init_logger(log_level=logging.DEBUG, console_log_level=logging.INFO)
     logger = get_thread_logger()

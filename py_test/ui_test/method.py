@@ -22,7 +22,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from PIL import Image
 from py_test.vic_tools import vic_find_object, vic_eval
 from py_test.vic_tools.vic_str_handle import change_string_to_digit
-from py_test.general import thread_log
+from py_test.general import vic_log
 
 
 # 获取浏览器driver
@@ -136,7 +136,7 @@ def highlight_for_a_moment(dr, elements, color='green', duration=0.5):
 
 # 等待文字出现
 def wait_for_text_present(dr, text, timeout, base_element, print_=True):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     dr.implicitly_wait(0.5)
     elements = list()
     start_time = time.time()
@@ -192,7 +192,7 @@ def wait_for_text_present(dr, text, timeout, base_element, print_=True):
 # 等待字符串出现，包含定位符
 def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, base_element, variable_elements=None,
                                        print_=True):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     dr.implicitly_wait(0.5)
     start_time = time.time()
     last_print_time = 0
@@ -252,7 +252,7 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
 
 # 等待元素出现
 def wait_for_element_present(dr, by, locator, timeout, base_element, variable_elements=None, print_=True):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     elements = list()
     dr.implicitly_wait(0.5)
     start_time = time.time()
@@ -284,7 +284,7 @@ def wait_for_element_present(dr, by, locator, timeout, base_element, variable_el
 
 # 等待元素可见
 def wait_for_element_visible(dr, by, locator, timeout, base_element, variable_elements=None, print_=True):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     elements = list()
     visible_elements = list()
     dr.implicitly_wait(0.5)
@@ -323,7 +323,7 @@ def wait_for_element_visible(dr, by, locator, timeout, base_element, variable_el
 # 等待元素可见，包含数量限制
 def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_element, variable_elements=None,
                                        print_=True):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     start_time = time.time()
     last_print_time = 0
     compare_result = False
@@ -365,7 +365,7 @@ def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_elem
 
 # 等待元素消失
 def wait_for_element_disappear(dr, by, locator, timeout, base_element, variable_elements=None, print_=True):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     visible_elements = list()
     dr.implicitly_wait(0.5)
     start_time = time.time()
@@ -412,7 +412,7 @@ def go_to_url(dr, url):
 
 # 等待页面跳转
 def wait_for_page_redirect(dr, new_url, timeout, print_=True):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     is_passed = False
     start_time = time.time()
     last_print_time = 0
@@ -512,7 +512,7 @@ def try_to_enter(dr, by, locator, data, timeout, index_, base_element, variable_
 
 # 获取特殊键组合
 def get_special_keys(data_):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     data_ = data_.replace('\\+', '#{$plus}#')
     data_list = data_.split('+')
     keys = list()
@@ -634,7 +634,7 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
 
 # 处理浏览器弹窗
 def confirm_alert(dr, alert_handle, timeout, print_=True):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     start_time = time.time()
     last_print_time = 0
     done = False
@@ -671,7 +671,7 @@ def confirm_alert(dr, alert_handle, timeout, print_=True):
 
 # 尝试切换window或tap
 def try_to_switch_to_window(dr, by, locator, data, timeout, index_, base_element, print_=True):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     current_window_handle = dr.current_window_handle
     start_time = time.time()
     last_print_time = 0
@@ -718,7 +718,7 @@ def try_to_switch_to_window(dr, by, locator, data, timeout, index_, base_element
 
 # 尝试切换frame
 def try_to_switch_to_frame(dr, by, locator, index_, timeout, base_element, print_=True):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     if index_ is None:
         index_ = 0
     start_time = time.time()
@@ -756,7 +756,7 @@ def try_to_switch_to_frame(dr, by, locator, index_, timeout, base_element, print
 
 # 运行javascript
 def run_js(dr, by, locator, data, timeout, index_, base_element, variable_elements=None, print_=True):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     if by in (None, ''):
         js_result = dr.execute_script(data)
     else:
@@ -885,7 +885,7 @@ def get_image_on_element(dr, element):
 
 # 下拉加载更多内容
 def scroll_down_for_loading(driver, wait_time=30, print_=True):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     # driver.execute_script("arguments[0].scrollIntoView();")
     driver.execute_script("""
         (function () {
@@ -939,7 +939,7 @@ def scroll_to_height(dr, _to, _step, delay):
 
 # 生成截图路径
 def get_screenshot_full_name(file_name, base_path=os.getcwd()):
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
     _name_list = os.path.splitext(file_name)
     from py_test.general.vic_method import check_name
     _name_result = check_name(_name_list[0])

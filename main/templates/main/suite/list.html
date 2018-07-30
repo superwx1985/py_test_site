@@ -29,20 +29,20 @@
                     },
                     callback: function (result) {
                         if (result === true) {
-                            $('#mask').show();
-                            $.get(url, function(data) {
-                                $('#mask').hide();
-                                var content_div = $('<div>').html(data.data.suite_result_content);
-                                var a = $('<a>').text('查看详情').addClass('btn btn-primary').attr({'href': data.data.suite_result_url, 'target': 'blank_'});
-                                content_div.append($('<div>').addClass('middle').append(a));
-                                bootbox.dialog({
-                                    title: '测试结果',
-                                    message: content_div,
-                                    size: 'large',
-                                    onEscape: true,
-		                            backdrop: true
-                                });
-                            });
+                            {#$('#mask').show();#}
+                            {#$.get(url, function(data) {#}
+                            {#    $('#mask').hide();#}
+                            {#    var content_div = $('<div>').html(data.data.suite_result_content);#}
+                            {#    var a = $('<a>').text('查看详情').addClass('btn btn-primary').attr({'href': data.data.suite_result_url, 'target': 'blank_'});#}
+                            {#    content_div.append($('<div>').addClass('middle').append(a));#}
+                            {#    bootbox.dialog({#}
+                            {#        title: '测试结果',#}
+                            {#        message: content_div,#}
+                            {#        size: 'large',#}
+                            {#        onEscape: true,#}
+		                     {#       backdrop: true#}
+                            {#    });#}
+                            {# });#}
                         }
                     }
                 });

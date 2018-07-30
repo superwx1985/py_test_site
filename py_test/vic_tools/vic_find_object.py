@@ -6,7 +6,7 @@ from py_test.vic_tools import vic_eval
 from py_test.vic_tools.vic_date_handle import str_to_time
 from py_test.vic_tools.attr_display import AttrDisplay
 from py_test.vic_tools.vic_str_handle import remove_line_break_and_blank_from_both_ends, remove_line_break_from_both_ends
-from py_test.general.thread_log import get_thread_logger
+from py_test.general.vic_log import get_thread_logger
 
 
 # 在对象中查找对象

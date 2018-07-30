@@ -9,7 +9,7 @@ from py_test.ui_test import method
 from selenium.common.exceptions import UnexpectedAlertPresentException, NoSuchElementException
 from py_test.vic_tools import vic_eval
 from py_test.vic_tools.vic_str_handle import change_digit_to_string, change_string_to_digit
-from py_test.general.thread_log import get_thread_logger
+from py_test.general.vic_log import get_thread_logger
 
 # 获取全局变量
 global_variables = vic_variables.global_variables
@@ -714,7 +714,7 @@ def run(excel_file, tc_id=1, variables=None, result_dir=None, base_timeout=10, g
 
 
 if __name__ == '__main__':
-    from py_test.general.thread_log import init_logger
+    from py_test.general.vic_log import init_logger
 
     init_logger(log_level=10, console_log_level=20)
     logger = get_thread_logger()

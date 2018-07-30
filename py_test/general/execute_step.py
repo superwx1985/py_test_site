@@ -3,7 +3,7 @@ import time
 import json
 import traceback
 import pytz
-from py_test.general import vic_variables, vic_public_elements, thread_log, vic_method
+from py_test.general import vic_variables, vic_public_elements, vic_log, vic_method
 from py_test.ui_test import method
 from selenium.common.exceptions import UnexpectedAlertPresentException, NoSuchElementException, TimeoutException, WebDriverException
 from py_test.vic_tools import vic_eval
@@ -17,9 +17,16 @@ global_variables = vic_variables.global_variables
 public_elements = vic_public_elements.public_elements
 
 
-def execute_step(step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=None):
+def execute_step(
+        step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=None,
+        websocket_sender=None):
+
     start_date = datetime.datetime.now()
-    logger = thread_log.get_thread_logger()
+    logger = vic_log.get_thread_logger()
+    # 是否推送websocket
+    if websocket_sender:
+        logger = vic_log.VicLogger(logger, websocket_sender)
+
     execute_id = '{}-{}'.format(execute_str, step_order)
     # 截图列表
     img_list = list()
@@ -436,7 +443,8 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
                 from .execute_case import execute_case
                 case_result_ = execute_case(case=other_sub_case, suite_result=case_result.suite_result, case_order=None,
                                             user=user, execute_str=execute_id, variables=variables,
-                                            step_result=step_result, parent_case_pk_list=parent_case_pk_list, dr=dr)
+                                            step_result=step_result, parent_case_pk_list=parent_case_pk_list, dr=dr,
+                                            websocket_sender=websocket_sender)
                 step_result.has_sub_case = True
                 if case_result_.error_count > 0:
                     raise RuntimeError('子用例运行中出现错误')
@@ -524,7 +532,7 @@ def debug(log_level=10):
     logger = logging.getLogger('py_test')
     logger.setLevel(log_level)
     # 设置线程日志level
-    thread_log.THREAD_LEVEL = log_level
+    vic_log.THREAD_LEVEL = log_level
 
     config = Config.objects.get(pk=5)
 

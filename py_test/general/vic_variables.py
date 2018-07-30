@@ -1,6 +1,6 @@
 from selenium.common import exceptions
 from selenium.webdriver.remote.webelement import WebElement
-from py_test.general.thread_log import get_thread_logger
+from py_test.general.vic_log import get_thread_logger
 
 
 class Variables:
