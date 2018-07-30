@@ -18,7 +18,7 @@ public_elements = vic_public_elements.public_elements
 
 
 def execute_step(step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=None):
-    start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+    start_date = datetime.datetime.now()
     logger = thread_log.get_thread_logger()
     execute_id = '{}-{}'.format(execute_str, step_order)
     # 截图列表
@@ -511,7 +511,7 @@ def execute_step(step, case_result, step_order, user, execute_str, variables, pa
     for img in img_list:
         step_result.imgs.add(img)
 
-    step_result.end_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+    step_result.end_date = datetime.datetime.now()
     step_result.save()
     return step_result
 

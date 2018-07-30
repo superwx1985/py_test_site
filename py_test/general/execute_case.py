@@ -17,7 +17,7 @@ public_elements = vic_public_elements.public_elements
 
 
 def execute_case(case, suite_result, case_order, user, execute_str, variables=None, step_result=None, parent_case_pk_list=None, dr=None):
-    start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+    start_date = datetime.datetime.now()
     logger = thread_log.get_thread_logger()
 
     # 初始化case result
@@ -118,6 +118,6 @@ def execute_case(case, suite_result, case_order, user, execute_str, variables=No
     else:
         case_result.result_status = 1
         case_result.result_message = '通过'
-    case_result.end_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+    case_result.end_date = datetime.datetime.now()
     case_result.save()
     return case_result

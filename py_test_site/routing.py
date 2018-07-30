@@ -4,11 +4,12 @@ from django.conf.urls import url
 from django.urls import path
 
 
-from main.views import general
+from main.views import websocket
 
 websocket_urlpatterns = [
     # url(r'^ws/chat/(?P<room_name>[^/]+)/$', general.ChatConsumer),
-    path('ws/chat/<str:room_name>/', general.ChatConsumer),
+    path('ws/suite_execute/<int:suite_pk>', websocket.SuiteConsumer),
+    path('ws/chat/', websocket.ChatConsumer),
 ]
 
 application = ProtocolTypeRouter({

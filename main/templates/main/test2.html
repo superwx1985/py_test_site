@@ -15,11 +15,9 @@
                 window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
                 getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_config_dropdown, "{selected_pk:1}");
 
-                var roomName = 'aaa';
 
-                var chatSocket = new WebSocket(
-                    'ws://' + window.location.host +
-                    '/ws/chat/' + roomName + '/');
+
+                var chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/');
 
                 chatSocket.onmessage = function(e) {
                     var data = JSON.parse(e.data);
@@ -28,7 +26,7 @@
                 };
 
                 chatSocket.onclose = function(e) {
-                    console.error('Chat socket closed unexpectedly');
+                    console.error('Chat socket: ', e);
                 };
 
                 document.querySelector('#chat-message-input').focus();
@@ -48,7 +46,33 @@
                     messageInputDom.value = '';
                 };
 
+
+
+                $('#suite-submit').off('click').on('click', function () {
+                    var suite_pk = $('#suite-input').val();
+                    var suite_socket = new WebSocket('ws://' + window.location.host + '/ws/suite_execute/' + String(suite_pk));
+                    var chat_log = $('#chat-log');
+                    chat_log.val('');
+                    var log = '';
+                    suite_socket.onmessage = function(data) {
+                        var message = JSON.parse(data.data)['message'];
+                        log += message + '\n';
+                        chat_log.val(log);
+                        chat_log.scrollTop(chat_log.get(0).scrollHeight);
+                    }
+                    suite_socket.onclose = function(e) {
+                        var message = 'end' + '\n';
+                        log = chat_log.val() + message;
+                        chat_log.val(log);
+                        chat_log.scrollTop(chat_log.get(0).scrollHeight);
+                    };
+
+                })
+
+
             });
+
+
             function update_config_dropdown(success, data) {
                 var base_div = $("#div_base1");
                 base_div.find("div#div_dropdown1").remove();
@@ -73,8 +97,12 @@
         <div id="div_base1"></div>
 
         <br>
-        <textarea id="chat-log" cols="100" rows="20" readonly></textarea><br/>
-        <input id="chat-message-input" type="text" size="100"/><br/>
+        <textarea id="chat-log" cols="100" rows="10" readonly class="form-control"></textarea><br/>
+        <input id="chat-message-input" type="text" size="100"/>
         <input id="chat-message-submit" type="button" value="Send"/>
+        <br>
+        <br>
+        <input id="suite-input" type="text" size="100" value="14"/>
+        <input id="suite-submit" type="button" value="Run"/>
     </body>
 </html>

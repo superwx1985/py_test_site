@@ -89,31 +89,3 @@ def debug1(request):
 
 def debug2(request):
     return HttpResponse('ok')
-
-
-from channels.generic.websocket import WebsocketConsumer
-import json
-
-
-class ChatConsumer(WebsocketConsumer):
-    def connect(self):
-        self.accept()
-
-    def disconnect(self, close_code):
-        pass
-
-    def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
-
-        self.send(text_data=json.dumps({
-            'message': '{} - {}'.format(0, message)
-        }))
-        import time
-        for i in range(1, 6):
-            time.sleep(1)
-            self.send(text_data=json.dumps({
-                'message': '{} - {}'.format(i, message)
-            }))
-
-

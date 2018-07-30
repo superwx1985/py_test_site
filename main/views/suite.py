@@ -272,7 +272,7 @@ def case_list_temp(request):
 def execute_(request, pk):
     try:
         suite_ = Suite.objects.get(pk=pk, is_active=True)
-        suite_result = execute_suite(request, suite_)
+        suite_result = execute_suite(suite_, request.user)
         sub_objects = suite_result.caseresult_set.filter(step_result=None).order_by('case_order')
         suite_result_content = render_to_string('main/include/suite_result_content.html', locals())
         data_dict = dict()

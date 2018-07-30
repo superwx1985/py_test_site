@@ -1,22 +1,29 @@
 import datetime
 import json
-import pytz
 import logging
-from py_test.general import vic_variables, vic_public_elements, vic_config, execute_case, thread_log
+from py_test.general import vic_variables, vic_public_elements, vic_config, execute_case, thread_log, vic_log
 from concurrent.futures import ThreadPoolExecutor, wait
-from py_test.general.import_test_data import get_matched_file_list
 from py_test.general.vic_method import load_public_data
 from main.models import Suite, Case, SuiteResult
 from django.forms.models import model_to_dict
 
 
-def execute_suite(request, suite):
-    start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+
+
+
+def execute_suite(suite, user, websocket_sender=None):
+    # start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+    start_date = datetime.datetime.now()
 
     logger = logging.getLogger('py_test')
     logger.setLevel(suite.log_level)
+
     # 设置线程日志level
     thread_log.THREAD_LEVEL = suite.log_level
+
+    # 是否推送websocket
+    if websocket_sender:
+        logger = VicLogger(logger, websocket_sender)
 
     logger.info('开始')
 
@@ -50,8 +57,8 @@ def execute_suite(request, suite):
         project=suite.project,
 
         suite=suite,
-        creator=request.user,
-        modifier=request.user,
+        creator=user,
+        modifier=user,
         start_date=start_date,
 
         execute_count=0,
@@ -83,7 +90,7 @@ def execute_suite(request, suite):
             case=case,
             suite_result=suite_result,
             case_order=case_order,
-            user=request.user,
+            user=user,
             execute_str=case_order,
         ))
 
@@ -104,7 +111,7 @@ def execute_suite(request, suite):
         suite_result.result_status = 2
     else:
         suite_result.result_status = 1
-    suite_result.end_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
+    suite_result.end_date = datetime.datetime.now()
     suite_result.save()
 
     logger.info('测试用例执行完毕')
