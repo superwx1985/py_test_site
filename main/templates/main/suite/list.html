@@ -43,6 +43,68 @@
 		                     {#       backdrop: true#}
                             {#    });#}
                             {# });#}
+
+                            var $modal_body_div = $('<div>').addClass('text-center');
+                            var execute_name_div = $('<div id="execute_name_div" class="lead"></div>').text(name);
+                            $modal_body_div.append(execute_name_div);
+                            $modal_body_div.append($('<br>'));
+                            var execute_log_div = $('<div id="execute_log_div" class="pre-scrollable text-left bg-light" style="height: 250px"></div>');
+                            $modal_body_div.append(execute_log_div);
+                            $modal_body_div.append($('<br>'));
+                            var execute_result_div = $('<div id="execute_result_div"></div>');
+                            $modal_body_div.append(execute_result_div);
+                            $modal_body_div.append($('<br>'));
+                            var execute_button = $('<button id="force-stop" class="btn btn-danger">强制停止</button>');
+                            $modal_body_div.append(execute_button);
+                            var my_modal = modal('execute_modal', 'modal-max', '', '', '执行中...', $modal_body_div);
+
+                            var suite_socket = new WebSocket('ws://' + window.location.host + url);
+                            var execute_uuid = guid();
+
+                            execute_button.off('click').on('click', function () {
+                                execute_button.off('click');
+                                var suite_socket_stop = new WebSocket('ws://' + window.location.host + url);
+                                suite_socket_stop.onmessage = function(data) {
+                                    var type = JSON.parse(data.data)['type'];
+                                    if (type === 'ready'){
+                                        suite_socket_stop.send(JSON.stringify({'command': 'stop', 'execute_uuid': execute_uuid}));
+                                    } else if (type === 'message'){
+                                        var message = JSON.parse(data.data)['message'];
+                                        var pre = $('<pre>').text(message).addClass('text-info');
+                                        execute_log_div.append(pre);
+                                        execute_log_div.scrollTop(execute_log_div.get(0).scrollHeight);
+                                    }
+                                }
+                            });
+
+                            suite_socket.onmessage = function(data) {
+                                var type = JSON.parse(data.data)['type'];
+                                if (type === 'ready'){
+                                    suite_socket.send(JSON.stringify({'command': 'start', 'execute_uuid': execute_uuid}));
+                                } else if (type === 'message'){
+                                    var message = JSON.parse(data.data)['message'];
+                                    var level = JSON.parse(data.data)['level'];
+                                    var pre = $('<pre>').text(message);
+                                    if (level) {
+                                        if (level>=40) {pre.addClass('text-danger')}
+                                        else if (level>=30) {pre.addClass('text-warning')}
+                                    }
+                                    execute_log_div.append(pre);
+                                    execute_log_div.scrollTop(execute_log_div.get(0).scrollHeight);
+                                } else if (type === 'end'){
+                                    var data = JSON.parse(data.data)['data'];
+                                    var content_div = $('<div>').html(data.suite_result_content);
+                                    execute_result_div.append(content_div);
+                                    execute_button.text('查看详情').removeClass('btn-danger').addClass('btn-primary');
+                                    execute_button.off('click').on('click', function () {
+                                        modal_with_iframe_max('m2m_detail_modal', '', data.suite_result_url + '?inside=1')
+                                    });
+                                }
+
+                            };
+                            suite_socket.onclose = function(e) {
+                                my_modal.find('.modal-title').text('执行结束');
+                            };
                         }
                     }
                 });

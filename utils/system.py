@@ -9,3 +9,6 @@ def get_function_with_name(space, name):
     # space = sys.modules[__name__]
     return getattr(space, name)
 
+
+# 全局变量
+FORCE_STOP = dict()

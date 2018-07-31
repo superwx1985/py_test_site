@@ -2,7 +2,7 @@ import datetime
 import time
 import json
 import traceback
-import pytz
+import uuid
 from py_test.general import vic_variables, vic_public_elements, vic_log, vic_method
 from py_test.ui_test import method
 from selenium.common.exceptions import UnexpectedAlertPresentException, NoSuchElementException, TimeoutException, WebDriverException
@@ -19,13 +19,10 @@ public_elements = vic_public_elements.public_elements
 
 def execute_step(
         step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=None,
-        websocket_sender=None):
+        execute_uuid=uuid.uuid1(), websocket_sender=None):
 
     start_date = datetime.datetime.now()
     logger = vic_log.get_thread_logger()
-    # 是否推送websocket
-    if websocket_sender:
-        logger = vic_log.VicLogger(logger, websocket_sender)
 
     execute_id = '{}-{}'.format(execute_str, step_order)
     # 截图列表
@@ -252,7 +249,7 @@ def execute_step(
         elif step_action.pk == 17:
             if ui_data == '':
                 run_result = ('p', '无验证内容')
-                logger.warning('无验证内容')
+                logger.warning('【{}】\t未提供验证内容，跳过验证'.format(execute_id))
             else:
                 if ui_by != 0 and ui_locator != '':
                     variable_elements = None
@@ -444,7 +441,7 @@ def execute_step(
                 case_result_ = execute_case(case=other_sub_case, suite_result=case_result.suite_result, case_order=None,
                                             user=user, execute_str=execute_id, variables=variables,
                                             step_result=step_result, parent_case_pk_list=parent_case_pk_list, dr=dr,
-                                            websocket_sender=websocket_sender)
+                                            execute_uuid=execute_uuid, websocket_sender=websocket_sender)
                 step_result.has_sub_case = True
                 if case_result_.error_count > 0:
                     raise RuntimeError('子用例运行中出现错误')
@@ -464,7 +461,7 @@ def execute_step(
                 alert_handle_text, alert_text = method.confirm_alert(
                     dr=dr, alert_handle=ui_alert_handle, timeout=timeout)
                 logger.info(
-                    '{}\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(execute_id, alert_handle_text, alert_text))
+                    '【{}】\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(execute_id, alert_handle_text, alert_text))
                 last_url = dr.current_url
 
             step_result.ui_last_url = last_url if last_url != 'data:,' else ''
@@ -482,7 +479,7 @@ def execute_step(
                     _, image = method.get_screenshot(dr)
                     img_list.append(image)
                 except Exception:
-                    logger.warning('无法获取UI验证截图', exc_info=True)
+                    logger.warning('【{}】\t无法获取UI验证截图'.format(execute_id), exc_info=True)
                 if len(highlight_elements_map) > 0:
                     method.cancel_highlight(dr, highlight_elements_map)
             else:
@@ -497,12 +494,12 @@ def execute_step(
             step_result.result_status = 2
         step_result.result_message = run_result[1]
     except TimeoutException:
-        logger.error('{}\t执行超时'.format(execute_id), exc_info=True)
+        logger.error('【{}】\t执行超时'.format(execute_id), exc_info=True)
         step_result.result_status = 3
         step_result.result_message = '执行超时，请增大超时值'
         step_result.result_error = traceback.format_exc()
     except Exception as e:
-        logger.error('{}\t执行出错'.format(execute_id), exc_info=True)
+        logger.error('【{}】\t执行出错'.format(execute_id), exc_info=True)
         step_result.result_status = 3
         step_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
         step_result.result_error = traceback.format_exc()
@@ -513,7 +510,7 @@ def execute_step(
                 run_result, image = method.get_screenshot(dr)
                 img_list.append(image)
             except Exception:
-                logger.warning('无法获取错误截图', exc_info=True)
+                logger.warning('【{}】\t无法获取错误截图'.format(execute_id), exc_info=True)
 
     # 关联截图
     for img in img_list:

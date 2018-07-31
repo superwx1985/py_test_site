@@ -1,4 +1,5 @@
 import os
+import sys
 import threading
 import logging
 import logging.config
@@ -57,24 +58,30 @@ class VicLogger:
 
     def debug(self, msg, *args, **kwargs):
         self.logger.debug(msg, *args, **kwargs)
-        if self.level < 20:
-            self.websocket_sender(msg)
+        level = logging.DEBUG
+        if self.logger.isEnabledFor(level):
+            self.websocket_sender(msg, level)
 
     def info(self, msg, *args, **kwargs):
         self.logger.info(msg, *args, **kwargs)
-        if self.level < 30:
-            self.websocket_sender(msg)
+        level = logging.INFO
+        if self.logger.isEnabledFor(level):
+            self.websocket_sender(msg, level)
 
     def warning(self, msg, *args, **kwargs):
         self.logger.warning(msg, *args, **kwargs)
-        if self.level < 40:
-            self.websocket_sender(msg)
+        level = logging.WARNING
+        if self.logger.isEnabledFor(level):
+            self.websocket_sender(msg, level)
 
     def error(self, msg, *args, **kwargs):
         self.logger.error(msg, *args, **kwargs)
-        if self.level < 50:
-            self.websocket_sender(msg)
+        level = logging.ERROR
+        if self.logger.isEnabledFor(level):
+            self.websocket_sender(msg, level)
 
     def critical(self, msg, *args, **kwargs):
         self.logger.critical(msg, *args, **kwargs)
-        self.websocket_sender(msg)
+        level = logging.CRITICAL
+        if self.logger.isEnabledFor(level):
+            self.websocket_sender(msg, level)

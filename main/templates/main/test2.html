@@ -59,7 +59,7 @@
                         log += message + '\n';
                         chat_log.val(log);
                         chat_log.scrollTop(chat_log.get(0).scrollHeight);
-                    }
+                    };
                     suite_socket.onclose = function(e) {
                         var message = 'end' + '\n';
                         log = chat_log.val() + message;
@@ -104,5 +104,6 @@
         <br>
         <input id="suite-input" type="text" size="100" value="12"/>
         <input id="suite-submit" type="button" value="Run"/>
+
     </body>
 </html>

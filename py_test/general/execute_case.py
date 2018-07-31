@@ -1,13 +1,14 @@
 import datetime
 import json
 import traceback
-import pytz
+import uuid
 from py_test.general import vic_variables, vic_public_elements, vic_method, vic_log
 from py_test.ui_test import method
 from selenium.common.exceptions import UnexpectedAlertPresentException
 from main.models import CaseResult, Step
 from django.forms.models import model_to_dict
 from .execute_step import execute_step
+from utils.system import FORCE_STOP
 
 
 # 获取全局变量
@@ -18,7 +19,7 @@ public_elements = vic_public_elements.public_elements
 
 def execute_case(
         case, suite_result, case_order, user, execute_str, variables=None, step_result=None, parent_case_pk_list=None,
-        dr=None, websocket_sender=None):
+        dr=None, execute_uuid=uuid.uuid1(), websocket_sender=None):
 
     start_date = datetime.datetime.now()
     logger = vic_log.get_thread_logger()
@@ -47,9 +48,9 @@ def execute_case(
     )
 
     # 用例初始化
-    execute_id = '【{}-{}】'.format(execute_str, 0)
+    execute_id = '{}-{}'.format(execute_str, 0)
     try:
-        logger.info('{}\t初始化用例【{}】'.format(execute_id, case.name))
+        logger.info('【{}】\t初始化用例【{}】'.format(execute_id, case.name))
         config = suite_result.suite.config
         # 初始化driver
         if step_result is None and config.ui_selenium_client != 0:
@@ -68,8 +69,8 @@ def execute_case(
                 variables.set_variable(variable.name, value)
 
     except Exception as e:
-        logger.error('{}\t初始化出错'.format(execute_id), exc_info=True)
-        case_result.result_message = '初始化出错：{}'.format(execute_id, getattr(e, 'msg', str(e)))
+        logger.error('【{}】\t初始化出错'.format(execute_id), exc_info=True)
+        case_result.result_message = '初始化出错：{}'.format(getattr(e, 'msg', str(e)))
         case_result.result_error = traceback.format_exc()
 
     else:
@@ -77,9 +78,14 @@ def execute_case(
         ui_alert_handle = 'accept'  # 初始化弹窗处理方式
         step_order = 0
         for step in steps:
+            # 强制停止
+            force_stop = FORCE_STOP.get(execute_uuid)
+            if force_stop and force_stop == user.pk:
+                break
+
             step_order += 1
-            execute_id = '【{}-{}】'.format(execute_str, step_order)
-            logger.info('{}\t执行步骤【{} | {} | {}】'.format(execute_id, step.id, step.name, step.action))
+            execute_id = '{}-{}'.format(execute_str, step_order)
+            logger.info('【{}】\t执行步骤【{} | {} | {}】'.format(execute_id, step.id, step.name, step.action))
 
             timeout = step.timeout if not step.timeout else base_timeout
 
@@ -89,10 +95,11 @@ def execute_case(
                     _ = dr.current_url
                 except UnexpectedAlertPresentException:
                     alert_handle_text, alert_text = method.confirm_alert(dr=dr, alert_handle=ui_alert_handle, timeout=timeout)
-                    logger.info('{}\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(execute_id, alert_handle_text, alert_text))
+                    logger.info('【{}】\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(execute_id, alert_handle_text, alert_text))
 
             step_result_ = execute_step(
-                step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=dr, websocket_sender=websocket_sender)
+                step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=dr,
+                execute_uuid=execute_uuid, websocket_sender=websocket_sender)
 
             # 获取最后一次弹窗处理方式
             ui_alert_handle_dict = {
@@ -105,10 +112,13 @@ def execute_case(
             case_result.execute_count += 1
             if step_result_.result_status == 1:
                 case_result.pass_count += 1
+                logger.info('【{}】\t{}'.format(execute_id, '通过'))
             elif step_result_.result_status == 2:
                 case_result.fail_count += 1
+                logger.warning('【{}】\t{}'.format(execute_id, '失败'))
             else:
                 case_result.error_count += 1
+                logger.error('【{}】\t{}【{}】'.format(execute_id, '报错', step_result_.result_message))
                 break
 
     # 如果不是子用例，且浏览器未关闭，且logging level大于等于10，则关闭浏览器

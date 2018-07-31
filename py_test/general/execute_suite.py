@@ -1,14 +1,16 @@
 import datetime
 import json
 import logging
+import uuid
 from py_test.general import vic_variables, vic_public_elements, vic_config, execute_case, vic_log
 from concurrent.futures import ThreadPoolExecutor, wait
 from py_test.general.vic_method import load_public_data
 from main.models import Case, SuiteResult
 from django.forms.models import model_to_dict
+from utils.system import FORCE_STOP
 
 
-def execute_suite(suite, user, websocket_sender=None):
+def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None):
     # start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
     start_date = datetime.datetime.now()
 
@@ -73,7 +75,7 @@ def execute_suite(suite, user, websocket_sender=None):
     logger.info('准备运行下列【%s】个用例:' % len(cases))
     i = 1
     for case in cases:
-        logger.info('{}.\t[id:{}]{}'.format(i, case.pk, case.name))
+        logger.info('{}.\t[id:{}]\t{}'.format(i, case.pk, case.name))
         i += 1
 
     futures = list()
@@ -89,6 +91,7 @@ def execute_suite(suite, user, websocket_sender=None):
             case_order=case_order,
             user=user,
             execute_str=case_order,
+            execute_uuid=execute_uuid,
             websocket_sender=websocket_sender,
         ))
 
@@ -119,6 +122,10 @@ def execute_suite(suite, user, websocket_sender=None):
     logger.info('耗时: ' + str(suite_result.end_date - suite_result.start_date))
     logger.info('========================================')
     logger.info('结束')
+
+    # 清除停止信号
+    if FORCE_STOP.get(execute_uuid):
+        del FORCE_STOP[execute_uuid]
     return suite_result
 
 

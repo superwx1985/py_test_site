@@ -80,6 +80,7 @@ def list_(request):
 @login_required
 def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
+    inside = request.GET.get('inside')
     try:
         obj = SuiteResult.objects.select_related('creator', 'modifier').get(pk=pk)
     except SuiteResult.DoesNotExist:

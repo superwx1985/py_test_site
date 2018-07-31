@@ -198,6 +198,17 @@ function update_single_column(url, csrf_token, pk, new_value, old_value, col_nam
     })
 }
 
+// 生成随机字符串
+function S4() {
+    return (((1+ Math.random())*0x10000)|0).toString(16).substring(1);
+}
+
+// 生成GUID
+function guid() {
+    return (S4() + S4() + "-" + S4() + "-" + S4() + "-" + S4() + S4() + S4())
+}
+
+
 // 设置cookie
 function set_cookie(name, value, seconds, path) {
     var exp_str = '';
@@ -267,14 +278,16 @@ function getList(url, csrf_token, callback_func, condition_json) {
     })
 }
 
-// 获取元素整体高度
-function get_element_height($e) {
-    return $e.height() + parseInt($e.css('margin-top')) + parseInt($e.css('margin-bottom')) + parseInt($e.css('border-top')) + parseInt($e.css('border-bottom'));
+// 获取元素整体高度, 包含margin
+function get_element_full_height($e) {
+    var height = parseInt($e.css('margin-top')) + parseInt($e.css('margin-bottom')) + $e.outerHeight();
+    return isNaN(height) ? 0 : height
 }
 
-// 获取元素外部边框高度
+// 获取元素外部margin, border, padding高度
 function get_element_outside_height($e) {
-    return parseInt($e.css('margin-top')) + parseInt($e.css('margin-bottom')) + parseInt($e.css('border-top')) + parseInt($e.css('border-bottom'));
+    var height = get_element_full_height($e) - $e.height()
+    return isNaN(height) ? 0 : height
 }
 
 // 复制对象弹框
@@ -323,8 +336,8 @@ function copy_obj(original_name, copy_url, sub_item) {
     });
 }
 
-// 弹出内嵌页面
-function modal_with_iframe(modal_name, modal_class, modal_style, modal_body_style, modal_title, url, callback) {
+// 弹出框
+function modal(modal_name, modal_class, modal_style, modal_body_style, modal_title, $modal_body_div, callback) {
     var html_ =
         '<div class="modal fade" name="'+ modal_name +'">\n' +
         '    <div class="modal-dialog '+ modal_class +'" style="' + modal_style + '">\n' +
@@ -342,21 +355,35 @@ function modal_with_iframe(modal_name, modal_class, modal_style, modal_body_styl
 	// 如果未提供title，不显示header
 	if (!modal_title) { my_modal.find('.modal-header').remove() }
 	var my_modal_body = my_modal.find('.modal-body');
-    var modal_body_div = '<div style="height: 100%;"><iframe name="' + modal_name + '_iframe" frameborder="0" style="height: 100%; width: 100%;" src="' + url + '"></iframe></div>';
-    my_modal_body.empty().append(modal_body_div);
+    my_modal_body.empty().append($modal_body_div);
     // 如果body未指定高度，则使用当前页面高度来确定
     if (!parseInt(my_modal_body.css('height'))){
-        var body_height = $(window).height() - get_element_outside_height(my_modal.find('.modal-dialog')) - get_element_outside_height(my_modal.find('.modal-content')) - get_element_outside_height(my_modal_body);
-        my_modal_body.css('height', body_height);
+        // 必须要先显示出来才能得到正确的高度
+        my_modal.off('shown.bs.modal').on('shown.bs.modal', function () {
+            var body_height = $(window).height()
+                - get_element_outside_height(my_modal.find('.modal-dialog'))
+                - get_element_outside_height(my_modal.find('.modal-content'))
+                - get_element_full_height(my_modal.find('.modal-header'))
+                - get_element_outside_height(my_modal_body);
+            my_modal_body.css('height', body_height);
+        });
     }
+    // 关闭modal后执行回调函数并清除modal代码
 	my_modal.off('hide.bs.modal').on('hide.bs.modal', function () {
 	    if (callback) {callback();}
 	    my_modal.remove();
 	});
-	my_modal.modal()
+    my_modal.modal();
+    return my_modal;
+}
+
+// 弹出内嵌页面
+function modal_with_iframe(modal_name, modal_class, modal_style, modal_body_style, modal_title, url, callback) {
+    var $modal_body_div = '<div style="height: 100%;"><iframe name="' + modal_name + '_iframe" frameborder="0" style="height: 100%; width: 100%;" src="' + url + '"></iframe></div>';
+    return modal(modal_name, modal_class, modal_style, modal_body_style, modal_title, $modal_body_div, callback)
 }
 
 // 弹出内嵌页面最大化
 function modal_with_iframe_max(modal_name, modal_title, url, callback) {
-    modal_with_iframe(modal_name, 'modal-max', '', 'min-height: 600px', modal_title, url, callback)
+    return modal_with_iframe(modal_name, 'modal-max', '', 'min-height: 600px', modal_title, url, callback)
 }
