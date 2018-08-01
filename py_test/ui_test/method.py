@@ -181,7 +181,7 @@ def wait_for_text_present(dr, text, timeout, base_element, print_=True):
             break
     dr.implicitly_wait(timeout)
     elapsed_time = str(round(time.time() - start_time, 2))
-    msg = '经过%s秒 - 找到%s个期望文本' % (elapsed_time, len(elements))
+    msg = '经过{}秒 - 找到{}个期望文本【{}】'.format(elapsed_time, len(elements), text)
     if len(elements) == 0:
         run_result = ('f', msg)
     else:
@@ -242,7 +242,8 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
             break
     dr.implicitly_wait(timeout)
     elapsed_time = str(round(time.time() - start_time, 2))
-    msg = '经过%s秒 - 找到期望元素%r个，其中有%r个元素包含期望文本' % (elapsed_time, len(elements_temp), len(elements))
+    msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中有{}个元素包含期望文本【{}】'.format(
+        elapsed_time, by, locator, len(elements_temp), len(elements), text)
     if len(elements) == 0 or len(elements) < len(elements_temp):
         run_result = ('f', msg)
     else:
@@ -274,7 +275,7 @@ def wait_for_element_present(dr, by, locator, timeout, base_element, variable_el
             break
     dr.implicitly_wait(timeout)
     elapsed_time = str(round(time.time() - start_time, 2))
-    msg = '经过%s秒 - 找到期望元素%r个' % (elapsed_time, len(elements))
+    msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个'.format(elapsed_time, by, locator, len(elements))
     if len(elements) == 0:
         run_result = ('f', msg)
     else:
@@ -312,7 +313,8 @@ def wait_for_element_visible(dr, by, locator, timeout, base_element, variable_el
             break
     dr.implicitly_wait(timeout)
     elapsed_time = str(round(time.time() - start_time, 2))
-    msg = '经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements))
+    msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个'.format(
+        elapsed_time, by, locator, len(elements), len(visible_elements))
     if len(elements) == 0 or len(visible_elements) == 0:
         run_result = ('f', msg)
     else:
@@ -355,10 +357,13 @@ def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_elem
             break
     elapsed_time = str(round(time.time() - start_time, 2))
     if compare_result is True:
-        msg = '经过%s秒 - 找到期望元素%r个，其中可见元素%r个，符合给定的数量限制' % (elapsed_time, len(elements), len(visible_elements))
+        msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个，符合给定的数量限制'.format(
+            elapsed_time, by, locator, len(elements), len(visible_elements))
+
         run_result = ('p', msg)
     else:
-        msg = '经过%s秒 - 找到期望元素%r个，其中可见元素%r个，不符合给定的数量限制' % (elapsed_time, len(elements), len(visible_elements))
+        msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个，不符合给定的数量限制'.format(
+            elapsed_time, by, locator, len(elements), len(visible_elements))
         run_result = ('f', msg)
     return run_result, visible_elements
 
@@ -395,7 +400,8 @@ def wait_for_element_disappear(dr, by, locator, timeout, base_element, variable_
                 break
     dr.implicitly_wait(timeout)
     elapsed_time = str(round(time.time() - start_time, 2))
-    msg = '经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements))
+    msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个'.format(
+        by, locator, elapsed_time, len(elements), len(visible_elements))
     if len(visible_elements) != 0:
         run_result = ('f', msg)
     else:
@@ -406,7 +412,7 @@ def wait_for_element_disappear(dr, by, locator, timeout, base_element, variable_
 # 跳转到url
 def go_to_url(dr, url):
     dr.get(url)
-    run_result = ('p', '成功打开URL')
+    run_result = ('p', '成功打开URL【{}】'.format(url))
     return run_result
 
 
@@ -431,9 +437,9 @@ def wait_for_page_redirect(dr, new_url, timeout, print_=True):
             break
     elapsed_time = str(round(time.time() - start_time, 2))
     if not is_passed:
-        run_result = ('f', '经过%s秒 - 新URL不符合期望' % elapsed_time)
+        run_result = ('f', '经过{}秒 - 新URL不符合期望【{}】'.format(elapsed_time, new_url))
     else:
-        run_result = ('p', '经过%s秒 - 新URL符合期望' % elapsed_time)
+        run_result = ('p', '经过{}秒 - 新URL符合期望【{}】'.format(elapsed_time, new_url))
     return run_result, new_url
 
 
@@ -445,7 +451,7 @@ def try_to_click(dr, by, locator, timeout, index_, base_element, variable_elemen
         run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
                                                                            print_=print_)
         if run_result_temp[0] == 'f':
-            raise exceptions.NoSuchElementException(run_result_temp[1])
+            raise exceptions.NoSuchElementException('无法点击，{}'.format(run_result_temp[1]))
     if len(elements) == 1 and index_ in (None, 0):
         element = elements[0]
     elif index_ is None:
@@ -457,31 +463,7 @@ def try_to_click(dr, by, locator, timeout, index_, base_element, variable_elemen
 
     highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     ActionChains(dr).click(element).perform()
-    run_result = ('p', '点击成功')
-    return run_result, elements
-
-
-# 尝试双击
-def try_to_double_click(dr, by, locator, timeout, index_, base_element, variable_elements=None, print_=True):
-    if variable_elements is not None:
-        elements = variable_elements
-    else:
-        run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
-                                                                           print_=print_)
-        if run_result_temp[0] == 'f':
-            raise exceptions.NoSuchElementException(run_result_temp[1])
-    if len(elements) == 1 and index_ in (None, 0):
-        element = elements[0]
-    elif index_ is None:
-        raise ValueError('找到%r个元素，请指定一个index' % len(elements))
-    elif index_ > (len(elements) - 1):
-        raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
-    else:
-        element = elements[index_]
-
-    highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
-    ActionChains(dr).double_click(element).perform()
-    run_result = ('p', '双击成功')
+    run_result = ('p', '点击元素【By:{}|Locator:{}】'.format(by, locator))
     return run_result, elements
 
 
@@ -493,7 +475,7 @@ def try_to_enter(dr, by, locator, data, timeout, index_, base_element, variable_
         run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
                                                                            print_=print_)
         if run_result_temp[0] == 'f':
-            raise exceptions.NoSuchElementException(run_result_temp[1])
+            raise exceptions.NoSuchElementException('无法输入，{}'.format(run_result_temp[1]))
     if len(elements) == 1 and index_ in (None, 0):
         element = elements[0]
     elif index_ is None:
@@ -506,7 +488,7 @@ def try_to_enter(dr, by, locator, data, timeout, index_, base_element, variable_
     highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     element.clear()
     element.send_keys(data)
-    run_result = ('p', '输入成功')
+    run_result = ('p', '输入【{}】'.format(data))
     return run_result, elements
 
 
@@ -543,7 +525,7 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
             run_result_temp, elements = wait_for_element_present(dr, by, locator, timeout, base_element=base_element,
                                                                  variable_elements=None, print_=print_)
             if run_result_temp[0] == 'f':
-                raise exceptions.NoSuchElementException(run_result_temp[1])
+                raise exceptions.NoSuchElementException('无法执行动作，因为：{}'.format(run_result_temp[1]))
         if len(elements) == 1 and index_ in (None, 0):
             element = elements[0]
         elif index_ is None:
@@ -628,7 +610,7 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
     else:
         raise ValueError('无法处理的特殊操作[%s]' % special_action)
 
-    run_result = ('p', '操作成功')
+    run_result = ('p', '特殊动作执行完毕')
     return run_result, elements
 
 
@@ -712,7 +694,12 @@ def try_to_switch_to_window(dr, by, locator, data, timeout, index_, base_element
     if not success_:
         raise NoSuchWindowException('经过%s秒 - 无法切换到新窗口' % elapsed_time)
     else:
-        run_result = ('p', '经过%s秒 - 切换到新窗口【%s】' % (elapsed_time, elapsed_time))
+        try:
+            title = dr.find_element_by_tag_name('title')
+            title_str = title.text()
+        except exceptions.WebDriverException:
+            title_str = '（无标题）'
+        run_result = ('p', '经过{}秒 - 切换到新窗口【{}】'.format(elapsed_time, title_str))
     return run_result, new_window_handle
 
 
@@ -750,7 +737,7 @@ def try_to_switch_to_frame(dr, by, locator, index_, timeout, base_element, print
     if not success_:
         raise NoSuchFrameException('经过%s秒 - 无法切换到frame' % elapsed_time)
     else:
-        run_result = ('p', '经过%s秒 - 切换到frame' % elapsed_time)
+        run_result = ('p', '经过{}秒 - 切换到frame【By:{}|Locator:{}】'.format(elapsed_time, by, locator))
     return run_result
 
 
@@ -801,7 +788,7 @@ def get_screenshot(dr, element=None):
     image = Image(name=name, img=UploadedFile(bio, name=name))
     image.save()
     bio.close()
-    run_result = ('p', '截图成功')
+    run_result = ('p', '截图成功【{}】'.format(name))
     return run_result, image
 
 

@@ -13,65 +13,16 @@
         $(function () {
             // 更新导航栏
             $('#nav_result').addClass('active');
+            step_result_detail_popup();
             // 关闭遮罩
             $('#mask').hide();
-            step_result_detail_popup(1);
         });
         // 步骤详情弹窗
         function step_result_detail_popup() {
             $('[name=step_result]').off('click').on('click', function() {
-                var step_result_pk = $(this).attr('step_result_pk');
-                var url = $(this).parents('tr').attr('step_result_json_url');
+                var url = $(this).parents('tr').attr('step_result_url');
                 var title = $(this).text();
-                var msg = '<div step_result_pk=' +  step_result_pk + ' class="middle"><i class="icon-spinner icon-spin icon-5x"></i></div>';
-                bootbox.dialog({
-                    title: title,
-                    message: msg,
-                    size: 'large',
-                    onEscape: true,
-		            backdrop: true,
-                    init: $.get(url, function(data) {
-                        var div = $('<div>').attr('step_result_pk', step_result_pk);
-                        div.append($(data.data.step_time));
-                        var message_div = $('<div>');
-                        message_div.append($('<span>').addClass('lead').text(data.data.result_message));
-                        if (data.data.result_error) {
-                            message_div.append($('<div>').append($('<pre>').addClass('text-danger pre-scrollable').text(data.data.result_error)));
-                        }
-                        div.append(message_div);
-                        if (data.data.ui_last_url) {
-                            div.append($('<hr>'));
-                            var url_div = $('<div>').addClass('row');
-                            url_div.append($('<div>').addClass('col').append($('<span>').addClass('font-weight-bold').text('当前URL：')).append($('<span>').addClass('small').text(data.data.ui_last_url)));
-                            div.append(url_div);
-                        }
-                        if (data.data.imgs.length > 0) {
-                            div.append($('<div>').addClass('row').append($('<div>').addClass('col').append($('<span>').addClass('font-weight-bold').text('截图：'))));
-                            $.each(data.data.imgs, function(index, value){
-                                var span = $('<span>').addClass('small').text(value.name);
-                                var img = $('<img>').attr('src', value.url).addClass('img-thumbnail');
-                                var a  = $('<a>').attr('href', value.url).attr('target', '_blank').append(img);
-                                var img_div = $('<div>').addClass('middle').append(span).append($('<br>')).append(a);
-                                div.append(img_div).append($('<br>'));
-                            });
-                        }
-                        div.append($('<hr>'));
-                        if (data.data.sub_case) {
-                            div.append($('<div>').addClass('text-center small').text('子用例信息'));
-                            div.append($('<div>').html(data.data.sub_case)).append($('<br>'));
-                        } else {
-                            var snapshot_div = $('<div>').addClass('small text-center');
-                            var snapshot_button = $('<button>').addClass('btn btn-info').text('步骤快照');
-                            snapshot_button.off('click').on('click', function () {
-                                modal_with_iframe_max('snapshot_modal', '步骤快照', data.data.step_snapshot_url);
-                            });
-                            snapshot_div.append(snapshot_button);
-                            div.append(snapshot_div);
-                        }
-                        $('.bootbox-body div[step_result_pk='+ step_result_pk +']').parent('.bootbox-body').empty().append(div);
-                        step_result_detail_popup();
-                    })
-                });
+                modal_with_iframe_max('step_result_modal', '', url);
             });
         }
     </script>

@@ -147,11 +147,11 @@
             </div>
             <div class="row align-items-center" other name="other_sub_case">
                 <div class="col-1 text-center font-weight-bold">子用例</div>
-                <div class="col" form_data>
-                    <div id="other_sub_case_dropdown" name="other_sub_case"></div>
-                    {% for error in form.other_sub_case.errors %}
-                        <div class="invalid-feedback" style="display: block">{{ error }}</div>
-                    {% endfor %}
+                <div class="col-10" form_data>
+                    {% include 'main/include/form_input.html' with field=form.other_sub_case %}
+                </div>
+                <div class="col-1 text-danger lead" form_data>
+                    ID: {{ form.other_sub_case.value }}
                 </div>
             </div>
             <div class="row align-items-center" common name="timeout">

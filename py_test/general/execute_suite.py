@@ -72,12 +72,13 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
         logger.info('结束')
         return suite_result
 
-    logger.info('准备运行下列【%s】个用例:' % len(cases))
+    logger.info('准备运行下列{}个用例:'.format(len(cases)))
     i = 1
     for case in cases:
-        logger.info('{}.\t[id:{}]\t{}'.format(i, case.pk, case.name))
+        logger.info('【{}】\tID:{} | {}'.format(i, case.pk, case.name))
         i += 1
 
+    logger.info('========================================')
     futures = list()
     pool = ThreadPoolExecutor(thread_count)
     case_order = 0

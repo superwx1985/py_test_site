@@ -189,6 +189,31 @@ def step_result_json(_, pk):
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': data_dict})
 
 
+@login_required
+def step_result(request, pk):
+    try:
+        obj = StepResult.objects.get(pk=pk)
+    except StepResult.DoesNotExist:
+        raise Http404('StepResult does not exist')
+    step_url = reverse('step', args=[obj.step.pk])
+    step_snapshot_url = reverse('step_snapshot', args=[pk])
+
+    if obj.has_sub_case:
+        try:
+            case_result = CaseResult.objects.get(step_result=pk)
+        except CaseResult.DoesNotExist:
+            sub_case = '找不到子用例数据！'
+
+    imgs = list()
+    for img in obj.imgs.all():
+        img_dict = dict()
+        img_dict['name'] = img.name
+        img_dict['url'] = img.img.url
+        imgs.append(img_dict)
+
+    return render(request, 'main/result/step_result.html', locals())
+
+
 # 步骤快照
 @login_required
 def step_snapshot(request, pk):
@@ -196,5 +221,6 @@ def step_snapshot(request, pk):
         obj = StepResult.objects.get(pk=pk)
     except StepResult.DoesNotExist:
         raise Http404('StepResult does not exist')
-    form = StepForm(initial=json.loads(obj.snapshot))
+    snapshot_obj = json.loads(obj.snapshot)
+    form = StepForm(initial=snapshot_obj)
     return render(request, 'main/step/snapshot.html', locals())

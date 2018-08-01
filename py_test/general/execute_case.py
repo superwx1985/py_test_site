@@ -50,7 +50,7 @@ def execute_case(
     # 用例初始化
     execute_id = '{}-{}'.format(execute_str, 0)
     try:
-        logger.info('【{}】\t初始化用例【{}】'.format(execute_id, case.name))
+        logger.info('【{}】\t初始化 => {}'.format(execute_id, case.name))
         config = suite_result.suite.config
         # 初始化driver
         if step_result is None and config.ui_selenium_client != 0:
@@ -85,7 +85,7 @@ def execute_case(
 
             step_order += 1
             execute_id = '{}-{}'.format(execute_str, step_order)
-            logger.info('【{}】\t执行步骤【{} | {} | {}】'.format(execute_id, step.id, step.name, step.action))
+            logger.info('【{}】\t执行步骤 => ID:{} | {} | {}'.format(execute_id, step.id, step.name, step.action))
 
             timeout = step.timeout if not step.timeout else base_timeout
 
@@ -112,13 +112,13 @@ def execute_case(
             case_result.execute_count += 1
             if step_result_.result_status == 1:
                 case_result.pass_count += 1
-                logger.info('【{}】\t{}'.format(execute_id, '通过'))
+                logger.info('【{}】\t执行成功'.format(execute_id))
             elif step_result_.result_status == 2:
                 case_result.fail_count += 1
-                logger.warning('【{}】\t{}'.format(execute_id, '失败'))
+                logger.warning('【{}】\t执行失败'.format(execute_id))
             else:
                 case_result.error_count += 1
-                logger.error('【{}】\t{}【{}】'.format(execute_id, '报错', step_result_.result_message))
+                logger.error('【{}】\t执行报错，错误信息 => {}'.format(execute_id, step_result_.result_message))
                 break
 
     # 如果不是子用例，且浏览器未关闭，且logging level大于等于10，则关闭浏览器

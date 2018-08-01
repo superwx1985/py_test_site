@@ -91,6 +91,7 @@ urlpatterns = [
     path('result/<str:pk>/delete/', result.delete, name='result_delete'),
     path('result/<str:pk>/quick_update/', result.quick_update, name='result_quick_update'),
 
+    path('step_result/<str:pk>/', result.step_result, name='step_result'),
     path('step_result/<str:pk>/json', result.step_result_json, name='step_result_json'),
     path('step_result/<str:pk>/snapshot', result.step_snapshot, name='step_snapshot'),
 

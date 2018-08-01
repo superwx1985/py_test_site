@@ -193,21 +193,6 @@ def execute_step(
             if save_as != '':
                 variables.set_variable(save_as, elements)
 
-        # 双击
-        elif step_action.pk == 13:
-            if ui_by == '' or ui_locator == '':
-                raise ValueError('无效的定位方式或定位符')
-            variable_elements = None
-            if ui_by == 'variable':
-                variable_elements = vic_variables.get_elements(ui_locator, variables)
-            elif ui_by == 'public element':
-                ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
-            run_result, elements = method.try_to_double_click(
-                dr=dr, by=ui_by, locator=ui_locator, timeout=timeout, index_=ui_index, base_element=ui_base_element,
-                variable_elements=variable_elements)
-            if save_as != '':
-                variables.set_variable(save_as, elements)
-
         # 输入
         elif step_action.pk == 14:
             if ui_by == '' or ui_locator == '':
@@ -444,11 +429,11 @@ def execute_step(
                                             execute_uuid=execute_uuid, websocket_sender=websocket_sender)
                 step_result.has_sub_case = True
                 if case_result_.error_count > 0:
-                    raise RuntimeError('子用例运行中出现错误')
+                    raise RuntimeError('子用例执行时出现错误')
                 elif case_result_.fail_count > 0:
-                    run_result = ('f', '子用例中出现验证失败的步骤')
+                    run_result = ('f', '子用例执行时验证失败')
                 else:
-                    run_result = ('p', '子用例运行成功')
+                    run_result = ('p', '子用例执行成功')
         # 无效的关键字
         else:
             raise ValueError('未知的action')

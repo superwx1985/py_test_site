@@ -16,7 +16,7 @@ class CaseAdmin(admin.ModelAdmin):
         'pk', 'name', 'keyword', 'project', 'variable_group', 'creator', 'created_date', 'modifier', 'modified_date',
         'is_active',)
     list_display_links = ('pk', 'name')
-    list_filter = ('is_active', 'creator', 'project')
+    list_filter = ('is_active', 'creator', 'project', 'created_date',)
     list_editable = ('is_active',)
     search_fields = ('pk', 'name', 'keyword',)
 
@@ -29,7 +29,7 @@ class ActionAdmin(admin.ModelAdmin):
     list_display = (
         'pk', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active', 'type', 'order')
     list_display_links = ('pk', 'name',)
-    list_filter = ('is_active', 'creator', 'type',)
+    list_filter = ('is_active', 'creator', 'type', 'created_date',)
     list_editable = ('is_active',)
     search_fields = ('pk', 'name', 'keyword',)
 
@@ -38,7 +38,7 @@ class StepAdmin(admin.ModelAdmin):
     list_display = (
         'pk', 'name', 'keyword', 'project', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active', 'action',)
     list_display_links = ('pk', 'name',)
-    list_filter = ('is_active', 'creator', 'project')
+    list_filter = ('is_active', 'creator', 'project', 'created_date',)
     list_editable = ('is_active',)
     search_fields = ('pk', 'name', 'keyword',)
 
@@ -53,7 +53,7 @@ class ActionTypeAdmin(admin.ModelAdmin):
 class ConfigAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',)
     list_display_links = ('pk', 'name',)
-    list_filter = ('is_active', 'creator')
+    list_filter = ('is_active', 'creator', 'created_date',)
     list_editable = ('is_active',)
     search_fields = ('pk', 'name', 'keyword',)
 
@@ -63,7 +63,7 @@ class CaseVsStepAdmin(admin.ModelAdmin):
         'pk', 'case_id', 'case', 'step_id', 'step', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',
         'order')
     list_display_links = ('pk', 'case', 'step')
-    list_filter = ('is_active', 'case', 'step')
+    list_filter = ('is_active', 'case', 'step', 'created_date',)
     list_editable = ('is_active',)
     search_fields = ('pk',)
 
@@ -71,7 +71,7 @@ class CaseVsStepAdmin(admin.ModelAdmin):
 class VariableGroupAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'project', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',)
     list_display_links = ('pk', 'name',)
-    list_filter = ('is_active', 'creator', 'project')
+    list_filter = ('is_active', 'creator', 'project', 'created_date',)
     list_editable = ('is_active',)
     search_fields = ('pk', 'name', 'keyword',)
 
@@ -88,7 +88,7 @@ class SuiteAdmin(admin.ModelAdmin):
         'pk', 'name', 'project', 'variable_group', 'config', 'keyword', 'creator', 'created_date', 'modifier',
         'modified_date', 'is_active',)
     list_display_links = ('pk', 'name',)
-    list_filter = ('is_active', 'creator', 'project')
+    list_filter = ('is_active', 'creator', 'project', 'created_date',)
     list_editable = ('is_active',)
     search_fields = ('pk', 'name', 'keyword',)
 
@@ -97,7 +97,7 @@ class SuiteVsCaseAdmin(admin.ModelAdmin):
     list_display = (
         'pk', 'suite_id', 'suite', 'case_id', 'case', 'creator', 'created_date', 'modifier', 'modified_date',
         'is_active', 'order')
-    list_display_links = ('pk', 'suite', 'case',)
+    list_display_links = ('pk', 'suite', 'case', 'created_date',)
     list_editable = ('is_active',)
     search_fields = ('pk', 'name', 'keyword',)
 
@@ -107,9 +107,9 @@ class SuiteResultAdmin(admin.ModelAdmin):
         'pk', 'name', 'project', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date',
         'start_date', 'end_date', 'execute_count', 'pass_count', 'fail_count', 'error_count', 'is_active')
     list_display_links = ('pk', 'name',)
-    list_filter = ('is_active', 'creator', 'project')
+    list_filter = ('is_active', 'creator', 'project', 'created_date')
     list_editable = ('is_active',)
-    search_fields = ('pk', 'name', 'keyword',)
+    search_fields = ('pk', 'name', 'keyword')
 
 
 class ImageAdmin(admin.ModelAdmin):

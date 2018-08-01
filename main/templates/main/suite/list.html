@@ -1,5 +1,12 @@
 {% extends 'main/list_base.html' %}
 {% block title %}套件 - {{ block.super }}{% endblock %}
+
+{% block style %}
+    <style type='text/css' media='screen'>
+
+    </style>
+{% endblock %}
+
 {% block script %}
     <script>
         $(function () {
@@ -45,18 +52,17 @@
                             {# });#}
 
                             var $modal_body_div = $('<div>').addClass('text-center');
-                            var execute_name_div = $('<div id="execute_name_div" class="lead"></div>').text(name);
+                            var execute_name_div = $('<div id="execute_name_div" class="text-left"></div>');
+                            execute_name_div.append($('<span>').addClass('font-weight-bold').text('套件名称：')).append($('<span>').addClass('text-info').text(name));
                             $modal_body_div.append(execute_name_div);
-                            $modal_body_div.append($('<br>'));
-                            var execute_log_div = $('<div id="execute_log_div" class="pre-scrollable text-left bg-light" style="height: 250px"></div>');
-                            $modal_body_div.append(execute_log_div);
-                            $modal_body_div.append($('<br>'));
+                            var execute_log_outer_div = $('<div class="jumbotron" style="padding: 10px 0 10px 10px"></div>');
+                            var execute_log_div = $('<div id="execute_log_div" class="text-left" style="height: 250px; overflow-y: auto;"></div>');
+                            $modal_body_div.append(execute_log_outer_div.append(execute_log_div));
                             var execute_result_div = $('<div id="execute_result_div"></div>');
                             $modal_body_div.append(execute_result_div);
-                            $modal_body_div.append($('<br>'));
                             var execute_button = $('<button id="force-stop" class="btn btn-danger">强制停止</button>');
                             $modal_body_div.append(execute_button);
-                            var my_modal = modal('execute_modal', 'modal-max', '', '', '执行中...', $modal_body_div);
+                            var my_modal = modal('execute_modal', 'modal-max', '', 'overflow-y: auto;', '<i class="icon-spinner icon-spin"></i>&nbsp;执行中...', $modal_body_div);
 
                             var suite_socket = new WebSocket('ws://' + window.location.host + url);
                             var execute_uuid = guid();
@@ -79,6 +85,7 @@
 
                             suite_socket.onmessage = function(data) {
                                 var type = JSON.parse(data.data)['type'];
+                                var auto_scroll = false;
                                 if (type === 'ready'){
                                     suite_socket.send(JSON.stringify({'command': 'start', 'execute_uuid': execute_uuid}));
                                 } else if (type === 'message'){
@@ -89,21 +96,25 @@
                                         if (level>=40) {pre.addClass('text-danger')}
                                         else if (level>=30) {pre.addClass('text-warning')}
                                     }
+                                    if (execute_log_div.get(0).scrollHeight - execute_log_div.scrollTop() <= execute_log_div.height()) {
+                                        auto_scroll = true;
+                                    }
                                     execute_log_div.append(pre);
-                                    execute_log_div.scrollTop(execute_log_div.get(0).scrollHeight);
+                                    if (auto_scroll) {
+                                        execute_log_div.scrollTop(execute_log_div.get(0).scrollHeight);
+                                    }
                                 } else if (type === 'end'){
-                                    var data = JSON.parse(data.data)['data'];
-                                    var content_div = $('<div>').html(data.suite_result_content);
+                                    var data_ = JSON.parse(data.data)['data'];
+                                    var content_div = $('<div>').html(data_.suite_result_content);
                                     execute_result_div.append(content_div);
-                                    execute_button.text('查看详情').removeClass('btn-danger').addClass('btn-primary');
-                                    execute_button.off('click').on('click', function () {
-                                        modal_with_iframe_max('m2m_detail_modal', '', data.suite_result_url + '?inside=1')
-                                    });
                                 }
-
                             };
                             suite_socket.onclose = function(e) {
                                 my_modal.find('.modal-title').text('执行结束');
+                                execute_button.text('查看详情').removeClass('btn-danger').addClass('btn-primary');
+                                execute_button.off('click').on('click', function () {
+                                    modal_with_iframe_max('m2m_detail_modal', '', data.suite_result_url + '?inside=1')
+                                });
                             };
                         }
                     }

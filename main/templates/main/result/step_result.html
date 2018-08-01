@@ -1,0 +1,86 @@
+{% load staticfiles %}
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        {% include 'main/include/general_css.html' %}
+        <style type='text/css' media='screen'>
+            div.row {
+                padding: 5px 0;
+                {#min-height: 2em;#}
+            }
+        </style>
+        {% include 'main/include/general_script.html' %}
+
+        <script>
+            $(function () {
+                step_result_detail_popup();
+                // 提示框
+                $('[data-toggle=tooltip]').tooltip();
+            });
+            // 步骤详情弹窗
+            function step_result_detail_popup() {
+                $('[name=step_result]').off('click').on('click', function() {
+                    var url = $(this).parents('tr').attr('step_result_url');
+                    modal_with_iframe_max('step_result_modal', '', url);
+                });
+            }
+        </script>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col">
+                    <span class="font-weight-bold lead">{{ obj.name }}</span>
+                    <button type="button" class="close" onclick="parent.window.$('[name=step_result_modal]').modal('hide')">×</button>
+                </div>
+            </div>
+            {% include 'main/include/result_time.html' with start_date=obj.start_date end_date=obj.end_date elapsed_time_str=obj.elapsed_time_str %}
+            <hr>
+            <div class="row">
+                <div class="col"><span class="font-weight-bold">执行情况：</span><span class="text-info">{{ obj.result_message }}</span></div>
+            </div>
+            {% if obj.result_error %}
+                <div class="row">
+                    <div class="col"><pre class="text-danger pre-scrollable">{{ obj.result_error }}</pre></div>
+                </div>
+            {% endif %}
+            {% if case_result %}
+                <hr>
+                <div class="row">
+                    <div class="col"><span class="font-weight-bold">子用例执行情况：</span></div>
+                </div>
+                {% include 'main/include/case_result_content.html' %}
+            {% endif %}
+            <div class="row">
+                <div class="col">
+                    <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '步骤快照', '{{ step_snapshot_url }}')"><i class="icon-time"></i>&nbsp;步骤快照</button>
+                </div>
+            </div>
+            {% if obj.ui_last_url or imgs %}
+                <hr>
+            {% endif %}
+            {% if obj.ui_last_url %}
+                <div class="row">
+                    <div class="col"><span class="font-weight-bold">URL：</span><span class="small text-info">{{ obj.ui_last_url }}</span></div>
+                </div>
+            {% endif %}
+            {% if imgs %}
+                <div class="row">
+                    <div class="col"><span class="font-weight-bold">截图：</span></div>
+                </div>
+                <div class="row">
+                    <div class="col middle">
+                        {% for img in imgs %}
+                            <span class="small text-info">{{ img.name }}</span>
+                            <br>
+                            <a href="{{ img.url }}" target="_blank"><img class="img-thumbnail" src="{{ img.url }}"></a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </body>
+</html>
+
