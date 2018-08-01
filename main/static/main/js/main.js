@@ -379,7 +379,12 @@ function modal(modal_name, modal_class, modal_style, modal_body_style, modal_tit
 
 // 弹出内嵌页面
 function modal_with_iframe(modal_name, modal_class, modal_style, modal_body_style, modal_title, url, callback) {
-    var $modal_body_div = '<div style="height: 100%;"><iframe name="' + modal_name + '_iframe" frameborder="0" style="height: 100%; width: 100%;" src="' + url + '"></iframe></div>';
+    var $modal_body_div = $('<div style="height: 100%;"></div>');
+    var iframe = $('<iframe>').attr('name', modal_name + '_iframe').attr('frameborder', 0).css({'height': '100%', 'width': '100%'});
+    if (url) {
+        iframe.attr('src', url);
+    }
+    $modal_body_div.append(iframe);
     return modal(modal_name, modal_class, modal_style, modal_body_style, modal_title, $modal_body_div, callback)
 }
 

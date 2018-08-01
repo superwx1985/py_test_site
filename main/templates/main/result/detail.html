@@ -40,12 +40,13 @@
                         }
                         div.append(message_div);
                         if (data.data.ui_last_url) {
-                            var url_div = $('<div>').addClass('row', 'small');
-                            url_div.append($('<div>').addClass('col').append($('<span>').addClass('font-weight-bold').text('当前URL：')).append($('<span>').text(data.data.ui_last_url)));
+                            div.append($('<hr>'));
+                            var url_div = $('<div>').addClass('row');
+                            url_div.append($('<div>').addClass('col').append($('<span>').addClass('font-weight-bold').text('当前URL：')).append($('<span>').addClass('small').text(data.data.ui_last_url)));
                             div.append(url_div);
                         }
                         if (data.data.imgs.length > 0) {
-                            div.append($('<div>').addClass('row', 'small').append($('<div>').addClass('col').append($('<span>').addClass('font-weight-bold').text('截图：'))));
+                            div.append($('<div>').addClass('row').append($('<div>').addClass('col').append($('<span>').addClass('font-weight-bold').text('截图：'))));
                             $.each(data.data.imgs, function(index, value){
                                 var span = $('<span>').addClass('small').text(value.name);
                                 var img = $('<img>').attr('src', value.url).addClass('img-thumbnail');
@@ -54,10 +55,18 @@
                                 div.append(img_div).append($('<br>'));
                             });
                         }
+                        div.append($('<hr>'));
                         if (data.data.sub_case) {
-                            div.append($('<hr>'));
                             div.append($('<div>').addClass('text-center small').text('子用例信息'));
                             div.append($('<div>').html(data.data.sub_case)).append($('<br>'));
+                        } else {
+                            var snapshot_div = $('<div>').addClass('small text-center');
+                            var snapshot_button = $('<button>').addClass('btn btn-info').text('步骤快照');
+                            snapshot_button.off('click').on('click', function () {
+                                modal_with_iframe_max('snapshot_modal', '步骤快照', data.data.step_snapshot_url);
+                            });
+                            snapshot_div.append(snapshot_button);
+                            div.append(snapshot_div);
                         }
                         $('.bootbox-body div[step_result_pk='+ step_result_pk +']').parent('.bootbox-body').empty().append(div);
                         step_result_detail_popup();

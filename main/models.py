@@ -460,7 +460,7 @@ class StepResult(models.Model):
     result_message = models.TextField(blank=True)
     result_error = models.TextField(blank=True)
 
-    step_snapshot = models.TextField(blank=True, null=True)
+    snapshot = models.TextField(blank=True, null=True)
     has_sub_case = models.BooleanField(default=False)
 
     ui_last_url = models.TextField(blank=True)

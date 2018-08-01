@@ -92,7 +92,7 @@ urlpatterns = [
     path('result/<str:pk>/quick_update/', result.quick_update, name='result_quick_update'),
 
     path('step_result/<str:pk>/json', result.step_result_json, name='step_result_json'),
-
+    path('step_result/<str:pk>/snapshot', result.step_snapshot, name='step_snapshot'),
 
 
     path('debug/', general.debug, name='debug'),

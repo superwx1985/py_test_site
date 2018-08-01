@@ -1,4 +1,5 @@
 import logging
+import json
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -8,7 +9,7 @@ from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import SuiteResult, StepResult, CaseResult, Project
-from main.forms import OrderByForm, PaginatorForm, SuiteResultForm
+from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, StepForm
 from main.views.general import get_query_condition, change_to_positive_integer, Cookie
 from django.template.loader import render_to_string
 
@@ -168,6 +169,7 @@ def step_result_json(_, pk):
     data_dict['step_time'] = render_to_string('main/include/result_time.html', {
         'start_date': obj.start_date, 'end_date': obj.end_date, 'elapsed_time_str': obj.elapsed_time_str})
     data_dict['step_url'] = reverse('step', args=[obj.step.pk])
+    data_dict['step_snapshot_url'] = reverse('step_snapshot', args=[pk])
     data_dict['ui_last_url'] = obj.ui_last_url
     data_dict['imgs'] = list()
     if obj.has_sub_case:
@@ -183,4 +185,16 @@ def step_result_json(_, pk):
         img_dict['name'] = img.name
         img_dict['url'] = img.img.url
         data_dict['imgs'].append(img_dict)
+
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': data_dict})
+
+
+# 步骤快照
+@login_required
+def step_snapshot(request, pk):
+    try:
+        obj = StepResult.objects.get(pk=pk)
+    except StepResult.DoesNotExist:
+        raise Http404('StepResult does not exist')
+    form = StepForm(initial=json.loads(obj.snapshot))
+    return render(request, 'main/step/snapshot.html', locals())

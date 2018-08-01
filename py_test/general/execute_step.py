@@ -47,7 +47,7 @@ def execute_step(
         creator=user,
         start_date=start_date,
 
-        step_snapshot=json.dumps(model_to_dict(step)) if step else None,
+        snapshot=json.dumps(model_to_dict(step)) if step else None,
     )
 
     try:
