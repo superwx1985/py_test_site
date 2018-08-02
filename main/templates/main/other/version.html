@@ -1,0 +1,101 @@
+{% load staticfiles %}
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        {% include 'main/include/general_css.html' %}
+        <style type='text/css' media='screen'>
+            div.row {
+                padding: 5px 0;
+                {#min-height: 2em;#}
+            }
+        </style>
+        {% include 'main/include/general_script.html' %}
+
+        <script>
+            $(function () {
+                // 提示框
+                $('[data-toggle=tooltip]').tooltip();
+            });
+        </script>
+    </head>
+    <body>
+        <div class="container-fluid">
+            <div id="execute_log_div" class="jumbotron" style="height: 400px; overflow: auto; white-space: pre-wrap;">
+2018.08.02
+添加版本号及更新说明
+
+2018.08.01
+1. 结果详情弹窗改为内嵌页形式，优化多层子用例的结果展现形式
+2. 在结果详情页添加步骤快照
+
+2018.07.31
+1. 完成测试过程中推送日志功能
+2. 实现测试过程中强制停止功能
+3. 添加在测试套件执行结束后可直接弹窗查看测试结果详情页
+
+2018.07.30
+添加打印日志时同步推送websocket功能
+
+2018.07.27
+引入channels，用于实现测试日志的实时显示
+
+2018.07.24
+添加修改用户姓名功能，完善修改密码功能，优化弹窗代码，优化各对象作者显示
+
+2018.07.23
+添加自助修改密码功能
+
+2018.07.20
+添加功能：子用例搜索，查看被调用
+
+2018.07.19
+用例页面的步骤列表添加更多信息
+
+2018.07.18
+添加用例的复制功能，复制用例时可以同时复制用例包含的步骤
+
+2018.07.17
+添加在套件页面直接添加用例的功能
+
+2018.07.16
+添加在用例页面直接添加步骤，复制步骤的功能
+
+2018.07.13
+用例，套件详细页面的M2M对象可以直接打开并编辑
+
+2018.07.12
+优化跳转方法，所有跳转通过url参数保留搜索信息，修复筛选插件的bug
+
+2018.07.11
+变量组及配置添加筛选功能
+
+2018.07.09
+添加自定义登录页面，实现普通用户和站点管理员分离，实现保存登录信息功能
+
+2018.07.06
+保留搜索信息
+
+2018.07.05
+列表页面按钮组按用户权限显示，优化搜索功能，统一view方法命名
+
+2018.07.04
+1. 优化找不到浏览器的错误提示
+2. 所有数据库对象添加UUID，修复form验证失败时丢失用户信息的问题，对变量名称进行检查
+
+2018.07.03
+1. 限制非作者的快速更新
+2. 实现步骤的复制功能
+
+2018.07.02
+1. 添加项目分类
+2. 根据用户限制详情页修改权限
+
+2018.07前
+（略）
+            </div>
+        </div>
+    </body>
+</html>
+

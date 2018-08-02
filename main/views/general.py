@@ -66,7 +66,8 @@ def execute_query(sql):
     return result
 
 
-
+def version(request):
+    return render(request, 'main/other/version.html')
 
 
 def debug(request):

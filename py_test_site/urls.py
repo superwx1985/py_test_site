@@ -96,6 +96,7 @@ urlpatterns = [
     path('step_result/<str:pk>/snapshot', result.step_snapshot, name='step_snapshot'),
 
 
+    path('version/', general.version, name='version'),
     path('debug/', general.debug, name='debug'),
     path('test1/', general.test1, name='test1'),
     path('test2/', general.test2, name='test2'),
