@@ -113,6 +113,14 @@
         {% include 'main/include/mask.html' %}
         {% if not inside %}
             {% include 'main/include/navbar.html' %}
+        {% else %}
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col">
+                        <button type="button" class="close" onclick="parent.window.$('[name=m2m_detail_modal]').modal('hide')">×</button>
+                    </div>
+                </div>
+            </div>
         {% endif %}
 
         <div class="container-fluid" style="padding-bottom: 50px; {% if not inside %}padding-top: 50px;{% endif %}" name="detail_content">

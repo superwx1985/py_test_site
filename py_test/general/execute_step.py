@@ -55,7 +55,7 @@ def execute_step(
         run_result = ('p', '成功')
         elements = list()
         fail_elements = list()
-        timeout = step.timeout if step.timeout else case_result.suite_result.base_timeout
+        timeout = step.timeout if step.timeout else case_result.suite_result.timeout
         ui_get_ss = case_result.suite_result.ui_get_ss
         save_as = step.save_as
         ui_by_dict = {

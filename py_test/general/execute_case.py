@@ -74,7 +74,6 @@ def execute_case(
         case_result.result_error = traceback.format_exc()
 
     else:
-        base_timeout = suite_result.suite.base_timeout
         ui_alert_handle = 'accept'  # 初始化弹窗处理方式
         step_order = 0
         for step in steps:
@@ -87,15 +86,17 @@ def execute_case(
             execute_id = '{}-{}'.format(execute_str, step_order)
             logger.info('【{}】\t执行步骤 => ID:{} | {} | {}'.format(execute_id, step.id, step.name, step.action))
 
-            timeout = step.timeout if not step.timeout else base_timeout
+            timeout = step.timeout if not step.timeout else suite_result.suite.timeout
 
             # 如有弹窗则处理弹窗
             if dr is not None:
                 try:
                     _ = dr.current_url
                 except UnexpectedAlertPresentException:
-                    alert_handle_text, alert_text = method.confirm_alert(dr=dr, alert_handle=ui_alert_handle, timeout=timeout)
-                    logger.info('【{}】\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(execute_id, alert_handle_text, alert_text))
+                    alert_handle_text, alert_text = method.confirm_alert(
+                        dr=dr, alert_handle=ui_alert_handle, timeout=timeout)
+                    logger.info('【{}】\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(
+                        execute_id, alert_handle_text, alert_text))
 
             step_result_ = execute_step(
                 step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=dr,

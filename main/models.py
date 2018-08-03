@@ -283,7 +283,7 @@ class Suite(models.Model):
         User, verbose_name='修改人', related_name='suite_modifier', on_delete=models.SET_NULL, blank=True, null=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
-    base_timeout = models.FloatField(default=10)
+    timeout = models.FloatField(default=10)
     ui_get_ss = models.BooleanField(default=True)
     log_level_list = (
         (1, 'DEV'),
@@ -340,7 +340,7 @@ class SuiteResult(models.Model):
     keyword = models.CharField(blank=True, max_length=100)
     is_active = models.BooleanField(default=True)
 
-    base_timeout = models.FloatField(default=10)
+    timeout = models.FloatField(default=10)
     ui_get_ss = models.BooleanField(default=True)
     thread_count = models.IntegerField(default=1)
     config = models.TextField(blank=True, null=True)

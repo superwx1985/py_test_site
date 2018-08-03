@@ -22,7 +22,16 @@
     </head>
     <body>
         <div class="container-fluid">
-            <div id="execute_log_div" class="jumbotron" style="height: 400px; overflow: auto; white-space: pre-wrap;">
+            <div id="execute_log_div" class="jumbotron" style="overflow: auto; white-space: pre-wrap;">
+2018.08.03
+1. 修复列表页面无法获得当前用户的bug
+2. 内嵌页面统一在右上角添加关闭按钮
+3. 文字验证现在可以验证输入框内的文本
+4. suite模型中的base_timeout字段修改为timeout
+5. 为超时值添加限制，不能小于1秒
+6. 如果测试时websocket客户端被意外关闭测试会继续进行，不会报错
+7. 修复测试结束后点击查看详情无法跳转到结果页的问题
+
 2018.08.02
 添加版本号及更新说明
 

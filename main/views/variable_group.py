@@ -47,7 +47,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = VariableGroup.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date').annotate(
+        'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
         variable_count=Count('variable'),
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     # 排序
@@ -263,13 +263,13 @@ def reference(request, pk):
     except VariableGroup.DoesNotExist:
         raise Http404('VariableGroup does not exist')
     objects = Case.objects.filter(is_active=True, variable_group=obj).order_by('-modified_date').values(
-        'pk', 'name', 'keyword', 'creator__username', 'modified_date').annotate(
+        'pk', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
         obj_['url'] = reverse(case.detail, args=[obj_['pk']])
         obj_['type'] = '用例'
     objects2 = Suite.objects.filter(is_active=True, variable_group=obj).order_by('-modified_date').values(
-        'pk', 'name', 'keyword', 'creator__username', 'modified_date').annotate(
+        'pk', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects2:
         obj_['url'] = reverse(suite.detail, args=[obj_['pk']])

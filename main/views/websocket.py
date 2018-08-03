@@ -20,7 +20,11 @@ class SuiteConsumer(WebsocketConsumer):
             self.close()
 
     def sender(self, msg, level):
-        self.send(text_data=json.dumps({'type': 'message', 'message': msg, 'level': level}))
+        try:
+            self.send(text_data=json.dumps({'type': 'message', 'message': msg, 'level': level}))
+        # 如果websocket客户端被意外关闭
+        except KeyError:
+            pass
 
     def receive(self, text_data):
         user = self.scope['user']

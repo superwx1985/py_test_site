@@ -60,7 +60,7 @@ function show_action_field($actionSelect) {
 		$('div[name=ui_data] .col-1').text('待验证内容');
 		$('div[name=ui_alert_handle],div[name=ui_data],div[name=timeout]').show();
 	} else if (select_value === '17') {
-		introduce.children('span').text('验证页面是否包含文字（如果待验证内容是表达式，建议指定元素后验证）。如果指定了元素，则验证该元素是否包含文字');
+		introduce.children('span').text('验证页面是否包含文字（如果待验证内容是输入框内的值，或者是表达式，请指定元素）。如果指定了元素，则验证该元素是否包含文字');
 		$('[ui],div[name=timeout]').show();
 		$('div[name=ui_special_action]').hide();
 		$('div[name=ui_data] .col-1').text('待验证内容');

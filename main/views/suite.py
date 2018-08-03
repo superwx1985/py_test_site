@@ -50,7 +50,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Suite.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator__username', 'modified_date').annotate(
+        'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     objects2 = Suite.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(
         m2m_count=Count('case'))
@@ -240,7 +240,7 @@ def quick_update(request, pk):
 @login_required
 def cases(_, pk):
     objects = Case.objects.filter(suite=pk, is_active=True).order_by('suitevscase__order').values(
-        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date', order=F('suitevscase__order')
+        'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date', order=F('suitevscase__order')
     ).annotate(real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj in objects:
         obj['url'] = reverse(case.detail, args=[obj['pk']])

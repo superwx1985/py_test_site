@@ -129,6 +129,8 @@ class StepForm(forms.ModelForm):
     is_active = forms.CharField(required=False, validators=[])
     # 限制project为必选
     project = forms.ModelChoiceField(queryset=Project.objects, required=True)
+    # 限制timeout大于1
+    timeout = forms.FloatField(min_value=1, required=False)
 
     class Meta:
         model = Step
@@ -192,6 +194,8 @@ class SuiteForm(forms.ModelForm):
     config = forms.ModelChoiceField(queryset=Config.objects, required=True)
     # 限制project为必选
     project = forms.ModelChoiceField(queryset=Project.objects, required=True)
+    # 限制timeout大于1
+    timeout = forms.FloatField(min_value=1)
 
     class Meta:
         model = Suite

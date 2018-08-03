@@ -48,7 +48,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Step.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date').annotate(
+        'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
         action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()),
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     # 使用join的方式把多个model结合起来
@@ -232,7 +232,7 @@ def list_json(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Step.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date').annotate(
+        'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
         action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()),
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     # 排序
@@ -269,7 +269,7 @@ def list_temp(request):
         if pk.strip() == '':
             continue
         objects = Step.objects.filter(pk=pk).values(
-            'pk', 'name', 'keyword', 'project__name', 'creator__username', 'modified_date').annotate(
+            'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
             action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()),
             real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
         if not objects:
@@ -313,7 +313,7 @@ def reference(request, pk):
     except Step.DoesNotExist:
         raise Http404('Step does not exist')
     objects = obj.case_set.filter(is_active=True).order_by('-modified_date').values(
-        'pk', 'name', 'keyword', 'creator__username', 'modified_date').annotate(
+        'pk', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
         obj_['url'] = reverse(case.detail, args=[obj_['pk']])

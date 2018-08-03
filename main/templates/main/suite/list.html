@@ -53,7 +53,7 @@
 
                             var $modal_body_div = $('<div>').addClass('text-center');
                             var execute_name_div = $('<div id="execute_name_div" class="text-left"></div>');
-                            execute_name_div.append($('<span>').addClass('font-weight-bold').text('套件名称：')).append($('<span>').addClass('text-info').text(name));
+                            execute_name_div.append($('<span>').addClass('font-weight-bold lead').text('套件名称：')).append($('<span>').addClass('text-info').text(name));
                             $modal_body_div.append(execute_name_div);
                             var execute_log_outer_div = $('<div class="jumbotron" style="padding: 10px 0 10px 10px"></div>');
                             var execute_log_div = $('<div id="execute_log_div" class="text-left" style="height: 250px; overflow-y: auto;"></div>');
@@ -107,14 +107,15 @@
                                     var data_ = JSON.parse(data.data)['data'];
                                     var content_div = $('<div>').html(data_.suite_result_content);
                                     execute_result_div.append(content_div);
+                                    execute_button.text('查看详情').removeClass('btn-danger').addClass('btn-primary');
+                                    execute_button.off('click').on('click', function () {
+                                        modal_with_iframe_max('m2m_detail_modal', '', data_.suite_result_url + '?inside=1')
+                                    });
+                                    my_modal.find('.modal-title').text('执行结束');
                                 }
                             };
                             suite_socket.onclose = function(e) {
-                                my_modal.find('.modal-title').text('执行结束');
-                                execute_button.text('查看详情').removeClass('btn-danger').addClass('btn-primary');
-                                execute_button.off('click').on('click', function () {
-                                    modal_with_iframe_max('m2m_detail_modal', '', data.suite_result_url + '?inside=1')
-                                });
+
                             };
                         }
                     }

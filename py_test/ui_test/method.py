@@ -214,8 +214,9 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
         else:
             if index_ is None:
                 for element_temp in elements_temp:
-                    element_text = dr.execute_script('return arguments[0].textContent||arguments[0].innerText',
-                                                     element_temp)
+                    element_text = dr.execute_script(
+                        'return arguments[0].textContent||arguments[0].innerText||arguments[0].value',
+                        element_temp)
                     find_result = vic_find_object.find_with_condition(text, element_text)
                     if find_result.is_matched:
                         elements.append(element_temp)
@@ -226,8 +227,9 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
                     str(len(elements_temp)) + ' elements found, the provided index (' + str(
                         index_) + ') is out of range (0 ~ ' + str(len(elements) - 1) + ')')
             else:
-                element_text = dr.execute_script('return arguments[0].textContent||arguments[0].innerText',
-                                                 elements_temp[index_])
+                element_text = dr.execute_script(
+                    'return arguments[0].textContent||arguments[0].innerText||arguments[0].value',
+                    elements_temp[index_])
                 find_result = vic_find_object.find_with_condition(text, element_text)
                 if find_result.is_matched:
                     elements.append(elements_temp[index_])

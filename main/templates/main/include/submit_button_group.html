@@ -6,9 +6,11 @@
                 <td><button copy_url="{% url copy_url obj.pk %}" copy_sub_item="{{ copy_sub_item }}" type="button" name="copy_button" class="btn btn-warning"><i class="icon-copy">&nbsp;</i>复制</button></td>
             {% endif %}
             {% if request.user == obj.creator %}
-                <td><button type="submit" name="save_button" class="btn btn-primary"><i class="icon-ok">&nbsp;</i>应用</button></td>
                 {% if not inside %}
+                    <td><button type="submit" name="save_button" class="btn btn-primary"><i class="icon-ok">&nbsp;</i>应用</button></td>
                     <td><button type="submit" name="save_and_return_button" class="btn btn-success"><i class="icon-upload-alt">&nbsp;</i>提交</button></td>
+                {% else %}
+                    <td><button type="submit" name="save_button" class="btn btn-success"><i class="icon-upload-alt">&nbsp;</i>提交</button></td>
                 {% endif %}
             {% else %}
             {% endif %}
@@ -18,7 +20,7 @@
                 <td><button type="submit" name="save_button" class="btn btn-primary" data-toggle="tooltip" title="添加后查看新对象"><i class="icon-plus">&nbsp;</i>添加</button></td>
                 <td><button type="submit" name="add_another_button" class="btn btn-info" data-toggle="tooltip" title="添加后留在添加页面"><i class="icon-plus-sign">&nbsp;</i>连续添加</button></td>
             {% else %}
-                <td><button type="submit" name="add_another_button" class="btn btn-primary"><i class="icon-ok">&nbsp;</i>应用</button></td>
+                <td><button type="submit" name="add_another_button" class="btn btn-success"><i class="icon-upload-alt">&nbsp;</i>提交</button></td>
             {% endif %}
         {% endif %}
     </div>

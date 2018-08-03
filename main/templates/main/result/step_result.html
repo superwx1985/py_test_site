@@ -18,6 +18,8 @@
                 step_result_detail_popup();
                 // 提示框
                 $('[data-toggle=tooltip]').tooltip();
+                // 关闭遮罩
+                $('#mask').hide();
             });
             // 步骤详情弹窗
             function step_result_detail_popup() {
@@ -29,6 +31,7 @@
         </script>
     </head>
     <body>
+        {% include 'main/include/mask.html' %}
         <div class="container-fluid">
             <div class="row">
                 <div class="col">

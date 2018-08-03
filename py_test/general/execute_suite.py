@@ -48,7 +48,7 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
         name=suite.name,
         description=suite.description,
         keyword=suite.keyword,
-        base_timeout=suite.base_timeout,
+        timeout=suite.timeout,
         ui_get_ss=suite.ui_get_ss,
         thread_count=suite.thread_count,
         config=json.dumps(model_to_dict(suite.config)) if suite.config else None,
