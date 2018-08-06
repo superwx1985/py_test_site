@@ -22,7 +22,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from PIL import Image
 from py_test.vic_tools import vic_find_object, vic_eval
 from py_test.vic_tools.vic_str_handle import change_string_to_digit
-from py_test.general import vic_log
+from py_test.general import vic_log, vic_variables
 
 
 # 获取浏览器driver
@@ -578,7 +578,7 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
     elif special_action == 'drag_and_drop':
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个元素')
-        target_element = variables.get_elements(data)[0]
+        target_element = vic_variables.get_elements(data, variables)[0]
         if not isinstance(target_element, WebElement):
             raise ValueError('必须指定一个目标元素')
         ActionChains(dr).drag_and_drop(element, target_element).perform()

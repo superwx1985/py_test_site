@@ -70,7 +70,7 @@
                 tbody.empty();
                 if (data.data.objects.length > 0) {
                     $.each(data.data.objects, function (i, v) {
-                        var tr = $('<tr>').attr('pk', v.pk).attr('url', v.url);
+                        var tr = $('<tr>').attr('pk', v.pk).attr('url', v.url).attr('code', v.code);
                         $('<td moveable class="middle"><i class="icon-move"></i></td>').addClass('middle').appendTo(tr);
                         var a = $('<a href="javascript:m2m_detail_popup(\''+v.url+'?inside=1\')">').text(v.name);
                         $('<td name>').append(a).appendTo(tr);
@@ -113,7 +113,7 @@
                 if (data.data.length > 0) {
                     tbody.empty();
                     $.each(data.data, function (i, v) {
-                        var tr = $('<tr>').attr('pk', v.pk).attr('url', v.url);
+                        var tr = $('<tr>').attr('pk', v.pk).attr('url', v.url).attr('code', v.code);
                         $('<td moveable class="middle"><i class="icon-move"></i></td>').addClass('middle').appendTo(tr);
                         $('<td index class="text-center"></td>').addClass('middle').appendTo(tr);
                         var a = $('<a>').text(v.name);

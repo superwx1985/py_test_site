@@ -50,7 +50,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Suite.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'code', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     objects2 = Suite.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(
         m2m_count=Count('case'))
@@ -240,7 +240,7 @@ def quick_update(request, pk):
 @login_required
 def cases(_, pk):
     objects = Case.objects.filter(suite=pk, is_active=True).order_by('suitevscase__order').values(
-        'pk', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date', order=F('suitevscase__order')
+        'pk', 'code', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date', order=F('suitevscase__order')
     ).annotate(real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj in objects:
         obj['url'] = reverse(case.detail, args=[obj['pk']])
@@ -259,7 +259,7 @@ def case_list_temp(request):
         if pk.strip() == '':
             continue
         order += 1
-        objects = Case.objects.filter(pk=pk).values('pk', 'name').annotate(
+        objects = Case.objects.filter(pk=pk).values('pk', 'code', 'name').annotate(
             action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
         objects = list(objects)
         objects[0]['order'] = order

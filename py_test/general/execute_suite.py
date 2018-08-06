@@ -118,7 +118,7 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
 
     logger.info('测试用例执行完毕')
     logger.info('========================================')
-    logger.info('执行: %d, 通过: %d, 失败: %d, 报错: %d' % (
+    logger.info('执行: %d | 通过: %d | 失败: %d | 报错: %d' % (
         suite_result.execute_count, suite_result.pass_count, suite_result.fail_count, suite_result.error_count))
     logger.info('耗时: ' + str(suite_result.end_date - suite_result.start_date))
     logger.info('========================================')

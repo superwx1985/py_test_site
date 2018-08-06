@@ -47,7 +47,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Config.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'code', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     # 排序
     if objects:
@@ -178,7 +178,7 @@ def select_json(request):
     except json.decoder.JSONDecodeError:
         condition = dict()
     selected_pk = condition.get('selected_pk')
-    objects = Config.objects.filter(is_active=True).values('pk', 'name', 'keyword')
+    objects = Config.objects.filter(is_active=True).values('pk', 'code', 'name', 'keyword')
 
     data = list()
     for obj in objects:
@@ -202,7 +202,7 @@ def reference(request, pk):
     except Config.DoesNotExist:
         raise Http404('Config does not exist')
     objects = Suite.objects.filter(is_active=True, config=obj).order_by('-modified_date').values(
-        'pk', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'code', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
         obj_['url'] = reverse(suite.detail, args=[obj_['pk']])

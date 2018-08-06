@@ -42,7 +42,17 @@
             {% include 'main/include/result_time.html' with start_date=obj.start_date end_date=obj.end_date elapsed_time_str=obj.elapsed_time_str %}
             <hr>
             <div class="row">
-                <div class="col"><span class="font-weight-bold">执行情况：</span><span class="text-info">{{ obj.result_message }}</span></div>
+                <div class="col">
+                    <span class="font-weight-bold">执行情况：</span>
+                    <br>
+                    {% if obj.result_status > 2 %}
+                        <span class="text-danger">{{ obj.result_message }}</span>
+                    {% elif obj.result_status > 1 %}
+                        <span class="text-warning">{{ obj.result_message }}</span>
+                    {% else %}
+                        <span class="text-info">{{ obj.result_message }}</span>
+                    {% endif %}
+                </div>
             </div>
             {% if obj.result_error %}
                 <div class="row">

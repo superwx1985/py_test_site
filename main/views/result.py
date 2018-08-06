@@ -46,7 +46,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = SuiteResult.objects.filter(q).values(
-        'pk', 'name', 'keyword', 'project__name',  'start_date', 'result_status', 'creator', 'creator__username',
+        'pk', 'code', 'name', 'keyword', 'project__name',  'start_date', 'result_status', 'creator', 'creator__username',
         'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     result_status_list = SuiteResult.result_status_list

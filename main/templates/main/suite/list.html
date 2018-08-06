@@ -53,7 +53,7 @@
 
                             var $modal_body_div = $('<div>').addClass('text-center');
                             var execute_name_div = $('<div id="execute_name_div" class="text-left"></div>');
-                            execute_name_div.append($('<span>').addClass('font-weight-bold lead').text('套件名称：')).append($('<span>').addClass('text-info').text(name));
+                            execute_name_div.append($('<span>').addClass('font-weight-bold lead').text('套件名称：')).append($('<span>').addClass('text-info lead').text(name));
                             $modal_body_div.append(execute_name_div);
                             var execute_log_outer_div = $('<div class="jumbotron" style="padding: 10px 0 10px 10px"></div>');
                             var execute_log_div = $('<div id="execute_log_div" class="text-left" style="height: 250px; overflow-y: auto;"></div>');
@@ -153,7 +153,7 @@
             </thead>
             <tbody>
                 {% for obj in objects %}
-                    <tr pk="{{ obj.pk }}" edit_url="{% url 'suite' obj.pk %}" quick_update_url="{% url 'suite_quick_update' obj.pk %}" del_url="{% url 'suite_delete' obj.pk %}" exe_url="{% url 'suite_execute' obj.pk %}">
+                    <tr pk="{{ obj.pk }}" code="{{ obj.code }}" edit_url="{% url 'suite' obj.pk %}" quick_update_url="{% url 'suite_quick_update' obj.pk %}" del_url="{% url 'suite_delete' obj.pk %}" exe_url="{% url 'suite_execute' obj.pk %}">
                         <td col_name='index' class="middle"></td>
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
