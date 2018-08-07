@@ -6,12 +6,15 @@ from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from main.forms import LoginForm, UserForm
 from django.contrib.auth.models import User
+from django.conf import settings
 
 logger = logging.getLogger('django.request')
 
 
 def login(request):
     redirect_url = request.GET.get('next', reverse('home'))
+    site_name = settings.SITE_NAME
+    site_version = settings.SITE_VERSION
     if redirect_url == reverse('user_logout'):
         redirect_url = reverse('home')
     if request.user.is_authenticated:

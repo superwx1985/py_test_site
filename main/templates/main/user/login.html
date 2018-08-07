@@ -28,8 +28,8 @@
             <div class="div_center">
                 <div>
                     <div>
-                        <h1>自动化测试平台</h1>
-                        <a class="text-info" href="javascript:modal_with_iframe('version_modal', 'modal-lg', '', '', '版本信息', {% url 'version' %})">V1.1.20180806.01</a>
+                        <h1>{{ site_name|default:'自动化测试工具' }}</h1>
+                        <a class="text-info" href="javascript:modal_with_iframe('version_modal', 'modal-lg', '', '', '版本信息', {% url 'version' %})">{{ site_version|default:'版本信息' }}</a>
                         <div class="jumbotron" style="width: 400px;">
                             <form id="login_form" method="post" novalidate>
                                 {% csrf_token %}

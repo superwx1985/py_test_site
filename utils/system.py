@@ -10,5 +10,5 @@ def get_function_with_name(space, name):
     return getattr(space, name)
 
 
-# 全局变量
+# 强制停止列表
 FORCE_STOP = dict()

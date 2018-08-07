@@ -17,7 +17,8 @@ Including another URLconf
 from django.urls import path
 from django.conf.urls.static import static
 from . import settings
-from django.contrib import admin
+# from django.contrib import admin
+from main.admin import admin_site
 import main.views.general as general
 import main.views.user as user
 import main.views.case as case
@@ -29,7 +30,8 @@ import main.views.result as result
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls, name='admin'),
+    # path('admin/', admin.site.urls, name='admin'),
+    path('admin/', admin_site.urls, name='admin'),
 
     path('', user.login_redirect),
     path('user/login/', user.login, name='user_login'),

@@ -1,5 +1,19 @@
 from django.contrib import admin
 from .models import *
+from django.conf import settings
+
+
+class MyAdmin(admin.AdminSite):
+    site_header = '{}后台'.format(settings.SITE_NAME)
+
+
+# 使用默认后台
+# admin_site = admin.site
+
+
+# 使用自定义后台
+admin_site = MyAdmin()
+
 
 # 保存时自动保存当前用户到创建者和修改者字段
 # def save_model_(request, obj, change):
@@ -126,16 +140,16 @@ class ProjectAdmin(admin.ModelAdmin):
     search_fields = ('pk', 'name', 'keyword',)
 
 
-admin.site.register(Case, CaseAdmin)
-admin.site.register(Action, ActionAdmin)
-admin.site.register(Step, StepAdmin)
-admin.site.register(ActionType, ActionTypeAdmin)
-admin.site.register(Config, ConfigAdmin)
-admin.site.register(CaseVsStep, CaseVsStepAdmin)
-admin.site.register(VariableGroup, VariableGroupAdmin)
-admin.site.register(Variable, VariableAdmin)
-admin.site.register(Suite, SuiteAdmin)
-admin.site.register(SuiteVsCase, SuiteVsCaseAdmin)
-admin.site.register(SuiteResult, SuiteResultAdmin)
-admin.site.register(Image, ImageAdmin)
-admin.site.register(Project, ProjectAdmin)
+admin_site.register(Case, CaseAdmin)
+admin_site.register(Action, ActionAdmin)
+admin_site.register(Step, StepAdmin)
+admin_site.register(ActionType, ActionTypeAdmin)
+admin_site.register(Config, ConfigAdmin)
+admin_site.register(CaseVsStep, CaseVsStepAdmin)
+admin_site.register(VariableGroup, VariableGroupAdmin)
+admin_site.register(Variable, VariableAdmin)
+admin_site.register(Suite, SuiteAdmin)
+admin_site.register(SuiteVsCase, SuiteVsCaseAdmin)
+admin_site.register(SuiteResult, SuiteResultAdmin)
+admin_site.register(Image, ImageAdmin)
+admin_site.register(Project, ProjectAdmin)
