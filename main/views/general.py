@@ -1,4 +1,5 @@
 import logging
+import json
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
 from django.db import connection
@@ -6,6 +7,7 @@ from django.db.models import Q
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
+from main.models import Action
 
 logger = logging.getLogger('django.request')
 
@@ -64,6 +66,14 @@ def execute_query(sql):
             obj_dict[col_names[index]] = value
         result.append(obj_dict)
     return result
+
+
+# 获取action pk和code的映射关系
+def get_action_map_json():
+    action_map = dict()
+    for action_obj in Action.objects.values('pk', 'code'):
+        action_map[action_obj['pk']] = action_obj['code']
+    return json.dumps(action_map)
 
 
 def version(request):

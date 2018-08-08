@@ -47,7 +47,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = VariableGroup.objects.filter(q).values(
-        'pk', 'code', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
         variable_count=Count('variable'),
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     # 排序
@@ -224,7 +224,7 @@ def quick_update(request, pk):
 # 获取变量组中的变量
 @login_required
 def variables(_, pk):
-    objects = Variable.objects.filter(variable_group=pk).order_by('order').values('pk', 'code', 'name', 'value')
+    objects = Variable.objects.filter(variable_group=pk).order_by('order').values('pk', 'uuid', 'name', 'value')
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 
@@ -239,7 +239,7 @@ def select_json(request):
     # objects = VariableGroup.objects.filter(is_active=True).values('pk').annotate(name_=Concat(
     #     'pk', Value(' | '), 'name', Value(' | '), 'keyword', Value(' | '), 'project__name', output_field=CharField()),
     # )
-    objects = VariableGroup.objects.filter(is_active=True).values('pk', 'code', 'name', 'keyword', 'project__name')
+    objects = VariableGroup.objects.filter(is_active=True).values('pk', 'uuid', 'name', 'keyword', 'project__name')
 
     data = list()
     for obj in objects:
@@ -263,13 +263,13 @@ def reference(request, pk):
     except VariableGroup.DoesNotExist:
         raise Http404('VariableGroup does not exist')
     objects = Case.objects.filter(is_active=True, variable_group=obj).order_by('-modified_date').values(
-        'pk', 'code', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
         obj_['url'] = reverse(case.detail, args=[obj_['pk']])
         obj_['type'] = '用例'
     objects2 = Suite.objects.filter(is_active=True, variable_group=obj).order_by('-modified_date').values(
-        'pk', 'code', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects2:
         obj_['url'] = reverse(suite.detail, args=[obj_['pk']])

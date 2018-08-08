@@ -5,7 +5,7 @@ import uuid
 
 # 用例表
 class Case(models.Model):
-    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
@@ -30,7 +30,7 @@ class Case(models.Model):
 
 # 步骤表
 class Step(models.Model):
-    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
@@ -134,7 +134,8 @@ class CaseVsStep(models.Model):
 
 # 动作表
 class Action(models.Model):
-    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
+    code = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
@@ -165,7 +166,8 @@ class Action(models.Model):
 
 # 步骤类型字典表
 class ActionType(models.Model):
-    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
+    code = models.CharField(max_length=100, unique=True)
     name = models.CharField(max_length=100)
     is_active = models.BooleanField(default=True)
 
@@ -178,7 +180,7 @@ class ActionType(models.Model):
 
 # 配置表
 class Config(models.Model):
-    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
@@ -225,7 +227,7 @@ class Config(models.Model):
 
 # 变量组表
 class VariableGroup(models.Model):
-    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
@@ -252,7 +254,7 @@ class VariableGroup(models.Model):
 
 # 变量表
 class Variable(models.Model):
-    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     value = models.TextField(blank=True)
@@ -271,7 +273,7 @@ class Variable(models.Model):
 
 # 测试套件
 class Suite(models.Model):
-    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
@@ -334,7 +336,7 @@ class SuiteVsCase(models.Model):
 
 # suite测试结果
 class SuiteResult(models.Model):
-    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
@@ -391,7 +393,7 @@ class SuiteResult(models.Model):
 
 # case测试结果
 class CaseResult(models.Model):
-    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
@@ -438,7 +440,7 @@ class CaseResult(models.Model):
 
 # step测试结果
 class StepResult(models.Model):
-    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
@@ -483,13 +485,13 @@ class StepResult(models.Model):
 
 
 class Image(models.Model):
-    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
     name = models.CharField(max_length=100)
     img = models.ImageField(upload_to='img')
 
 
 class Project(models.Model):
-    code = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False)
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)

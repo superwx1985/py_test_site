@@ -1,6 +1,7 @@
 import json
 import logging
 import copy
+import uuid
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -62,7 +63,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Case.objects.filter(q).values(
-        'pk', 'code', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     objects2 = Case.objects.filter(is_active=True, step__is_active=True).values('pk').annotate(m2m_count=Count('step'))
     count_ = {o['pk']: o['m2m_count'] for o in objects2}
@@ -261,7 +262,7 @@ def quick_update(request, pk):
 @login_required
 def steps(_, pk):
     objects = Step.objects.filter(case=pk, is_active=True).order_by('casevsstep__order').values(
-        'pk', 'code', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date', order=F('casevsstep__order')
+        'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date', order=F('casevsstep__order')
     ).annotate(action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()),
                real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj in objects:
@@ -304,7 +305,7 @@ def list_json(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = Case.objects.filter(q).values(
-        'pk', 'code', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     # 排序
     if objects:
@@ -340,7 +341,7 @@ def list_temp(request):
         if pk.strip() == '':
             continue
         objects = Case.objects.filter(pk=pk).values(
-            'pk', 'code', 'name', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
+            'pk', 'uuid', 'name', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
             real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
         if not objects:
             continue
@@ -375,6 +376,7 @@ def copy_(request, pk):
             if copy_sub_item:
                 m2m_obj.pk = None
                 m2m_obj.creator = m2m_obj.modifier = request.user
+                obj.uuid = uuid.uuid1
                 m2m_obj.clean_fields()
                 m2m_obj.save()
             m2m_order += 1
@@ -397,7 +399,7 @@ def select_json(request):
     except json.decoder.JSONDecodeError:
         condition = dict()
     selected_pk = condition.get('selected_pk')
-    objects = Case.objects.filter(is_active=True).values('pk', 'code', 'name', 'keyword', 'project__name')
+    objects = Case.objects.filter(is_active=True).values('pk', 'uuid', 'name', 'keyword', 'project__name')
 
     data = list()
     for obj in objects:
@@ -421,13 +423,13 @@ def reference(request, pk):
     except Case.DoesNotExist:
         raise Http404('Case does not exist')
     objects = obj.suite_set.filter(is_active=True).order_by('-modified_date').values(
-        'pk', 'code', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
         obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
         obj_['type'] = '套件'
     objects2 = Step.objects.filter(is_active=True, other_sub_case=obj, action=26).order_by('-modified_date').values(
-        'pk', 'code', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects2:
         obj_['url'] = reverse(step.detail, args=[obj_['pk']])

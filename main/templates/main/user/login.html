@@ -34,7 +34,7 @@
                             <form id="login_form" method="post" novalidate>
                                 {% csrf_token %}
                                 <div class="form-group text-left">
-                                    <label for="id_username">用户名：</label>
+                                    <label for="id_username">用户：</label>
                                     {% include 'main/include/form_input.html' with field=form.username %}
                                 </div>
                                 <div class="form-group text-left">

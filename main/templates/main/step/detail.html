@@ -13,6 +13,15 @@
     </style>
 {% endblock %}
 
+{% block prepare_script %}
+    <script>
+        $(function () {
+            // 获取action映射表
+            window.action_map = $.parseJSON('{{ action_map_json|escapejs }}');
+        })
+    </script>
+{% endblock %}
+
 {% block script %}
     <script>
         $(function () {

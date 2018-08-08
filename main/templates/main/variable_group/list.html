@@ -37,7 +37,7 @@
             </thead>
             <tbody>
                 {% for obj in objects %}
-                    <tr pk="{{ obj.pk }}" code="{{ obj.code }}" edit_url="{% url 'variable_group' obj.pk %}" quick_update_url="{% url 'variable_group_quick_update' obj.pk %}" del_url="{% url 'variable_group_delete' obj.pk %}">
+                    <tr pk="{{ obj.pk }}" uuid="{{ obj.uuid }}" edit_url="{% url 'variable_group' obj.pk %}" quick_update_url="{% url 'variable_group_quick_update' obj.pk %}" del_url="{% url 'variable_group_delete' obj.pk %}">
                         <td col_name='index' class="middle"></td>
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>

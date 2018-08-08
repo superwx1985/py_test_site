@@ -1,6 +1,8 @@
 from django.contrib import admin
 from .models import *
 from django.conf import settings
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.admin import UserAdmin, GroupAdmin
 
 
 class MyAdmin(admin.AdminSite):
@@ -50,7 +52,8 @@ class ActionAdmin(admin.ModelAdmin):
 
 class StepAdmin(admin.ModelAdmin):
     list_display = (
-        'pk', 'name', 'keyword', 'project', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active', 'action',)
+        'pk', 'name', 'keyword', 'project', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',
+        'action',)
     list_display_links = ('pk', 'name',)
     list_filter = ('is_active', 'creator', 'project', 'created_date',)
     list_editable = ('is_active',)
@@ -83,7 +86,8 @@ class CaseVsStepAdmin(admin.ModelAdmin):
 
 
 class VariableGroupAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'project', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',)
+    list_display = (
+        'pk', 'name', 'project', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',)
     list_display_links = ('pk', 'name',)
     list_filter = ('is_active', 'creator', 'project', 'created_date',)
     list_editable = ('is_active',)
@@ -153,3 +157,5 @@ admin_site.register(SuiteVsCase, SuiteVsCaseAdmin)
 admin_site.register(SuiteResult, SuiteResultAdmin)
 admin_site.register(Image, ImageAdmin)
 admin_site.register(Project, ProjectAdmin)
+admin_site.register(User, UserAdmin)
+admin_site.register(Group, GroupAdmin)

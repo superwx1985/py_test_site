@@ -12,6 +12,7 @@ from main.models import SuiteResult, StepResult, CaseResult, Project
 from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, StepForm
 from main.views.general import get_query_condition, change_to_positive_integer, Cookie
 from django.template.loader import render_to_string
+from main.views import general
 
 logger = logging.getLogger('django.request')
 
@@ -46,7 +47,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = SuiteResult.objects.filter(q).values(
-        'pk', 'code', 'name', 'keyword', 'project__name',  'start_date', 'result_status', 'creator', 'creator__username',
+        'pk', 'uuid', 'name', 'keyword', 'project__name',  'start_date', 'result_status', 'creator', 'creator__username',
         'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     result_status_list = SuiteResult.result_status_list
@@ -217,6 +218,7 @@ def step_result(request, pk):
 # 步骤快照
 @login_required
 def step_snapshot(request, pk):
+    action_map_json = general.get_action_map_json()
     try:
         obj = StepResult.objects.get(pk=pk)
     except StepResult.DoesNotExist:
