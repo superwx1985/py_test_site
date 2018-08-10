@@ -17,6 +17,10 @@
             $(function () {
                 // 更新导航栏
                 $('#nav_help').addClass('active');
+                // 注册注销按钮
+                $("#logout_btn").click(function () {
+                    window.open('{% url 'user_logout' %}', '_self');
+                });
             });
         </script>
     </head>
@@ -142,27 +146,27 @@
                             <p>例：<span class="mark">${t|now,,day,-1}$</span>，返回<span class="text-info">2017-11-16 17:01:37</span>。</p>
                         </div>
                     </div>
-                    <div id="operate_3" class="tab-pane active" style="padding: 1em">
+                    <div id="operate_3" class="tab-pane" style="padding: 1em">
                         <div>
                             <p class="lead">通过日期字符串生成时间戳字符串，接收1到3个参数。注意：python的时间戳默认为秒后带小数点。</p>
                         </div>
                     </div>
-                    <div id="operate_4" class="tab-pane active" style="padding: 1em">
+                    <div id="operate_4" class="tab-pane" style="padding: 1em">
                         <div>
                             <p class="lead">通过时间戳字符串生成日期字符串，接收1或2个参数。</p>
                         </div>
                     </div>
-                    <div id="operate_5" class="tab-pane active" style="padding: 1em">
+                    <div id="operate_5" class="tab-pane" style="padding: 1em">
                         <div>
                             <p class="lead">把字符串通过url编码后返回，接收1个参数。</p>
                         </div>
                     </div>
-                    <div id="operate_6" class="tab-pane active" style="padding: 1em">
+                    <div id="operate_6" class="tab-pane" style="padding: 1em">
                         <div>
                             <p class="lead">通过日期字符串生成时间戳字符串，接收1到3个参数。注意：python的时间戳默认为秒后带小数点。</p>
                         </div>
                     </div>
-                    <div id="operate_7" class="tab-pane active" style="padding: 1em">
+                    <div id="operate_7" class="tab-pane" style="padding: 1em">
                         <div>
                             <p class="lead">通过日期字符串生成时间戳字符串，接收1到3个参数。注意：python的时间戳默认为秒后带小数点。</p>
                         </div>
