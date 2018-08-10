@@ -16,6 +16,8 @@
 {% block prepare_script %}
     <script>
         $(function () {
+            // 更新导航栏
+            $('#nav_step').addClass('active');
             // 获取action映射表
             window.action_map = $.parseJSON('{{ action_map_json|escapejs }}');
         })
@@ -25,8 +27,6 @@
 {% block script %}
     <script>
         $(function () {
-            // 更新导航栏
-            $('#nav_step').addClass('active');
             // 触发展示special_action相关内容，注意必须在触发action前触发
             show_special_action_field($('#id_ui_special_action'));
             // 注册special_action变更

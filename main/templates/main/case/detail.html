@@ -18,6 +18,8 @@
 {% block prepare_script %}
     <script>
         $(function () {
+            // 更新导航栏
+            $('#nav_case').addClass('active');
             // 定义m2m字段
             window.$m2m_input = $('input[name=step]');
         })
@@ -27,8 +29,6 @@
 {% block script %}
     <script>
         $(function () {
-            // 更新导航栏
-            $('#nav_case').addClass('active');
             // 获取变量组下拉项
             getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_groups_dropdown, '{"selected_pk": "{{ form.variable_group.value }}"}');
             // 注册只看自己复选框

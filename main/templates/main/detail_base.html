@@ -32,6 +32,8 @@
         {% block general_script %}
             <script>
                 $(function () {
+                    // 导航栏跳转包含搜索参数
+                    $('.nav-item.active').children('a').attr('href', '/redirect/' + window.location.search);
                     // 注册注销按钮
                     $("#logout_btn").click(function () {
                         window.open('{% url 'user_logout' %}', '_self');

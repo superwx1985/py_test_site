@@ -13,6 +13,7 @@ from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, StepForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie
 from django.template.loader import render_to_string
 from main.views import general
+from django.template.exceptions import TemplateDoesNotExist
 
 logger = logging.getLogger('django.request')
 
@@ -20,109 +21,17 @@ logger = logging.getLogger('django.request')
 # 用例列表
 @login_required
 def list_(request):
-    page = request.GET.get('page')
-    size = request.GET.get('size', request.COOKIES.get('size'))
-    search_text = str(request.GET.get('search_text', ''))
-    order_by = request.GET.get('order_by', 'modified_date')
-    order_by_reverse = request.GET.get('order_by_reverse', 'True')
-    all_ = request.GET.get('all_', 'False')
-
-    page = change_to_positive_integer(page, 1)
-    size = change_to_positive_integer(size, 10)
-    if order_by_reverse == 'True':
-        order_by_reverse = True
-    else:
-        order_by_reverse = False
-    if all_ == 'False':
-        all_ = False
-    else:
-        all_ = True
-
-    if request.session.get('status', None) == 'success':
-        prompt = 'success'
-    request.session['status'] = None
-    q = get_query_condition(search_text)
-    if all_:
-        q &= Q(is_active=True)
-    else:
-        q &= Q(is_active=True) & Q(creator=request.user)
-    objects = SuiteResult.objects.filter(q).values(
-        'pk', 'uuid', 'name', 'keyword', 'project__name',  'start_date', 'result_status', 'creator', 'creator__username',
-        'modified_date').annotate(
-        real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
-    result_status_list = SuiteResult.result_status_list
-    d = {l[0]: l[1] for l in result_status_list}
-    for o in objects:
-        o['result_status_str'] = d.get(o['result_status'], 'N/A')
-    # 排序
-    if objects:
-        if order_by not in objects[0]:
-            order_by = 'modified_date'
-        objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
-    paginator = Paginator(objects, size)
-    try:
-        objects = paginator.page(page)
-    except PageNotAnInteger:
-        objects = paginator.page(1)
-        page = 1
-    except EmptyPage:
-        objects = paginator.page(paginator.num_pages)
-        page = paginator.num_pages
-    order_by_form = OrderByForm(initial={'order_by': order_by, 'order_by_reverse': order_by_reverse})
-    paginator_form = PaginatorForm(initial={'page': page, 'size': size}, page_max_value=paginator.num_pages)
-    # 设置cookie
-    cookies = [Cookie('size', size, path=request.path)]
-    respond = render(request, 'main/result/list.html', locals())
-    for cookie in cookies:
-        respond.set_cookie(cookie.key, cookie.value, cookie.max_age, cookie.expires, cookie.path)
-    return respond
+    return render(request, 'main/help/list.html', locals())
 
 
 # 用例详情
 @login_required
 def detail(request, pk):
-    next_ = request.GET.get('next', '/home/')
-    inside = request.GET.get('inside')
     try:
-        obj = SuiteResult.objects.select_related('creator', 'modifier').get(pk=pk)
-    except SuiteResult.DoesNotExist:
-        raise Http404('SuiteResult does not exist')
-    sub_objects = obj.caseresult_set.filter(step_result=None).order_by('case_order')
-    if request.method == 'GET':
-        _project = obj.project.pk if obj.project is not None else None
-        form = SuiteResultForm(initial={
-            'name': obj.name, 'description': obj.description, 'keyword': obj.keyword, 'project': _project})
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
-        return render(request, 'main/result/detail.html', locals())
-    elif request.method == 'POST':
-        form = SuiteResultForm(data=request.POST)
-        if form.is_valid():
-            obj.name = form.cleaned_data['name']
-            obj.description = form.cleaned_data['description']
-            obj.keyword = form.cleaned_data['keyword']
-            project_pk = form.cleaned_data['project']
-            if project_pk.isdigit():
-                try:
-                    project = Project.objects.get(pk=project_pk)
-                    obj.project = project
-                except Project.DoesNotExist:
-                    logger.warning('ID为[{}]的项目不存在'.format(project_pk))
-            else:
-                obj.project = None
-            obj.modifier = request.user
-            obj.clean_fields()
-            obj.save()
-            request.session['status'] = 'success'
-            redirect = request.POST.get('redirect')
-            if redirect:
-                return HttpResponseRedirect(next_)
-            else:
-                return HttpResponseRedirect(request.get_full_path())
-
-        return render(request, 'main/result/detail.html', locals())
+        respond = render(request, 'main/help/detail_{}.html'.format(pk), locals())
+    except TemplateDoesNotExist:
+        raise Http404
+    return respond
 
 
 @login_required
@@ -218,7 +127,7 @@ def step_result(request, pk):
 # 步骤快照
 @login_required
 def step_snapshot(request, pk):
-    action_map_json = other.get_action_map_json()
+    action_map_json = general.get_action_map_json()
     try:
         obj = StepResult.objects.get(pk=pk)
     except StepResult.DoesNotExist:

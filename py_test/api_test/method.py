@@ -1,6 +1,7 @@
 import datetime
 import httplib2
 import json
+import socket
 from py_test.vic_tools import vic_find_object
 from py_test.general.vic_log import get_thread_logger
 
@@ -20,7 +21,6 @@ def send_http_request(method='GET', url='http://127.0.0.1', headers=None, body=N
     h = httplib2.Http(timeout=timeout)
     response_start_time = datetime.datetime.now()
     str_content = None
-    import socket
     try:
         response, content = h.request(uri=url, method=method, headers=headers, body=body)
     except socket.timeout:

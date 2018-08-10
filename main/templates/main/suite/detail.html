@@ -18,6 +18,8 @@
 {% block prepare_script %}
     <script>
         $(function () {
+            // 更新导航栏
+            $('#nav_suite').addClass('active');
             // 定义m2m字段
             window.$m2m_input = $('input[name=case]');
         })
@@ -27,8 +29,6 @@
 {% block script %}
     <script>
         $(function () {
-            // 更新导航栏
-            $('#nav_suite').addClass('active');
             // 获取配置下拉项
             getList("{% url 'config_select_json' %}", window.$csrf_input.val(), update_config_dropdown, '{"selected_pk": "{{ form.config.value }}"}');
             // 获取变量组下拉项

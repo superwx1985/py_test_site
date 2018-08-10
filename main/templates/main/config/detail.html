@@ -7,16 +7,25 @@
         新配置 - {{ block.super }}
     {% endif %}
 {% endblock %}
+
 {% block style %}
     <style type='text/css' media='screen'>
 
     </style>
 {% endblock %}
-{% block script %}
+
+{% block prepare_script %}
     <script>
         $(function () {
             // 更新导航栏
             $('#nav_config').addClass('active');
+        });
+    </script>
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(function () {
             // 注册驱动类型改变事件
             $('#id_ui_selenium_client').on('change', function () {
                 show_ui_selenium_client_related($(this))

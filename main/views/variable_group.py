@@ -11,7 +11,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import VariableGroup, Variable, Case, Suite
 from main.forms import OrderByForm, PaginatorForm, VariableGroupForm
-from main.views.general import get_query_condition, change_to_positive_integer, Cookie
+from utils.other import get_query_condition, change_to_positive_integer, Cookie
 from urllib.parse import quote
 from main.views import case, suite
 

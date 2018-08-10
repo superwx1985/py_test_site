@@ -7,16 +7,25 @@
         新变量组 - {{ block.super }}
     {% endif %}
 {% endblock %}
+
 {% block style %}
     <style type='text/css' media='screen'>
 
     </style>
 {% endblock %}
-{% block script %}
+
+{% block prepare_script %}
     <script>
         $(function () {
             // 更新导航栏
             $('#nav_variable').addClass('active');
+        });
+    </script>
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(function () {
             // 初始化变量名列表
             window.variableNames = [];
             // 注册添加按钮

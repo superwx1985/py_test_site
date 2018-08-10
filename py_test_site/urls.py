@@ -27,6 +27,7 @@ import main.views.config as config
 import main.views.variable_group as variable_group
 import main.views.suite as suite
 import main.views.result as result
+import main.views.help as help_
 
 
 urlpatterns = [
@@ -97,13 +98,17 @@ urlpatterns = [
     path('step_result/<str:pk>/json', result.step_result_json, name='step_result_json'),
     path('step_result/<str:pk>/snapshot', result.step_snapshot, name='step_snapshot'),
 
+    path('helps/', help_.list_, name='helps'),
+    path('help/<str:pk>/', help_.detail, name='help'),
 
+    path('redirect/', general.redirect, name='redirect'),
     path('version/', general.version, name='version'),
     path('debug/', general.debug, name='debug'),
     path('test1/', general.test1, name='test1'),
     path('test2/', general.test2, name='test2'),
     path('debug1/', general.debug1, name='debug1'),
     path('debug2/', general.debug2, name='debug2'),
+    path('debug3/', general.debug3, name='debug3'),
 ]
 
 # 添加media文件映射

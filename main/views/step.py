@@ -12,9 +12,10 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Step
 from main.forms import OrderByForm, PaginatorForm, StepForm
-from main.views.general import get_query_condition, change_to_positive_integer, Cookie
+from utils.other import get_query_condition, change_to_positive_integer, Cookie
 from urllib.parse import quote
 from main.views import case, general
+from utils import other
 
 logger = logging.getLogger('django.request')
 
@@ -90,7 +91,7 @@ def detail(request, pk):
     new_pk = request.GET.get('new_pk')
     order = request.GET.get('order')
     reference_url = reverse(reference, args=[pk])  # 被其他对象调用
-    action_map_json = general.get_action_map_json()
+    action_map_json = other.get_action_map_json()
     try:
         obj = Step.objects.select_related('creator', 'modifier').get(pk=pk)
     except Step.DoesNotExist:
@@ -126,7 +127,7 @@ def detail(request, pk):
 def add(request):
     next_ = request.GET.get('next', '/home/')
     inside = request.GET.get('inside')
-    action_map_json = general.get_action_map_json()
+    action_map_json = other.get_action_map_json()
     if request.method == 'GET':
         form = StepForm()
         if request.session.get('status', None) == 'success':
@@ -299,7 +300,7 @@ def copy_(request, pk):
         obj.pk = None
         obj.name = name
         obj.creator = obj.modifier = request.user
-        obj.uuid = uuid.uuid1
+        obj.uuid = uuid.uuid1()
         obj.clean_fields()
         obj.save()
         return JsonResponse({
