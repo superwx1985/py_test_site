@@ -122,7 +122,7 @@ class CaseForm(forms.ModelForm):
 class StepForm(forms.ModelForm):
     # 优化查询数量，防止对action type查询多次
     action = forms.ModelChoiceField(
-        queryset=Action.objects.select_related('creator', 'modifier', 'type').order_by('type', 'pk'))
+        queryset=Action.objects.select_related('creator', 'modifier', 'type'))
     # 排序子用例
     other_sub_case = forms.ModelChoiceField(queryset=Case.objects.filter(is_active=True).order_by('pk'), required=False)
     # 不验证某些字段

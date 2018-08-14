@@ -43,7 +43,8 @@ class CaseAdmin(admin.ModelAdmin):
 
 class ActionAdmin(admin.ModelAdmin):
     list_display = (
-        'pk', 'name', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active', 'type', 'order')
+        'pk', 'name', 'keyword', 'code', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active', 'type',
+        'order')
     list_display_links = ('pk', 'name',)
     list_filter = ('is_active', 'creator', 'type', 'created_date',)
     list_editable = ('is_active',)

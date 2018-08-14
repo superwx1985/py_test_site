@@ -249,24 +249,6 @@ def cases(_, pk):
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 
-# 获取临时case
-@login_required
-def case_list_temp(request):
-    list_ = json.loads(request.POST.get('condition', ''))
-    order = 0
-    list_temp = list()
-    for pk in list_:
-        if pk.strip() == '':
-            continue
-        order += 1
-        objects = Case.objects.filter(pk=pk).values('pk', 'uuid', 'name').annotate(
-            action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()))
-        objects = list(objects)
-        objects[0]['order'] = order
-        list_temp.append(objects[0])
-    return JsonResponse({'statue': 1, 'message': 'OK', 'data': list_temp})
-
-
 # 执行套件
 @login_required
 def execute_(request, pk):

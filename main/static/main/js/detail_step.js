@@ -47,6 +47,19 @@ function show_action_field($actionSelect) {
 		$('[ui],div[name=timeout]').show();
 		$('div[name=ui_special_action]').hide();
 		$('div[name=ui_data] .col-1').text('文字内容');
+	} else if (select_value === 'UI_SELECT') {
+		introduce.children('span').text('在指定的下拉列表进行选择操作，如果找不到元素或元素当前不可用会报错。此动作只能操作由select，option元素组成的标准下拉列表，其他类型的下拉列表请使用单击或JS进行选择');
+		introduce.append($('<br>')).append($('<span>').addClass('mark').text('请在选项表达式中填入欲选中的选项。'));
+		introduce.append($('<br>')).append($('<span>').addClass('mark').text('不填入值代表取消选中任何选项。'));
+		introduce.append($('<br>')).append($('<span>').addClass('mark').text('all代表全选（只能在多选框生效）。'));
+		introduce.append($('<br>')).append($('<span>').addClass('mark').text('使用json格式提供选项表达式，例如：'));
+		introduce.append($('<br>')).append($('<span>').addClass('mark').text('[{"value": "1"}]代表选中value="1"的选项；[{"value": "1"}, {"value": "3"}]代表选中value="1"和value="3"的选项'));
+		introduce.append($('<br>')).append($('<span>').addClass('mark').text('[{"index": "0"}]代表选中第一个选项；[{"index": "0"}, {"index": "3"}]代表选中第一个和第四个选项'));
+		introduce.append($('<br>')).append($('<span>').addClass('mark').text('[{"text": "红色"}]代表选中文字为“红色”的选项；[{"text": "红色"}, {"text": "yellow"}]代表选中文字为“红色”和“yellow”的选项'));
+		introduce.append($('<br>')).append($('<span>').addClass('mark').text('[{"value": "1"}, {"text": "红色"}, {"index": "2"}]代表选中value="1"，文字为“红色”以及第3个选项'));
+		$('[ui],div[name=timeout]').show();
+		$('div[name=ui_special_action]').hide();
+		$('div[name=ui_data] .col-1').text('选项表达式');
 	} else if (select_value === 'UI_SPECIAL_ACTION') {
 		introduce.children('span').text('执行一些特殊的互动操作。请选择具体的特殊动作');
 		$('div[name=ui_special_action],div[name=timeout]').show();

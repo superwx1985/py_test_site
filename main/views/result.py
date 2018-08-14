@@ -12,7 +12,7 @@ from main.models import SuiteResult, StepResult, CaseResult, Project
 from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, StepForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie
 from django.template.loader import render_to_string
-from main.views import general
+from utils import other
 
 logger = logging.getLogger('django.request')
 

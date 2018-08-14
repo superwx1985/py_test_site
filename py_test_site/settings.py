@@ -82,10 +82,26 @@ WSGI_APPLICATION = 'py_test_site.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
+# mysql改用pymysql驱动
+import pymysql
+pymysql.install_as_MySQLdb()
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'py_test_site',
+        'HOST': '127.0.0.1',
+        # 'HOST': '192.192.185.140',
+        'PORT': '3306',
+        'USER': 'py_test_site',
+        'PASSWORD': 'py_test_site',
     }
 }
 
@@ -292,5 +308,5 @@ ASGI_APPLICATION = 'py_test_site.routing.application'
 SITE_NAME = '汇智自动化测试工具'
 
 # 站点版本
-SITE_VERSION = 'V1.1.20180809.01'
+SITE_VERSION = 'V1.1.20180814.01'
 

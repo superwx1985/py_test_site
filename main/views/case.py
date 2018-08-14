@@ -263,7 +263,7 @@ def quick_update(request, pk):
 def steps(_, pk):
     objects = Step.objects.filter(case=pk, is_active=True).order_by('casevsstep__order').values(
         'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date', order=F('casevsstep__order')
-    ).annotate(action=Concat('action__name', Value(' - '), 'action__type__name', output_field=CharField()),
+    ).annotate(action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()),
                real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj in objects:
         obj['url'] = reverse(step.detail, args=[obj['pk']])
@@ -369,6 +369,7 @@ def copy_(request, pk):
         obj.pk = None
         obj.name = name
         obj.creator = obj.modifier = request.user
+        obj.uuid = uuid.uuid1()
         obj.clean_fields()
         obj.save()
         m2m_order = 0
@@ -376,7 +377,7 @@ def copy_(request, pk):
             if copy_sub_item:
                 m2m_obj.pk = None
                 m2m_obj.creator = m2m_obj.modifier = request.user
-                obj.uuid = uuid.uuid1
+                m2m_obj.uuid = uuid.uuid1()
                 m2m_obj.clean_fields()
                 m2m_obj.save()
             m2m_order += 1

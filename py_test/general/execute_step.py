@@ -208,6 +208,21 @@ def execute_step(
             if save_as != '':
                 variables.set_variable(save_as, elements)
 
+        # 选择下拉项
+        elif step_action.code == 'UI_SELECT':
+            if ui_by == '' or ui_locator == '':
+                raise ValueError('无效的定位方式或定位符')
+            variable_elements = None
+            if ui_by == 'variable':
+                variable_elements = vic_variables.get_elements(ui_locator, variables)
+            elif ui_by == 'public element':
+                ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
+            run_result, elements = method.try_to_select(
+                dr=dr, by=ui_by, locator=ui_locator, data=ui_data, timeout=timeout, index_=ui_index,
+                base_element=ui_base_element, variable_elements=variable_elements)
+            if save_as != '':
+                variables.set_variable(save_as, elements)
+
         # 特殊动作
         elif step_action.code == 'UI_SPECIAL_ACTION':
             variable_elements = None

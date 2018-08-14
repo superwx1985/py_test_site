@@ -14,10 +14,12 @@ import uuid
 import os
 import io
 import datetime
+import json
 from selenium.common import exceptions
 from selenium import webdriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.action_chains import ActionChains
 from PIL import Image
 from py_test.vic_tools import vic_find_object, vic_eval
@@ -453,7 +455,7 @@ def try_to_click(dr, by, locator, timeout, index_, base_element, variable_elemen
         run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
                                                                            print_=print_)
         if run_result_temp[0] == 'f':
-            raise exceptions.NoSuchElementException('无法点击，{}'.format(run_result_temp[1]))
+            raise exceptions.NoSuchElementException('未找到指定的元素，{}'.format(run_result_temp[1]))
     if len(elements) == 1 and index_ in (None, 0):
         element = elements[0]
     elif index_ is None:
@@ -464,7 +466,7 @@ def try_to_click(dr, by, locator, timeout, index_, base_element, variable_elemen
         element = elements[index_]
 
     highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
-    ActionChains(dr).click(element).perform()
+    element.click()
     run_result = ('p', '点击元素【By:{}|Locator:{}】'.format(by, locator))
     return run_result, elements
 
@@ -477,7 +479,7 @@ def try_to_enter(dr, by, locator, data, timeout, index_, base_element, variable_
         run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
                                                                            print_=print_)
         if run_result_temp[0] == 'f':
-            raise exceptions.NoSuchElementException('无法输入，{}'.format(run_result_temp[1]))
+            raise exceptions.NoSuchElementException('未找到指定的元素，{}'.format(run_result_temp[1]))
     if len(elements) == 1 and index_ in (None, 0):
         element = elements[0]
     elif index_ is None:
@@ -490,7 +492,65 @@ def try_to_enter(dr, by, locator, data, timeout, index_, base_element, variable_
     highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     element.clear()
     element.send_keys(data)
-    run_result = ('p', '输入【{}】'.format(data))
+    run_result = ('p', '在元素【By:{}|Locator:{}】中输入【{}】'.format(by, locator, data))
+    return run_result, elements
+
+
+# 尝试选择
+def try_to_select(dr, by, locator, data, timeout, index_, base_element, variable_elements=None, print_=True):
+    if variable_elements is not None:
+        elements = variable_elements
+    else:
+        run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
+                                                                           print_=print_)
+        if run_result_temp[0] == 'f':
+            raise exceptions.NoSuchElementException('未找到指定的元素，{}'.format(run_result_temp[1]))
+    if len(elements) == 1 and index_ in (None, 0):
+        element = elements[0]
+    elif index_ is None:
+        raise ValueError('找到%r个元素，请指定一个index' % len(elements))
+    elif index_ > (len(elements) - 1):
+        raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
+    else:
+        element = elements[index_]
+
+    highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
+    select = Select(element)
+    # 如果data为空则全不选
+    if not data:
+        select.deselect_all()
+    # 如果data为字符串all
+    elif data.upper() == 'all':
+        # 如果select是多选
+        if select.is_multiple:
+            for i in range(len(select.options)):
+                select.select_by_index(i)
+        else:
+            raise ValueError('单项选择框不允许全选')
+    # 尝试把data转为json对象
+    else:
+        try:
+            option_list = json.loads(data)
+        except json.JSONDecodeError:
+            raise ValueError('无法解析的选项表达式！请检查表达式，注意是否符合json字符串规范。')
+        if not select.is_multiple and len(option_list) > 1:
+            raise ValueError('单项选择框不允许多选')
+        for option in option_list:
+            if 'value' in option:
+                select.select_by_value(option['value'])
+            elif 'index' in option:
+                select.select_by_index(option['index'])
+            elif 'text' in option:
+                select.select_by_visible_text(option['text'])
+            else:
+                raise ValueError('无法解析的选项表达式！请按照格式提供表达式。')
+
+    selected_text_list = list()
+    [selected_text_list.append(option.text) for option in select.all_selected_options]
+
+    run_result = (
+        'p', '在元素【By:{}|Locator:{}】中进行了选择操作，被选中的选项为【{}】'.format(
+            by, locator, '|'.join(selected_text_list)))
     return run_result, elements
 
 
@@ -698,7 +758,7 @@ def try_to_switch_to_window(dr, by, locator, data, timeout, index_, base_element
     else:
         try:
             title = dr.find_element_by_tag_name('title')
-            title_str = title.text()
+            title_str = title.text
         except exceptions.WebDriverException:
             title_str = '（无标题）'
         run_result = ('p', '经过{}秒 - 切换到新窗口【{}】'.format(elapsed_time, title_str))
@@ -776,15 +836,25 @@ def get_screenshot(dr, element=None):
     from django.core.files.uploadedfile import UploadedFile
     from main.models import Image
     bio = io.BytesIO()
-    if element:
-        img = get_image_on_element(dr, element)
-    else:
-        if 'chrome' == dr.name:
-            img = get_long_screenshot_img_for_chrome(dr)
+    # 刚打开某个页面时截图会报错，加入3次重试机制
+    for i in range(3):
+        try:
+            if element:
+                img = get_image_on_element(dr, element)
+            else:
+                if 'chrome' == dr.name:
+                    img = get_long_screenshot_img_for_chrome(dr)
+                else:
+                    img = Image.open(io.BytesIO(dr.get_screenshot_as_png()))
+        except exceptions.WebDriverException as e:
+            if 'unknown error: cannot take screenshot' in e.msg:
+                time.sleep(1)
+                continue
+            else:
+                raise
         else:
-            img = Image.open(io.BytesIO(dr.get_screenshot_as_png()))
-
-    img.save(bio, format='png')
+            img.save(bio, format='png')
+            break
 
     name = datetime.datetime.now().strftime('%Y%m%d_%H%M%S.png')
     image = Image(name=name, img=UploadedFile(bio, name=name))
