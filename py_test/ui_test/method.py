@@ -676,6 +676,30 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
     return run_result, elements
 
 
+# 尝试滚动到元素位置
+def try_to_scroll_into_view(dr, by, locator, timeout, index_, base_element, variable_elements=None, print_=True):
+    if variable_elements is not None:
+        elements = variable_elements
+    else:
+        run_result_temp, elements = wait_for_element_present(dr, by, locator, timeout, base_element=base_element,
+                                                             variable_elements=None, print_=print_)
+        if run_result_temp[0] == 'f':
+            raise exceptions.NoSuchElementException('无法执行动作，因为：{}'.format(run_result_temp[1]))
+    if len(elements) == 1 and index_ in (None, 0):
+        element = elements[0]
+    elif index_ is None:
+        raise ValueError('找到%r个元素，请指定一个index' % len(elements))
+    elif index_ > (len(elements) - 1):
+        raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
+    else:
+        element = elements[index_]
+
+    highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
+    dr.execute_script('arguments[0].scrollIntoView()', element)
+    run_result = ('p', '移动窗口到元素【By:{}|Locator:{}】的位置'.format(by, locator))
+    return run_result, elements
+
+
 # 处理浏览器弹窗
 def confirm_alert(dr, alert_handle, timeout, print_=True):
     logger = vic_log.get_thread_logger()

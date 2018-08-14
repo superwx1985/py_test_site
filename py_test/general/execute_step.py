@@ -238,6 +238,21 @@ def execute_step(
             if save_as != '':
                 variables.set_variable(save_as, elements)
 
+        # 移动到元素位置
+        elif step_action.code == 'UI_SCROLL_INTO_VIEW':
+            if ui_by == '' or ui_locator == '':
+                raise ValueError('无效的定位方式或定位符')
+            variable_elements = None
+            if ui_by == 'variable':
+                variable_elements = vic_variables.get_elements(ui_locator, variables)
+            elif ui_by == 'public element':
+                ui_by, ui_locator = method.get_public_elements(ui_locator, public_elements)
+            run_result, elements = method.try_to_scroll_into_view(
+                dr=dr, by=ui_by, locator=ui_locator, timeout=timeout, index_=ui_index,
+                base_element=ui_base_element, variable_elements=variable_elements)
+            if save_as != '':
+                variables.set_variable(save_as, elements)
+
         # 验证URL
         elif step_action.code == 'UI_VERIFY_URL':
             if ui_data == '':

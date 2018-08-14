@@ -39,16 +39,16 @@ function show_action_field($actionSelect) {
 		introduce.children('span').text('关闭浏览器，清空所有缓存，再重新打开浏览器');
 		$('div[name=ui_alert_handle],div[name=timeout]').show();
 	} else if (select_value === 'UI_CLICK') {
-		introduce.children('span').text('在指定的元素上触发单击，如果找不到元素或元素当前不可用会报错');
+		introduce.children('span').text('在指定的元素上触发单击，如果找不到元素或元素当前不可见会报错');
 		$('[ui],div[name=timeout]').show();
 		$('div[name=ui_data],div[name=ui_special_action]').hide();
 	} else if (select_value === 'UI_ENTER') {
-		introduce.children('span').text('在指定的元素里输入文字，如果找不到元素或元素当前不可用会报错');
+		introduce.children('span').text('在指定的元素里输入文字，如果找不到元素或元素当前不可见会报错');
 		$('[ui],div[name=timeout]').show();
 		$('div[name=ui_special_action]').hide();
 		$('div[name=ui_data] .col-1').text('文字内容');
 	} else if (select_value === 'UI_SELECT') {
-		introduce.children('span').text('在指定的下拉列表进行选择操作，如果找不到元素或元素当前不可用会报错。此动作只能操作由select，option元素组成的标准下拉列表，其他类型的下拉列表请使用单击或JS进行选择');
+		introduce.children('span').text('在指定的下拉列表进行选择操作，如果找不到元素或元素当前不可见会报错。此动作只能操作由select，option元素组成的标准下拉列表，其他类型的下拉列表请使用单击或JS进行选择');
 		introduce.append($('<br>')).append($('<span>').addClass('mark').text('请在选项表达式中填入欲选中的选项。'));
 		introduce.append($('<br>')).append($('<span>').addClass('mark').text('不填入值代表取消选中任何选项。'));
 		introduce.append($('<br>')).append($('<span>').addClass('mark').text('all代表全选（只能在多选框生效）。'));
@@ -64,6 +64,10 @@ function show_action_field($actionSelect) {
 		introduce.children('span').text('执行一些特殊的互动操作。请选择具体的特殊动作');
 		$('div[name=ui_special_action],div[name=timeout]').show();
 		show_special_action_field($('#id_ui_special_action'));
+	} else if (select_value === 'UI_SCROLL_INTO_VIEW') {
+		introduce.children('span').text('移到浏览器窗口的可视区域到指定的元素的位置，如果找不到元素会报错');
+		$('[ui],div[name=timeout]').show();
+		$('div[name=ui_data],div[name=ui_special_action]').hide();
 	} else if (select_value === 'UI_VERIFY_URL') {
 		introduce.children('span').text('验证当前页面的URL是否匹配，待验证内容可以为字符串或表达式');
 		$('div[name=ui_data] .col-1').text('待验证内容');
