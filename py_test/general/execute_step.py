@@ -504,13 +504,13 @@ def execute_step(
         step_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
         step_result.result_error = traceback.format_exc()
 
-        # 获取报错时截图
-        if dr is not None and ui_get_ss and step_action.type_id == 1:
-            try:
-                run_result, image = method.get_screenshot(dr)
-                img_list.append(image)
-            except Exception:
-                logger.warning('【{}】\t无法获取错误截图'.format(execute_id), exc_info=True)
+    # 获取报错时截图
+    if dr is not None and ui_get_ss and step_action.type_id == 1 and step_result.result_status == 3:
+        try:
+            run_result, image = method.get_screenshot(dr)
+            img_list.append(image)
+        except Exception:
+            logger.warning('【{}】\t无法获取错误截图'.format(execute_id), exc_info=True)
 
     # 关联截图
     for img in img_list:
