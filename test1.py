@@ -1,14 +1,11 @@
 import hashlib, uuid, json
 from py_test.api_test.method import send_http_request
-import httplib2
+from py_test.general.vic_method import replace_special_value
 
-a = '123'
+a = '${slice|abcd1234,,-8,-1}$'
 
-b = []
-
-[b.append(str(i)) for i in range(len(a))]
+s = replace_special_value(a, None)
 
 
-s = '|'.join(b)
 
 print(s)

@@ -97,61 +97,59 @@ def get_uuid():
 
 # 切片操作
 def get_slice(str_):
-    if str_.find(',') == -1:
-        new_str = str_
-    else:
-        str_list = str_.split(sep=',')
-        try:
-            if len(str_list) == 2:
-                index_ = int(str_list[1])
-                new_str = str_list[0][index_]
-            elif len(str_list) == 3:
-                start_index = ''
-                end_index = ''
-                if str_list[1].strip() != '':
-                    start_index = int(str_list[1])
-                if str_list[2].strip() != '':
-                    end_index = int(str_list[2])
-                if isinstance(start_index, int) and isinstance(end_index, int):
-                    new_str = str_list[0][start_index:end_index]
-                elif isinstance(start_index, int):
-                    new_str = str_list[0][start_index:]
-                elif isinstance(end_index, int):
-                    new_str = str_list[0][:end_index]
-                else:
-                    new_str = str_list[0]
-            elif len(str_list) == 4:
-                start_index = ''
-                end_index = ''
-                step = ''
-                if str_list[1].strip() != '':
-                    start_index = int(str_list[1])
-                if str_list[2].strip() != '':
-                    end_index = int(str_list[2])
-                if str_list[3].strip() != '':
-                    step = int(str_list[3])
-                if isinstance(start_index, int) and isinstance(end_index, int) and isinstance(step, int):
-                    new_str = str_list[0][start_index:end_index:step]
-                elif isinstance(start_index, int) and isinstance(end_index, int):
-                    new_str = str_list[0][start_index:end_index:]
-                elif isinstance(start_index, int) and isinstance(step, int):
-                    new_str = str_list[0][start_index::step]
-                elif isinstance(end_index, int) and isinstance(step, int):
-                    new_str = str_list[0][:end_index:step]
-                elif isinstance(start_index, int):
-                    new_str = str_list[0][start_index::]
-                elif isinstance(end_index, int):
-                    new_str = str_list[0][:end_index:]
-                elif isinstance(step, int):
-                    new_str = str_list[0][::step]
-                else:
-                    new_str = str_list[0]
+    str_list = str_.split(sep=',')
+
+    try:
+        if len(str_list) == 1:
+            new_str = str_
+        elif len(str_list) == 2:
+            index_ = int(str_list[1])
+            new_str = str_list[0][index_]
+        elif len(str_list) == 3:
+            start_index = ''
+            end_index = ''
+            if str_list[1].strip() != '':
+                start_index = int(str_list[1])
+            if str_list[2].strip() != '':
+                end_index = int(str_list[2])
+            if isinstance(start_index, int) and isinstance(end_index, int):
+                new_str = str_list[0][start_index:end_index]
+            elif isinstance(start_index, int):
+                new_str = str_list[0][start_index:]
+            elif isinstance(end_index, int):
+                new_str = str_list[0][:end_index]
             else:
-                raise ValueError
-        except ValueError:
-            raise ValueError('[' + str_ + '] is an invalid parameter for get_slice function')
-        except IndexError:
-            raise ValueError('[' + str_ + '] is an invalid parameter for get_slice function')
+                new_str = str_list[0]
+        elif len(str_list) == 4:
+            start_index = ''
+            end_index = ''
+            step = ''
+            if str_list[1].strip() != '':
+                start_index = int(str_list[1])
+            if str_list[2].strip() != '':
+                end_index = int(str_list[2])
+            if str_list[3].strip() != '':
+                step = int(str_list[3])
+            if isinstance(start_index, int) and isinstance(end_index, int) and isinstance(step, int):
+                new_str = str_list[0][start_index:end_index:step]
+            elif isinstance(start_index, int) and isinstance(end_index, int):
+                new_str = str_list[0][start_index:end_index:]
+            elif isinstance(start_index, int) and isinstance(step, int):
+                new_str = str_list[0][start_index::step]
+            elif isinstance(end_index, int) and isinstance(step, int):
+                new_str = str_list[0][:end_index:step]
+            elif isinstance(start_index, int):
+                new_str = str_list[0][start_index::]
+            elif isinstance(end_index, int):
+                new_str = str_list[0][:end_index:]
+            elif isinstance(step, int):
+                new_str = str_list[0][::step]
+            else:
+                new_str = str_list[0]
+        else:
+            raise ValueError
+    except ValueError or IndexError:
+        raise ValueError('slice操作符接收到一个非法的参数【{}】，请检查'.format(str_))
     return new_str
 
 

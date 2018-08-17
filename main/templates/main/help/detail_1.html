@@ -28,8 +28,8 @@
         {% include 'main/include/navbar.html' %}
         <div class="container-fluid" style="padding-top: 60px; padding-bottom: 200px">
             <div class="container">
-                <h2 class="text-center">变量讲解</h2>
-                <p>变量在测试数据中使用<span class="mark">${}$</span>标识，用于指代一些动态变化的内容。</p>
+                <h2 class="text-center">变量说明</h2>
+                <p>在测试数据中使用<span class="mark">${}$</span>标识变量，用于指代一些动态变化的内容。</p>
                 <h3>普通变量</h3>
                 <p>在测试套件的公共变量组或测试用例的用例变量组中寻找变量，支持嵌套。</p>
                 <div>
@@ -83,7 +83,7 @@
                 <div class="tab-content bg-light">
                     <div id="operate_1" class="tab-pane active" style="padding: 1em">
                         <div>
-                            <p class="lead">生成随机数，接收1到3个参数。</p>
+                            <p class="lead">生成随机数，接受1到3个参数。</p>
                             <p class="font-weight-bold">参数1</p>
                             <p>代表随机数范围是从0到参数1的值。</p>
                             <p>例：<span class="mark">${r|100}$</span>，代表生成一个0-100的随机数。</p>
@@ -97,7 +97,7 @@
                     </div>
                     <div id="operate_2" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">生成时间字符串，接收1，2或4个参数。</p>
+                            <p class="lead">生成时间字符串，接受1，2或4个参数。</p>
                             <p class="font-weight-bold">参数1</p>
                             <p>代表一个日期，返回一个标准时间字符串。</p>
                             <p>例：
@@ -148,7 +148,7 @@
                     </div>
                     <div id="operate_3" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">通过日期字符串生成时间戳字符串，接收1到3个参数。注意：python的时间戳默认为秒后带小数点。</p>
+                            <p class="lead">通过日期字符串生成时间戳字符串，接受1到3个参数。注意：python的时间戳默认为秒后带小数点。</p>
                             <p class="font-weight-bold">参数1</p>
                             <p>代表一个日期，返回精确到毫秒的时间戳。</p>
                             <p>例：
@@ -179,7 +179,7 @@
                     </div>
                     <div id="operate_4" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">通过时间戳字符串生成日期字符串，接收1或2个参数。</p>
+                            <p class="lead">通过时间戳字符串生成日期字符串，接受1或2个参数。</p>
                             <p class="font-weight-bold">参数1</p>
                             <p>代表一个时间戳，返回默认格式的时间字符串。</p>
                             <p>例：<span class="mark">${tst|1262322016.7632}$</span>，返回<span class="text-info">2010-01-01 13:00:16.763200</span></p>
@@ -190,7 +190,7 @@
                     </div>
                     <div id="operate_5" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">把字符串通过url编码后返回，接收1个参数。</p>
+                            <p class="lead">把字符串通过url编码后返回，接受1个参数。</p>
                             <p class="font-weight-bold">参数1</p>
                             <p>参数1为需要转换的内容。</p>
                             <p>例：<span class="mark">${url|index.html?a=测试}$</span>，返回<span class="text-info">index.html%3Fa%3D%E6%B5%8B%E8%AF%95</span></p>
@@ -198,13 +198,88 @@
                     </div>
                     <div id="operate_6" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">返回一个长度为32位的UUID。不需要参数</p>
+                            <p class="lead">返回一个长度为32位的UUID，不需要参数</p>
                             <p>例：<span class="mark">${uuid|}$</span>，返回<span class="text-info">f5138eec-9c83-11e8-823e-005056b214a1</span>。</p>
                         </div>
                     </div>
                     <div id="operate_7" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">分割字符串</p>
+                            <p class="lead">根据给定的条件分割字符串，接受1到4个参数，类似python的切片操作。</p>
+                            <table class="table table-bordered table-sm">
+                                <colgroup><col style="width: 5em"><col><col><col><col><col><col><col><col><col style="width: 5em"></colgroup>
+                                <tbody class="middle">
+                                    <tr><td class="bg-info">正向索引</td><td>0</td><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td class="bg-info">正向索引</td></tr>
+                                    <tr class="bg-dark text-white font-weight-bold"><td class="bg-info">字符串</td><td>a</td><td>b</td><td>c</td><td>d</td><td>1</td><td>2</td><td>3</td><td>4</td><td class="bg-info">字符串</td></tr>
+                                    <tr><td class="bg-info">反向索引</td><td>-8</td><td>-7</td><td>-6</td><td>-5</td><td>-4</td><td>-3</td><td>-2</td><td>-1</td><td class="bg-info">反向索引</td></tr>
+                                </tbody>
+                            </table>
+                            <p class="font-weight-bold">参数1</p>
+                            <p>代表需要进行分割操作的字符串。只提供参数1将不进行任何分割操作。</p>
+                            <p>例：<span class="mark">${slice|abcd1234}$</span>，返回<span class="text-info">abcd1234</span></p>
+                            <p class="font-weight-bold">参数2</p>
+                            <p>代表起始索引（0代表第一位，负数代表从右至左，-1代表最后一位）。</p>
+                            <p>如只有起始索引，则取字符串的对应索引值的字符。</p>
+                            <p>例：
+                                <br>
+                                <span class="mark">${slice|abcd1234,0}$</span>，返回<span class="text-info">a</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,2}$</span>，返回<span class="text-info">c</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,-1}$</span>，返回<span class="text-info">4</span>
+                            </p>
+                            <p class="font-weight-bold">参数3</p>
+                            <p>代表结束索引。</p>
+                            <p>如起始索引不为空，取起始索引到结束索引前一位为止的字符。</p>
+                            <p>例：
+                                <br>
+                                <span class="mark">${slice|abcd1234,0,3}$</span>，返回<span class="text-info">abc</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,4,8}$</span>，返回<span class="text-info">1234</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,4,-1}$</span>，返回<span class="text-info">123</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,-3,-1}$</span>，返回<span class="text-info">23</span>
+                            </p>
+                            <p>如起始索引为空，相当于起始索引为0，取第一位到结束索引前一位为止的字符。</p>
+                            <p>例：<span class="mark">${slice|abcd1234,,3}$</span>相当于<span class="mark">${slice|abcd1234,0,3}$</span>，返回<span class="text-info">abc</span></p>
+                            <p>如结束索引为空，相当于结束索引为字符串的最后一位，取起始索引到最后一位的字符</p>
+                            <p>例：<span class="mark">${slice|abcd1234,4,}$</span>相当于<span class="mark">${slice|abcd1234,4,8}$</span>，返回<span class="text-info">1234</span></p>
+                            <p class="font-weight-bold">参数4</p>
+                            <p>代表步长，步长不能为0，默认为1。</p>
+                            <p>如起始索引和结束索引都为空，只提供步长，表示对整个字符串，按照步长整除的规则取值，如步长为负数，则为从右向左取值。</p>
+                            <p>例：
+                                <br>
+                                <span class="mark">${slice|abcd1234,,,1}$</span>，返回<span class="text-info">abcd1234</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,,,-1}$</span>，返回<span class="text-info">4321dcba</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,,,2}$</span>，返回<span class="text-info">ac13</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,,,-2}$</span>，返回<span class="text-info">42db</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,,,8}$</span>，返回<span class="text-info">a</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,,,-8}$</span>，返回<span class="text-info">4</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,,,9}$</span>，返回<span class="text-info">a</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,,,-9}$</span>，返回<span class="text-info">4</span>
+                            </p>
+                            <p>如起始索引或结束索引不为空，则按步长截取从起始索引到结束索引前一位的字符串，如步长为负数，则起始索引也应大于结束索引。</p>
+                            <p>例：
+                                <br>
+                                <span class="mark">${slice|abcd1234,1,7,1}$</span>，返回<span class="text-info">bcd123</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,6,0,-1}$</span>，返回<span class="text-info">321dcb</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,-7,-1,1}$</span>，返回<span class="text-info">bcd123</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,-2,-8,-1}$</span>，返回<span class="text-info">321dcb</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,,-8,-1}$</span>，返回<span class="text-info">4321dcb</span>
+                                <br>
+                                <span class="mark">${slice|abcd1234,-2,,-1}$</span>，返回<span class="text-info">321dcba</span>
+                            </p>
                         </div>
                     </div>
                 </div>

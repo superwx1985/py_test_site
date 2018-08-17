@@ -1,0 +1,61 @@
+{% load staticfiles %}
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        {% include 'main/include/general_css.html' %}
+        <style type='text/css' media='screen'>
+            div.row {
+                padding: 5px 0;
+                {#min-height: 2em;#}
+            }
+        </style>
+        {% include 'main/include/general_script.html' %}
+
+        <script>
+            $(function () {
+                // 更新导航栏
+                $('#nav_help').addClass('active');
+                // 注册注销按钮
+                $("#logout_btn").click(function () {
+                    window.open('{% url 'user_logout' %}', '_self');
+                });
+            });
+        </script>
+    </head>
+    <body>
+        {% include 'main/include/navbar.html' %}
+        <div class="container-fluid" style="padding-top: 60px; padding-bottom: 200px">
+            <div class="container">
+                <h2 class="text-center">文本验证连接符说明</h2>
+                <p>在测试数据中使用<span class="mark">#&&#</span>表示两侧文本验证条件是且的关系，当两侧条件都满足时，验证通过。</p>
+                <p>在测试数据中使用<span class="mark">#||#</span>表示两侧文本验证条件是或的关系，当两侧条件任一满足时，验证通过。</p>
+                <p>当两种连接符同时使用时，且的优先级大于或。</p>
+                <p>关系判断不适用短路规则，所有条件都会被判断，然后才返回结果。</p>
+                <div>
+                    <span>例：</span>
+                    <table class="table table-bordered table-sm">
+                        <colgroup><col><col><col></colgroup>
+                        <thead class="thead-light">
+                            <tr><th>期望值</th><th>实际值</th><th class="middle">结果</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>test1#&&#test2</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                            <tr><td>test1#&&#test4</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
+                            <tr><td>test1#||#test4</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                            <tr><td>test1#||#test4#&&#test5</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                            <tr><td>test1#&&#test4#||#test5</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
+                            <tr><td>test1#&&#test3#||#test1#&&#test4</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                            <tr><td>#{json|l}#[{"a":1},{"a":2}]#||##{json|l}#[]</td><td>[{"a":1,"b":"12"},{"a":2,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                            <tr><td>#{json|l}#[{"a":1},{"a":2}]#&&##{json|l}#[]</td><td>[{"a":1,"b":"12"},{"a":2,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                            <tr><td>#{json|l}#[{"a":1},{"a":2}]#&&##{json|l}#[]#||##{json}#[]</td><td>[{"a":1,"b":"12"},{"a":2,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                            <tr><td>#{json|l}#[{"a":1},{"a":2}]#&&##{json|l}#[]#||##{json|l}#[]</td><td>[{"a":1,"b":"12"},{"a":2,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </body>
+</html>

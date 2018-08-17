@@ -28,183 +28,674 @@
         {% include 'main/include/navbar.html' %}
         <div class="container-fluid" style="padding-top: 60px; padding-bottom: 200px">
             <div class="container">
-                <h2 class="text-center">变量讲解</h2>
-                <p>变量在测试数据中使用<span class="mark">${}$</span>标识，用于指代一些动态变化的内容。</p>
-                <h3>普通变量</h3>
-                <p>在测试套件的公共变量组或测试用例的用例变量组中寻找变量，支持嵌套。</p>
-                <div>
-                    <span>假设已有变量组</span>
-                    <table class="table table-bordered table-sm">
-                        <thead class="thead-light">
-                            <tr><th>Name</th><th>Value</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>name</td><td>abc</td></tr>
-                            <tr><td>url</td><td>http://127.0.0.1/testpage.html</td></tr>
-                            <tr><td>param</td><td>?returnUrl=${name}$</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+                <h2 class="text-center">文本验证操作符说明</h2>
                 <p>
-                    <span>那么</span>
+                    在测试数据中使用<span class="mark">#{}#</span>标识文本验证操作符，通常由操作符及操作符参数构成，操作符及参数通过竖线分隔，如不提供参数，则竖线也应去掉，如<span class="mark">#{re}#</span>，<span class="mark">#{count|2}#</span>。操作符用于告知程序使用何种方法验证内容，参数用于修饰该方法，具体使用方法见下。
                     <br>
-                    <code>${name}$</code><span>替换为</span><code>abc</code>
+                    <span class="font-weight-bold">注意：</span>
                     <br>
-                    <code>${url}$?returnUrl=${name}$</code><span>替换为</span><code>http://127.0.0.1/testpage.html?returnUrl=abc</code>
+                    操作符大小写不敏感，参数为日期格式时大小写敏感，其余大小写不敏感。
                     <br>
-                    <code>${url}$${param}$</code><span>替换为（变量嵌套，先替换最里层的）</span><code>http://127.0.0.1/testpage.html?returnUrl=abc</code>
+                    验证后将在测试结果返回是否匹配的标识，以及期望值在实际值中匹配的次数等信息。
                 </p>
-                <h3>特殊变量</h3>
-                <p>用于生成一些特殊的值。格式为在<span class="mark">${}$</span>内包含一个竖线，如<span class="mark">${r|1,,100}$</span>，竖线前为操作符部分，竖线后为参数部分，参数部分可用逗号分隔为多个参数。竖线、逗号等分隔符两侧请勿加入空格，否则空格会视为操作符或参数的一部分。</p>
-                <h4>操作符</h4>
+                <h3>操作符</h3>
                 <ul class="nav nav-tabs" role="tablist">
                     <li class="nav-item">
-                        <a class="nav-link active" data-toggle="tab" href="#operate_1">r</a>
+                        <a class="nav-link active" data-toggle="tab" href="#operate_1">未提供</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_2">t</a>
+                        <a class="nav-link" data-toggle="tab" href="#operate_2">===</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_3">ts</a>
+                        <a class="nav-link" data-toggle="tab" href="#operate_3">!==</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_4">tst</a>
+                        <a class="nav-link" data-toggle="tab" href="#operate_4">==</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_5">url</a>
+                        <a class="nav-link" data-toggle="tab" href="#operate_5">!=</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_6">uuid</a>
+                        <a class="nav-link" data-toggle="tab" href="#operate_6"><=，>=，<，></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_7">slice</a>
+                        <a class="nav-link" data-toggle="tab" href="#operate_7">re</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#operate_8">json</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#operate_9">count</a>
                     </li>
                 </ul>
                 <div class="tab-content bg-light">
                     <div id="operate_1" class="tab-pane active" style="padding: 1em">
                         <div>
-                            <p class="lead">生成随机数，接收1到3个参数。</p>
-                            <p class="font-weight-bold">参数1</p>
-                            <p>代表随机数范围是从0到参数1的值。</p>
-                            <p>例：<span class="mark">${r|100}$</span>，代表生成一个0-100的随机数。</p>
-                            <p class="font-weight-bold">参数2</p>
-                            <p>如提供2个参数，则参数1代表随机数范围起始值，参数2代表随机数范围结束值。</p>
-                            <p>例：<span class="mark">${r|50,100}$</span>，代表生成一个50-100的随机数。</p>
-                            <p class="font-weight-bold">参数3</p>
-                            <p>如提供3个参数，则参数1代表随机数范围起始值，参数2代表随机数范围结束值，参数3代表保留几位小数。</p>
-                            <p>例：<span class="mark">${r|50,100,2}$</span>，代表生成一个0-100的随机数，保留2位小数。</p>
+                            <p class="lead">如果期望值不含操作符，那么将认为期望值和实际值都是文本（把实际值转换为<code>str</code>类型），然后判断实际值是否包含期望值。</p>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     <div id="operate_2" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">生成时间字符串，接收1，2或4个参数。</p>
-                            <p class="font-weight-bold">参数1</p>
-                            <p>代表一个日期，返回一个标准时间字符串。</p>
-                            <p>例：
-                                <br>
-                                <span class="mark">${t|1985-10-1}$</span>，返回<span class="text-info">1985-10-01 00:00:00</span>
-                                <br>
-                                <span class="mark">${t|2007-7-12 13:00:04}$</span>，返回<span class="text-info">2007-07-12 13:00:04</span>
-                                <br>
-                                <span class="mark">${t|now}$</span>，返回当前系统时间。
-                            </p>
-                            <p class="font-weight-bold">参数2</p>
-                            <p>代表输出的时间格式，时间格式为python datetime对象strftime方法支持的格式，也可以使用快捷格式（见下表）。注意：时间格式不能包含逗号。</p>
-                            <table class="table table-bordered table-sm">
-                                <thead class="thead-light">
-                                    <tr><th>快捷格式</th><th>实际格式</th></tr>
-                                </thead>
-                                <tbody>
-                                    <tr><td>（默认，不填格式的情况）</td><td>%Y-%m-%d %H:%M:%S</td></tr>
-                                    <tr><td>date</td><td>%Y-%m-%d</td></tr>
-                                    <tr><td>full</td><td>%Y-%m-%d %H:%M:%S.%f</td></tr>
-                                    <tr><td>without_separator或ws</td><td>%Y%m%d%H%M%S</td></tr>
-                                    <tr><td>date_without_separator或dws</td><td>%Y%m%d</td></tr>
-                                    <tr><td>full_without_separator或fws</td><td>%Y%m%d%H%M%S%f</td></tr>
-                                    <tr><td>year或Y</td><td>%Y</td></tr>
-                                    <tr><td>month或m</td><td>%m</td></tr>
-                                    <tr><td>day或d</td><td>%d</td></tr>
-                                    <tr><td>hour或H</td><td>%H</td></tr>
-                                    <tr><td>minute或M</td><td>%M</td></tr>
-                                    <tr><td>second或S</td><td>%S</td></tr>
-                                    <tr><td>microsecond或ms或f</td><td>%f</td></tr>
-                                    <tr><td>week或W</td><td>%W</td></tr>
-                                    <tr><td>week_day或wd或w</td><td>%w</td></tr>
-                                    <tr><td>year_day或yd或j</td><td>%j</td></tr>
-                                </tbody>
-                            </table>
-                            <p>例：
-                                <br>
-                                <span class="mark">${t|1985-10-1 10:20:31.123456,%Y-%m-%d}$</span>，返回<span class="text-info">1985-10-01</span>
-                                <br>
-                                <span class="mark">${t|1985-10-1 10:20:31.123456,%Y-%m-%d %H:%M:%S.%f}$</span>，返回<span class="text-info">1985-10-01 10:20:31.123456</span>
-                                <br>
-                                <span class="mark">${t|1985-10-1 10:20:31.123456,full}$</span>，返回<span class="text-info">1985-10-01 10:20:31.123456</span>
-                            </p>
-                            <p class="font-weight-bold">参数3及参数4</p>
-                            <p>参数3代表时间位移单位，参数4代表时间位移量。注意：参数3和参数4需要成对出现，若只提供3个参数，程序不会对参数3作处理。</p>
-                            <p>例：<span class="mark">${t|now,,day,-1}$</span>，返回<span class="text-info">2017-11-16 17:01:37</span></p>
+                            <p class="lead">判断期望值和实际值是否完全相等（类型和值是否都相等）。接受0到2个参数。</p>
+                            <p class="font-weight-bold">无参数</p>
+                            <p>无参数时认为期望值的类型为<code>str</code>，相当于提供了参数<span class="mark">str</span>。</p>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>#{===}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{===}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{===}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="font-weight-bold">有参数</p>
+                            <p>参数代表期望值的类型，比较前会将期望值转换为对应的类型。</p>
+                            <h5>参数</h5>
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#operate_1_1">str</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_1_2">int</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_1_3">float</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_1_4">time或datetime</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content" style="background-color: #f0f0f0 !important;">
+                                <div id="operate_1_1" class="tab-pane active" style="padding: 1em">
+                                    <div>
+                                        <p>将期望值转换为<code>str</code>类型再进行比较。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{===|str}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{===|str}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{===|str}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_1_2" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>将期望值转换为<code>int</code>类型再进行比较。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{===|int}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{===|int}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{===|int}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{===|int}#123</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{===|int}#abc</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">转换失败，报错</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_1_3" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>将期望值转换为<code>float</code>类型再进行比较。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{===|float}#123.0</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{===|float}#123.0</td><td>123.4</td><td class="middle"><code>float</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{===|float}#123.0</td><td>123.0</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{===|float}#123.0</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{===|float}#abc</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">转换失败，报错</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_1_4" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>将期望值转换为<code>datetime</code>类型再进行比较。此参数后还可添加第二参数，用于指定接受的时间格式。多个参数用英文逗号分隔，时间格式不能含有逗号，时间格式参见操作符<span class="mark">t</span>的参数2。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{===|time}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{===|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{===|datetime}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{===|time}#2000-1-13 00:00:00.000</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{===|time}#2000-1-13 01:01:01.123</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{===|time}#1/13/2000,%m/%d/%Y</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{===|time}#2000-1-13 01:01:01.123</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{===|time}#2000-1-13</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{===|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{===|time}#2000-Jan-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">转换失败，报错</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div id="operate_3" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">通过日期字符串生成时间戳字符串，接收1到3个参数。注意：python的时间戳默认为秒后带小数点。</p>
-                            <p class="font-weight-bold">参数1</p>
-                            <p>代表一个日期，返回精确到毫秒的时间戳。</p>
-                            <p>例：
-                                <br>
-                                <span class="mark">${ts|now}$</span>，返回<span class="text-info">1510911041.449</span>
-                                <br>
-                                <span class="mark">${ts|2010-1-1 13:00:16.003}$</span>，返回<span class="text-info">1262322016.003</span>
-                                <br>
-                                <span class="mark">${ts|1970-01-01 8:00:00}$</span>，返回<span class="text-info">0.000</span>
-                            </p>
-                            <p class="font-weight-bold">参数2</p>
-                            <p>代表时间戳保留的小数位。</p>
-                            <p>例：
-                                <br>
-                                <span class="mark">${ts|2010-1-1 13:00:16.763238,4}$</span>，返回<span class="text-info">1262322016.7632</span>
-                                <br>
-                                <span class="mark">${ts|1970-01-01 8:00:01.125,1}$</span>，返回<span class="text-info">1.1</span>
-                            </p>
-                            <p class="font-weight-bold">参数3</p>
-                            <p>代表去掉小数点（参数3的值可任意填）。</p>
-                            <p>例：
-                                <br>
-                                <span class="mark">${ts|2010-1-1 13:00:16.763238,4,abc}$</span>，返回<span class="text-info">12623220167632</span>
-                                <br>
-                                <span class="mark">${ts|1970-01-01 8:00:01.125,1,}$</span>，返回<span class="text-info">11</span>
-                            </p>
+                            <p class="lead">判断期望值和实际值是否不相等（类型不相等或值不相等）。接受0到2个参数。</p>
+                            <p>参数使用方法参见操作符<span class="mark">===</span>。</p>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>#{===}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{===}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{===}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{!==|int}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!==|int}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{!==|int}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{!==|int}#123</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{!==|time}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!==|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!==|datetime}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!==|time}#2000-1-13 00:00:00.000</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!==|time}#2000-1-13 01:01:01.123</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!==|time}#1/13/2000,%m/%d/%Y</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!==|time}#2000-1-13 01:01:01.123</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{!==|time}#2000-1-13</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{!==|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{!==|time}#2000-Jan-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">转换失败，报错</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     <div id="operate_4" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">通过时间戳字符串生成日期字符串，接收1或2个参数。</p>
-                            <p class="font-weight-bold">参数1</p>
-                            <p>代表一个时间戳，返回默认格式的时间字符串。</p>
-                            <p>例：<span class="mark">${tst|1262322016.7632}$</span>，返回<span class="text-info">2010-01-01 13:00:16.763200</span></p>
-                            <p class="font-weight-bold">参数2</p>
-                            <p>代表一个时间格式，返回指定格式的时间字符串。时间格式参见操作符t的参数2。</p>
-                            <p>例：<span class="mark">${tst|1262322016.7632,%S.%f}$</span>，返回<span class="text-info">16.763200</span></p>
+                            <p class="lead">先尝试把期望值和实际值都转换为相同的类型，再判断他们是否相等。接受0到2个参数。</p>
+                            <p class="font-weight-bold">无参数</p>
+                            <p>无参数时认为期望值和实际值需要转换的类型为<code>str</code>，相当于提供了参数<span class="mark">str</span>。</p>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>#{==}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{==}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{==}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="font-weight-bold">有参数</p>
+                            <p>参数代表需要转换的类型，比较前会将期望值和实际值转换为对应的类型。</p>
+                            <h5>参数</h5>
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#operate_4_1">str</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_4_2">int</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_4_3">float</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_4_4">time或datetime</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content" style="background-color: #f0f0f0 !important;">
+                                <div id="operate_4_1" class="tab-pane active" style="padding: 1em">
+                                    <div>
+                                        <p>将期望值和实际值转换为<code>str</code>类型再进行比较。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{==|str}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|str}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{==|str}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_4_2" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>将期望值和实际值转换为<code>int</code>类型再进行比较。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{==|int}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|int}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{==|int}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|int}#123</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|int}#123</td><td>123.7</td><td class="middle"><code>float</code></td><td class="middle">匹配（浮点数被取整，并非四舍五入）</td></tr>
+                                                    <tr><td>#{==|int}#abc</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">期望值转换失败，报错</td></tr>
+                                                    <tr><td>#{==|int}#123</td><td>abc</td><td class="middle"><code>str</code></td><td class="middle">实际值转换失败，报错</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_4_3" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>将期望值和实际值转换为<code>float</code>类型再进行比较。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{==|float}#123.0</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|float}#123.0</td><td>123.4</td><td class="middle"><code>float</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{==|float}#123.0</td><td>123.0</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|float}#123.0</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|float}#123.2</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{==|float}#abc</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">期望值转换失败，报错</td></tr>
+                                                    <tr><td>#{==|float}#123.0</td><td>abc</td><td class="middle"><code>str</code></td><td class="middle">实际值转换失败，报错</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_4_4" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>将期望值和实际值转换为<code>datetime</code>类型再进行比较。此参数后还可添加第二参数，用于指定接受的时间格式。多个参数用英文逗号分隔，时间格式不能含有逗号，时间格式参见操作符<span class="mark">t</span>的参数2。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{==|time}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|datetime}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|time}#2000-1-13 00:00:00.000</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|time}#2000-1-13 01:01:01.123</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|time}#1/13/2000,%m/%d/%Y</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">实际值转换失败，报错</td></tr>
+                                                    <tr><td>#{==|time}#1/13/2000,%m/%d/%Y</td><td>1/13/2000</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|time}#2000-1-13 01:01:01.123</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{==|time}#2000-1-13</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{==|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{==|time}#2000-Jan-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">期望值转换失败，报错</td></tr>
+                                                    <tr><td>#{==|time}#2000-1-13</td><td>2000-Jan-13</td><td class="middle"><code>str</code></td><td class="middle">实际值转换失败，报错</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div id="operate_5" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">把字符串通过url编码后返回，接收1个参数。</p>
-                            <p class="font-weight-bold">参数1</p>
-                            <p>参数1为需要转换的内容。</p>
-                            <p>例：<span class="mark">${url|index.html?a=测试}$</span>，返回<span class="text-info">index.html%3Fa%3D%E6%B5%8B%E8%AF%95</span></p>
+                            <p class="lead">先把期望值和实际值转换为相同的类型，再判断他们是否不相等。接受0到2个参数。</p>
+                            <p>参数使用方法参见操作符<span class="mark">==</span>。</p>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>#{!=}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!=}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{!=}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!=|int}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!=|int}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{!=|int}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!=|int}#123</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!=|int}#123</td><td>123.7</td><td class="middle"><code>float</code></td><td class="middle">不匹配（浮点数被取整，并非四舍五入）</td></tr>
+                                        <tr><td>#{!=|time}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!=|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!=|datetime}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!=|time}#2000-1-13 00:00:00.000</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!=|time}#2000-1-13 01:01:01.123</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!=|time}#1/13/2000,%m/%d/%Y</td><td>1/13/2000</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!=|time}#2000-1-13 01:01:01.123</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{!=|time}#2000-1-13</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{!=|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{!=|time}#2000-Jan-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">期望值转换失败，报错</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     <div id="operate_6" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">返回一个长度为32位的UUID。不需要参数</p>
-                            <p>例：<span class="mark">${uuid|}$</span>，返回<span class="text-info">f5138eec-9c83-11e8-823e-005056b214a1</span>。</p>
+                            <p class="lead">先把期望值和实际值转换为相同的类型，再把期望值置于不等式右侧，把实际值置于不等式左侧，判断不等式是否成立。接受0到2个参数。</p>
+                            <p>参数使用方法参见操作符<span class="mark">==</span>。</p>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>#{<}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">不匹配（'123'<'123'）</td></tr>
+                                        <tr><td>#{<=}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配（'123'<='123'）</td></tr>
+                                        <tr><td>#{<=}#123</td><td>abc</td><td class="middle"><code>str</code></td><td class="middle">匹配（'123'<='abc'）</td></tr>
+                                        <tr><td>#{<=}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配（'123'<'123'）</td></tr>
+                                        <tr><td>#{<=|int}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配（123<=123）</td></tr>
+                                        <tr><td>#{<|int}#123</td><td>12</td><td class="middle"><code>int</code></td><td class="middle">匹配（12<123）</td></tr>
+                                        <tr><td>#{<|int}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">不匹配（1234<123）</td></tr>
+                                        <tr><td>#{>|int}#123</td><td>12</td><td class="middle"><code>int</code></td><td class="middle">不匹配（12>123）</td></tr>
+                                        <tr><td>#{>|int}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">匹配（1234>123）</td></tr>
+                                        <tr><td>#{>|int}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配（1234>123）</td></tr>
+                                        <tr><td>#{>=|int}#123</td><td>123.7</td><td class="middle"><code>float</code></td><td class="middle">匹配（浮点数被取整123>=123）</td></tr>
+                                        <tr><td>#{>=|time}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配（2000-01-13 >=2000-01-13）</td></tr>
+                                        <tr><td>#{>|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配（2000-01-13 >2000-01-13）</td></tr>
+                                        <tr><td>#{>|time}#2000-1-13 00:00:00.000</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配（2000-01-13 00:00:00>2000-01-13 00:00:00）</td></tr>
+                                        <tr><td>#{>|time}#2000-1-13 00:00:00.001</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配（2000-01-13 00:00:00.001>2000-01-13 00:00:00）</td></tr>
+                                        <tr><td>#{<=|time}#2000-1-13 01:01:01.123</td><td>2000-01-13 01:01:01.121</td><td class="middle"><code>datetime</code></td><td class="middle">匹配（2000-01-13 01:01:01.121<=2000-01-13 01:01:01.123）</td></tr>
+                                        <tr><td>#{>|time}#1/13/2000,%m/%d/%Y</td><td>1/14/2000</td><td class="middle"><code>datetime</code></td><td class="middle">匹配（2000-01-14>2000-01-13）</td></tr>
+                                        <tr><td>#{<|time}#2000-1-13</td><td>1999-01-13</td><td class="middle"><code>str</code></td><td class="middle">匹配（1999-01-14<2000-01-13）</td></tr>
+                                        <tr><td>#{>|time}#1/13/2000,%m/%d/%Y</td><td>2000-01-12</td><td class="middle"><code>datetime</code></td><td class="middle">实际值转换失败，报错</td></tr>
+                                        <tr><td>#{>=|time}#2000-Jan-13</td><td>2000-01-12</td><td class="middle"><code>datetime</code></td><td class="middle">期望值转换失败，报错</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     <div id="operate_7" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">分割字符串</p>
+                            <p class="lead">把期望值视为正则表达式，把实际值转换为str进行正则匹配。接受0或多个参数。</p>
+                            <p class="font-weight-bold">无参数</p>
+                            <p>无参数时使用默认的正则匹配规则。</p>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>#{re}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{re}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{re}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{re}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{re}#.*</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{re}#\d+</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{re}#^123$</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{re}#name=Tom\d+</td><td>name=Tom001</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{re}#name=Tom\d+</td><td>name=Tomcat</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{re}#name=Tom\d+</td><td>name=tom001</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="font-weight-bold">有参数</p>
+                            <p>参数代表正则匹配规则。见下表。</p>
+                            <div>
+                                <span>匹配规则表（参数对大小写不敏感）：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th class="middle">参数</th><th>匹配规则</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td class="middle">I</td><td>使匹配对大小写不敏感</td></tr>
+                                        <tr><td class="middle">L</td><td>做本地化识别（locale-aware）匹配</td></tr>
+                                        <tr><td class="middle">M</td><td>多行匹配，影响<code>^</code>和<code>$</code></td></tr>
+                                        <tr><td class="middle">S</td><td>使<code>.</code>匹配包括换行在内的所有字符</td></tr>
+                                        <tr><td class="middle">U</td><td>根据Unicode字符集解析字符。这个标志影响<code>\w</code>，<code>\W</code>，<code>\b</code>，<code>\B</code></td></tr>
+                                        <tr><td class="middle">X</td><td>给予更灵活的格式以便将正则表达式写得更易于理解</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>期望值</th><th>实际值</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>#{re|I}#ABC</td><td>abc</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{re|S}#ab.c</td><td>ab\nc</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{re|S}#AB.C</td><td>ab\nc</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{re|SI}#AB.C</td><td>ab\nc</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{re|IS}#AB.C</td><td>ab\nc</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{re|is}#AB.C</td><td>ab\nc</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="operate_8" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">把期望值和实际值视为json字符串，双方都转换为对象后进行匹配。接受0或多个参数。</p>
+                            <p>json字符串必须是符合规定格式的字符串，如：key必须为文本且使用双引号标识，value可以为文本或数字，为文本时需使用双引号标识。</p>
+                            <p>期望值转换得出的对象，下称<span class="font-weight-bold">期望对象</span>；实际值转换得出的对象，下称<span class="font-weight-bold">实际对象</span>。</p>
+                            <p>对象中的值如果是<span>str</span>类型，则会被用于新一轮文本验证，可以嵌套使用文本验证操作符。</p>
+                            <p class="font-weight-bold">无参数</p>
+                            <p>期望对象存在于实际对象中，且相对的层级结构一致，则匹配成功。</p>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col style="width: 320px"><col style="width: 250px"><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>期望值</th><th>实际值</th><th class="middle">结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>#{json}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#{"a":21}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#{"a":31}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{json}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#[{"a":11},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#[{"a":11},{"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#{"a":11,"b":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#{"a":11,"c":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{json}#{"a":11,"b":"12","c":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{json}#[{"a":11,"b":"12"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#[]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#[{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#[{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#[{},{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{json}#[{"a":11,"b":"12"},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#[{"a":11,"b":"12"},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#{"a":"11"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配（期望对象中的11是str类型，被视为无操作符的期望值进入新一轮文本验证，故实际对象中的11被自动转为了str）</td></tr>
+                                        <tr><td>#{json}#{"a":"#{===|str}#11"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（期望对象中的11被标识为完全匹配）</td></tr>
+                                        <tr><td>#{json}#{"b":12}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（期望对象的值12不是str，不会进入新一轮文本验证，将直接与实际对象相应的值进行对比，而int不等于str，故匹配失败）</td></tr>
+                                        <tr><td>#{json}#{"b":"#{==|int}#12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配（期望对象和实际对象中的值都先转换为int再进行比较）</td></tr>
+                                        <tr><td>#{json}#{"a":"#{re}#\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#{"b":"#{re}#\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{json}#["#{json}#{\\\"b\\\":\\\"#{re}#\d+\\\"}"]	</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配（json字符串中嵌套json操作符，双引号转义复杂，不建议使用）</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="font-weight-bold">有参数</p>
+                            <p>参数为对象匹配使用的具体配置，下列参数可同时使用。</p>
+                            <h5>参数</h5>
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#operate_8_1">l或lem或list exact match</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_8_2">d或dem或dict exact match</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_8_3">re</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content" style="background-color: #f0f0f0 !important;">
+                                <div id="operate_8_1" class="tab-pane active" style="padding: 1em">
+                                    <div>
+                                        <p>对list使用精确匹配。如提供该参数，则两个list长度及顺序必须一致，而且对应的值相等才能匹配通过。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>期望值</th><th>实际值</th><th class="middle">结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{json|l}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|l}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{json|l}#[{"a":11},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|l}#[]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{json|l}#[{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{json|l}#[{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|l}#[{},{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_8_2" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>对dict使用精确匹配。如提供该参数，则两个dict中的键值对数量必须一致，而且对应的值相等才能匹配通过。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>期望值</th><th>实际值</th><th class="middle">结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{json|d}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{json|d}#{"a":11,"b":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|d}#{"b":"12","a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|d,l}#{"b":"12","a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|d}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|d,l}#[{"a":11,"b":"12"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（不符合list精确匹配）</td></tr>
+                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|d,l}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|d,l}#[{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（不符合dict精确匹配）</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_8_3" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>对象的值匹配时默认使用正则表达式匹配。如果对象的某个值单独指定了其他匹配方式，则该值单独使用其他匹配方式。在<span class="mark">re</span>后面可使用<span class="mark">[xxx]</span>指定正则匹配规则。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col style="width: 250px"><col style="width: 250px"><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>期望值</th><th>实际值</th><th class="middle">结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+","c":"Abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|re}#{"a":11,"b":"\d+","c":"Abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|re}#{"a":"\d+","b":12,"c":"Abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（期望对象的值12不是str，不会进入新一轮文本验证，将直接与实际对象相应的值进行对比，而int不等于str，故匹配失败）</td></tr>
+                                                    <tr><td>#{json|re}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{json|re[i]}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|re}#{"c":"#{re|i}#abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|re[i]}#{"c":"#{re}#abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（单独指定的正则匹配规则覆盖了默认的规则）</td></tr>
+                                                    <tr><td>#{json|re[i],l,d}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（不符合dict精确匹配）</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="operate_9" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">验证期望值在实际值中出现的次数是否符合期望，可以和其他操作符嵌套使用。</p>
+                            <p class="font-weight-bold">无参数</p>
+                            <p>出现次数大于0次则通过。</p>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>期望值</th><th>实际值</th><th class="middle">结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>#{count}#test1</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count}#test4</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{count}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="font-weight-bold">有参数</p>
+                            <p>参数为期望的出现次数。参数可以用数字代表固定次数，也可以使用表达式进行高级匹配，在表达式中<span class="mark">$[x]$</span>代表实际出现的次数。</p>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>期望值</th><th>实际值</th><th class="middle">结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>#{count|1}#test1</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|2}#test1</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{count|4}#test</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|3}##{re}#test\d+</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|4}##{re}#test\d+</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{count|2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|1}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{count|$[x]$>0 and $[x]$<=2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|$[x]$>0 and $[x]$<2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{count|$[x]$>0 or $[x]$<2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
