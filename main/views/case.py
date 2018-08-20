@@ -392,6 +392,7 @@ def copy_(request, pk):
         return JsonResponse({'statue': 1, 'message': 'ERROR', 'data': str(e)})
 
 
+# 获取带搜索信息的下拉列表数据
 @login_required
 def select_json(request):
     condition = request.POST.get('condition', '{}')

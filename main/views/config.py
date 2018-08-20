@@ -170,6 +170,7 @@ def quick_update(request, pk):
         return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
+# 获取带搜索信息的下拉列表数据
 @login_required
 def select_json(request):
     condition = request.POST.get('condition', '{}')

@@ -231,6 +231,7 @@ def variables(_, pk):
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 
+# 获取带搜索信息的下拉列表数据
 @login_required
 def select_json(request):
     condition = request.POST.get('condition', '{}')

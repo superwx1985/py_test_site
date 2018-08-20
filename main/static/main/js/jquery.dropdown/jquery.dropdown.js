@@ -480,7 +480,6 @@
 			_this.$select.hide();
 			// 判断dropdown是否单选，是否token模式
 			$el.addClass(_this.isSingleSelect ? 'dropdown-single' : _this.isLabelMode ? 'dropdown-multiple-label' : 'dropdown-multiple');
-
 			if (_config.data.length === 0) {
 				_config.data = selectToObject(_this.$select);
 			}
@@ -515,8 +514,7 @@
 			if (!_this.isLabelMode) {
 				_this.$choseList.html($('<span class="placeholder"></span>').text(_this.placeholder));
 			}
-
-			_this.$choseList.prepend(_this.name.join(''));
+			if (_this.name) { _this.$choseList.prepend(_this.name.join(''))	}
 		},
 		bindEvent: function bindEvent() {
 			var _this = this;
