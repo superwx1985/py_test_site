@@ -58,7 +58,7 @@ function m2m_detail_popup(url) {
 }
 
 // 更新已选m2m的序号，更新m2m field内容
-function update_m2m_selected_index($input) {
+function update_m2m_selected_index_and_field($input) {
 	var m2m = $('#m2m_selected tbody tr:not([placeholder])');
 	var m2m_list = [];
 
@@ -82,7 +82,7 @@ function m2m_handle($input, col) {
 		handle: "[moveable]",
 		placeholder: 'ui-state-highlight',
 		stop: function( event, ui ) {
-			update_m2m_selected_index($input);
+			update_m2m_selected_index_and_field($input);
 		}
 	});
 	$('#m2m_selected tbody').droppable({

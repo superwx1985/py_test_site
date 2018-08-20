@@ -1,6 +1,7 @@
 import json
 import logging
 import copy
+import uuid
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -92,7 +93,6 @@ def detail(request, pk):
     elif request.method == 'POST':
         obj_temp = copy.deepcopy(obj)
         form = VariableGroupForm(data=request.POST, instance=obj_temp)
-        variable_list = json.loads(request.POST.get('variable', '[]'))
         try:
             variable_list = json.loads(request.POST.get('variable', 'null'))
         except json.decoder.JSONDecodeError:
@@ -107,7 +107,7 @@ def detail(request, pk):
             form.save_m2m()
             if variable_list is not None:
                 objects = Variable.objects.filter(variable_group=obj)
-                object_values = objects.order_by('order').values('name', 'value')
+                object_values = objects.order_by('order').values('name', 'value', 'description')
                 object_values = list(object_values)
                 if object_values != variable_list:
                     objects.delete()
@@ -118,7 +118,8 @@ def detail(request, pk):
                         else:
                             order += 1
                             Variable.objects.create(
-                                variable_group=obj, name=v['name'].strip(), value=v['value'], order=order)
+                                variable_group=obj, name=v['name'].strip(), value=v['value'],
+                                description=v['description'], order=order)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect:
@@ -171,7 +172,8 @@ def add(request):
                         continue
                     else:
                         Variable.objects.create(
-                            variable_group=obj, name=v['name'].strip(), value=v['value'], order=order)
+                            variable_group=obj, name=v['name'].strip(), value=v['value'], description=v['description'],
+                            order=order)
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect == 'add_another':
@@ -224,7 +226,8 @@ def quick_update(request, pk):
 # 获取变量组中的变量
 @login_required
 def variables(_, pk):
-    objects = Variable.objects.filter(variable_group=pk).order_by('order').values('pk', 'uuid', 'name', 'value')
+    objects = Variable.objects.filter(variable_group=pk).order_by('order').values(
+        'pk', 'uuid', 'name', 'value', 'description')
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
 
 
@@ -254,6 +257,39 @@ def select_json(request):
         data.append(d)
 
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': data})
+
+
+# 复制
+@login_required
+def copy_(request, pk):
+    name = request.POST.get('name', '')
+    try:
+        obj = VariableGroup.objects.get(pk=pk)
+        sub_object_values = list(
+            Variable.objects.filter(variable_group=obj).order_by('order').values('name', 'value', 'description'))
+        obj.pk = None
+        obj.name = name
+        obj.creator = obj.modifier = request.user
+        obj.uuid = uuid.uuid1()
+        obj.clean_fields()
+        obj.save()
+
+        order = 0
+        for v in sub_object_values:
+            if not v or v['name'] is None or v['name'].strip() == '':
+                continue
+            else:
+                order += 1
+                Variable.objects.create(
+                    variable_group=obj, name=v['name'].strip(), value=v['value'], description=v['description'],
+                    order=order)
+
+        return JsonResponse({
+            'statue': 1, 'message': 'OK', 'data': {
+                'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk])}
+        })
+    except VariableGroup.DoesNotExist as e:
+        return JsonResponse({'statue': 1, 'message': 'ERROR', 'data': str(e)})
 
 
 # 获取调用列表

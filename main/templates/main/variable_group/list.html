@@ -21,7 +21,7 @@
                 <col style='width: 100px;'>
                 <col style='width: 105px;'>
                 <col style='width: 180px;'>
-                <col style='width: 120px;'>
+                <col style='width: 170px;'>
             </colgroup>
             <thead class="thead-light middle">
                 <tr>
@@ -49,9 +49,11 @@
                             <div class="middle">
                                 {% if request.user.pk == obj.creator %}
                                     <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="编辑"><i class="icon-edit"></i></button>
+                                    <button copy_url="{% url 'variable_group_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
                                     <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除"><i class="icon-trash"></i></button>
                                 {% else %}
                                     <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="查看"><i class="icon-list"></i></button>
+                                    <button copy_url="{% url 'variable_group_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
                                 {% endif %}
                             </div>
                         </td>

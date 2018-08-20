@@ -49,7 +49,7 @@
                 {% else %}
                     // 初始化m2m字段
                     m2m_list_selected_update(true, {'data': []});
-                    update_m2m_selected_index(window.$m2m_input);
+                    update_m2m_selected_index_and_field(window.$m2m_input);
                 {% endif %}
             {% endif %}
             // 处理m2m拖动及排序
@@ -130,7 +130,7 @@
                     var tr = $('<tr placeholder><td colspan="8" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
                     tbody.empty().append(tr);
                 }
-                update_m2m_selected_index(window.$m2m_input);
+                update_m2m_selected_index_and_field(window.$m2m_input);
             }
         }
 
@@ -180,7 +180,6 @@
 
         <input type="text" name="step" id="id_step" hidden>
         {% include 'main/include/detail_redirect.html' %}
-
         {% include 'main/include/submit_button_group.html' with copy_url='case_copy' %}
     </form>
 {% endblock %}

@@ -26,131 +26,99 @@
 {% block script %}
     <script>
         $(function () {
-            // 初始化变量名列表
-            window.variableNames = [];
             // 注册添加按钮
             $('#new_helper td[col_move]').on('click', function () {
                 addVariable();
             });
             {% if temp_list_json %}
                 // 获取暂存变量
-                variableUpdate(true, $.parseJSON("{{ temp_list_json|escapejs }}"));
-                {% if pk %}
-                    // 获取变量组
-                    getList("{% url 'variable_group_variables' pk %}", window.$csrf_input.val(), variableSave);
-                {% endif %}
+                variable_update(true, $.parseJSON("{{ temp_list_json|escapejs }}"));
             {% else %}
                 {% if pk %}
                     // 获取变量组
-                    getList("{% url 'variable_group_variables' pk %}", window.$csrf_input.val(), variableUpdate);
+                    getList("{% url 'variable_group_variables' pk %}", window.$csrf_input.val(), variable_update);
                 {% else %}
                     // 初始化变量组字段
-                    updateVariableIndex(true);
+                    update_variable_index_and_field(true);
                 {% endif %}
             {% endif %}
-
+            // 注册new helper的删除按钮事件
+            $('#new_helper [col_del]').off('click').on('click', function () {
+                $('#new_helper [col_name] input,#new_helper [col_value] input,#new_helper [col_description] input').val('');
+            });
             // 启用排序功能
-            sortableVariable();
+            sortable_variable();
         });
         // 启用排序功能
-        function sortableVariable() {
-            $('#variable tbody').sortable({
+        function sortable_variable() {
+            $('#variable_table tbody').sortable({
                 items: "tr:not(#new_helper)",
                 distance: 15,
                 handle: "[moveable]",
                 placeholder: 'ui-state-highlight',
                 stop: function( event, ui ) {
-                    updateVariableIndex();
+                    update_variable_index_and_field();
                 }
             });
         }
-        // 保存变量列表
-        function variableSave(success, data){
-            if (success) {
-                var tbody = $('#variables tbody');
-                tbody.data('original_data', data);
-            }
-        }
         // 更新变量列表
-        function variableUpdate(success, data) {
+        function variable_update(success, data) {
             if (success) {
-                var tbody = $('#variables tbody');
                 if (data.data.length > 0) {
                     $.each(data.data, function (i, v) {
                         var tr = $('<tr></tr>');
-                        $('<td class="middle" col_move moveable><i class="icon-sort icon-2x"></i></td>').on(
-                            'click', function() {
-                                delVariable(tr);
-                            }).appendTo(tr);
-                        $('<td class="middle" col_del><i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i></td>').on(
-                            'click', function() {
-                                delVariable(tr);
-                            }).appendTo(tr);
+                        $('<td class="middle" col_move moveable><i class="icon-sort icon-2x"></i></td>').appendTo(tr);
+                        $('<td class="middle" col_del><i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i></td>').off('click').on(
+                            'click', function() { del_variable(tr) }).appendTo(tr);
                         var span = $('<span></span>').text(i + 1);
                         $('<td index class="middle" col_index></td>').append(span).appendTo(tr);
-                        var input = $('<input placeholder="请输入变量名" class="form-control">').val(v.name).on('change', function () {
-                            updateVariableIndex();
-                        });
-                        $('<td class="middle" col_name></td>').append(input).appendTo(tr);
-                        var input = $('<input placeholder="请输入变量值" class="form-control">').val(v.value).on('change', function () {
-                            updateVariableIndex();
-                        });
-                        $('<td class="middle" col_value></td>').append(input).appendTo(tr);
+                        var input = $('<input placeholder="请输入变量名" class="form-control">').val(v.name).off('change').on('change', function () { update_variable_index_and_field() });
+                        $('<td col_name></td>').append(input).appendTo(tr);
+                        var input = $('<input placeholder="请输入变量值" class="form-control">').val(v.value);
+                        $('<td col_value></td>').append(input).appendTo(tr);
+                        var input = $('<input placeholder="" class="form-control">').val(v.description);
+                        $('<td col_description></td>').append(input).appendTo(tr);
                         tr.insertBefore($('#new_helper'));
-                        // 插入变量名列表
-                        checkVariableName(v.name);
                     });
                 }
-                updateVariableIndex(true);
+                update_variable_index_and_field();
                 // 注册提示框
                 $('[data-toggle=tooltip]').tooltip();
             }
         }
-        // 保存并更新变量列表
-        function variableSaveAndUpdate(success, data) {
-            variableSave(success, data);
-            variableUpdate(success, data)
-        }
         // 添加变量
         function addVariable() {
             var new_helper = $('#new_helper');
-            new_helper.find('div.invalid-feedback').remove();
             var name_input = $('#new_helper td[col_name] input');
             name_input.removeClass('is-invalid');
-            var checkResult = checkVariableName(name_input.val());
-            if (checkResult === true) {
+            name_input.siblings('div.invalid-feedback').remove();
+            var check_result = check_variable_name(name_input.val(), get_variable_name_list_());
+            if (check_result === true) {
                 var new_variable = new_helper.clone();
-                // 去掉new_helper id，添加新增标志
-                new_variable.removeAttr('id').addClass("bg-light");;
+                // 去掉new_helper id 和 背景色
+                new_variable.removeAttr('id').removeClass('bg-light');
                 // 改变新增按钮为排序按钮
                 new_variable.children('td[col_move]').attr('moveable', '').empty().append('<i class="icon-sort icon-2x"></i>');
-                // 添加删除按钮
-                new_variable.children('td[col_del]').empty().append('<i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i>').on(
-                    'click', function() {
-                        delVariable(new_variable);
-                    });
+                // 重新注册删除按钮事件
+                new_variable.children('td[col_del]').off('click').on('click', function() { del_variable(new_variable) });
+                new_variable.find('td[col_name] input').off('change').on('change', function () { update_variable_index_and_field() });
                 // 插入并淡入
                 new_variable.insertBefore(new_helper).hide();
                 new_variable.fadeIn("slow");
                 $('#new_helper td[col_name] input').val('').focus();
                 $('#new_helper td[col_value] input').val('');
-                updateVariableIndex();
+                $('#new_helper td[col_description] input').val('');
+                update_variable_index_and_field();
                 // 注册提示框
                 $('[data-toggle=tooltip]').tooltip();
                 return true;
             } else {
-                var errorDiv = $('<div class="invalid-feedback">' + checkResult + '</div>');
-                name_input.addClass('is-invalid');
-                name_input.after(errorDiv);
-                name_input.off('change').on('keydown', function() {
-                    name_input.removeClass('is-invalid');
-                    name_input.siblings('div.invalid-feedback').remove();
-                });
+                get_invalid_input(name_input, check_result);
                 return false;
             }
         }
         // 删除变量
-        function delVariable($tr) {
+        function del_variable($tr) {
             var name = $tr.find('td[col_name] input').val();
             var msg = '要删除<span class="mark">' + name + '</span>吗？';
             bootbox.confirm({
@@ -170,54 +138,74 @@
                 },
                 callback: function (result) {
                     if (result === true) {
-                        var index = $.inArray(name, window.variableNames);
-                        if (index >= 0) {
-                            window.variableNames.splice(index, 1);
-                        }
                         $tr.fadeOut("slow", function() {
                             $(this).remove();
-                            updateVariableIndex();
+                            update_variable_index_and_field();
                         });
                     }
                 }
             });
         }
-        // 验证并添加变量名
-        function checkVariableName(name) {
+        // 获取当前变量名列表
+        function get_variable_name_list_() {
+            var trs = $('#variable_table tbody tr:not(#new_helper)');
+            var variable_name_list = [];
+            trs.each(function(i) {
+                variable_name_list.push($(this).find('td[col_name] input').val());
+            });
+            return variable_name_list;
+        }
+        // 验证变量名
+        function check_variable_name(name, variable_name_list_) {
             if (!name || ''===name.trim()) {
                 return '变量名不能为空'
             }
-            var index = $.inArray(name, window.variableNames);
+            var index = $.inArray(name, variable_name_list_);
             if (index >= 0) {
-                var duplicationName = window.variableNames[index];
-                return '变量名【' + duplicationName + '】重复'
+                return '与第[' + (index + 1) + ']个变量重名'
             }
-            window.variableNames.push(name);
             return true;
         }
+        // 生成带错误提示的输入框
+        function get_invalid_input($input, check_result){
+            $input.removeClass('is-invalid');
+            $input.siblings('div.invalid-feedback').remove();
+            var errorDiv = $('<div class="invalid-feedback">' + check_result + '</div>');
+            $input.addClass('is-invalid');
+            $input.after(errorDiv);
+        }
         // 更新变量列表序号，更新variable field内容
-        function updateVariableIndex(init) {
-            var trs = $('#variable tbody tr:not(#new_helper)');
+        function update_variable_index_and_field() {
+            var trs = $('#variable_table tbody tr:not(#new_helper)');
             var variable_list = [];
+            var variable_name_list = [];
             trs.each(function(i) {
                 $(this).find('td[col_index] span').text(i+1);
-                var name =$(this).find('td[col_name] input').val();
-                var value =$(this).find('td[col_value] input').val();
-                var variable = {};
-                variable.name = name;
-                variable.value = value;
-                variable_list.push(variable);
+                var name_input = $(this).find('td[col_name] input');
+                var name = name_input.val();
+                var check_result = check_variable_name(name, variable_name_list);
+                name_input.removeClass('is-invalid');
+                name_input.siblings('div.invalid-feedback').remove();
+                if (check_result === true) {
+                    var value = $(this).find('td[col_value] input').val();
+                    var description = $(this).find('td[col_description] input').val();
+                    var variable = {};
+                    variable.name = name;
+                    variable.value = value;
+                    variable.description = description;
+                    variable_list.push(variable);
+                    variable_name_list.push(name);
+                } else {
+                    get_invalid_input(name_input, check_result);
+                }
             });
             var json_str = JSON.stringify(variable_list);
             $('input[name=variable]').val(json_str);
-            if (init) {
-                $('input[name=variable]').attr('value', json_str);
-            }
             // 关闭遮罩
             $('#mask').hide();
         }
         // 检查是否有未保存的变量
-        function checkUnsaved() {
+        function check_unsaved() {
             var name = $('#new_helper td[col_name] input').val();
             if (name !== '') {
                 var msg = '检查到有未保存的变量<span class="mark">' + name + '</span>，是否需要一并提交？';
@@ -245,6 +233,7 @@
                     }
                 });
             } else {
+                update_variable_index_and_field();
                 $('#object_form').removeAttr('onsubmit').submit();
             }
             return false;
@@ -257,7 +246,7 @@
 {% endblock %}
 
 {% block detail_form %}
-    <form method="post" id="object_form" novalidate onsubmit="return checkUnsaved();">
+    <form method="post" id="object_form" novalidate onsubmit="return check_unsaved();">
         {% csrf_token %}
         <div class="row align-items-center">
             <div class="col-1 text-center font-weight-bold">名称</div>
@@ -286,31 +275,33 @@
 
         <input name="variable" hidden>
         {% include 'main/include/detail_redirect.html' %}
-        {% include 'main/include/submit_button_group.html' %}
+        {% include 'main/include/submit_button_group.html' with copy_url='variable_group_copy' %}
     </form>
 {% endblock %}
 
 {% block detail_inner_list %}
-    <div id='variable' class="row">
+    <div class="row">
         <div class="col text-center">
             <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="变量的加载是有序的，先加载的变量可以被后加载的变量调用"></i>&nbsp;变量列表</h5>
             <div class="ui-widget-content">
-                <table class="table table-sm table-bordered" style="width: 100%">
+                <table id='variable_table' class="table table-sm table-bordered" style="width: 100%">
                     <colgroup>
                         <col style='width: 60px;'>
                         <col style='width: 60px;'>
                         <col style='width: 60px;'>
                         <col style='width: 20%;'>
                         <col>
+                        <col>
                     </colgroup>
-                    <thead class="thead-light"><tr><th></th><th></th><th>顺序</th><th>名称</th><th>值</th></tr></thead>
+                    <thead class="thead-light"><tr><th></th><th></th><th>顺序</th><th>名称</th><th>值</th><th>备注</th></tr></thead>
                     <tbody class="text-left">
-                        <tr id="new_helper">
-                            <td class="middle" col_move><i class="icon-save icon-2x" data-toggle="tooltip" title="保存"></i></td>
-                            <td class="middle" col_del></td>
+                        <tr id="new_helper" class="bg-light">
+                            <td class="middle" col_move><i class="icon-ok-circle icon-2x text-success" data-toggle="tooltip" title="添加到变量组"></i></td>
+                            <td class="middle" col_del><i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i></td>
                             <td class="middle" col_index><span></span></td>
                             <td col_name><input placeholder="请输入变量名" class="form-control"></td>
                             <td col_value><input placeholder="请输入变量值" class="form-control"></td>
+                            <td col_description><input placeholder="" class="form-control"></td>
                         </tr>
                     </tbody>
                 </table>

@@ -78,6 +78,7 @@ urlpatterns = [
     path('variable_group/<str:pk>/delete/', variable_group.delete, name='variable_group_delete'),
     path('variable_group/<str:pk>/quick_update/', variable_group.quick_update, name='variable_group_quick_update'),
     path('variable_group/<str:pk>/variables/', variable_group.variables, name='variable_group_variables'),
+    path('variable_group/<str:pk>/copy/', variable_group.copy_, name='variable_group_copy'),
     path('variable_group/<str:pk>/reference/', variable_group.reference, name='variable_group_reference'),
 
     path('suites/', suite.list_, name='suites'),
