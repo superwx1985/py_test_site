@@ -7,13 +7,14 @@
         <title>TEST2</title>
         {% include 'main/include/general_css.html' %}
         {% include 'main/include/general_script.html' %}
+
         <style>
 
         </style>
         <script>
             $(function () {
                 window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
-                getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_config_dropdown, "{selected_pk:1}");
+                getList("{% url 'case_select_json' %}", window.$csrf_input.val(), update_div_dropdown, '{"selected_pk":"15"}');
 
 
 
@@ -73,22 +74,33 @@
             });
 
 
-            function update_config_dropdown(success, data) {
-                var base_div = $("#div_base1");
-                base_div.find("div#div_dropdown1").remove();
-                var div_dropdown = $('<div id="div_dropdown1"><select id="select1" style="display:none" placeholder="请选择"></select></div>');
-                base_div.append(div_dropdown);
-                $("#div_dropdown1").j_dropdown({
+            function update_div_dropdown(success, data) {
+                if (success) {
+                    update_dropdown(data, $("#div_base1"));
+                } else {
+                    console.log(data);
+                }
+            }
+
+            // 更新下拉项
+            function update_dropdown(data, $base_div, readonly) {
+                $base_div.empty();
+                var name = $base_div.attr('name');
+                var div_dropdown = $('<div j_dropdown><select style="display: none" placeholder="请选择" name="' + name + '"></select></div>');
+                $base_div.append(div_dropdown);
+                div_dropdown.j_dropdown({
                     data: data.data,
                     //multipleMode: 'label',
                     //limitCount: 1,
-                    input: '<input type="text" maxLength="20" placeholder="请输入名称搜索">',
+                    input: '<input type="text" maxLength="20" placeholder="筛选">',
                     choice: function() {
-                        console.log(this.selectId);
-                        window._selectId1 = this.selectId;
-                        //window._selectId = JSON.stringify(this.selectId);
+                        // console.log(this.selectId);
+                        // window._selectId = JSON.stringify(this.selectId);
                     }
                 });
+                if (readonly) {
+                    div_dropdown.data('dropdown').changeStatus('readonly')
+                }
             }
         </script>
     </head>

@@ -1,8 +1,8 @@
 // 更新下拉项
-function update_dropdown(data, $base_div) {
+function update_dropdown(data, $base_div, readonly) {
 	$base_div.empty();
 	var name = $base_div.attr('name');
-	var div_dropdown = $('<div><select style="display: none" placeholder="请选择" name="' + name + '"></select></div>');
+	var div_dropdown = $('<div j_dropdown><select style="display: none" placeholder="请选择" name="' + name + '"></select></div>');
 	$base_div.append(div_dropdown);
 	div_dropdown.j_dropdown({
 		data: data.data,
@@ -14,27 +14,63 @@ function update_dropdown(data, $base_div) {
 			// window._selectId = JSON.stringify(this.selectId);
 		}
 	});
+	if (readonly) {
+		div_dropdown.data('dropdown').changeStatus('readonly')
+	}
 }
 
 // 更新变量组下拉项
 function update_variable_groups_dropdown(success, data) {
 	if (success) {
 		update_dropdown(data, $("#variable_group_dropdown"));
-    }
+    } else {
+		console.log(data);
+	}
+}
+
+// 更新变量组下拉项，只读
+function update_variable_groups_dropdown_readonly(success, data) {
+	if (success) {
+		update_dropdown(data, $("#variable_group_dropdown"), true);
+    } else {
+		console.log(data);
+	}
 }
 
 // 更新配置下拉项
 function update_config_dropdown(success, data) {
 	if (success) {
 		update_dropdown(data, $("#config_dropdown"));
-    }
+    } else {
+		console.log(data);
+	}
+}
+
+// 更新配置下拉项，只读
+function update_config_dropdown_readonly(success, data) {
+	if (success) {
+		update_dropdown(data, $("#config_dropdown"), true);
+    } else {
+		console.log(data);
+	}
 }
 
 // 更新子用例下拉项
 function update_other_sub_case_dropdown(success, data) {
 	if (success) {
 		update_dropdown(data, $("#other_sub_case_dropdown"));
-    }
+    } else {
+		console.log(data);
+	}
+}
+
+// 更新子用例下拉项，只读
+function update_other_sub_case_dropdown_readonly(success, data) {
+	if (success) {
+		update_dropdown(data, $("#other_sub_case_dropdown"), true);
+    } else {
+		console.log(data);
+	}
 }
 
 // m2m详情modal
@@ -274,7 +310,6 @@ function show_reference(url) {
 		onEscape: true,
 		backdrop: true,
 		init: $.get(url, function (data) {
-			console.log(data)
 			$('#reference_div').parent('.bootbox-body').empty().html(data);
 		}, 'html')
 	})

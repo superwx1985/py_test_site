@@ -83,6 +83,10 @@
                         {% endif %}
                         parent.window.$('[name=m2m_detail_modal]').modal('hide');
                     {% endif %}
+                    {% if request.user != obj.creator %}
+                        // 禁用所有互动
+                        $('input,textarea,select').attr('disabled', true);
+                    {% endif %}
                 });
 
                 // 复制对象的回调函数
