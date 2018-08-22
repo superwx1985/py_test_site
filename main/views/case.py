@@ -10,7 +10,7 @@ from django.db.models import Q, F, CharField, Value, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from main.models import Case, Step, CaseVsStep
+from main.models import Case, Step, CaseVsStep, Action
 from main.forms import OrderByForm, PaginatorForm, CaseForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie
 from urllib.parse import quote
@@ -422,7 +422,7 @@ def select_json(request):
 # 获取调用列表
 def reference(request, pk):
     try:
-        obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
+        obj = Case.objects.get(pk=pk)
     except Case.DoesNotExist:
         raise Http404('Case does not exist')
     objects = obj.suite_set.filter(is_active=True).order_by('-modified_date').values(
@@ -431,7 +431,8 @@ def reference(request, pk):
     for obj_ in objects:
         obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
         obj_['type'] = '套件'
-    objects2 = Step.objects.filter(is_active=True, other_sub_case=obj, action=26).order_by('-modified_date').values(
+    action = Action.objects.get(code='OTHER_CALL_SUB_CASE')
+    objects2 = Step.objects.filter(is_active=True, other_sub_case=obj, action=action).order_by('-modified_date').values(
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects2:

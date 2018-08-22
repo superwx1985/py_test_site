@@ -200,7 +200,7 @@ def select_json(request):
 # 获取调用列表
 def reference(request, pk):
     try:
-        obj = Config.objects.select_related('creator', 'modifier').get(pk=pk)
+        obj = Config.objects.get(pk=pk)
     except Config.DoesNotExist:
         raise Http404('Config does not exist')
     objects = Suite.objects.filter(is_active=True, config=obj).order_by('-modified_date').values(

@@ -51,14 +51,14 @@ def create_step(step_list, full_case_id):
                style='border-bottom:2px solid #AAAAAA; text-align:center')
         with tr(id='step_detail_1_%s' % full_id, cid=case_id, lid=level_id, sid=step_id, type='tr_detail',
                 state=status):
-            td(span('URL:', cls='blodFont'), br(), span(step.data_dict['url'], cls='pre_span'), style='overflow: auto;')
-            td(span('Headers:', cls='blodFont'), br(), span(step.data_dict['headers'], cls='pre_span'),
+            td(span('URL:', cls='boldFont'), br(), span(step.data_dict['url'], cls='pre_span'), style='overflow: auto;')
+            td(span('Headers:', cls='boldFont'), br(), span(step.data_dict['headers'], cls='pre_span'),
                style='overflow: auto;', colspan='8')
         with tr(id='step_detail_2_%s' % full_id, cid=case_id, lid=level_id, sid=step_id, type='tr_detail',
                 state=status):
-            td(span('Body:', cls='blodFont'), br(), span(step.data_dict['body'], cls='pre_span'),
+            td(span('Body:', cls='boldFont'), br(), span(step.data_dict['body'], cls='pre_span'),
                style='overflow: auto;')
-            td(span('Data:', cls='blodFont'), br(), span(step.data_dict['data'], cls='pre_span'),
+            td(span('Data:', cls='boldFont'), br(), span(step.data_dict['data'], cls='pre_span'),
                style='overflow: auto;', colspan='8')
         with tr(id='step_detail_3_%s' % full_id, cid=case_id, lid=level_id, sid=step_id, type='tr_detail',
                 state=status):
@@ -183,7 +183,7 @@ def generate_report(result_dir, report_file_name, case_result_list, start_time, 
     td[type='id_column'] {text-align:center;}
 
     .testStep { margin-left: 2em; }
-    .blodFont { font-weight: bold; }
+    .boldFont { font-weight: bold; }
     tr[type='tr_step'] {display: none;}
     tr[type='tr_detail'] {display: none;}
     tr[trcls='passStep'] { background-color: #6c6; }
@@ -406,11 +406,11 @@ function toggleStepDetail(cid, full_id) {
     with d.body:
         div(report_title, cls='heading')
         with div(id='time'):
-            div('开始时间', cls='blodFont', style="width:100px;")
+            div('开始时间', cls='boldFont', style="width:100px;")
             div(str(start_time))
-            div('结束时间', cls='blodFont', style="width:100px;")
+            div('结束时间', cls='boldFont', style="width:100px;")
             div(str(end_time))
-            div('测试用时', cls='blodFont', style="width:100px;")
+            div('测试用时', cls='boldFont', style="width:100px;")
             div(str(elapsed_time))
         with div(id='summary'):
             div('用例统计', style="width:100px; font-weight:bold;")

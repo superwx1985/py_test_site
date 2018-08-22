@@ -43,29 +43,29 @@ def create_step(step_list, full_case_id):
                style='border-bottom:2px solid #AAAAAA; text-align:center')
         with tr(id='step_detail_1_%s' % full_id, cid=case_id, lid=level_id, sid=step_id, type='tr_detail',
                 state=status):
-            td(span('database type:', cls='blodFont'), br(), span(step.data_dict['database_type'], cls='pre_span'),
+            td(span('database type:', cls='boldFont'), br(), span(step.data_dict['database_type'], cls='pre_span'),
                style='overflow: auto;')
-            td(span('database host:', cls='blodFont'), br(), span(step.data_dict['database_host'], cls='pre_span'),
+            td(span('database host:', cls='boldFont'), br(), span(step.data_dict['database_host'], cls='pre_span'),
                colspan='7',
                style='overflow: auto;')
         with tr(id='step_detail_2_%s' % full_id, cid=case_id, lid=level_id, sid=step_id, type='tr_detail',
                 state=status):
-            td(span('database port:', cls='blodFont'), br(), span(step.data_dict['database_port'], cls='pre_span'),
+            td(span('database port:', cls='boldFont'), br(), span(step.data_dict['database_port'], cls='pre_span'),
                style='overflow: auto;')
-            td(span('database name:', cls='blodFont'), br(), span(step.data_dict['database_name'], cls='pre_span'),
+            td(span('database name:', cls='boldFont'), br(), span(step.data_dict['database_name'], cls='pre_span'),
                colspan='7',
                style='overflow: auto;')
         with tr(id='step_detail_3_%s' % full_id, cid=case_id, lid=level_id, sid=step_id, type='tr_detail',
                 state=status):
-            td(span('user:', cls='blodFont'), br(), span(step.data_dict['user'], cls='pre_span'),
+            td(span('user:', cls='boldFont'), br(), span(step.data_dict['user'], cls='pre_span'),
                style='overflow: auto;')
-            td(span('password:', cls='blodFont'), br(), span(step.data_dict['password'], cls='pre_span'), colspan='7',
+            td(span('password:', cls='boldFont'), br(), span(step.data_dict['password'], cls='pre_span'), colspan='7',
                style='overflow: auto;')
         with tr(id='step_detail_4_%s' % full_id, cid=case_id, lid=level_id, sid=step_id, type='tr_detail',
                 state=status):
-            td(span('SQL:', cls='blodFont'), br(), span(step.data_dict['sql'], cls='pre_span'),
+            td(span('SQL:', cls='boldFont'), br(), span(step.data_dict['sql'], cls='pre_span'),
                style='overflow: auto;')
-            td(span('expect:', cls='blodFont'), br(), span(step.data_dict['expect'], cls='pre_span'), colspan='7',
+            td(span('expect:', cls='boldFont'), br(), span(step.data_dict['expect'], cls='pre_span'), colspan='7',
                style='overflow: auto;')
         with tr(id='step_detail_5_%s' % full_id, cid=case_id, lid=level_id, sid=step_id, type='tr_detail',
                 state=status):
@@ -183,7 +183,7 @@ def generate_report(result_dir, report_file_name, case_result_list, start_time, 
     td[type='id_column'] {text-align:center;}
 
     .testStep { margin-left: 2em; }
-    .blodFont { font-weight: bold; }
+    .boldFont { font-weight: bold; }
     tr[type='tr_step'] {display: none;}
     tr[type='tr_detail'] {display: none;}
     tr[trcls='passStep'] { background-color: #6c6; }
@@ -409,11 +409,11 @@ function toggleStepDetail(cid, full_id) {
     with d.body:
         div(report_title, cls='heading')
         with div(id='time'):
-            div('开始时间', cls='blodFont', style="width:100px;")
+            div('开始时间', cls='boldFont', style="width:100px;")
             div(str(start_time))
-            div('结束时间', cls='blodFont', style="width:100px;")
+            div('结束时间', cls='boldFont', style="width:100px;")
             div(str(end_time))
-            div('测试用时', cls='blodFont', style="width:100px;")
+            div('测试用时', cls='boldFont', style="width:100px;")
             div(str(elapsed_time))
         with div(id='summary'):
             div('用例统计', style="width:100px; font-weight:bold;")

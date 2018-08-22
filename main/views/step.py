@@ -6,7 +6,7 @@ from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
-from django.db.models import Q, CharField, Value
+from django.db.models import Q, CharField, Value, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -60,6 +60,14 @@ def list_(request):
     # 两者结合使用
     # objects = Step.objects.filter(q, is_active=True).order_by('id').select_related('action').prefetch_related(
     #     'action__type')
+
+    # 获取被调用次数
+    objects2 = Step.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(
+        reference_count=Count('case'))
+    count_ = {o['pk']: o['reference_count'] for o in objects2}
+    for o in objects:
+        o['reference_count'] = count_.get(o['pk'], 0)
+
     # 排序
     if objects:
         if order_by not in objects[0]:
@@ -314,7 +322,7 @@ def copy_(request, pk):
 # 获取调用列表
 def reference(request, pk):
     try:
-        obj = Step.objects.select_related('creator', 'modifier').get(pk=pk)
+        obj = Step.objects.get(pk=pk)
     except Step.DoesNotExist:
         raise Http404('Step does not exist')
     objects = obj.case_set.filter(is_active=True).order_by('-modified_date').values(

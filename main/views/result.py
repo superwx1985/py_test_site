@@ -23,7 +23,7 @@ def list_(request):
     page = request.GET.get('page')
     size = request.GET.get('size', request.COOKIES.get('size'))
     search_text = str(request.GET.get('search_text', ''))
-    order_by = request.GET.get('order_by', 'modified_date')
+    order_by = request.GET.get('order_by', 'start_date')
     order_by_reverse = request.GET.get('order_by_reverse', 'True')
     all_ = request.GET.get('all_', 'False')
 
@@ -47,7 +47,7 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = SuiteResult.objects.filter(q).values(
-        'pk', 'uuid', 'name', 'keyword', 'project__name',  'start_date', 'result_status', 'creator', 'creator__username',
+        'pk', 'uuid', 'name', 'keyword', 'project__name', 'start_date', 'result_status', 'creator', 'creator__username',
         'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     result_status_list = SuiteResult.result_status_list
@@ -57,7 +57,7 @@ def list_(request):
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'modified_date'
+            order_by = 'start_date'
         objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     paginator = Paginator(objects, size)
     try:

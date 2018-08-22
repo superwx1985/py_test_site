@@ -83,7 +83,7 @@
                         {% endif %}
                         parent.window.$('[name=m2m_detail_modal]').modal('hide');
                     {% endif %}
-                    {% if request.user != obj.creator %}
+                    {% if request.user != obj.creator and form.initial %}
                         // 禁用所有互动
                         $('input,textarea,select').attr('disabled', true);
                     {% endif %}

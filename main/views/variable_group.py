@@ -297,7 +297,7 @@ def copy_(request, pk):
 # 获取调用列表
 def reference(request, pk):
     try:
-        obj = VariableGroup.objects.select_related('creator', 'modifier').get(pk=pk)
+        obj = VariableGroup.objects.get(pk=pk)
     except VariableGroup.DoesNotExist:
         raise Http404('VariableGroup does not exist')
     objects = Case.objects.filter(is_active=True, variable_group=obj).order_by('-modified_date').values(

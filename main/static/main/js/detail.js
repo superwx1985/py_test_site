@@ -300,17 +300,3 @@ function replace_m2m($input, pk, order) {
 	m2m_list.splice(order-1, 1, String(pk));
 	$input.val(JSON.stringify(m2m_list))
 }
-
-// 查看被调用弹窗
-function show_reference(url) {
-	bootbox.dialog({
-		title: '被调用情况',
-		message: '<div id="reference_div" class="middle"><i class="icon-spinner icon-spin icon-5x"></i></div>',
-		size: 'large',
-		onEscape: true,
-		backdrop: true,
-		init: $.get(url, function (data) {
-			$('#reference_div').parent('.bootbox-body').empty().html(data);
-		}, 'html')
-	})
-}

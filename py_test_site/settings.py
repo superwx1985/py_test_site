@@ -256,7 +256,7 @@ LOGGING = {
         # sql日志
         'django.db.backends': {
             'handlers': ['sql_handler'],
-            'level': log_level,
+            'level': 'DEBUG',
             'propagate': True
         },
         # 请求日志
@@ -291,5 +291,5 @@ ASGI_APPLICATION = 'py_test_site.routing.application'
 SITE_NAME = '汇智自动化测试工具'
 
 # 站点版本
-SITE_VERSION = 'V1.1.20180821.01'
+SITE_VERSION = 'V1.1.20180822.01'
 

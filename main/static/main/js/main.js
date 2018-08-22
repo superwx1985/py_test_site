@@ -392,3 +392,17 @@ function modal_with_iframe(modal_name, modal_class, modal_style, modal_body_styl
 function modal_with_iframe_max(modal_name, modal_title, url, callback) {
     return modal_with_iframe(modal_name, 'modal-max', '', 'min-height: 600px', modal_title, url, callback)
 }
+
+// 查看被调用弹窗
+function show_reference(url) {
+	bootbox.dialog({
+		title: '被调用情况',
+		message: '<div id="reference_div" class="middle"><i class="icon-spinner icon-spin icon-5x"></i></div>',
+		size: 'large',
+		onEscape: true,
+		backdrop: true,
+		init: $.get(url, function (data) {
+			$('#reference_div').parent('.bootbox-body').empty().html(data);
+		}, 'html')
+	})
+}

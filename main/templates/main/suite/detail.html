@@ -30,13 +30,13 @@
     <script>
         $(function () {
             // 获取配置下拉项
-            {% if request.user == obj.creator %}
+            {% if request.user == obj.creator or not form.initial %}
                 getList("{% url 'config_select_json' %}", window.$csrf_input.val(), update_config_dropdown, '{"selected_pk": "{{ form.config.value }}"}');
             {% else %}
                 getList("{% url 'config_select_json' %}", window.$csrf_input.val(), update_config_dropdown_readonly, '{"selected_pk": "{{ form.config.value }}"}');
             {% endif %}
             // 获取变量组下拉项
-            {% if request.user == obj.creator %}
+            {% if request.user == obj.creator or not form.initial %}
                 getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_groups_dropdown, '{"selected_pk": "{{ form.variable_group.value }}"}');
             {% else %}
                 getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_groups_dropdown_readonly, '{"selected_pk": "{{ form.variable_group.value }}"}');
