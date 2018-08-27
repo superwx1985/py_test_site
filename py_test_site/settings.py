@@ -48,7 +48,9 @@ ROOT_URLCONF = 'py_test_site.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')],
+        'DIRS': [
+            # os.path.join(BASE_DIR, 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -64,6 +66,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'py_test_site.wsgi.application'
 
 # sqlite3 数据库
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
@@ -72,9 +75,9 @@ WSGI_APPLICATION = 'py_test_site.wsgi.application'
 # }
 
 # mysql 数据库
-# mysql改用pymysql驱动
+
 import pymysql
-pymysql.install_as_MySQLdb()
+pymysql.install_as_MySQLdb()  # mysql改用pymysql驱动
 
 DATABASES = {
     'default': {
@@ -90,7 +93,6 @@ DATABASES = {
 
 
 # Password validation
-# https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     # {
@@ -109,7 +111,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # Internationalization
-# https://docs.djangoproject.com/en/1.10/topics/i18n/
 
 LANGUAGE_CODE = 'zh-hans'
 
@@ -124,11 +125,11 @@ USE_L10N = False
 DATETIME_FORMAT = 'Y-m-d H:i:s'
 DATE_FORMAT = 'Y-m-d'
 
+# 使用时区
 USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 # 静态文件地址
 STATIC_URL = '/static/'
@@ -256,7 +257,7 @@ LOGGING = {
         # sql日志
         'django.db.backends': {
             'handlers': ['sql_handler'],
-            'level': 'DEBUG',
+            'level': log_level,
             'propagate': True
         },
         # 请求日志
@@ -291,5 +292,5 @@ ASGI_APPLICATION = 'py_test_site.routing.application'
 SITE_NAME = '汇智自动化测试工具'
 
 # 站点版本
-SITE_VERSION = 'V1.1.20180822.01'
+SITE_VERSION = 'V1.1.20180827.01'
 

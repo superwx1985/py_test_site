@@ -24,7 +24,6 @@ def replace_parameter_in_str(str_, start_str, end_str, f, variables):
             value = ''
         else:
             value = str(f(parameter, variables))  # 替换
-        logger.debug(str_)
         logger.debug('%s ======> %s' % (str_[start_index:end_index + len(end_str)], value))
         str_ = str_[0:start_index] + value + str_[end_index + len(end_str):]  # 为防止替换了相同的内容，采用拼接的方法
     logger.debug('end replace: [%s]' % str_)

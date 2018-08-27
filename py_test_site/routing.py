@@ -8,8 +8,8 @@ from main.views import websocket
 
 websocket_urlpatterns = [
     # url(r'^ws/chat/(?P<room_name>[^/]+)/$', general.ChatConsumer),
-    path('ws/suite_execute/<int:suite_pk>', websocket.SuiteConsumer, name='suite_execute'),
-    path('ws/chat/', websocket.ChatConsumer),
+    path('ws/suite_execute/<int:suite_pk>/', websocket.SuiteConsumer, name='suite_execute'),
+    path('ws/suite_execute_remote/', websocket.SuiteRemoteConsumer, name='suite_execute_remote'),
 ]
 
 application = ProtocolTypeRouter({

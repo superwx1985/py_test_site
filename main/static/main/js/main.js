@@ -337,7 +337,7 @@ function copy_obj(original_name, copy_url, sub_item) {
 }
 
 // 弹出框
-function modal(modal_name, modal_class, modal_style, modal_body_style, modal_title, $modal_body_div, callback) {
+function show_my_modal(modal_name, modal_class, modal_style, modal_body_style, modal_title, $modal_body_div, modal_option, callback) {
     var html_ =
         '<div class="modal fade" name="'+ modal_name +'">\n' +
         '    <div class="modal-dialog '+ modal_class +'" style="' + modal_style + '">\n' +
@@ -370,27 +370,27 @@ function modal(modal_name, modal_class, modal_style, modal_body_style, modal_tit
     }
     // 关闭modal后执行回调函数并清除modal代码
 	my_modal.off('hide.bs.modal').on('hide.bs.modal', function () {
-	    if (callback) {callback();}
+	    if (callback) { callback() }
 	    my_modal.remove();
 	});
-    my_modal.modal();
+    if (modal_option) { my_modal.modal(modal_option) } else { my_modal.modal() }
     return my_modal;
 }
 
 // 弹出内嵌页面
-function modal_with_iframe(modal_name, modal_class, modal_style, modal_body_style, modal_title, url, callback) {
+function modal_with_iframe(modal_name, modal_class, modal_style, modal_body_style, modal_title, url, modal_option, callback) {
     var $modal_body_div = $('<div style="height: 100%;"></div>');
     var iframe = $('<iframe>').attr('name', modal_name + '_iframe').attr('frameborder', 0).css({'height': '100%', 'width': '100%'});
     if (url) {
         iframe.attr('src', url);
     }
     $modal_body_div.append(iframe);
-    return modal(modal_name, modal_class, modal_style, modal_body_style, modal_title, $modal_body_div, callback)
+    return show_my_modal(modal_name, modal_class, modal_style, modal_body_style, modal_title, $modal_body_div, modal_option, callback)
 }
 
 // 弹出内嵌页面最大化
-function modal_with_iframe_max(modal_name, modal_title, url, callback) {
-    return modal_with_iframe(modal_name, 'modal-max', '', 'min-height: 600px', modal_title, url, callback)
+function modal_with_iframe_max(modal_name, modal_title, url, modal_option, callback) {
+    return modal_with_iframe(modal_name, 'modal-max', '', 'min-height: 600px', modal_title, url, modal_option, callback)
 }
 
 // 查看被调用弹窗

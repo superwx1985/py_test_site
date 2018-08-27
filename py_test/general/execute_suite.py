@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import uuid
+# import pytz
 from py_test.general import vic_variables, vic_public_elements, vic_config, execute_case, vic_log
 from concurrent.futures import ThreadPoolExecutor, wait
 from py_test.general.vic_method import load_public_data
@@ -11,7 +12,6 @@ from utils.system import FORCE_STOP
 
 
 def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None):
-    # start_date = datetime.datetime.now(pytz.timezone('Asia/Shanghai'))
     start_date = datetime.datetime.now()
 
     logger = logging.getLogger('py_test')
@@ -22,7 +22,10 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
 
     # 是否推送websocket
     if websocket_sender:
-        logger = vic_log.VicLogger(logger, websocket_sender)
+        format_ = logging.Formatter('%(asctime)s [%(threadName)s:%(thread)d] - %(message)s')
+        ws_handler = vic_log.WebsocketHandler(websocket_sender)
+        ws_handler.setFormatter(format_)
+        logger.addHandler(ws_handler)
 
     logger.info('开始')
 
@@ -118,7 +121,7 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
 
     logger.info('测试用例执行完毕')
     logger.info('========================================')
-    logger.info('执行: %d | 通过: %d | 失败: %d | 报错: %d' % (
+    logger.info('执行: %d | 通过: %d | 失败: %d | 出错: %d' % (
         suite_result.execute_count, suite_result.pass_count, suite_result.fail_count, suite_result.error_count))
     logger.info('耗时: ' + str(suite_result.end_date - suite_result.start_date))
     logger.info('========================================')

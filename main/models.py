@@ -502,3 +502,22 @@ class Project(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Token(models.Model):
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(blank=True, max_length=100)
+    is_active = models.BooleanField(default=True)
+    value = models.CharField(max_length=100)
+    user = models.ForeignKey(User, verbose_name='对应用户', on_delete=models.SET_NULL, blank=True, null=True)
+
+    def natural_key(self):  # 序列化时，可以用此值代替外键ID
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        unique_together = ('value',)

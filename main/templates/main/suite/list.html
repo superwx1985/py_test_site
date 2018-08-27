@@ -14,7 +14,7 @@
             $('#nav_suite').addClass('active');
             // 获取添加地址
             window.addUrl="{% url 'suite_add' %}";
-            // 运行按钮
+            // 运行
             $('[name=execute_button]').on('click', function () {
                 var url = $(this).parents('tr').attr('exe_url');
                 var name = $(this).parents('tr').find('td[col_name="name"]').text();
@@ -36,21 +36,6 @@
                     },
                     callback: function (result) {
                         if (result === true) {
-                            {#$('#mask').show();#}
-                            {#$.get(url, function(data) {#}
-                            {#    $('#mask').hide();#}
-                            {#    var content_div = $('<div>').html(data.data.suite_result_content);#}
-                            {#    var a = $('<a>').text('查看详情').addClass('btn btn-primary').attr({'href': data.data.suite_result_url, 'target': 'blank_'});#}
-                            {#    content_div.append($('<div>').addClass('middle').append(a));#}
-                            {#    bootbox.dialog({#}
-                            {#        title: '测试结果',#}
-                            {#        message: content_div,#}
-                            {#        size: 'large',#}
-                            {#        onEscape: true,#}
-		                     {#       backdrop: true#}
-                            {#    });#}
-                            {# });#}
-
                             var $modal_body_div = $('<div>').addClass('text-center');
                             var execute_name_div = $('<div id="execute_name_div" class="text-left"></div>');
                             execute_name_div.append($('<span>').addClass('font-weight-bold lead').text('套件名称：')).append($('<span>').addClass('text-info lead').text(name));
@@ -62,14 +47,16 @@
                             $modal_body_div.append(execute_result_div);
                             var execute_button = $('<button id="force-stop" class="btn btn-danger">强制停止</button>');
                             $modal_body_div.append(execute_button);
-                            var my_modal = modal('execute_modal', 'modal-max', '', 'overflow-y: auto;', '<i class="icon-spinner icon-spin"></i>&nbsp;执行中...', $modal_body_div);
+                            var my_modal = show_my_modal('execute_modal', 'modal-max', '', 'overflow-y: auto;', '<i class="icon-spinner icon-spin"></i>&nbsp;执行中...', $modal_body_div, {backdrop:'static'});
 
-                            var suite_socket = new WebSocket('ws://' + window.location.host + url);
+                            var ws_scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+                            var websocket_url = ws_scheme + '://' + window.location.host + url + '/';
+                            var suite_socket = new WebSocket(websocket_url);
                             var execute_uuid = guid();
 
                             execute_button.off('click').on('click', function () {
                                 execute_button.off('click');
-                                var suite_socket_stop = new WebSocket('ws://' + window.location.host + url);
+                                var suite_socket_stop = new WebSocket(websocket_url);
                                 suite_socket_stop.onmessage = function(data) {
                                     var type = JSON.parse(data.data)['type'];
                                     if (type === 'ready'){
@@ -112,6 +99,16 @@
                                         modal_with_iframe_max('m2m_detail_modal', '', data_.suite_result_url + '?inside=1')
                                     });
                                     my_modal.find('.modal-title').text('执行结束');
+                                    // 使modal可以通过点击外部关闭
+                                    my_modal.data('bs.modal')._config.backdrop = true;
+                                } else if (type === 'error'){
+                                    var data_ = JSON.parse(data.data)['data'];
+                                    var content_div = $('<div>').addClass('text-left lead text-danger').text(data_);
+                                    execute_result_div.append(content_div);
+                                    execute_button.remove();
+                                    my_modal.find('.modal-title').text('执行出错');
+                                    // 使modal可以通过点击外部关闭
+                                    my_modal.data('bs.modal')._config.backdrop = true;
                                 }
                             };
                             suite_socket.onclose = function(e) {

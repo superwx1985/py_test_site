@@ -6,7 +6,7 @@ from py_test.vic_tools import vic_eval
 from py_test.vic_tools.vic_date_handle import str_to_time
 from py_test.vic_tools.attr_display import AttrDisplay
 from py_test.vic_tools.vic_str_handle import remove_line_break_and_blank_from_both_ends, remove_line_break_from_both_ends
-from py_test.general.vic_log import get_thread_logger
+# from py_test.general.vic_log import get_thread_logger
 
 
 # 在对象中查找对象
@@ -15,15 +15,15 @@ class FindObject:
         self.__list_exact_match = list_exact_match
         self.__dict_exact_match = dict_exact_match
         self.default_operator_list = default_operator_list
-        self.logger = get_thread_logger()
+        # self.logger = get_thread_logger()
 
     # 主方法
     def find_object_in_object(self, object1, object2):
         found = False
         count = 0
 
-        self.logger.debug('object1: %s' % object1)
-        self.logger.debug('object2: %s' % object2)
+        # self.logger.debug('object1: %s' % object1)
+        # self.logger.debug('object2: %s' % object2)
 
         if object1 == object2:
             found = True
@@ -60,8 +60,8 @@ class FindObject:
                             found = True
                             count += _count
 
-        self.logger.debug('found: %s count: %s' % (found, count))
-        self.logger.debug('object:\n%s' % object2)
+        # self.logger.debug('found: %s count: %s' % (found, count))
+        # self.logger.debug('object:\n%s' % object2)
         return found, count
 
     # 在列表和元组中查找列表和元组
@@ -213,8 +213,8 @@ def generate_reg_flags(re_parameter):
 
 # 替换成对标识里面的特殊字符，参数f为自定义替换函数，接收成对标识之间的字符串，返回替换后的字符串
 def replace_control_character(str_, f, start_str, end_str):
-    logger = get_thread_logger()
-    logger.debug('start replace: [%s]' % str_)
+    # logger = get_thread_logger()
+    # logger.debug('start replace: [%s]' % str_)
     start_str_temp = '{L_%s}' % str(uuid.uuid1())
     end_str_temp = '{R_%s}' % str(uuid.uuid1())
 
@@ -232,10 +232,10 @@ def replace_control_character(str_, f, start_str, end_str):
             replaced_value = ''
         else:
             replaced_value = str(f(original_value))  # 替换
-        logger.debug('%s => %s' % (original_value, replaced_value))
+        # logger.debug('%s => %s' % (original_value, replaced_value))
         str_ = str_[0:start_index + len(start_str_temp)] + replaced_value + str_[end_index:]  # 为防止替换了相同的内容，采用拼接的方法
     str_ = str_.replace(start_str_temp, start_str).replace(end_str_temp, end_str)
-    logger.debug('end replace: [%s]' % str_)
+    # logger.debug('end replace: [%s]' % str_)
     return str_
 
 
@@ -304,7 +304,7 @@ def restore_control_character_in_objecr(object_, f):
 
 # 按条件查找
 def find_with_condition(condition, data, pre_data_object=None, default_operator_list=None):
-    logger = get_thread_logger()
+    # logger = get_thread_logger()
     operator_character = ''
     start_str = '#{'
     end_str = '}#'
@@ -317,9 +317,9 @@ def find_with_condition(condition, data, pre_data_object=None, default_operator_
         operator_character = condition[start_index:end_index + len(end_str)]
         condition_value = condition[0:start_index] + condition[end_index + len(end_str):]
 
-    logger.debug('operator_character:\n%s' % operator_character)
-    logger.debug('condition_value:\n%s' % condition_value)
-    logger.debug('data:\n%s' % data)
+    # logger.debug('operator_character:\n%s' % operator_character)
+    # logger.debug('condition_value:\n%s' % condition_value)
+    # logger.debug('data:\n%s' % data)
 
     operator_list = operator_character.replace(start_str, '').replace(end_str, '').split(sep='|')
     first_operator = ''
@@ -500,14 +500,14 @@ def find_with_condition(condition, data, pre_data_object=None, default_operator_
         else:
             raise ValueError('Invalid operational character [' + first_operator + ']')
 
-    logger.debug('is_matched: [%s], match_count: [%s]' % (find_result.is_matched, find_result.match_count))
-    logger.debug('find_result: \n%s' % find_result)
+    # logger.debug('is_matched: [%s], match_count: [%s]' % (find_result.is_matched, find_result.match_count))
+    # logger.debug('find_result: \n%s' % find_result)
     return find_result
 
 
 # 拆分“或”条件
 def find_with_multiple_condition(condition, data):
-    logger = get_thread_logger()
+    # logger = get_thread_logger()
     pass_group = []
     fail_group = []
     is_pass = False
@@ -533,10 +533,10 @@ def find_with_multiple_condition(condition, data):
                     is_pass = True
                 else:
                     fail_group.append([union_count, _p, _f])
-    logger.debug('Is Pass: %s' % is_pass)
-    logger.debug('Pass Group: %s' % pass_group)
-    logger.debug('Fail Group: %s' % fail_group)
-    logger.debug('Union Count: %s' % union_count)
+    # logger.debug('Is Pass: %s' % is_pass)
+    # logger.debug('Pass Group: %s' % pass_group)
+    # logger.debug('Fail Group: %s' % fail_group)
+    # logger.debug('Union Count: %s' % union_count)
     return is_pass, pass_group, fail_group, union_count, data_object
 
 

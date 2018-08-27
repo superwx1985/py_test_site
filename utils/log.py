@@ -6,3 +6,4 @@ class NonWarningFilter(logging.Filter):
         if record.levelno >= 30:
             return False
         return True
+

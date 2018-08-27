@@ -20,6 +20,11 @@ if not os.path.exists(THREAD_LOG_DIR):
 THREAD_LEVEL = logging.INFO
 
 
+# 日志格式
+format_standard = logging.Formatter('%(asctime)s [%(threadName)s:%(thread)d] [%(name)s] [%(module)s:%(funcName)s:%(lineno)d] [%(levelname)s] - %(message)s')
+format_detail = logging.Formatter('%(asctime)s [%(threadName)s:%(thread)d] [%(name)s] [%(pathname)s:%(funcName)s:%(lineno)d] [%(levelname)s] - %(message)s')
+
+
 # 获取子线程日志
 def get_thread_logger(level=None):
     if level is None:
@@ -32,11 +37,13 @@ def get_thread_logger(level=None):
             filename=os.path.join(THREAD_LOG_DIR, '{}_debug.log'.format(logger_name)), maxBytes=1024*1024*100,
             backupCount=1, encoding='utf-8')
         debug_trfh.setLevel(logging.DEBUG)
+        debug_trfh.setFormatter(format_detail)
 
         error_trfh = logging.handlers.RotatingFileHandler(
             filename=os.path.join(THREAD_LOG_DIR, '{}_error.log'.format(logger_name)), maxBytes=1024*1024*100,
             backupCount=1, encoding='utf-8')
         error_trfh.setLevel(logging.ERROR)
+        error_trfh.setFormatter(format_detail)
 
         thread_logger.addHandler(debug_trfh)
         thread_logger.addHandler(error_trfh)
@@ -49,39 +56,16 @@ def get_thread_logger(level=None):
     return thread_logger
 
 
-# 打印日志时同步推送websocket
-class VicLogger:
-    def __init__(self, logger, websocket_sender):
-        self.logger = logger
-        self.level = logger.level
-        self.websocket_sender = websocket_sender
+# 推送日志到websocket
+class WebsocketHandler(logging.Handler):
+    def __init__(self, ws_sender):
+        self.ws_sender = ws_sender
+        super().__init__()
+        # logging.Handler.__init__(self)
 
-    def debug(self, msg, *args, **kwargs):
-        self.logger.debug(msg, *args, **kwargs)
-        level = logging.DEBUG
-        if self.logger.isEnabledFor(level):
-            self.websocket_sender(msg, level)
-
-    def info(self, msg, *args, **kwargs):
-        self.logger.info(msg, *args, **kwargs)
-        level = logging.INFO
-        if self.logger.isEnabledFor(level):
-            self.websocket_sender(msg, level)
-
-    def warning(self, msg, *args, **kwargs):
-        self.logger.warning(msg, *args, **kwargs)
-        level = logging.WARNING
-        if self.logger.isEnabledFor(level):
-            self.websocket_sender(msg, level)
-
-    def error(self, msg, *args, **kwargs):
-        self.logger.error(msg, *args, **kwargs)
-        level = logging.ERROR
-        if self.logger.isEnabledFor(level):
-            self.websocket_sender(msg, level)
-
-    def critical(self, msg, *args, **kwargs):
-        self.logger.critical(msg, *args, **kwargs)
-        level = logging.CRITICAL
-        if self.logger.isEnabledFor(level):
-            self.websocket_sender(msg, level)
+    def emit(self, record):
+        try:
+            msg = self.format(record)
+            self.ws_sender(msg, record.levelno)
+        except Exception:
+            self.handleError(record)

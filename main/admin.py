@@ -145,6 +145,18 @@ class ProjectAdmin(admin.ModelAdmin):
     search_fields = ('pk', 'name', 'keyword',)
 
 
+class TokenAdmin(admin.ModelAdmin):
+    list_display = (
+        'pk', 'name', 'keyword', 'value', 'user', 'is_active')
+    list_display_links = ('pk', 'name',)
+    list_filter = ('is_active', 'user')
+    list_editable = ('value', 'user', 'is_active')
+    search_fields = ('pk', 'name', 'keyword', 'value')
+
+
+admin_site.register(User, UserAdmin)
+admin_site.register(Group, GroupAdmin)
+
 admin_site.register(Case, CaseAdmin)
 admin_site.register(Action, ActionAdmin)
 admin_site.register(Step, StepAdmin)
@@ -158,5 +170,4 @@ admin_site.register(SuiteVsCase, SuiteVsCaseAdmin)
 admin_site.register(SuiteResult, SuiteResultAdmin)
 admin_site.register(Image, ImageAdmin)
 admin_site.register(Project, ProjectAdmin)
-admin_site.register(User, UserAdmin)
-admin_site.register(Group, GroupAdmin)
+admin_site.register(Token, TokenAdmin)

@@ -28,6 +28,7 @@ import main.views.variable_group as variable_group
 import main.views.suite as suite
 import main.views.result as result
 import main.views.help as help_
+import main.views.websocket as ws
 
 
 urlpatterns = [
@@ -88,7 +89,7 @@ urlpatterns = [
     path('suite/<str:pk>/quick_update/', suite.quick_update, name='suite_quick_update'),
     path('suite/<str:pk>/cases/', suite.cases, name='suite_cases'),
     # path('suite/<str:pk>/execute/', suite.execute_, name='suite_execute'),
-    path('ws/suite_execute/<int:suite_pk>', suite.execute_, name='suite_execute'),
+    path('ws/suite_execute/<int:suite_pk>', ws.SuiteConsumer, name='suite_execute'),  # 只用于url翻译
 
     path('results/', result.list_, name='results'),
     path('result/<str:pk>/', result.detail, name='result'),

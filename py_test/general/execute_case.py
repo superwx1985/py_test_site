@@ -23,9 +23,6 @@ def execute_case(
 
     start_date = datetime.datetime.now()
     logger = vic_log.get_thread_logger()
-    # 是否推送websocket
-    if websocket_sender:
-        logger = vic_log.VicLogger(logger, websocket_sender)
 
     # 初始化case result
     case_result = CaseResult.objects.create(
@@ -119,7 +116,7 @@ def execute_case(
                 logger.warning('【{}】\t执行失败'.format(execute_id))
             else:
                 case_result.error_count += 1
-                logger.error('【{}】\t执行报错，错误信息 => {}'.format(execute_id, step_result_.result_message))
+                logger.error('【{}】\t执行出错，错误信息 => {}'.format(execute_id, step_result_.result_message))
                 break
 
     # 如果不是子用例，且浏览器未关闭，且logging level大于等于10，则关闭浏览器

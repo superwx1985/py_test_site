@@ -1,10 +1,7 @@
-import logging
 from channels.generic.websocket import WebsocketConsumer
-from channels.consumer import SyncConsumer
-from channels.exceptions import StopConsumer
 import json
-import time
-from main.models import Suite
+import urllib.parse
+from main.models import Suite, Token
 from py_test.general.execute_suite import execute_suite
 from django.urls import reverse
 from django.template.loader import render_to_string
@@ -12,12 +9,13 @@ from utils.system import FORCE_STOP
 
 
 class SuiteConsumer(WebsocketConsumer):
+
     def connect(self):
-        if self.scope['user'].is_authenticated:
-            self.accept()
+        self.accept()
+        if self.get_user():
             self.send(text_data=json.dumps({'type': 'ready'}))
         else:
-            self.close()
+            self.send(text_data=json.dumps({'type': 'error', 'data': '无效用户'}), close=True)
 
     def sender(self, msg, level):
         try:
@@ -26,74 +24,73 @@ class SuiteConsumer(WebsocketConsumer):
         except KeyError:
             pass
 
-    def receive(self, text_data):
-        user = self.scope['user']
-        if user.is_authenticated:
+    def receive(self, text_data=None, bytes_data=None):
+        user = self.get_user()
+        if user:
             text_data_json = json.loads(text_data)
             command = text_data_json['command']
             execute_uuid = text_data_json['execute_uuid']
             if command == 'start':
                 try:
-                    suite_pk = self.scope['url_route']['kwargs']['suite_pk']
-                except KeyError as e:
+                    pk = int(self.get_pk())
+                except KeyError or ValueError as e:
                     self.send(text_data=json.dumps({'type': 'error', 'message': e}), close=True)
                 else:
-                    suite_ = Suite.objects.get(pk=suite_pk, is_active=True)
-                    suite_result = execute_suite(suite_, self.scope['user'], execute_uuid, self.sender)
-                    sub_objects = suite_result.caseresult_set.filter(step_result=None).order_by('case_order')
-                    suite_result_content = render_to_string('main/include/suite_result_content.html', locals())
-                    data_dict = dict()
-                    data_dict['suite_result_content'] = suite_result_content
-                    data_dict['suite_result_url'] = reverse('result', args=[suite_result.pk])
+                    suite_ = Suite.objects.get(pk=pk, is_active=True)
+                    suite_result = execute_suite(suite_, user, execute_uuid, self.sender)
+                    data_dict = self.get_result_data(suite_result)
                     self.send(text_data=json.dumps({'type': 'end', 'data': data_dict}), close=True)
             elif command == 'stop':
                 FORCE_STOP[execute_uuid] = user.pk
                 self.send(text_data=json.dumps({'type': 'message', 'message': '正在强制停止...'}), close=True)
-
-
-class ChatConsumer(SyncConsumer):
-    def websocket_connect(self, message):
-        if self.scope['user'].is_authenticated:
-            self.send({
-                "type": "websocket.accept"
-            })
-
-            text_json = json.dumps({'message': '{}'.format('init')})
-            self.send(
-                {
-                    "type": "websocket.send",
-                    "text": text_json
-                },
-            )
         else:
-            raise StopConsumer
+            self.send(text_data=json.dumps({'type': 'error', 'data': 'token无效'}), close=True)
 
-    def websocket_receive(self, message):
-        text_data = message.get('text', {})
+    def get_user(self):
+        user = self.scope['user']
+        if user.is_authenticated:
+            return user
+        else:
+            return None
 
-        text_data_json = json.loads(text_data)
-        message = text_data_json.get('message', '')
+    def get_pk(self):
+        return self.scope['url_route']['kwargs']['suite_pk']
 
-        text_json = json.dumps({'message': '{} - {}'.format(0, message)})
+    @staticmethod
+    def get_result_data(result):
+        sub_objects = result.caseresult_set.filter(step_result=None).order_by('case_order')
+        suite_result_content = render_to_string('main/include/suite_result_content.html', locals())
+        data_dict = dict()
+        data_dict['suite_result_content'] = suite_result_content
+        data_dict['suite_result_status'] = result.result_status
+        data_dict['suite_result_url'] = reverse('result', args=[result.pk])
+        return data_dict
 
-        self.send(
-            {
-                "type": "websocket.send",
-                "text": text_json
-            },
-        )
 
-        for i in range(1, 4):
-            time.sleep(1)
-            text_json = json.dumps({'message': '{} - {}'.format(i, message)})
-            self.send(
-                {
-                    "type": "websocket.send",
-                    "text": text_json
-                },
-            )
+class SuiteRemoteConsumer(SuiteConsumer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        qs = str(self.scope['query_string'], encoding='utf-8')
+        self.qs_dict = urllib.parse.parse_qs(qs)
 
-        self.send({"type": "websocket.close"})
+    def get_user(self):
+        token = self.qs_dict.get('token')[0]
+        try:
+            user = Token.objects.get(value=token).user
+        except Token.DoesNotExist:
+            return None
+        if user.is_authenticated:
+            return user
+        else:
+            return None
 
-    def websocket_disconnect(self, message):
-        raise StopConsumer
+    def get_pk(self):
+        return self.qs_dict.get('pk')[0]
+
+    @staticmethod
+    def get_result_data(result):
+        data_dict = dict()
+        data_dict['suite_result_status'] = result.result_status
+        data_dict['suite_result_url'] = reverse('result', args=[result.pk])
+        return data_dict
+

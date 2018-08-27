@@ -7,7 +7,6 @@ from py_test.general import vic_variables, vic_public_elements, vic_log, vic_met
 from py_test.ui_test import method
 from selenium.common.exceptions import UnexpectedAlertPresentException, NoSuchElementException, TimeoutException, WebDriverException
 from py_test.vic_tools import vic_eval
-from py_test.vic_tools.vic_str_handle import change_digit_to_string, change_string_to_digit
 from main.models import StepResult
 from django.forms.models import model_to_dict
 
@@ -264,7 +263,7 @@ def execute_step(
         elif step_action.code == 'UI_VERIFY_TEXT':
             if ui_data == '':
                 run_result = ('p', '无验证内容')
-                logger.warning('【{}】\t未提供验证内容，跳过验证'.format(execute_id))
+                logger.debug('【{}】\t未提供验证内容，跳过验证'.format(execute_id))
             else:
                 if ui_by != 0 and ui_locator != '':
                     variable_elements = None
@@ -479,7 +478,7 @@ def execute_step(
                     _, image = method.get_screenshot(dr)
                     img_list.append(image)
                 except Exception:
-                    logger.warning('【{}】\t无法获取UI验证截图'.format(execute_id), exc_info=True)
+                    logger.debug('【{}】\t无法获取UI验证截图'.format(execute_id), exc_info=True)
                 if len(highlight_elements_map) > 0:
                     method.cancel_highlight(dr, highlight_elements_map)
             else:
@@ -494,12 +493,12 @@ def execute_step(
             step_result.result_status = 2
         step_result.result_message = run_result[1]
     except TimeoutException:
-        logger.error('【{}】\t执行超时'.format(execute_id), exc_info=True)
+        logger.debug('【{}】\t执行超时'.format(execute_id), exc_info=True)
         step_result.result_status = 3
         step_result.result_message = '执行超时，请增大超时值'
         step_result.result_error = traceback.format_exc()
     except Exception as e:
-        logger.error('【{}】\t执行出错'.format(execute_id), exc_info=True)
+        logger.debug('【{}】\t执行出错'.format(execute_id), exc_info=True)
         step_result.result_status = 3
         step_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
         step_result.result_error = traceback.format_exc()
@@ -510,7 +509,7 @@ def execute_step(
             run_result, image = method.get_screenshot(dr)
             img_list.append(image)
         except Exception:
-            logger.warning('【{}】\t无法获取错误截图'.format(execute_id), exc_info=True)
+            logger.debug('【{}】\t无法获取错误截图'.format(execute_id), exc_info=True)
 
     # 关联截图
     for img in img_list:
