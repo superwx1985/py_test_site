@@ -4,6 +4,7 @@
     <head>
         <meta http-equiv="Content-type" content="text/html; charset=utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        <title>文本验证操作符说明</title>
         {% include 'main/include/general_css.html' %}
         <style type='text/css' media='screen'>
             div.row {
@@ -684,6 +685,8 @@
                                     </thead>
                                     <tbody>
                                         <tr><td>#{count|1}#test1</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|0}#test1</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|0}#test4</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
                                         <tr><td>#{count|2}#test1</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
                                         <tr><td>#{count|4}#test</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
                                         <tr><td>#{count|3}##{re}#test\d+</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
