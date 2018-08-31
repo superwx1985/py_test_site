@@ -478,7 +478,7 @@ def execute_step(
 
                 # 获取UI验证截图
                 if step_action.code in (
-                'UI_VERIFY_URL', 'UI_VERIFY_TEXT', 'UI_VERIFY_ELEMENT_SHOW', 'UI_VERIFY_ELEMENT_HIDE'):
+                        'UI_VERIFY_URL', 'UI_VERIFY_TEXT', 'UI_VERIFY_ELEMENT_SHOW', 'UI_VERIFY_ELEMENT_HIDE'):
                     if ui_get_ss:
                         highlight_elements_map = {}
                         if len(elements) > 0:
@@ -500,6 +500,7 @@ def execute_step(
                             method.highlight_for_a_moment(dr, fail_elements, 'red')
             except StaleElementReferenceException:
                 re_run = True
+                logger.info('【{}】\t捕捉到元素过期异常，将尝试重新获取元素'.format(execute_id))
 
         if run_result[0] == 'p':
             step_result.result_status = 1
