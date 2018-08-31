@@ -30,8 +30,8 @@ def get_query_condition(search_text):
                 continue
             q1 &= Q(name__icontains=search_text_and)
             q2 &= Q(keyword__icontains=search_text_and)
-            q3 &= Q(project__name__icontains=search_text_and)
-        q |= q1 | q2 | q3
+            # q3 &= Q(project__name__icontains=search_text_and)
+        q |= q1 | q2
     return q
 
 

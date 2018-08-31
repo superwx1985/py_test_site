@@ -22,7 +22,8 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
 
     # 是否推送websocket
     if websocket_sender:
-        format_ = logging.Formatter('%(asctime)s [%(threadName)s:%(thread)d] - %(message)s')
+        date_fmt = '%H:%M:%S'
+        format_ = logging.Formatter('%(asctime)s [%(threadName)s] - %(message)s', date_fmt)
         ws_handler = vic_log.WebsocketHandler(websocket_sender)
         ws_handler.setFormatter(format_)
         logger.addHandler(ws_handler)
