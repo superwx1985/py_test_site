@@ -248,7 +248,7 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
     elapsed_time = str(round(time.time() - start_time, 2))
     msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中有{}个元素包含期望文本【{}】'.format(
         elapsed_time, by, locator, len(elements_temp), len(elements), text)
-    if len(elements) == 0 or len(elements) < len(elements_temp):
+    if len(elements) == 0 or (len(elements) < len(elements_temp) and index_ is None):
         run_result = ('f', msg)
     else:
         run_result = ('p', msg)
