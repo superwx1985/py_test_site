@@ -1,5 +1,5 @@
 import os
-import sys
+import uuid
 import threading
 import logging
 import logging.config
@@ -26,33 +26,50 @@ format_detail = logging.Formatter('%(asctime)s [%(threadName)s:%(thread)d] [%(na
 
 
 # 获取子线程日志
-def get_thread_logger(level=None):
+def get_thread_logger(execute_uuid=uuid.uuid1(), level=None):
     if level is None:
         level = THREAD_LEVEL
-    logger_name = threading.current_thread().name
-    if logger_name not in thread_loggers:
-        thread_logger = logging.getLogger('py_test.{}'.format(logger_name))
+    thread_name = threading.current_thread().name
+    thread_logger = logging.getLogger('py_test.{}.{}'.format(execute_uuid, thread_name))
+    debug_trfh = logging.handlers.RotatingFileHandler(
+        filename=os.path.join(THREAD_LOG_DIR, '{}_debug.log'.format(thread_name)), maxBytes=1024*1024*100,
+        backupCount=1, encoding='utf-8')
+    debug_trfh.setLevel(logging.DEBUG)
+    debug_trfh.setFormatter(format_detail)
 
-        debug_trfh = logging.handlers.RotatingFileHandler(
-            filename=os.path.join(THREAD_LOG_DIR, '{}_debug.log'.format(logger_name)), maxBytes=1024*1024*100,
-            backupCount=1, encoding='utf-8')
-        debug_trfh.setLevel(logging.DEBUG)
-        debug_trfh.setFormatter(format_detail)
+    error_trfh = logging.handlers.RotatingFileHandler(
+        filename=os.path.join(THREAD_LOG_DIR, '{}_error.log'.format(thread_name)), maxBytes=1024*1024*100,
+        backupCount=1, encoding='utf-8')
+    error_trfh.setLevel(logging.ERROR)
+    error_trfh.setFormatter(format_detail)
 
-        error_trfh = logging.handlers.RotatingFileHandler(
-            filename=os.path.join(THREAD_LOG_DIR, '{}_error.log'.format(logger_name)), maxBytes=1024*1024*100,
-            backupCount=1, encoding='utf-8')
-        error_trfh.setLevel(logging.ERROR)
-        error_trfh.setFormatter(format_detail)
+    thread_logger.addHandler(debug_trfh)
+    thread_logger.addHandler(error_trfh)
+    thread_logger.setLevel(level)
 
-        thread_logger.addHandler(debug_trfh)
-        thread_logger.addHandler(error_trfh)
-        thread_logger.setLevel(level)
-
-        thread_loggers[logger_name] = thread_logger
-    else:
-        thread_logger = thread_loggers[logger_name]
-        thread_logger.setLevel(level)
+    # if thread_name not in thread_loggers:
+    #     thread_logger = logging.getLogger('py_test.{}.{}'.format(execute_uuid, thread_name))
+    #
+    #     debug_trfh = logging.handlers.RotatingFileHandler(
+    #         filename=os.path.join(THREAD_LOG_DIR, '{}_debug.log'.format(thread_name)), maxBytes=1024*1024*100,
+    #         backupCount=1, encoding='utf-8')
+    #     debug_trfh.setLevel(logging.DEBUG)
+    #     debug_trfh.setFormatter(format_detail)
+    #
+    #     error_trfh = logging.handlers.RotatingFileHandler(
+    #         filename=os.path.join(THREAD_LOG_DIR, '{}_error.log'.format(thread_name)), maxBytes=1024*1024*100,
+    #         backupCount=1, encoding='utf-8')
+    #     error_trfh.setLevel(logging.ERROR)
+    #     error_trfh.setFormatter(format_detail)
+    #
+    #     thread_logger.addHandler(debug_trfh)
+    #     thread_logger.addHandler(error_trfh)
+    #     thread_logger.setLevel(level)
+    #
+    #     thread_loggers[thread_name] = thread_logger
+    # else:
+    #     thread_logger = thread_loggers[thread_name]
+    #     thread_logger.setLevel(level)
     return thread_logger
 
 

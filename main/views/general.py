@@ -30,7 +30,7 @@ def test2(request):
 
 
 def debug1(request):
-    from py_test.general.execute_step import debug
+    from py_test.general.vic_step import debug
     result = debug()
     return HttpResponse(result)
 

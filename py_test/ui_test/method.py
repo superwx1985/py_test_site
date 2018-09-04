@@ -15,12 +15,14 @@ import os
 import io
 import datetime
 import json
+import socket
 from selenium.common import exceptions
 from selenium import webdriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import WebDriverException
 from PIL import Image
 from py_test.vic_tools import vic_find_object, vic_eval
 from py_test.vic_tools.vic_str_handle import change_string_to_digit
@@ -28,59 +30,85 @@ from py_test.general import vic_log, vic_variables
 
 
 # 获取浏览器driver
-def get_driver(config):
-    if config.ui_selenium_client == 1:  # 本地
-        if config.ui_driver_type == 1:  # Chrome
-            chrome_option = webdriver.ChromeOptions()
-            chrome_option._arguments = ['test-type', "start-maximized", "no-default-browser-check"]
-            dr = webdriver.Chrome(chrome_options=chrome_option)
-        elif config.ui_driver_type == 2:  # IE
-            dr = webdriver.Ie()
-        elif config.ui_driver_type == 3:  # FireFox
-            if config.ui_driver_ff_profile:
-                dr = webdriver.Firefox(firefox_profile=webdriver.FirefoxProfile(config.ui_driver_ff_profile))
-            else:
-                dr = webdriver.Firefox()
-        elif config.ui_driver_type == 4:  # PhantomJS
-            dr = webdriver.PhantomJS()
-        else:
-            raise ValueError('浏览器类型错误，请检查配置项')
-    elif config.ui_selenium_client == 2:  # 远程
-        if not config.ui_remote_ip or not config.ui_remote_port:
-            raise ValueError('缺少远程驱动配置参数，检查配置项')
-        if config.ui_driver_type == 1:  # Chrome
-            dr = webdriver.Remote(
-                command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
-                desired_capabilities=DesiredCapabilities.CHROME
-            )
-        elif config.ui_driver_type == 2:  # IE
-            dr = webdriver.Remote(
-                command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
-                desired_capabilities=DesiredCapabilities.INTERNETEXPLORER
-            )
-        elif config.ui_driver_type == 3:  # FireFox
-            dr = webdriver.Remote(
-                command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
-                desired_capabilities=DesiredCapabilities.FIREFOX
-            )
-        elif config.ui_driver_type == 4:  # PhantomJS
-            dr = webdriver.Remote(
-                command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
-                desired_capabilities=DesiredCapabilities.PHANTOMJS
-            )
-        else:
-            raise ValueError('浏览器类型错误，请检查配置项')
-    else:
-        raise ValueError('驱动类型错误，请检查配置项')
+def get_driver(config, retry=3, timeout=10, logger=vic_log.get_thread_logger()):
+    timeout = timeout if timeout > 10 else 10
+    for i in range(retry):
+        chrome_options = webdriver.ChromeOptions()
+        chrome_options._arguments = [
+            'test-type',
+            "start-maximized",
+            "no-default-browser-check",
+            # "disable-browser-side-navigation",
+        ]
+        if config.ui_selenium_client == 1:  # 本地
+            if config.ui_driver_type == 1:  # Chrome
 
-    if config.ui_window_size == 2:
-        if not config.ui_window_width or not config.ui_window_height:
-            raise ValueError('自定义窗口但未指定大小，请检查配置项')
-        dr.set_window_size(config.ui_window_width, config.ui_window_height)
-        dr.set_window_position(0, 0)
-    else:
-        dr.maximize_window()
-    return dr
+                dr = webdriver.Chrome(options=chrome_options)
+            elif config.ui_driver_type == 2:  # IE
+                dr = webdriver.Ie()
+            elif config.ui_driver_type == 3:  # FireFox
+                if config.ui_driver_ff_profile:
+                    dr = webdriver.Firefox(firefox_profile=webdriver.FirefoxProfile(config.ui_driver_ff_profile))
+                else:
+                    dr = webdriver.Firefox()
+            elif config.ui_driver_type == 4:  # PhantomJS
+                dr = webdriver.PhantomJS()
+            else:
+                raise ValueError('浏览器类型错误，请检查配置项')
+        elif config.ui_selenium_client == 2:  # 远程
+            if not config.ui_remote_ip or not config.ui_remote_port:
+                raise ValueError('缺少远程驱动配置参数，检查配置项')
+            if config.ui_driver_type == 1:  # Chrome
+                dr = webdriver.Remote(
+                    command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
+                    desired_capabilities=DesiredCapabilities.CHROME, options=chrome_options
+                )
+            elif config.ui_driver_type == 2:  # IE
+                dr = webdriver.Remote(
+                    command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
+                    desired_capabilities=DesiredCapabilities.INTERNETEXPLORER
+                )
+            elif config.ui_driver_type == 3:  # FireFox
+                dr = webdriver.Remote(
+                    command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
+                    desired_capabilities=DesiredCapabilities.FIREFOX
+                )
+            elif config.ui_driver_type == 4:  # PhantomJS
+                dr = webdriver.Remote(
+                    command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
+                    desired_capabilities=DesiredCapabilities.PHANTOMJS
+                )
+            else:
+                raise ValueError('浏览器类型错误，请检查配置项')
+        else:
+            raise ValueError('驱动类型错误，请检查配置项')
+        try:
+            dr.command_executor.set_timeout(timeout)
+            if config.ui_window_size == 2:
+                if not config.ui_window_width or not config.ui_window_height:
+                    raise ValueError('自定义窗口但未指定大小，请检查配置项')
+                dr.set_window_size(config.ui_window_width, config.ui_window_height)
+                dr.set_window_position(0, 0)
+            else:
+                dr.maximize_window()
+            dr.command_executor.reset_timeout()
+            return dr
+        except WebDriverException or socket.timeout as e:
+            print('1111111')
+            if isinstance(e, WebDriverException) and 'Timed out receiving message from renderer' not in e.msg:
+                print('222222')
+                raise
+            else:
+                logger.info('driver无响应，尝试重启driver')
+                dr.quit()
+                continue
+        except:
+            print('3333333')
+            try:
+                dr.quit()
+            except:
+                pass
+            raise
 
 
 # 获取公共元素
@@ -137,8 +165,7 @@ def highlight_for_a_moment(dr, elements, color='green', duration=0.5):
 
 
 # 等待文字出现
-def wait_for_text_present(dr, text, timeout, base_element, print_=True):
-    logger = vic_log.get_thread_logger()
+def wait_for_text_present(dr, text, timeout, base_element, print_=True, logger=vic_log.get_thread_logger()):
     dr.implicitly_wait(0.5)
     elements = list()
     start_time = time.time()
@@ -177,7 +204,7 @@ def wait_for_text_present(dr, text, timeout, base_element, print_=True):
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.debug('经过%s秒 - 找到%s个期望文本' % (elapsed_time, len(elements)))
+            logger.info('经过%s秒 - 找到%s个期望文本' % (elapsed_time, len(elements)))
             last_print_time = now_time
         if len(elements) > 0:
             break
@@ -193,8 +220,7 @@ def wait_for_text_present(dr, text, timeout, base_element, print_=True):
 
 # 等待字符串出现，包含定位符
 def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, base_element, variable_elements=None,
-                                       print_=True):
-    logger = vic_log.get_thread_logger()
+                                       print_=True, logger=vic_log.get_thread_logger()):
     dr.implicitly_wait(0.5)
     start_time = time.time()
     last_print_time = 0
@@ -205,12 +231,12 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
         elements = list()
         fail_elements = list()
         run_result_temp, elements_temp, elements_all = wait_for_element_visible(dr, by, locator, 1, base_element,
-                                                                                variable_elements)
+                                                                                variable_elements, logger=logger)
         if len(elements_temp) == 0:
             now_time = time.time()
             if print_ and now_time - last_print_time >= 1:
                 elapsed_time = str(round(now_time - start_time, 2))
-                logger.debug('经过%s秒 - 未找到期望元素' % elapsed_time)
+                logger.info('经过%s秒 - 未找到期望元素' % elapsed_time)
                 last_print_time = now_time
                 continue
         else:
@@ -240,7 +266,7 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
             now_time = time.time()
             if print_ and now_time - last_print_time >= 1:
                 elapsed_time = str(round(now_time - start_time, 2))
-                logger.debug('经过%s秒 - 找到期望元素%r个，其中有%r个元素包含期望文本' % (elapsed_time, len(elements_temp), len(elements)))
+                logger.info('经过%s秒 - 找到期望元素%r个，其中有%r个元素包含期望文本' % (elapsed_time, len(elements_temp), len(elements)))
                 last_print_time = now_time
         if len(elements) > 0 and (len(elements) == len(elements_temp) or index_ is not None):
             break
@@ -256,8 +282,9 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
 
 
 # 等待元素出现
-def wait_for_element_present(dr, by, locator, timeout, base_element, variable_elements=None, print_=True):
-    logger = vic_log.get_thread_logger()
+def wait_for_element_present(
+        dr, by, locator, timeout, base_element, variable_elements=None, print_=True,
+        logger=vic_log.get_thread_logger()):
     elements = list()
     dr.implicitly_wait(0.5)
     start_time = time.time()
@@ -273,7 +300,7 @@ def wait_for_element_present(dr, by, locator, timeout, base_element, variable_el
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.debug('经过%s秒 - 找到期望元素%r个' % (elapsed_time, len(elements)))
+            logger.info('经过%s秒 - 找到期望元素%r个' % (elapsed_time, len(elements)))
             last_print_time = now_time
         if len(elements) > 0:
             break
@@ -288,8 +315,9 @@ def wait_for_element_present(dr, by, locator, timeout, base_element, variable_el
 
 
 # 等待元素可见
-def wait_for_element_visible(dr, by, locator, timeout, base_element, variable_elements=None, print_=True):
-    logger = vic_log.get_thread_logger()
+def wait_for_element_visible(
+        dr, by, locator, timeout, base_element, variable_elements=None, print_=True,
+        logger=vic_log.get_thread_logger()):
     elements = list()
     visible_elements = list()
     dr.implicitly_wait(0.5)
@@ -311,7 +339,7 @@ def wait_for_element_visible(dr, by, locator, timeout, base_element, variable_el
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.debug('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
+            logger.info('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
             last_print_time = now_time
         if len(visible_elements) > 0:
             break
@@ -328,21 +356,20 @@ def wait_for_element_visible(dr, by, locator, timeout, base_element, variable_el
 
 # 等待元素可见，包含数量限制
 def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_element, variable_elements=None,
-                                       print_=True):
-    logger = vic_log.get_thread_logger()
+                                       print_=True, logger=vic_log.get_thread_logger()):
     start_time = time.time()
     last_print_time = 0
     compare_result = False
     visible_elements = list()
     elements = list()
     while (time.time() - start_time) <= timeout:
-        run_result_temp, visible_elements, elements = wait_for_element_visible(dr, by, locator, 1, base_element,
-                                                                               variable_elements, print_=False)
+        run_result_temp, visible_elements, elements = wait_for_element_visible(
+            dr, by, locator, 1, base_element, variable_elements, print_=False, logger=logger)
         if len(visible_elements) == 0:
             now_time = time.time()
             if print_ and now_time - last_print_time >= 1:
                 elapsed_time = str(round(now_time - start_time, 2))
-                logger.debug('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
+                logger.info('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
                 last_print_time = now_time
                 continue
         eo = vic_eval.EvalObject(data, {'x': len(visible_elements)})
@@ -355,7 +382,7 @@ def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_elem
                 msg = '经过%s秒 - 找到期望元素%r个，其中可见元素%r个，符合给定的数量限制' % (elapsed_time, len(elements), len(visible_elements))
             else:
                 msg = '经过%s秒 - 找到期望元素%r个，其中可见元素%r个，不符合给定的数量限制' % (elapsed_time, len(elements), len(visible_elements))
-            logger.debug(msg)
+            logger.info(msg)
             last_print_time = now_time
         if compare_result is True:
             break
@@ -373,8 +400,9 @@ def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_elem
 
 
 # 等待元素消失
-def wait_for_element_disappear(dr, by, locator, timeout, base_element, variable_elements=None, print_=True):
-    logger = vic_log.get_thread_logger()
+def wait_for_element_disappear(
+        dr, by, locator, timeout, base_element, variable_elements=None, print_=True,
+        logger=vic_log.get_thread_logger()):
     visible_elements = list()
     dr.implicitly_wait(0.5)
     start_time = time.time()
@@ -392,7 +420,7 @@ def wait_for_element_disappear(dr, by, locator, timeout, base_element, variable_
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.debug('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
+            logger.info('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
             last_print_time = now_time
         if len(elements) == 0:
             break
@@ -421,8 +449,7 @@ def go_to_url(dr, url):
 
 
 # 等待页面跳转
-def wait_for_page_redirect(dr, new_url, timeout, print_=True):
-    logger = vic_log.get_thread_logger()
+def wait_for_page_redirect(dr, new_url, timeout, print_=True, logger=vic_log.get_thread_logger()):
     is_passed = False
     start_time = time.time()
     last_print_time = 0
@@ -433,7 +460,7 @@ def wait_for_page_redirect(dr, new_url, timeout, print_=True):
             elapsed_time = str(round(now_time - start_time, 2))
             logger.debug('新URL：%s' % new_url)
             logger.debug('原URL：%s' % current_url)
-            logger.debug('经过%s秒 - 验证新URL是否符合期望' % elapsed_time)
+            logger.info('经过%s秒 - 验证新URL是否符合期望' % elapsed_time)
             last_print_time = now_time
         find_result = vic_find_object.find_with_condition(new_url, current_url)
         if find_result.is_matched:
@@ -448,12 +475,14 @@ def wait_for_page_redirect(dr, new_url, timeout, print_=True):
 
 
 # 尝试点击
-def try_to_click(dr, by, locator, timeout, index_, base_element, variable_elements=None, print_=True):
+def try_to_click(
+        dr, by, locator, timeout, index_, base_element, variable_elements=None, print_=True,
+        logger=vic_log.get_thread_logger()):
     if variable_elements is not None:
         elements = variable_elements
     else:
         run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
-                                                                           print_=print_)
+                                                                           print_=print_, logger=logger)
         if run_result_temp[0] == 'f':
             raise exceptions.NoSuchElementException('未找到指定的元素，{}'.format(run_result_temp[1]))
     if len(elements) == 1 and index_ in (None, 0):
@@ -472,12 +501,14 @@ def try_to_click(dr, by, locator, timeout, index_, base_element, variable_elemen
 
 
 # 尝试输入
-def try_to_enter(dr, by, locator, data, timeout, index_, base_element, variable_elements=None, print_=True):
+def try_to_enter(
+        dr, by, locator, data, timeout, index_, base_element, variable_elements=None, print_=True,
+        logger=vic_log.get_thread_logger()):
     if variable_elements is not None:
         elements = variable_elements
     else:
         run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
-                                                                           print_=print_)
+                                                                           print_=print_, logger=logger)
         if run_result_temp[0] == 'f':
             raise exceptions.NoSuchElementException('未找到指定的元素，{}'.format(run_result_temp[1]))
     if len(elements) == 1 and index_ in (None, 0):
@@ -497,12 +528,14 @@ def try_to_enter(dr, by, locator, data, timeout, index_, base_element, variable_
 
 
 # 尝试选择
-def try_to_select(dr, by, locator, data, timeout, index_, base_element, variable_elements=None, print_=True):
+def try_to_select(
+        dr, by, locator, data, timeout, index_, base_element, variable_elements=None, print_=True,
+        logger=vic_log.get_thread_logger()):
     if variable_elements is not None:
         elements = variable_elements
     else:
         run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
-                                                                           print_=print_)
+                                                                           print_=print_, logger=logger)
         if run_result_temp[0] == 'f':
             raise exceptions.NoSuchElementException('未找到指定的元素，{}'.format(run_result_temp[1]))
     if len(elements) == 1 and index_ in (None, 0):
@@ -555,8 +588,7 @@ def try_to_select(dr, by, locator, data, timeout, index_, base_element, variable
 
 
 # 获取特殊键组合
-def get_special_keys(data_):
-    logger = vic_log.get_thread_logger()
+def get_special_keys(data_, logger=vic_log.get_thread_logger()):
     data_ = data_.replace('\\+', '#{$plus}#')
     data_list = data_.split('+')
     keys = list()
@@ -576,7 +608,7 @@ def get_special_keys(data_):
 
 # 特殊动作
 def perform_special_action(dr, by, locator, data, timeout, index_, base_element, special_action, variables,
-                           variable_elements=None, print_=True):
+                           variable_elements=None, print_=True, logger=vic_log.get_thread_logger()):
     if by == '':
         elements = list()
         element = None
@@ -585,7 +617,7 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
             elements = variable_elements
         else:
             run_result_temp, elements = wait_for_element_present(dr, by, locator, timeout, base_element=base_element,
-                                                                 variable_elements=None, print_=print_)
+                                                                 variable_elements=None, print_=print_, logger=logger)
             if run_result_temp[0] == 'f':
                 raise exceptions.NoSuchElementException('无法执行动作，因为：{}'.format(run_result_temp[1]))
         if len(elements) == 1 and index_ in (None, 0):
@@ -660,13 +692,13 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
         ActionChains(dr).key_up(element).perform()
 
     elif special_action == 'send_keys':
-        keys = get_special_keys(data)
+        keys = get_special_keys(data, logger=logger)
         ActionChains(dr).send_keys(keys).perform()
 
     elif special_action == 'send_keys_to_element':
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个被操作元素')
-        keys = get_special_keys(data)
+        keys = get_special_keys(data, logger=logger)
         ActionChains(dr).send_keys_to_element(element, keys).perform()
 
     else:
@@ -677,12 +709,14 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
 
 
 # 尝试滚动到元素位置
-def try_to_scroll_into_view(dr, by, locator, timeout, index_, base_element, variable_elements=None, print_=True):
+def try_to_scroll_into_view(
+        dr, by, locator, timeout, index_, base_element, variable_elements=None, print_=True,
+        logger=vic_log.get_thread_logger()):
     if variable_elements is not None:
         elements = variable_elements
     else:
         run_result_temp, elements = wait_for_element_present(dr, by, locator, timeout, base_element=base_element,
-                                                             variable_elements=None, print_=print_)
+                                                             variable_elements=None, print_=print_, logger=logger)
         if run_result_temp[0] == 'f':
             raise exceptions.NoSuchElementException('无法执行动作，因为：{}'.format(run_result_temp[1]))
     if len(elements) == 1 and index_ in (None, 0):
@@ -701,8 +735,7 @@ def try_to_scroll_into_view(dr, by, locator, timeout, index_, base_element, vari
 
 
 # 处理浏览器弹窗
-def confirm_alert(dr, alert_handle, timeout, print_=True):
-    logger = vic_log.get_thread_logger()
+def confirm_alert(dr, alert_handle, timeout, print_=True, logger=vic_log.get_thread_logger()):
     start_time = time.time()
     last_print_time = 0
     done = False
@@ -729,7 +762,7 @@ def confirm_alert(dr, alert_handle, timeout, print_=True):
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.debug('经过%s秒 - 尝试以【%s】方式关闭弹窗' % (elapsed_time, alert_handle))
+            logger.info('经过%s秒 - 尝试以【%s】方式关闭弹窗' % (elapsed_time, alert_handle))
             last_print_time = now_time
     elapsed_time = str(round(time.time() - start_time, 2))
     if not done:
@@ -738,8 +771,8 @@ def confirm_alert(dr, alert_handle, timeout, print_=True):
 
 
 # 尝试切换window或tap
-def try_to_switch_to_window(dr, by, locator, data, timeout, index_, base_element, print_=True):
-    logger = vic_log.get_thread_logger()
+def try_to_switch_to_window(
+        dr, by, locator, data, timeout, index_, base_element, print_=True, logger=vic_log.get_thread_logger()):
     current_window_handle = dr.current_window_handle
     start_time = time.time()
     last_print_time = 0
@@ -757,8 +790,9 @@ def try_to_switch_to_window(dr, by, locator, data, timeout, index_, base_element
                     by = 'xpath'
                     locator = './/title[contains(text(), "{}")]'.format(data)
                 if by != '' and locator != '':
-                    run_result_temp, elements = wait_for_element_present(dr, by, locator, 1, base_element=base_element,
-                                                                         variable_elements=None, print_=False)
+                    run_result_temp, elements = wait_for_element_present(
+                        dr, by, locator, 1, base_element=base_element, variable_elements=None, print_=False,
+                        logger=logger)
                     if index_ > (len(elements) - 1):
                         continue
                     else:
@@ -774,7 +808,7 @@ def try_to_switch_to_window(dr, by, locator, data, timeout, index_, base_element
             break
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.debug('经过%s秒 - 尝试切换到新窗口' % elapsed_time)
+            logger.info('经过%s秒 - 尝试切换到新窗口' % elapsed_time)
             last_print_time = now_time
     elapsed_time = str(round(time.time() - start_time, 2))
     if not success_:
@@ -790,8 +824,9 @@ def try_to_switch_to_window(dr, by, locator, data, timeout, index_, base_element
 
 
 # 尝试切换frame
-def try_to_switch_to_frame(dr, by, locator, index_, timeout, base_element, print_=True):
-    logger = vic_log.get_thread_logger()
+def try_to_switch_to_frame(
+        dr, by, locator, index_, timeout, base_element, print_=True,
+        logger=vic_log.get_thread_logger()):
     if index_ is None:
         index_ = 0
     start_time = time.time()
@@ -800,8 +835,8 @@ def try_to_switch_to_frame(dr, by, locator, index_, timeout, base_element, print
     from selenium.common.exceptions import NoSuchFrameException
     while (time.time() - start_time) <= timeout:
         if by != '' and locator != '':
-            run_result_temp, elements = wait_for_element_present(dr, by, locator, 1, base_element=base_element,
-                                                                 variable_elements=None, print_=False)
+            run_result_temp, elements = wait_for_element_present(
+                dr, by, locator, 1, base_element=base_element, variable_elements=None, print_=False, logger=logger)
             if run_result_temp[0] == 'p':
                 frame = elements[index_]
                 dr.switch_to.frame(frame)
@@ -817,7 +852,7 @@ def try_to_switch_to_frame(dr, by, locator, index_, timeout, base_element, print
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.debug('经过%s秒 - 尝试切换到frame' % elapsed_time)
+            logger.info('经过%s秒 - 尝试切换到frame' % elapsed_time)
             last_print_time = now_time
     elapsed_time = str(round(time.time() - start_time, 2))
     if not success_:
@@ -828,16 +863,18 @@ def try_to_switch_to_frame(dr, by, locator, index_, timeout, base_element, print
 
 
 # 运行javascript
-def run_js(dr, by, locator, data, timeout, index_, base_element, variable_elements=None, print_=True):
-    logger = vic_log.get_thread_logger()
+def run_js(
+        dr, by, locator, data, timeout, index_, base_element, variable_elements=None, print_=True,
+        logger=vic_log.get_thread_logger()):
     if by in (None, ''):
         js_result = dr.execute_script(data)
     else:
         if variable_elements is not None:
             elements = variable_elements
         else:
-            run_result_temp, elements = wait_for_element_present(dr, by, locator, timeout, base_element=base_element,
-                                                                 variable_elements=None, print_=print_)
+            run_result_temp, elements = wait_for_element_present(
+                dr, by, locator, timeout, base_element=base_element, variable_elements=None, print_=print_,
+                logger=logger)
             if run_result_temp[0] == 'f':
                 raise exceptions.NoSuchElementException(run_result_temp[1])
         if index_ is None:
@@ -850,7 +887,7 @@ def run_js(dr, by, locator, data, timeout, index_, base_element, variable_elemen
         js_result = [js_result]
     msg = 'JavaScript执行完毕，返回值为：\n%s' % js_result
     if print_:
-        logger.debug(msg)
+        logger.info(msg)
     run_result = ('p', msg)
     return run_result, js_result
 
@@ -967,8 +1004,7 @@ def get_image_on_element(dr, element):
 
 
 # 下拉加载更多内容
-def scroll_down_for_loading(driver, wait_time=30, print_=True):
-    logger = vic_log.get_thread_logger()
+def scroll_down_for_loading(driver, wait_time=30, print_=True, logger=vic_log.get_thread_logger()):
     # driver.execute_script("arguments[0].scrollIntoView();")
     driver.execute_script("""
         (function () {
@@ -997,7 +1033,7 @@ def scroll_down_for_loading(driver, wait_time=30, print_=True):
             return
         time.sleep(1)
         if print_:
-            logger.debug('经过%s秒 - 向下拖动第%s次' % (str(round(time.time() - start_time, 2)), i))
+            logger.info('经过%s秒 - 向下拖动第%s次' % (str(round(time.time() - start_time, 2)), i))
 
 
 # 滚动到顶部
@@ -1021,8 +1057,7 @@ def scroll_to_height(dr, _to, _step, delay):
 
 
 # 生成截图路径
-def get_screenshot_full_name(file_name, base_path=os.getcwd()):
-    logger = vic_log.get_thread_logger()
+def get_screenshot_full_name(file_name, base_path=os.getcwd(), logger=vic_log.get_thread_logger()):
     _name_list = os.path.splitext(file_name)
     from py_test.general.vic_method import check_name
     _name_result = check_name(_name_list[0])

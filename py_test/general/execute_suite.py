@@ -3,7 +3,8 @@ import json
 import logging
 import uuid
 # import pytz
-from py_test.general import vic_variables, vic_public_elements, vic_config, execute_case, vic_log
+from py_test.general import vic_variables, vic_public_elements, vic_config, vic_log
+from .vic_case import VicCase
 from concurrent.futures import ThreadPoolExecutor, wait
 from py_test.general.vic_method import load_public_data
 from main.models import Case, SuiteResult
@@ -14,7 +15,7 @@ from utils.system import FORCE_STOP
 def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None):
     start_date = datetime.datetime.now()
 
-    logger = logging.getLogger('py_test')
+    logger = logging.getLogger('py_test.{}'.format(execute_uuid))
     logger.setLevel(suite.log_level)
 
     # 设置线程日志level
@@ -40,9 +41,6 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
     # 获取配置
     config = suite.config
     vic_config.set_config(config)
-
-    # 获取用例组
-    cases = Case.objects.filter(suite=suite, is_active=True).order_by('suitevscase__order')
 
     # 限制进程数
     thread_count = suite.thread_count if suite.thread_count <= 10 else 10
@@ -70,6 +68,8 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
         error_count=0,
     )
 
+    # 获取用例组
+    cases = Case.objects.filter(suite=suite, is_active=True).order_by('suitevscase__order')
     if len(cases) == 0:
         logger.info('没有符合条件的用例')
         logger.info('========================================')
@@ -77,27 +77,26 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
         return suite_result
 
     logger.info('准备运行下列{}个用例:'.format(len(cases)))
-    i = 1
+    vic_cases = list()
+    case_order = 0
     for case in cases:
-        logger.info('【{}】\tID:{} | {}'.format(i, case.pk, case.name))
-        i += 1
+        case_order += 1
+        vic_cases.append(
+            VicCase(
+                case=case, suite_result=suite_result, case_order=case_order, user=user, execute_str=case_order,
+                execute_uuid=execute_uuid, websocket_sender=websocket_sender)
+        )
+        logger.info('【{}】\tID:{} | {}'.format(case_order, case.pk, case.name))
 
     logger.info('========================================')
     futures = list()
     pool = ThreadPoolExecutor(thread_count)
-    case_order = 0
 
-    for case in cases:
+    case_order = 0
+    for case in vic_cases:
         case_order += 1
         futures.append(pool.submit(
-            execute_case.execute_case,
-            case=case,
-            suite_result=suite_result,
-            case_order=case_order,
-            user=user,
-            execute_str=case_order,
-            execute_uuid=execute_uuid,
-            websocket_sender=websocket_sender,
+            case.execute
         ))
 
     future_results = wait(futures)

@@ -156,7 +156,7 @@ LOGGING = {
     # 日志格式
     'formatters': {
        'standard': {
-            'format': '%(asctime)s [%(threadName)s:%(thread)d] [%(name)s] [%(module)s:%(funcName)s:%(lineno)d] [%(levelname)s] - %(message)s'
+            'format': '%(asctime)s [%(threadName)s] [%(name)s] [%(module)s:%(funcName)s:%(lineno)d] [%(levelname)s] - %(message)s'
        },
        'detail': {
             'format': '%(asctime)s [%(threadName)s:%(thread)d] [%(name)s] [%(pathname)s:%(funcName)s:%(lineno)d] [%(levelname)s] - %(message)s'
@@ -292,5 +292,5 @@ ASGI_APPLICATION = 'py_test_site.routing.application'
 SITE_NAME = '汇智自动化测试工具'
 
 # 站点版本
-SITE_VERSION = 'V1.1.20180831.01'
+SITE_VERSION = 'V1.1.20180904.01'
 
