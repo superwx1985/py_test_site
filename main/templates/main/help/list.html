@@ -17,6 +17,10 @@
             $(function () {
                 // 更新导航栏
                 $('#nav_help').addClass('active');
+                // 注册注销按钮
+                $("#logout_btn").click(function () {
+                    window.open('{% url 'user_logout' %}', '_self');
+                });
             });
         </script>
     </head>

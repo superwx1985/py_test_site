@@ -229,8 +229,8 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
     while (time.time() - start_time) <= timeout:
         elements = list()
         fail_elements = list()
-        run_result_temp, elements_temp, elements_all = wait_for_element_visible(dr, by, locator, 1, base_element,
-                                                                                variable_elements, logger=logger)
+        run_result_temp, elements_temp, elements_all = wait_for_element_visible(
+            dr, by, locator, 1, base_element, variable_elements, print_=False, logger=logger)
         if len(elements_temp) == 0:
             now_time = time.time()
             if print_ and now_time - last_print_time >= 1:
