@@ -80,6 +80,18 @@
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#operate_7">slice</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#operate_8">int</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#operate_9">float</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#operate_10">bool</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#operate_11">time或datetime</a>
+                    </li>
                 </ul>
                 <div class="tab-content bg-light">
                     <div id="operate_1" class="tab-pane active" style="padding: 1em">
@@ -98,25 +110,36 @@
                     </div>
                     <div id="operate_2" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">生成时间字符串，接受1，2或4个参数。</p>
+                            <p class="lead">生成时间字符串，接受1到5个参数。</p>
                             <p class="font-weight-bold">参数1</p>
-                            <p>代表一个日期，返回一个标准时间字符串。</p>
-                            <p>例：
+                            <p>代表要转换的日期，可以用<span class="mark">now</span>代表当前系统时间。</p>
+                            <p>在没有参数2的情况下，系统将尝试使用<span class="mark">%Y-%m-%d %H:%M:%S.%f</span>，<span class="mark">%Y.%m.%d %H:%M:%S.%f</span>，<span class="mark">%Y-%m-%d %H:%M:%S</span>，<span class="mark">%Y.%m.%d %H:%M:%S</span>，<span class="mark">%Y-%m-%d</span>，<span class="mark">%Y.%m.%d</span>这几种常用格式进行转换。</p>                            <p>例：
+                                <br>
+                                <span class="mark">${t|now}$</span>，返回<span class="text-info">2018-09-06 15:09:08</span>（当前系统时间）
                                 <br>
                                 <span class="mark">${t|1985-10-1}$</span>，返回<span class="text-info">1985-10-01 00:00:00</span>
                                 <br>
                                 <span class="mark">${t|2007-7-12 13:00:04}$</span>，返回<span class="text-info">2007-07-12 13:00:04</span>
-                                <br>
-                                <span class="mark">${t|now}$</span>，返回当前系统时间。
                             </p>
                             <p class="font-weight-bold">参数2</p>
-                            <p>代表输出的时间格式，时间格式为python datetime对象strftime方法支持的格式，也可以使用快捷格式（见下表）。注意：时间格式不能包含逗号。</p>
+                            <p>代表输入的时间格式，时间格式为python的datetime对象strptime方法支持的格式。注意：时间格式不能包含逗号。</p>
+                            <p>例：
+                                <br>
+                                <span class="mark">${t|2018-09-06 09:31:51.918061,%Y-%m-%d %H:%M:%S.%f}$</span>，返回<span class="text-info">2018-09-06 09:31:51</span>
+                                <br>
+                                <span class="mark">${t|06/09/2018,%d/%m/%Y}$</span>，返回<span class="text-info">2018-09-06 00:00:00</span>
+                            </p>
+                            <p class="font-weight-bold">参数3及参数4</p>
+                            <p>参数3代表时间位移单位，参数4代表时间位移量。注意：参数3和参数4需要成对出现，若只提供3个参数，程序不会对参数3作处理。</p>
+                            <p>例：<span class="mark">${t|2007-7-12 13:00:04,,day,-1}$</span>，返回<span class="text-info">2017-11-16 17:01:37</span></p>
+                            <p class="font-weight-bold">参数5</p>
+                            <p>代表将要生成的时间格式，时间格式为python的datetime对象strftime方法支持的格式，也可以使用快捷格式（见下表）。注意：时间格式不能包含逗号。</p>
                             <table class="table table-bordered table-sm">
                                 <thead class="thead-light">
                                     <tr><th>快捷格式</th><th>实际格式</th></tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>（默认，不填格式的情况）</td><td>%Y-%m-%d %H:%M:%S</td></tr>
+                                    <tr><td>default或不填</td><td>%Y-%m-%d %H:%M:%S</td></tr>
                                     <tr><td>date</td><td>%Y-%m-%d</td></tr>
                                     <tr><td>full</td><td>%Y-%m-%d %H:%M:%S.%f</td></tr>
                                     <tr><td>without_separator或ws</td><td>%Y%m%d%H%M%S</td></tr>
@@ -136,45 +159,46 @@
                             </table>
                             <p>例：
                                 <br>
-                                <span class="mark">${t|1985-10-1 10:20:31.123456,%Y-%m-%d}$</span>，返回<span class="text-info">1985-10-01</span>
+                                <span class="mark">${t|1985-10-1,,,,%Y.%m.%d}$</span>，返回<span class="text-info">1985.10.01</span>
                                 <br>
-                                <span class="mark">${t|1985-10-1 10:20:31.123456,%Y-%m-%d %H:%M:%S.%f}$</span>，返回<span class="text-info">1985-10-01 10:20:31.123456</span>
+                                <span class="mark">${t|20180906 093151.918061,%Y%m%d %H%M%S.%f,,,%Y-%m-%d %H:%M:%S.%f}$</span>，返回<span class="text-info">2018-09-06 09:31:51.918061</span>
                                 <br>
-                                <span class="mark">${t|1985-10-1 10:20:31.123456,full}$</span>，返回<span class="text-info">1985-10-01 10:20:31.123456</span>
+                                <span class="mark">${t|2017.08.11,,second,3,ws}$</span>，返回<span class="text-info">20170811000003</span>
                             </p>
-                            <p class="font-weight-bold">参数3及参数4</p>
-                            <p>参数3代表时间位移单位，参数4代表时间位移量。注意：参数3和参数4需要成对出现，若只提供3个参数，程序不会对参数3作处理。</p>
-                            <p>例：<span class="mark">${t|now,,day,-1}$</span>，返回<span class="text-info">2017-11-16 17:01:37</span></p>
                         </div>
                     </div>
                     <div id="operate_3" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">通过日期字符串生成时间戳字符串，接受1到3个参数。注意：python的时间戳默认为秒后带小数点。</p>
+                            <p class="lead">通过日期字符串生成时间戳字符串，接受1到6个参数。</p>
                             <p class="font-weight-bold">参数1</p>
-                            <p>代表一个日期，返回精确到毫秒的时间戳。</p>
+                            <p>代表要转换的日期，可以用<span class="mark">now</span>代表当前系统时间。</p>
                             <p>例：
                                 <br>
-                                <span class="mark">${ts|now}$</span>，返回<span class="text-info">1510911041.449</span>
+                                <span class="mark">${ts|now}$</span>，返回<span class="text-info">1536217805</span>（当前系统时间对应的时间戳）
                                 <br>
-                                <span class="mark">${ts|2010-1-1 13:00:16.003}$</span>，返回<span class="text-info">1262322016.003</span>
+                                <span class="mark">${ts|2010-1-1 13:00:16}$</span>，返回<span class="text-info">1262322016</span>
                                 <br>
-                                <span class="mark">${ts|1970-01-01 8:00:00}$</span>，返回<span class="text-info">0.000</span>
+                                <span class="mark">${ts|1970-01-01 8:00:00}$</span>，返回<span class="text-info">0</span>（时间戳的最小值）
                             </p>
                             <p class="font-weight-bold">参数2</p>
+                            <p>代表输入的时间格式，参见<a href="javascript:$('a[href=\'#operate_2\']').click()">操作符t</a>的参数2。</p>
+                            <p class="font-weight-bold">参数3及参数4</p>
+                            <p>参数3代表时间位移单位，参数4代表时间位移量，参见<a href="javascript:$('a[href=\'#operate_2\']').click()">操作符t</a>的参数3及参数4。</p>
+                            <p class="font-weight-bold">参数5</p>
                             <p>代表时间戳保留的小数位。</p>
                             <p>例：
                                 <br>
-                                <span class="mark">${ts|2010-1-1 13:00:16.763238,4}$</span>，返回<span class="text-info">1262322016.7632</span>
+                                <span class="mark">${ts|2010-1-1 13:00:16.763238,,,,4}$</span>，返回<span class="text-info">1262322016.7632</span>
                                 <br>
-                                <span class="mark">${ts|1970-01-01 8:00:01.125,1}$</span>，返回<span class="text-info">1.1</span>
+                                <span class="mark">${ts|2007-7-12 13:00:04.456789,,day,-1,3}$</span>，返回<span class="text-info">1184130004.457</span>
                             </p>
-                            <p class="font-weight-bold">参数3</p>
-                            <p>代表去掉小数点（参数3的值可任意填）。</p>
+                            <p class="font-weight-bold">参数6</p>
+                            <p>代表去掉时间戳的小数点（值可任意填，空值也可以）。</p>
                             <p>例：
                                 <br>
-                                <span class="mark">${ts|2010-1-1 13:00:16.763238,4,abc}$</span>，返回<span class="text-info">12623220167632</span>
+                                <span class="mark">${ts|2010-1-1 13:00:16.763238,,,,4,}$</span>，返回<span class="text-info">12623220167632</span>
                                 <br>
-                                <span class="mark">${ts|1970-01-01 8:00:01.125,1,}$</span>，返回<span class="text-info">11</span>
+                                <span class="mark">${ts|2007-7-12 13:00:04.456789,,day,-1,3,xxx}$</span>，返回<span class="text-info">1184130004457</span>
                             </p>
                         </div>
                     </div>
@@ -182,18 +206,30 @@
                         <div>
                             <p class="lead">通过时间戳字符串生成日期字符串，接受1或2个参数。</p>
                             <p class="font-weight-bold">参数1</p>
-                            <p>代表一个时间戳，返回默认格式的时间字符串。</p>
-                            <p>例：<span class="mark">${tst|1262322016.7632}$</span>，返回<span class="text-info">2010-01-01 13:00:16.763200</span></p>
+                            <p>代表要转换的时间戳。</p>
+                            <p>例：
+                                <br>
+                                <span class="mark">${tst|1262322016}$</span>，返回<span class="text-info">2010-01-01 13:00:16</span>
+                                <br>
+                                <span class="mark">${tst|1262322016.0}$</span>，返回<span class="text-info">2010-01-01 13:00:16</span>
+                                <br>
+                                <span class="mark">${tst|1262322016.7632}$</span>，返回<span class="text-info">2010-01-01 13:00:16.763200</span>
+                            </p>
                             <p class="font-weight-bold">参数2</p>
-                            <p>代表一个时间格式，返回指定格式的时间字符串。时间格式参见操作符t的参数2。</p>
-                            <p>例：<span class="mark">${tst|1262322016.7632,%S.%f}$</span>，返回<span class="text-info">16.763200</span></p>
+                            <p>代表一个时间格式，返回指定格式的时间字符串。时间格式参见<a href="javascript:$('a[href=\'#operate_2\']').click()">操作符t</a>的参数5。</p>
+                            <p>例：
+                                <br>
+                                <span class="mark">${tst|1262322016,full}$</span>，返回<span class="text-info">2010-01-01 13:00:16.000000</span>
+                                <br>
+                                <span class="mark">${tst|1262322016.7632,}$</span>，返回<span class="text-info">2010-01-01 13:00:16</span>
+                            </p>
                         </div>
                     </div>
                     <div id="operate_5" class="tab-pane" style="padding: 1em">
                         <div>
                             <p class="lead">把字符串通过url编码后返回，接受1个参数。</p>
                             <p class="font-weight-bold">参数1</p>
-                            <p>参数1为需要转换的内容。</p>
+                            <p>需要转换的内容。</p>
                             <p>例：<span class="mark">${url|index.html?a=测试}$</span>，返回<span class="text-info">index.html%3Fa%3D%E6%B5%8B%E8%AF%95</span></p>
                         </div>
                     </div>
@@ -281,6 +317,70 @@
                                 <br>
                                 <span class="mark">${slice|abcd1234,-2,,-1}$</span>，返回<span class="text-info">321dcba</span>
                             </p>
+                        </div>
+                    </div>
+                    <div id="operate_8" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">把变量保存为整型（int类型），接受1个参数。</p>
+                            <p class="font-weight-bold">参数1</p>
+                            <p>需要转换为整型保存的数据。</p>
+                            <p>例：
+                                <br>
+                                <span class="mark">${int|52}$</span>，返回整型数据<span class="text-info">52</span>
+                                <br>
+                                <span class="mark">${int|52.89}$</span>，返回整型数据<span class="text-info">52</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div id="operate_9" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">把变量保存为浮点型（float类型），接受1个参数。</p>
+                            <p class="font-weight-bold">参数1</p>
+                            <p>需要转换为浮点型保存的数据。</p>
+                            <p>例：<span class="mark">${float|52.89}$</span>，返回浮点型数据<span class="text-info">52.89</span></p>
+                        </div>
+                    </div>
+                    <div id="operate_10" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">把变量保存为布尔型（bool类型），接受1个参数。</p>
+                            <p class="font-weight-bold">参数1</p>
+                            <p>需要转换为布尔型保存的数据。<span class="mark">false</span>（不区分大小写），<span class="mark">0</span>和空白将被视为<span class="text-info">False</span>，其余数据都被视为<span class="text-info">True</span></p>
+                            <p>例：
+                                <br>
+                                <span class="mark">${bool|true}$</span>，返回布尔型数据<span class="text-info">True</span>
+                                <br>
+                                <span class="mark">${bool|True}$</span>，返回布尔型数据<span class="text-info">True</span>
+                                <br>
+                                <span class="mark">${bool|52.89}$</span>，返回布尔型数据<span class="text-info">True</span>
+                                <br>
+                                <span class="mark">${bool|false}$</span>，返回布尔型数据<span class="text-info">False</span>
+                                <br>
+                                <span class="mark">${bool|False}$</span>，返回布尔型数据<span class="text-info">False</span>
+                                <br>
+                                <span class="mark">${bool|0}$</span>，返回布尔型数据<span class="text-info">False</span>
+                                <br>
+                                <span class="mark">${bool|}$</span>，返回布尔型数据<span class="text-info">False</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div id="operate_11" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">把变量保存为时间类型（datetime类型），接受1，2或4个参数。</p>
+                            <p class="font-weight-bold">参数1</p>
+                            <p>需要转换为时间类型保存的数据</p>
+                            <p>在没有参数2的情况下，系统将尝试使用<span class="mark">%Y-%m-%d %H:%M:%S.%f</span>，<span class="mark">%Y.%m.%d %H:%M:%S.%f</span>，<span class="mark">%Y-%m-%d %H:%M:%S</span>，<span class="mark">%Y.%m.%d %H:%M:%S</span>，<span class="mark">%Y-%m-%d</span>，<span class="mark">%Y.%m.%d</span>这几种常用格式进行转换</p>
+                            <p>例：
+                                <br>
+                                <span class="mark">${time|now}$</span>，返回<span class="text-info">2018-09-06 16:10:15.022173</span>（当前系统时间）
+                                <br>
+                                <span class="mark">${time|1985-10-1}$</span>，返回时间类型数据<span class="text-info">1985-10-01 00:00:00</span>
+                                <br>
+                                <span class="mark">${time|2007-7-12 13:00:04}$</span>，返回时间类型数据<span class="text-info">2007-07-12 13:00:04</span>
+                            </p>
+                            <p class="font-weight-bold">参数2</p>
+                            <p>代表输入的时间格式，参见<a href="javascript:$('a[href=\'#operate_2\']').click()">操作符t</a>的参数2。</p>
+                            <p class="font-weight-bold">参数3及参数4</p>
+                            <p>参数3代表时间位移单位，参数4代表时间位移量，参见<a href="javascript:$('a[href=\'#operate_2\']').click()">操作符t</a>的参数3及参数4。</p>
                         </div>
                     </div>
                 </div>

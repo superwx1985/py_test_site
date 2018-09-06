@@ -44,7 +44,7 @@
             {% endif %}
             // 注册new helper的删除按钮事件
             $('#new_helper [col_del]').off('click').on('click', function () {
-                $('#new_helper [col_name] input,#new_helper [col_value] input,#new_helper [col_description] input').val('');
+                $('#new_helper [col_name] input,#new_helper [col_value] input,#new_helper [col_description] input').val('').removeClass('is-invalid').siblings('div.invalid-feedback').remove();
             });
             // 启用排序功能
             sortable_variable();

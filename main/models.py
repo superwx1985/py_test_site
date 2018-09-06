@@ -366,11 +366,12 @@ class SuiteResult(models.Model):
     error_count = models.IntegerField(blank=True, null=True)
 
     result_status_list = (
+        (0, '跳过'),
         (1, '成功'),
         (2, '失败'),
         (3, '异常'),
     )
-    result_status = models.IntegerField(blank=True, null=True)
+    result_status = models.IntegerField(choices=result_status_list, blank=True, null=True)
 
     @property
     def elapsed_time(self):
@@ -414,11 +415,12 @@ class CaseResult(models.Model):
     error_count = models.IntegerField(blank=True, null=True)
 
     result_status_list = (
+        (0, '跳过'),
         (1, '成功'),
         (2, '失败'),
         (3, '异常'),
     )
-    result_status = models.IntegerField(blank=True, null=True)
+    result_status = models.IntegerField(choices=result_status_list, blank=True, null=True)
     result_message = models.TextField(blank=True)
     result_error = models.TextField(blank=True)
 
@@ -454,11 +456,12 @@ class StepResult(models.Model):
     start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
     end_date = models.DateTimeField(verbose_name='结束时间', blank=True, null=True)
     result_status_list = (
+        (0, '跳过'),
         (1, '成功'),
         (2, '失败'),
         (3, '异常'),
     )
-    result_status = models.IntegerField(blank=True, null=True)
+    result_status = models.IntegerField(choices=result_status_list, blank=True, null=True)
     result_message = models.TextField(blank=True)
     result_error = models.TextField(blank=True)
 

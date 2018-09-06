@@ -1,19 +1,9 @@
-import threading
-import time
+import datetime, time
+from py_test.general.vic_method import replace_special_value
 
-def a(t):
-    print('start')
-    for i in range(t):
-        print(i)
-        time.sleep(1)
-    print('end')
 
-b = threading.Thread(target=a, args=(5,))
+a = replace_special_value('${{{}|{}}}$'.format('ts', '10.30.2012 20:20:21.456789,%m.%d.%Y %H:%M:%S.%f,,,2,'), None)
+a = replace_special_value('${time|1985-10-1}$', None)
 
-print('start main')
-b.start()
-b.join(6)
-print(b.is_alive())
-if b.is_alive():
-    pass
-print('end main')
+print(a, type(a))
+

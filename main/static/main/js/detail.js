@@ -74,7 +74,7 @@ function update_other_sub_case_dropdown_readonly(success, data) {
 }
 
 function m2m_detail_popup(url) {
-	modal_with_iframe_max('m2m_detail_modal', '', url, update_m2m_objects)
+	modal_with_iframe_max('m2m_detail_modal', '', url, '', update_m2m_objects)
 }
 
 // 更新已选m2m的序号，更新m2m field内容
@@ -273,6 +273,7 @@ function m2m_sort(order_by_text) {
 
 // 新增m2m主键到m2m字段
 function add_m2m($input, pk) {
+	console.log($input, pk)
 	var m2m_list = $.parseJSON($input.val());
 	m2m_list.push(String(pk));
 	$input.val(JSON.stringify(m2m_list))

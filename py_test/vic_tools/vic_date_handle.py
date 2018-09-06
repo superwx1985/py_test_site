@@ -14,8 +14,15 @@ def str_to_time(str_='now', time_format=''):
         except ValueError:
             raise ValueError('无法转换【{}】为指定的时间格式【{}】'.format(str_, time_format))
     else:
+        # 尝试使用常用格式进行转换
         for time_format in (
-                '%Y-%m-%d %H:%M:%S.%f', '%Y%m%d%H%M%S%f', '%Y-%m-%d %H:%M:%S', '%Y%m%d%H%M%S', '%Y-%m-%d', '%Y%m%d'):
+                '%Y-%m-%d %H:%M:%S.%f',
+                '%Y.%m.%d %H:%M:%S.%f',
+                '%Y-%m-%d %H:%M:%S',
+                '%Y.%m.%d %H:%M:%S',
+                '%Y-%m-%d',
+                '%Y.%m.%d',
+        ):
             try:
                 time_ = datetime.datetime.strptime(str_, time_format)
                 break
@@ -28,40 +35,41 @@ def str_to_time(str_='now', time_format=''):
 
 # 时间转字符串
 def time_to_str(time_=datetime.datetime.now(), time_format=''):
-    if time_format in ('', None):
+    time_format_ = time_format.strip().lower()
+    if time_format_ in ('', 'default', None):
         time_format = '%Y-%m-%d %H:%M:%S'
-    elif time_format == 'date':
+    elif time_format_ == 'date':
         time_format = '%Y-%m-%d'
-    elif time_format == 'full':
+    elif time_format_ == 'full':
         time_format = '%Y-%m-%d %H:%M:%S.%f'
-    elif time_format in ('without_separator', 'ws'):
+    elif time_format_ in ('without_separator', 'ws'):
         time_format = '%Y%m%d%H%M%S'
-    elif time_format in ('date_without_separator', 'dws'):
+    elif time_format_ in ('date_without_separator', 'dws'):
         time_format = '%Y%m%d'
-    elif time_format in ('full_without_separator', 'fws'):
+    elif time_format_ in ('full_without_separator', 'fws'):
         time_format = '%Y%m%d%H%M%S%f'
-    elif time_format in ('year', 'Y'):
+    elif time_format_ in ('year', 'Y'):
         time_format = '%Y'
-    elif time_format in ('month', 'm'):
+    elif time_format_ in ('month', 'm'):
         time_format = '%m'
-    elif time_format in ('day', 'd'):
+    elif time_format_ in ('day', 'd'):
         time_format = '%d'
-    elif time_format in ('hour', 'H'):
+    elif time_format_ in ('hour', 'H'):
         time_format = '%H'
-    elif time_format in ('minute', 'M'):
+    elif time_format_ in ('minute', 'M'):
         time_format = '%M'
-    elif time_format in ('second', 'S'):
+    elif time_format_ in ('second', 'S'):
         time_format = '%S'
-    elif time_format in ('microsecond', 'ms', 'f'):
+    elif time_format_ in ('microsecond', 'ms', 'f'):
         time_format = '%f'
-    elif time_format in ('week', 'W'):
+    elif time_format_ in ('week', 'W'):
         time_format = '%W'
-    elif time_format in ('week_day', 'wd', 'w'):
+    elif time_format_ in ('week_day', 'wd', 'w'):
         time_format = '%w'
-    elif time_format in ('year_day', 'yd', 'j'):
+    elif time_format_ in ('year_day', 'yd', 'j'):
         time_format = '%j'
     elif '%' not in time_format:
-        raise ValueError('Invalid format string')
+        raise ValueError('无效的时间格式【{}】'.format(time_format))
     str_ = time_.strftime(time_format)
     return str_
 
@@ -69,7 +77,10 @@ def time_to_str(time_=datetime.datetime.now(), time_format=''):
 # 时间转时间戳
 def time_to_timestamp(time_=datetime.datetime.now()):
     if time_.microsecond == 0:
-        timestamp = int(time.mktime(time_.timetuple()))
+        try:
+            timestamp = int(time.mktime(time_.timetuple()))
+        except OverflowError:
+            raise ValueError('时间戳超过允许的范围（1970-01-01 8:00:00到3001-01-01 15:59:59）')
     else:
         microsecond = time_.microsecond / 1000000
         timestamp = time.mktime(time_.timetuple()) + microsecond
@@ -104,7 +115,7 @@ def time_add(time_=datetime.datetime.now(), add_unit='d', add_value=0):
     elif add_unit in ('second', 'S'):
         time_ = time_ + datetime.timedelta(seconds=float(add_value))
     else:
-        raise ValueError('[' + add_unit + '] is an invalid add_unit')
+        raise ValueError('无效的时间偏移单位【{}】'.format(add_unit))
     return time_
 
 

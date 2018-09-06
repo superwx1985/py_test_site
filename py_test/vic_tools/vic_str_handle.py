@@ -14,14 +14,21 @@ def change_string_to_digit(data, name='input data'):
     if data is None or data == '' or isinstance(data, (int, float)):
         new_data = data
     elif isinstance(data, str):
-        if data.isdigit():
-            new_data = float(data)
-        else:
-            float_data = data.split(sep='.')
-            if len(float_data) == 2 and float_data[0].isdigit() and float_data[1].isdigit():
+        try:
+            if '.' in data:
                 new_data = float(data)
             else:
-                raise ValueError('Cannot change [{}] to digit, please check {}'.format(str(data), name))
+                new_data = int(data)
+        except ValueError:
+            raise ValueError('Cannot change [{}] to digit, please check {}'.format(str(data), name))
+        # if data.isdigit():
+        #     new_data = float(data)
+        # else:
+        #     float_data = data.split(sep='.')
+        #     if len(float_data) == 2 and float_data[0].isdigit() and float_data[1].isdigit():
+        #         new_data = float(data)
+        #     else:
+        #         raise ValueError('Cannot change [{}] to digit, please check {}'.format(str(data), name))
     else:
         raise ValueError('Cannot change [{}] to digit, please check {}'.format(str(data), name))
     return new_data

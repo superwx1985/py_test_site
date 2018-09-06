@@ -33,6 +33,9 @@ class VicCase:
         self.steps = list()
         self.timeout = self.suite_result.timeout
 
+        self.if_list = list()
+        self.step_active = True
+
         # 初始化result数据库对象
         self.case_result = CaseResult(
             name=case.name,
@@ -99,6 +102,7 @@ class VicCase:
 
         ui_alert_handle = 'accept'  # 初始化弹窗处理方式
         step_order = 0
+
         for step in self.steps:
             # 强制停止
             force_stop = FORCE_STOP.get(self.execute_uuid)
@@ -107,7 +111,7 @@ class VicCase:
 
             step_order += 1
             execute_id = '{}-{}'.format(self.execute_str, step_order)
-            self.logger.info('【{}】\t执行步骤 => ID:{} | {} | {}'.format(execute_id, step.id, step.name, step.action))
+            self.logger.info('【{}】\t执行步骤 => ID:{} | {} | {}'.format(execute_id, step.id, step.name, step.step.action))
 
             timeout = step.timeout if not step.timeout else self.suite_result.suite.timeout
 
@@ -121,13 +125,16 @@ class VicCase:
                     self.logger.info('【{}】\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(
                         execute_id, alert_handle_text, alert_text))
 
-            step_result_ = step.execute()
+            # 执行步骤
+            step_result_ = step.execute(self)
 
             # 获取最后一次弹窗处理方式
             ui_alert_handle = step.ui_alert_handle
 
             self.case_result.execute_count += 1
-            if step_result_.result_status == 1:
+            if step_result_.result_status == 0:
+                self.logger.info('【{}】\t跳过'.format(execute_id))
+            elif step_result_.result_status == 1:
                 self.case_result.pass_count += 1
                 self.logger.info('【{}】\t执行成功'.format(execute_id))
             elif step_result_.result_status == 2:
@@ -138,9 +145,15 @@ class VicCase:
                 self.logger.error('【{}】\t执行出错，错误信息 => {}'.format(execute_id, step_result_.result_message))
                 break
 
+        if self.if_list:
+            self.logger.warning('【{}】\t有{}个条件分支没有被关闭，可能会导致意外的错误，请添加结束标志以关闭分支'.format(self.execute_str, len(self.if_list)))
+
         # 如果不是子用例，且浏览器未关闭，且logging level大于等于10，则关闭浏览器
         if self.step_result is None and self.dr is not None and self.logger.level >= 10:
-            self.dr.quit()
+            try:
+                self.dr.quit()
+            except Exception as e:
+                self.logger.error('有一个driver（浏览器）无法关闭，请手动关闭。错误信息 => {}'.format(e))
             del self.dr
 
         if self.case_result.error_count > 0 or self.case_result.result_error != '':

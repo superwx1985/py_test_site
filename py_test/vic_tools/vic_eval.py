@@ -1,4 +1,5 @@
 import ast
+import datetime
 from copy import deepcopy
 from py_test.general.vic_log import get_thread_logger
 
@@ -122,16 +123,23 @@ class EvalObject:
         for k, v in self.__variable_dict.items():
             if not isinstance(k, str):
                 raise ValueError('Variables\' key should be str class')
-            k = self.__left_separator + k.replace(self.__left_separator, '').replace(self.__right_separator,
-                                                                                     '') + self.__right_separator
+            # 加上左右边界，但不能重复添加
+            k = self.__left_separator + k.replace(self.__left_separator, '').replace(
+                self.__right_separator,  '') + self.__right_separator
             if not final_expression.find(k) == -1:
                 if isinstance(v, (int, float)):
                     v = str(v)
                 elif isinstance(v, str):
                     v = v.replace('"', '\\"')
                     v = '"' + v + '"'
+                elif isinstance(v, datetime.datetime):
+                    try:
+                        datetime.datetime.strptime(str(v), '%Y-%m-%d %H:%M:%S.%f')
+                        v = "datetime.datetime.strptime('{}', '%Y-%m-%d %H:%M:%S.%f')".format(v)
+                    except ValueError:
+                        v = "datetime.datetime.strptime('{}', '%Y-%m-%d %H:%M:%S')".format(v)
                 else:
-                    raise ValueError('Variables\' value should be str, int or float class')
+                    raise ValueError('Variables\' value should be str, int, float, bool or datatime class')
                 final_expression = final_expression.replace(k, v)
         return final_expression
 

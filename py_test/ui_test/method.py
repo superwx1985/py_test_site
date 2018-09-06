@@ -33,56 +33,57 @@ from py_test.general import vic_log, vic_variables
 def get_driver(config, retry=3, timeout=10, logger=vic_log.get_thread_logger()):
     timeout = timeout if timeout > 10 else 10
     for i in range(retry):
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options._arguments = [
-            'test-type',
-            "start-maximized",
-            "no-default-browser-check",
-            # "disable-browser-side-navigation",
-        ]
-        if config.ui_selenium_client == 1:  # 本地
-            if config.ui_driver_type == 1:  # Chrome
-
-                dr = webdriver.Chrome(options=chrome_options)
-            elif config.ui_driver_type == 2:  # IE
-                dr = webdriver.Ie()
-            elif config.ui_driver_type == 3:  # FireFox
-                if config.ui_driver_ff_profile:
-                    dr = webdriver.Firefox(firefox_profile=webdriver.FirefoxProfile(config.ui_driver_ff_profile))
-                else:
-                    dr = webdriver.Firefox()
-            elif config.ui_driver_type == 4:  # PhantomJS
-                dr = webdriver.PhantomJS()
-            else:
-                raise ValueError('浏览器类型错误，请检查配置项')
-        elif config.ui_selenium_client == 2:  # 远程
-            if not config.ui_remote_ip or not config.ui_remote_port:
-                raise ValueError('缺少远程驱动配置参数，检查配置项')
-            if config.ui_driver_type == 1:  # Chrome
-                dr = webdriver.Remote(
-                    command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
-                    desired_capabilities=DesiredCapabilities.CHROME, options=chrome_options
-                )
-            elif config.ui_driver_type == 2:  # IE
-                dr = webdriver.Remote(
-                    command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
-                    desired_capabilities=DesiredCapabilities.INTERNETEXPLORER
-                )
-            elif config.ui_driver_type == 3:  # FireFox
-                dr = webdriver.Remote(
-                    command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
-                    desired_capabilities=DesiredCapabilities.FIREFOX
-                )
-            elif config.ui_driver_type == 4:  # PhantomJS
-                dr = webdriver.Remote(
-                    command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
-                    desired_capabilities=DesiredCapabilities.PHANTOMJS
-                )
-            else:
-                raise ValueError('浏览器类型错误，请检查配置项')
-        else:
-            raise ValueError('驱动类型错误，请检查配置项')
         try:
+            chrome_options = webdriver.ChromeOptions()
+            chrome_options._arguments = [
+                'test-type',
+                "start-maximized",
+                "no-default-browser-check",
+                # "disable-browser-side-navigation",
+            ]
+            if config.ui_selenium_client == 1:  # 本地
+                if config.ui_driver_type == 1:  # Chrome
+
+                    dr = webdriver.Chrome(options=chrome_options)
+                elif config.ui_driver_type == 2:  # IE
+                    dr = webdriver.Ie()
+                elif config.ui_driver_type == 3:  # FireFox
+                    if config.ui_driver_ff_profile:
+                        dr = webdriver.Firefox(firefox_profile=webdriver.FirefoxProfile(config.ui_driver_ff_profile))
+                    else:
+                        dr = webdriver.Firefox()
+                elif config.ui_driver_type == 4:  # PhantomJS
+                    dr = webdriver.PhantomJS()
+                else:
+                    raise ValueError('浏览器类型错误，请检查配置项')
+            elif config.ui_selenium_client == 2:  # 远程
+                if not config.ui_remote_ip or not config.ui_remote_port:
+                    raise ValueError('缺少远程驱动配置参数，检查配置项')
+                if config.ui_driver_type == 1:  # Chrome
+                    dr = webdriver.Remote(
+                        command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
+                        desired_capabilities=DesiredCapabilities.CHROME, options=chrome_options
+                    )
+                elif config.ui_driver_type == 2:  # IE
+                    dr = webdriver.Remote(
+                        command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
+                        desired_capabilities=DesiredCapabilities.INTERNETEXPLORER
+                    )
+                elif config.ui_driver_type == 3:  # FireFox
+                    dr = webdriver.Remote(
+                        command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
+                        desired_capabilities=DesiredCapabilities.FIREFOX
+                    )
+                elif config.ui_driver_type == 4:  # PhantomJS
+                    dr = webdriver.Remote(
+                        command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
+                        desired_capabilities=DesiredCapabilities.PHANTOMJS
+                    )
+                else:
+                    raise ValueError('浏览器类型错误，请检查配置项')
+            else:
+                raise ValueError('驱动类型错误，请检查配置项')
+
             dr.command_executor.set_timeout(timeout)
             if config.ui_window_size == 2:
                 if not config.ui_window_width or not config.ui_window_height:
@@ -93,22 +94,20 @@ def get_driver(config, retry=3, timeout=10, logger=vic_log.get_thread_logger()):
                 dr.maximize_window()
             dr.command_executor.reset_timeout()
             return dr
-        except WebDriverException or socket.timeout as e:
-            print('1111111')
-            if isinstance(e, WebDriverException) and 'Timed out receiving message from renderer' not in e.msg:
-                print('222222')
-                raise
-            else:
+        except WebDriverException as e:
+            if 'Timed out receiving message from renderer' in e.msg:
                 logger.info('driver无响应，尝试重启driver')
                 dr.quit()
                 continue
-        except:
-            print('3333333')
+            else:
+                raise
+        except socket.timeout:
+            logger.info('driver无响应，尝试重启driver')
             try:
                 dr.quit()
-            except:
-                pass
-            raise
+            except Exception as e:
+                logger.error('有一个driver（浏览器）无法关闭，请手动关闭。错误信息 => {}'.format(e))
+            continue
 
 
 # 获取公共元素

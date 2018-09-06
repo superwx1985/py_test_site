@@ -1,6 +1,6 @@
 from channels.generic.websocket import WebsocketConsumer
 import json
-import urllib.parse
+from urllib.parse import parse_qs
 from main.models import Suite, Token
 from py_test.general.execute_suite import execute_suite
 from django.urls import reverse
@@ -33,7 +33,9 @@ class SuiteConsumer(WebsocketConsumer):
             if command == 'start':
                 try:
                     pk = int(self.get_pk())
-                except KeyError or ValueError as e:
+                except KeyError as e:
+                    self.send(text_data=json.dumps({'type': 'error', 'message': e}), close=True)
+                except ValueError as e:
                     self.send(text_data=json.dumps({'type': 'error', 'message': e}), close=True)
                 else:
                     suite_ = Suite.objects.get(pk=pk, is_active=True)
@@ -42,7 +44,7 @@ class SuiteConsumer(WebsocketConsumer):
                     self.send(text_data=json.dumps({'type': 'end', 'data': data_dict}), close=True)
             elif command == 'stop':
                 FORCE_STOP[execute_uuid] = user.pk
-                self.send(text_data=json.dumps({'type': 'message', 'message': '正在强制停止...'}), close=True)
+                self.send(text_data=json.dumps({'type': 'message', 'message': '已接收到强制停止指令，将在本步骤完成后停止执行。'}), close=True)
         else:
             self.send(text_data=json.dumps({'type': 'error', 'data': 'token无效'}), close=True)
 
@@ -71,7 +73,7 @@ class SuiteRemoteConsumer(SuiteConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         qs = str(self.scope['query_string'], encoding='utf-8')
-        self.qs_dict = urllib.parse.parse_qs(qs)
+        self.qs_dict = parse_qs(qs)
 
     def get_user(self):
         token = self.qs_dict.get('token')[0]

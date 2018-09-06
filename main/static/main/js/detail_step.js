@@ -2,7 +2,7 @@
 function show_action_field($actionSelect) {
 	reset_action_field();
 	var select_value = window.action_map[$actionSelect.find('option:selected').val()];
-	var introduce = $('#introduce')
+	var introduce = $('#introduce');
 	if (select_value === 'UI_GO_TO_URL') {
 		introduce.children('span').text('打开一个页面，请填入页面URL');
 		$('div[name=ui_data] .col-1').text('URL');
@@ -123,6 +123,15 @@ function show_action_field($actionSelect) {
 		introduce.children('span').text('调用一个子用例。子用例会继承母用例的变量和配置项。如果出现递归调用，系统将会中断执行');
 		$('div[name=other_sub_case]').show();
 		$('[name=detail_content]').css('padding-bottom', '350px');
+	} else if (select_value === 'OTHER_IF') {
+		introduce.children('span').text('开始一个条件判断分支。如果条件为真（表达式的计算结果为True），将执行后续的步骤');
+		introduce.append($('<br>')).append($('<span>').addClass('mark').text('如果想在表达式中使用字符串，请添加双引号。例："123"不会转换为整型123，而是被保存为字符串"123"'));
+		introduce.append($('<br>')).append($('<span>').addClass('mark').text('如果想在表达式中调用变量，请使用$[变量名]$格式。例：假设已有变量x=3，那么 $[x]$+1 返回4；$[x]$==3 返回 True'));
+		$('div[name=other_data]').show();
+	} else if (select_value === 'OTHER_ELSE') {
+		introduce.children('span').text('条件判断分支的否则分支。如果条件为假，将执行后续的步骤');
+	} else if (select_value === 'OTHER_END_IF') {
+		introduce.children('span').text('条件判断分支的结束标志。');
 	} else if ($.inArray(select_value, ["test"]) >= 0) {
 	}
 	// 注册提示框

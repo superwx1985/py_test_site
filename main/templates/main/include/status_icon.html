@@ -1,4 +1,6 @@
-{% if status == 1 %}
+{% if status == 0 %}
+    <i class="icon-ban-circle text-secondary"></i>
+{% elif status == 1 %}
     <i class="icon-ok-sign text-success"></i>
 {% elif status == 2 %}
     <i class="icon-remove-sign text-warning"></i>
