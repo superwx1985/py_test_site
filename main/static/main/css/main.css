@@ -25,6 +25,10 @@ body {
 	word-wrap: normal;
 }
 
+.url {
+	word-break: break-all;
+}
+
 /*分页工具栏div*/
 div.paginator{
 	margin: 0 auto;

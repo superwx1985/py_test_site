@@ -57,7 +57,6 @@ class VicStep:
             step=step,
             step_order=step_order,
             creator=user,
-            start_date=self.start_date,
 
             snapshot=json.dumps(model_to_dict(step)) if step else None,
         )
@@ -129,6 +128,7 @@ class VicStep:
             raise
 
     def execute(self, vic_case):
+        self.step_result.start_date = self.start_date
         # 保存result数据库对象
         self.step_result.save()
         dr = self.dr
@@ -667,6 +667,10 @@ class VicStep:
 
         self.step_result.end_date = datetime.datetime.now()
         self.step_result.save()
+
+        # 关闭日志文件句柄
+        for h in self.logger.handlers:
+            h.close()
         return self.step_result
 
 

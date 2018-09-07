@@ -49,7 +49,6 @@ class VicCase:
             case_order=case_order,
             case=case,
             creator=user,
-            start_date=self.start_date,
             execute_count=0,
             pass_count=0,
             fail_count=0,
@@ -57,6 +56,7 @@ class VicCase:
         )
 
     def execute(self):
+        self.case_result.start_date = self.start_date
         # 保存result数据库对象
         self.case_result.save()
 
@@ -166,4 +166,7 @@ class VicCase:
             self.case_result.result_message = '通过'
         self.case_result.end_date = datetime.datetime.now()
         self.case_result.save()
+        # 关闭日志文件句柄
+        for h in self.logger.handlers:
+            h.close()
         return self.case_result
