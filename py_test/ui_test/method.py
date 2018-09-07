@@ -96,13 +96,13 @@ def get_driver(config, retry=3, timeout=10, logger=vic_log.get_thread_logger()):
             return dr
         except WebDriverException as e:
             if 'Timed out receiving message from renderer' in e.msg:
-                logger.info('driver无响应，尝试重启driver')
+                logger.warning('driver无响应，尝试重启driver')
                 dr.quit()
                 continue
             else:
                 raise
         except socket.timeout:
-            logger.info('driver无响应，尝试重启driver')
+            logger.warning('driver无响应，尝试重启driver')
             try:
                 dr.quit()
             except Exception as e:
