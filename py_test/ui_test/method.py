@@ -771,8 +771,8 @@ def confirm_alert(dr, alert_handle, timeout, print_=True, logger=vic_log.get_thr
 
 # 尝试切换window或tap
 def try_to_switch_to_window(
-        dr, by, locator, data, timeout, index_, base_element, print_=True, logger=vic_log.get_thread_logger()):
-    current_window_handle = dr.current_window_handle
+        dr, by, locator, data, timeout, index_, base_element, current_window_handle, print_=True,
+        logger=vic_log.get_thread_logger()):
     start_time = time.time()
     last_print_time = 0
     success_ = False

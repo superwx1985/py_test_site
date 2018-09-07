@@ -5,7 +5,7 @@ import traceback
 import uuid
 from py_test.general import vic_variables, vic_public_elements, vic_log, vic_method
 from py_test.ui_test import method
-from selenium.common.exceptions import UnexpectedAlertPresentException, NoSuchElementException, TimeoutException, StaleElementReferenceException, WebDriverException
+from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException, NoSuchElementException, TimeoutException, StaleElementReferenceException, InvalidSwitchToTargetException
 from py_test.vic_tools import vic_eval
 from main.models import StepResult
 from django.forms.models import model_to_dict
@@ -17,7 +17,7 @@ public_elements = vic_public_elements.public_elements
 
 
 class VicStep:
-    def __init__(self, step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr=None,
+    def __init__(self, step, case_result, step_order, user, execute_str, variables, parent_case_pk_list,
                  execute_uuid=uuid.uuid1(), websocket_sender=None):
         self.start_date = datetime.datetime.now()
         self.logger = vic_log.get_thread_logger(execute_uuid)
@@ -26,7 +26,6 @@ class VicStep:
         self.case_result = case_result
         self.user = user
         self.variables = variables
-        self.dr = dr
         self.execute_uuid = execute_uuid
         self.websocket_sender = websocket_sender
 
@@ -131,7 +130,7 @@ class VicStep:
         self.step_result.start_date = self.start_date
         # 保存result数据库对象
         self.step_result.save()
-        dr = self.dr
+        dr = vic_case.dr
 
         try:
             # ===== UI 初始化检查 =====
@@ -254,21 +253,29 @@ class VicStep:
                         elif self.action_code == 'UI_SWITCH_TO_DEFAULT_CONTENT':
                             dr.switch_to.default_content()
 
-                        # 切换窗口
+                        # 切换至浏览器的其他窗口或标签
                         elif self.action_code == 'UI_SWITCH_TO_WINDOW':
                             self.run_result, new_window_handle = method.try_to_switch_to_window(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
-                                index_=self.ui_index, base_element=self.ui_base_element, logger=self.logger)
+                                index_=self.ui_index, base_element=self.ui_base_element,
+                                current_window_handle=dr.current_window_handle, logger=self.logger)
 
-                        # 关闭窗口
+                        # 关闭当前浏览器窗口或标签并切换至其他窗口或标签
                         elif self.action_code == 'UI_CLOSE_WINDOW':
+                            if len(dr.window_handles) < 2:
+                                raise InvalidSwitchToTargetException('当前窗口是浏览器的最后一个窗口，如果需要关闭浏览器请使用【重置浏览器】步骤')
+                            current_window_handle = dr.current_window_handle
                             dr.close()
+                            self.run_result, new_window_handle = method.try_to_switch_to_window(
+                                dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
+                                index_=self.ui_index, base_element=self.ui_base_element,
+                                current_window_handle=current_window_handle, logger=self.logger)
 
                         # 重置浏览器
                         elif self.action_code == 'UI_RESET_BROWSER':
                             if dr is not None:
                                 dr.quit()
-                                dr = method.get_driver(
+                                vic_case.dr = dr = method.get_driver(
                                     self.case_result.suite_result.suite.config, 3, self.timeout, logger=self.logger)
 
                         # 单击
@@ -619,7 +626,7 @@ class VicStep:
                                     _, image = method.get_screenshot(dr)
                                     self.img_list.append(image)
                                 except Exception:
-                                    self.logger.info('【{}】\t无法获取UI验证截图'.format(self.execute_id), exc_info=True)
+                                    self.logger.warning('【{}】\t无法获取UI验证截图'.format(self.execute_id), exc_info=True)
                                 if len(highlight_elements_map) > 0:
                                     method.cancel_highlight(dr, highlight_elements_map)
                             else:
@@ -659,7 +666,7 @@ class VicStep:
                 self.run_result, image = method.get_screenshot(dr)
                 self.img_list.append(image)
             except Exception:
-                self.logger.info('【{}】\t无法获取错误截图'.format(self.execute_id), exc_info=True)
+                self.logger.warning('【{}】\t无法获取错误截图'.format(self.execute_id), exc_info=True)
 
         # 关联截图
         for img in self.img_list:

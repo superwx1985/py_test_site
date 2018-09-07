@@ -68,11 +68,8 @@ class VicCase:
             # 初始化driver
             if self.step_result is None and config.ui_selenium_client != 0:
                 self.dr = method.get_driver(config, 3, self.timeout, logger=self.logger)
-            else:
-                self.dr = self.dr
 
             # 读取测试步骤数据
-
             steps = Step.objects.filter(case=self.case, is_active=True).order_by('casevsstep__order').select_related(
                 'action')
             step_order = 0
@@ -82,7 +79,7 @@ class VicCase:
                     VicStep(
                         step=step, case_result=self.case_result, step_order=step_order, user=self.user,
                         execute_str=self.execute_str, variables=self.variables,
-                        parent_case_pk_list=self.parent_case_pk_list, dr=self.dr, execute_uuid=self.execute_uuid,
+                        parent_case_pk_list=self.parent_case_pk_list, execute_uuid=self.execute_uuid,
                         websocket_sender=self.websocket_sender)
                 )
 

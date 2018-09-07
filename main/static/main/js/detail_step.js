@@ -33,8 +33,10 @@ function show_action_field($actionSelect) {
 		$('div[name=ui_special_action]').hide();
 		$('div[name=ui_data] .col-1').text('窗口标题');
 	} else if (select_value === 'UI_CLOSE_WINDOW') {
-		introduce.children('span').text('关闭当前浏览器窗口或标签。如果关闭后需要继续测试，请使用切换窗口动作切换至正确的窗口再进行后续操作');
-		$('div[name=ui_alert_handle],div[name=timeout]').show();
+		introduce.children('span').text('关闭当前浏览器窗口或标签并切换至其他窗口或标签。如果提供了定位信息，则切换到包含该元素的窗口，如果提供了窗口标题，则切换到标题中包含该文字的窗口，否则切换至任意一个非当前窗口');
+		$('[ui],div[name=timeout]').show();
+		$('div[name=ui_special_action]').hide();
+		$('div[name=ui_data] .col-1').text('窗口标题');
 	} else if (select_value === 'UI_RESET_BROWSER') {
 		introduce.children('span').text('关闭浏览器，清空所有缓存，再重新打开浏览器');
 		$('div[name=ui_alert_handle],div[name=timeout]').show();
