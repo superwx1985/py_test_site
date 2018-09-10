@@ -1,9 +1,23 @@
-import datetime, time
-from py_test.general.vic_method import replace_special_value
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor, wait, as_completed
 
 
-a = replace_special_value('${{{}|{}}}$'.format('ts', '10.30.2012 20:20:21.456789,%m.%d.%Y %H:%M:%S.%f,,,2,'), None)
-a = replace_special_value('${time|1985-10-1}$', None)
+def a(count):
+    print('a start')
+    for i in range(count):
+        print('a>', i)
+        time.sleep(1)
+    print('a end')
+    return i
 
-print(a, type(a))
-
+pool = ThreadPoolExecutor(1)
+futures = list()
+futures.append(pool.submit(a, 30))
+# t = threading.Thread(target=get_driver_, args=(config, timeout, logger), daemon=True)
+future_results = as_completed(futures, timeout=3)
+for future_result in future_results:
+    dr = future_result.result()
+    print(1111, dr, type(dr))
+pool.shutdown()
+print(dr)

@@ -127,8 +127,9 @@ function show_action_field($actionSelect) {
 		$('[name=detail_content]').css('padding-bottom', '350px');
 	} else if (select_value === 'OTHER_IF') {
 		introduce.children('span').text('开始一个条件判断分支。如果条件为真（表达式的计算结果为True），将执行后续的步骤');
-		introduce.append($('<br>')).append($('<span>').addClass('mark').text('如果想在表达式中使用字符串，请添加双引号。例："123"不会转换为整型123，而是被保存为字符串"123"'));
+		introduce.append($('<br>')).append($('<span>').addClass('mark').text('如果想在表达式中使用字符串，请添加双引号。例："123"不会转换为整型123，将被认作字符串"123"'));
 		introduce.append($('<br>')).append($('<span>').addClass('mark').text('如果想在表达式中调用变量，请使用$[变量名]$格式。例：假设已有变量x=3，那么 $[x]$+1 返回4；$[x]$==3 返回 True'));
+		introduce.append($('<br>')).append($('<span>').addClass('mark').text('注意：无法在表达式中使用特殊变量。错误示例：${int|3}$==3；正确示例：首先在赋值时使用特殊变量x=${int|3}$，然后在表达式中使用$[x]$==3'));
 		$('div[name=other_data]').show();
 	} else if (select_value === 'OTHER_ELSE') {
 		introduce.children('span').text('条件判断分支的否则分支。如果条件为假，将执行后续的步骤');

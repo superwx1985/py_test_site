@@ -95,9 +95,7 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
     case_order = 0
     for case in vic_cases:
         case_order += 1
-        futures.append(pool.submit(
-            case.execute
-        ))
+        futures.append(pool.submit(case.execute))
 
     future_results = wait(futures)
     for future_result in future_results.done:
