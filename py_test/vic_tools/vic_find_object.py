@@ -181,7 +181,9 @@ class FindObject:
 
 # 保存查找结果
 class FindResult(AttrDisplay):
-    def __init__(self, is_matched, condition, data, match_count, condition_value, operator_list, data_object):
+    def __init__(
+            self, is_matched, condition, data, match_count, condition_value, operator_list, data_object,
+            re_result=None):
         self.is_matched = is_matched
         self.condition = condition
         self.data = data
@@ -189,6 +191,7 @@ class FindResult(AttrDisplay):
         self.condition_value = condition_value
         self.operator_list = operator_list
         self.data_object = data_object
+        self.re_result = re_result
 
 
 # 根据参数生成正则表达式flags的值
@@ -331,11 +334,18 @@ def find_with_condition(condition, data, pre_data_object=None, default_operator_
     # 处理无操作符的条件
     if first_operator == '':
         is_matched = False
-        match_count = str(data).count(condition_value)
+        if condition_value == '':
+            if str(data) == '':
+                match_count = 1
+            else:
+                match_count = 0
+        else:
+            match_count = str(data).count(condition_value)
         if match_count > 0:
             is_matched = True
         find_result = FindResult(is_matched, condition, data, match_count, condition_value, operator_list, None)
-        # 处理有操作符的条件
+
+    # 处理有操作符的条件
     else:
         parameter_list = []
         if len(operator_list) > 1:
@@ -422,7 +432,7 @@ def find_with_condition(condition, data, pre_data_object=None, default_operator_
                 try:
                     data_object = float(data)
                 except ValueError:
-                    data_object = ValueError('Cannot change [%s] to float object' % (data))
+                    data_object = ValueError('Cannot change [%s] to float object' % data)
                     # raise ValueError('Cannot change [%s] to float object'%(data))
             elif parameter_list[0] in ('datetime', 'time'):
                 time_format = ''
@@ -435,9 +445,9 @@ def find_with_condition(condition, data, pre_data_object=None, default_operator_
                 try:
                     data_object = str_to_time(data, time_format)
                 except ValueError:
-                    data_object = ValueError('Cannot change [%s] to datetime object' % (data))
+                    data_object = ValueError('Cannot change [%s] to datetime object' % data)
                     # raise ValueError('Cannot change [%s] to datetime object'%(data))
-            expression = 'data_object %s condition_value' % (first_operator)
+            expression = 'data_object %s condition_value' % first_operator
             if type(data_object) != ValueError and eval(expression):
                 is_matched = True
                 if first_operator != '!=':
@@ -452,10 +462,12 @@ def find_with_condition(condition, data, pre_data_object=None, default_operator_
             if parameter_list:
                 re_parameter = parameter_list[0]
             flags = generate_reg_flags(re_parameter)
-            match_count = len(re.findall(condition_value, str(data), flags))
+            re_result = re.findall(condition_value, str(data), flags)
+            match_count = len(re_result)
             if match_count > 0:
                 is_matched = True
-            find_result = FindResult(is_matched, condition, data, match_count, condition_value, operator_list, None)
+            find_result = FindResult(
+                is_matched, condition, data, match_count, condition_value, operator_list, None, re_result)
         # json比较
         elif first_operator == 'json':
             is_matched = False

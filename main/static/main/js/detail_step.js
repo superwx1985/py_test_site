@@ -102,6 +102,10 @@ function show_action_field($actionSelect) {
 		introduce.children('span').text('把指定的元素组保存为变量。为统一变量类型，即使定位到唯一元素也会以元素组形式保存');
 		$('[ui],div[name=timeout],div[name=save_as]').show();
 		$('div[name=ui_special_action],div[name=ui_data]').hide();
+	} else if (select_value === 'UI_SAVE_URL') {
+		introduce.children('span').text('把URL或URL的一部分保存为变量。可以使用正则表达式指定要匹配的部分。例：#{re}#id=(\\d+)&将匹配“http://www.test.com/user/?id=12345&pk=45678”中的12345');
+		$('div[name=ui_alert_handle],div[name=timeout],div[name=save_as],div[name=ui_data]').show();
+		$('div[name=ui_data] .col-1').text('正则表达式');
 	} else if (select_value === 'OTHER_SLEEP') {
 		introduce.children('span').text('等待若干秒');
 		$('div[name=timeout]').show();

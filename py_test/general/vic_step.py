@@ -117,7 +117,7 @@ class VicStep:
             self.api_body = step.api_body
             self.api_data = step.api_data
 
-            self.other_data = step.other_data
+            self.other_data = str(vic_method.replace_special_value(step.other_data, variables))
             self.other_sub_case = step.other_sub_case
         except Exception as e:
             self.logger.info('【{}】\t步骤读取出错'.format(self.execute_id), exc_info=True)
@@ -386,10 +386,10 @@ class VicStep:
                                             self.ui_locator, public_elements)
                                     self.run_result, self.elements, self.fail_elements \
                                         = method.wait_for_text_present_with_locator(
-                                        dr=dr, by=self.ui_by, locator=self.ui_locator, text=self.ui_data,
-                                        timeout=self.timeout, index_=self.ui_index,
-                                        base_element=self.ui_base_element, variable_elements=variable_elements,
-                                        logger=self.logger)
+                                            dr=dr, by=self.ui_by, locator=self.ui_locator, text=self.ui_data,
+                                            timeout=self.timeout, index_=self.ui_index,
+                                            base_element=self.ui_base_element, variable_elements=variable_elements,
+                                            logger=self.logger)
                                 else:
                                     self.run_result, self.elements = method.wait_for_text_present(
                                         dr=dr, text=self.ui_data, timeout=self.timeout,
@@ -491,9 +491,21 @@ class VicStep:
                                 base_element=self.ui_base_element, variable_elements=variable_elements,
                                 logger=self.logger)
                             if self.run_result[0] == 'p':
-                                self.variables.set_variable(self.save_as, self.elements)
+                                msg = self.variables.set_variable(self.save_as, self.elements)
+                                self.run_result = ('p', msg)
                             else:
                                 raise NoSuchElementException('无法保存变量，{}'.format(self.run_result[1]))
+
+                        # 保存url变量
+                        elif self.action_code == 'UI_SAVE_URL':
+                            if self.save_as == '':
+                                raise ValueError('没有提供变量名')
+                            self.run_result, data_ = method.get_url(dr=dr, condition_value=str(self.ui_data))
+                            if self.run_result[0] == 'p':
+                                msg = self.variables.set_variable(self.save_as, data_)
+                                self.run_result = ('p', msg)
+                            else:
+                                raise WebDriverException('无法保存变量，{}'.format(self.run_result[1]))
 
                         # ===== API =====
                         elif self.action_code == 0:
@@ -549,6 +561,10 @@ class VicStep:
                                             final_expression, eval_result, self.save_as))
                                 else:
                                     raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
+
+                        # 转换变量类型
+                        elif self.action_code == 'OTHER_CHANGE_VARIABLE_TYPE':
+                            pass
 
                         # 验证表达式
                         elif self.action_code == 'OTHER_VERIFY_EXPRESSION':
@@ -659,13 +675,21 @@ class VicStep:
             self.step_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
             self.step_result.result_error = traceback.format_exc()
 
+        # 获取报错时URL
+        try:
+            last_url = dr.current_url
+            self.step_result.ui_last_url = last_url if last_url != 'data:,' else ''
+        except:
+            self.logger.warning('【{}】\t无法获取报错时的URL'.format(self.execute_id), exc_info=True)
+            self.step_result.ui_last_url = 'URL获取失败'
+
         # 获取报错时截图
         if dr is not None and self.ui_get_ss and self.action_type_code == 'UI' and \
                 self.step_result.result_status == 3:
             try:
                 self.run_result, image = method.get_screenshot(dr)
                 self.img_list.append(image)
-            except Exception:
+            except:
                 self.logger.warning('【{}】\t无法获取错误截图'.format(self.execute_id), exc_info=True)
 
         # 关联截图

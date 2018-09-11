@@ -15,6 +15,7 @@ import os
 import io
 import datetime
 import json
+import re
 from concurrent.futures import ThreadPoolExecutor, wait
 from selenium.common import exceptions
 from selenium import webdriver
@@ -479,6 +480,23 @@ def wait_for_page_redirect(dr, new_url, timeout, print_=True, logger=vic_log.get
     else:
         run_result = ('p', '经过{}秒 - 新URL符合期望【{}】'.format(elapsed_time, new_url))
     return run_result, new_url
+
+
+# 获取URL
+def get_url(dr, condition_value):
+    data = dr.current_url
+    if condition_value:
+        find_result = vic_find_object.find_with_condition(condition_value, data)
+        if find_result.is_matched:
+            data = ''
+            if find_result.re_result:
+                data = find_result.re_result[0]
+            run_result = ('p', '找到符合条件【{}】的URL内容【{}】'.format(condition_value, data))
+        else:
+            run_result = ('f', '找不到符合条件【{}】的URL内容'.format(condition_value))
+    else:
+        run_result = ('p', '获取到URL【{}】'.format(data))
+    return run_result, data
 
 
 # 尝试点击

@@ -69,6 +69,15 @@ class VicCase:
             if self.step_result is None and config.ui_selenium_client != 0:
                 self.dr = method.get_driver(config, 3, self.timeout, logger=self.logger)
 
+            # 读取本地变量
+            if self.variables is None:
+                self.variables = vic_variables.Variables()
+            local_variable_group = self.case.variable_group
+            if local_variable_group is not None:
+                for variable in local_variable_group.variable_set.all():
+                    value = vic_method.replace_special_value(variable.value, self.variables)
+                    self.variables.set_variable(variable.name, value)
+
             # 读取测试步骤数据
             steps = Step.objects.filter(case=self.case, is_active=True).order_by('casevsstep__order').select_related(
                 'action')
@@ -82,15 +91,6 @@ class VicCase:
                         parent_case_pk_list=self.parent_case_pk_list, execute_uuid=self.execute_uuid,
                         websocket_sender=self.websocket_sender)
                 )
-
-            # 读取本地变量
-            if self.variables is None:
-                self.variables = vic_variables.Variables()
-            local_variable_group = self.case.variable_group
-            if local_variable_group is not None:
-                for variable in local_variable_group.variable_set.all():
-                    value = vic_method.replace_special_value(variable.value, self.variables)
-                    self.variables.set_variable(variable.name, value)
 
         except Exception as e:
             self.logger.error('【{}】\t初始化出错'.format(execute_id), exc_info=True)
