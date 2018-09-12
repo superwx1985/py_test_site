@@ -1,12 +1,12 @@
 import json
 import re
 import uuid
+import logging
 from copy import deepcopy
 from py_test.vic_tools import vic_eval
 from py_test.vic_tools.vic_date_handle import str_to_time
 from py_test.vic_tools.attr_display import AttrDisplay
 from py_test.vic_tools.vic_str_handle import remove_line_break_and_blank_from_both_ends, remove_line_break_from_both_ends
-# from py_test.general.vic_log import get_thread_logger
 
 
 # 在对象中查找对象
@@ -15,7 +15,6 @@ class FindObject:
         self.__list_exact_match = list_exact_match
         self.__dict_exact_match = dict_exact_match
         self.default_operator_list = default_operator_list
-        # self.logger = get_thread_logger()
 
     # 主方法
     def find_object_in_object(self, object1, object2):
@@ -306,7 +305,8 @@ def restore_control_character_in_objecr(object_, f):
 
 
 # 按条件查找
-def find_with_condition(condition, data, pre_data_object=None, default_operator_list=None):
+def find_with_condition(
+        condition, data, pre_data_object=None, default_operator_list=None, logger=logging.getLogger('py_test')):
     # logger = get_thread_logger()
     operator_character = ''
     start_str = '#{'
@@ -365,7 +365,7 @@ def find_with_condition(condition, data, pre_data_object=None, default_operator_
                         if find_result_temp.match_count == count_int:
                             is_matched = True
                     except ValueError:
-                        eo = vic_eval.EvalObject(parameter_list[0], {'x': find_result_temp.match_count})
+                        eo = vic_eval.EvalObject(parameter_list[0], {'x': find_result_temp.match_count}, logger)
                         eval_success, eval_result, final_expression = eo.get_eval_result()
                         if eval_success:
                             if eval_result:

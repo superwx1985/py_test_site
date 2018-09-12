@@ -3,29 +3,24 @@ import time
 import json
 import traceback
 import uuid
-from py_test.general import vic_variables, vic_public_elements, vic_log, vic_method
+import logging
+from py_test.general import vic_variables, vic_public_elements, vic_method
 from py_test.ui_test import method
 from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException, NoSuchElementException, TimeoutException, StaleElementReferenceException, InvalidSwitchToTargetException
-from py_test.vic_tools import vic_eval
+from py_test.vic_tools import vic_eval, vic_date_handle
 from main.models import StepResult
 from django.forms.models import model_to_dict
 
-# 获取全局变量
-global_variables = vic_variables.global_variables
-# 获取公共元素组
-public_elements = vic_public_elements.public_elements
-
 
 class VicStep:
-    def __init__(self, step, case_result, step_order, user, execute_str, variables, parent_case_pk_list,
+    def __init__(self, step, case_result, step_order, user, execute_str, parent_case_pk_list,
                  execute_uuid=uuid.uuid1(), websocket_sender=None):
         self.start_date = datetime.datetime.now()
-        self.logger = vic_log.get_thread_logger(execute_uuid)
+        self.logger = logging.getLogger('py_test.{}'.format(execute_uuid))
 
         self.step = step
         self.case_result = case_result
         self.user = user
-        self.variables = variables
         self.execute_uuid = execute_uuid
         self.websocket_sender = websocket_sender
 
@@ -81,12 +76,10 @@ class VicStep:
                 10: 'variable',
             }
             self.ui_by = ui_by_dict[step.ui_by]
-            self.ui_locator = str(vic_method.replace_special_value(step.ui_locator, variables))
+            self.ui_locator = step.ui_locator
             self.ui_index = step.ui_index
-            ui_base_element = str(vic_method.replace_special_value(step.ui_base_element, variables))
-            self.ui_base_element = vic_variables.get_elements(ui_base_element, variables)[
-                0] if ui_base_element != '' else None
-            self.ui_data = str(vic_method.replace_special_value(step.ui_data, variables))
+            self.ui_base_element = step.ui_base_element
+            self.ui_data = step.ui_data
             ui_special_action_dict = {
                 0: '',
                 1: 'click',
@@ -117,7 +110,7 @@ class VicStep:
             self.api_body = step.api_body
             self.api_data = step.api_data
 
-            self.other_data = str(vic_method.replace_special_value(step.other_data, variables))
+            self.other_data = step.other_data
             self.other_sub_case = step.other_sub_case
         except Exception as e:
             self.logger.info('【{}】\t步骤读取出错'.format(self.execute_id), exc_info=True)
@@ -126,11 +119,21 @@ class VicStep:
             self.step_result.result_error = traceback.format_exc()
             raise
 
-    def execute(self, vic_case):
+    def execute(self, vic_case, global_variables, public_elements):
         self.step_result.start_date = self.start_date
         # 保存result数据库对象
         self.step_result.save()
         dr = vic_case.dr
+
+        # 根据当前变量组替换数据
+        self.ui_locator = str(vic_method.replace_special_value(
+            self.ui_locator, vic_case.variables, global_variables, self.logger))
+        ui_base_element = str(vic_method.replace_special_value(
+            self.ui_base_element, vic_case.variables, global_variables, self.logger))
+        self.ui_base_element = vic_variables.get_elements(ui_base_element, vic_case.variables, global_variables)[0] \
+            if ui_base_element != '' else None
+        self.ui_data = str(vic_method.replace_special_value(self.ui_data, vic_case.variables, global_variables))
+        self.other_data = str(vic_method.replace_special_value(self.other_data, vic_case.variables, global_variables))
 
         try:
             # ===== UI 初始化检查 =====
@@ -154,7 +157,9 @@ class VicStep:
                     if self.action_code == 'OTHER_IF':
                         if self.other_data == '':
                             raise ValueError('未提供表达式')
-                        eo = vic_eval.EvalObject(self.other_data, vic_variables.get_variable_dict(self.variables))
+                        eo = vic_eval.EvalObject(
+                            self.other_data, vic_variables.get_variable_dict(vic_case.variables, global_variables),
+                            self.logger)
                         eval_success, eval_result, final_expression = eo.get_eval_result()
                         if eval_success:
                             self.run_result = ('p', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result))
@@ -284,7 +289,8 @@ class VicStep:
                                 raise ValueError('无效的定位方式或定位符')
                             variable_elements = None
                             if self.ui_by == 'variable':
-                                variable_elements = vic_variables.get_elements(self.ui_locator, self.variables)
+                                variable_elements = vic_variables.get_elements(
+                                    self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
                                 self.ui_by, self.ui_locator = method.get_public_elements(
                                     self.ui_locator, public_elements)
@@ -293,7 +299,7 @@ class VicStep:
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
                             if self.save_as != '':
-                                self.variables.set_variable(self.save_as, self.elements)
+                                vic_case.variables.set_variable(self.save_as, self.elements)
 
                         # 输入
                         elif self.action_code == 'UI_ENTER':
@@ -301,7 +307,8 @@ class VicStep:
                                 raise ValueError('无效的定位方式或定位符')
                             variable_elements = None
                             if self.ui_by == 'variable':
-                                variable_elements = vic_variables.get_elements(self.ui_locator, self.variables)
+                                variable_elements = vic_variables.get_elements(
+                                    self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
                                 self.ui_by, self.ui_locator = method.get_public_elements(
                                     self.ui_locator, public_elements)
@@ -310,7 +317,7 @@ class VicStep:
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
                             if self.save_as != '':
-                                self.variables.set_variable(self.save_as, self.elements)
+                                vic_case.variables.set_variable(self.save_as, self.elements)
 
                         # 选择下拉项
                         elif self.action_code == 'UI_SELECT':
@@ -318,7 +325,8 @@ class VicStep:
                                 raise ValueError('无效的定位方式或定位符')
                             variable_elements = None
                             if self.ui_by == 'variable':
-                                variable_elements = vic_variables.get_elements(self.ui_locator, self.variables)
+                                variable_elements = vic_variables.get_elements(
+                                    self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
                                 self.ui_by, self.ui_locator = method.get_public_elements(
                                     self.ui_locator, public_elements)
@@ -327,24 +335,26 @@ class VicStep:
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
                             if self.save_as != '':
-                                self.variables.set_variable(self.save_as, self.elements)
+                                vic_case.variables.set_variable(self.save_as, self.elements)
 
                         # 特殊动作
                         elif self.action_code == 'UI_SPECIAL_ACTION':
                             variable_elements = None
                             if self.ui_by == 'variable':
-                                variable_elements = vic_variables.get_elements(self.ui_locator, self.variables)
+                                variable_elements = vic_variables.get_elements(
+                                    self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
                                 self.ui_by, self.ui_locator = method.get_public_elements(
                                     self.ui_locator, public_elements)
                             self.run_result, self.elements = method.perform_special_action(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
                                 index_=self.ui_index, base_element=self.ui_base_element,
-                                special_action=self.ui_special_action, variables=self.variables,
-                                variable_elements=variable_elements, logger=self.logger)
+                                special_action=self.ui_special_action, variables=vic_case.variables,
+                                global_variables=global_variables, variable_elements=variable_elements,
+                                logger=self.logger)
 
                             if self.save_as != '':
-                                self.variables.set_variable(self.save_as, self.elements)
+                                vic_case.variables.set_variable(self.save_as, self.elements)
 
                         # 移动到元素位置
                         elif self.action_code == 'UI_SCROLL_INTO_VIEW':
@@ -352,7 +362,8 @@ class VicStep:
                                 raise ValueError('无效的定位方式或定位符')
                             variable_elements = None
                             if self.ui_by == 'variable':
-                                variable_elements = vic_variables.get_elements(self.ui_locator, self.variables)
+                                variable_elements = vic_variables.get_elements(
+                                    self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
                                 self.ui_by, self.ui_locator = method.get_public_elements(
                                     self.ui_locator, public_elements)
@@ -361,7 +372,7 @@ class VicStep:
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
                             if self.save_as != '':
-                                self.variables.set_variable(self.save_as, self.elements)
+                                vic_case.variables.set_variable(self.save_as, self.elements)
 
                         # 验证URL
                         elif self.action_code == 'UI_VERIFY_URL':
@@ -380,7 +391,8 @@ class VicStep:
                                 if self.ui_by != 0 and self.ui_locator != '':
                                     variable_elements = None
                                     if self.ui_by == 'variable':
-                                        variable_elements = vic_variables.get_elements(self.ui_locator, self.variables)
+                                        variable_elements = vic_variables.get_elements(
+                                            self.ui_locator, vic_case.variables, global_variables)
                                     elif self.ui_by == 'public element':
                                         self.ui_by, self.ui_locator = method.get_public_elements(
                                             self.ui_locator, public_elements)
@@ -396,7 +408,7 @@ class VicStep:
                                         base_element=self.ui_base_element, logger=self.logger
                                     )
                                 if self.save_as != '':
-                                    self.variables.set_variable(self.save_as, self.elements)
+                                    vic_case.variables.set_variable(self.save_as, self.elements)
 
                         # 验证元素可见
                         elif self.action_code == 'UI_VERIFY_ELEMENT_SHOW':
@@ -404,7 +416,8 @@ class VicStep:
                                 raise ValueError('无效的定位方式或定位符')
                             variable_elements = None
                             if self.ui_by == 'variable':
-                                variable_elements = vic_variables.get_elements(self.ui_locator, self.variables)
+                                variable_elements = vic_variables.get_elements(
+                                    self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
                                 self.ui_by, self.ui_locator = method.get_public_elements(
                                     self.ui_locator, public_elements)
@@ -419,7 +432,7 @@ class VicStep:
                                     timeout=self.timeout, base_element=self.ui_base_element,
                                     variable_elements=variable_elements, logger=self.logger)
                             if self.save_as != '':
-                                self.variables.set_variable(self.save_as, self.elements)
+                                vic_case.variables.set_variable(self.save_as, self.elements)
 
                         # 验证元素隐藏
                         elif self.action_code == 'UI_VERIFY_ELEMENT_HIDE':
@@ -427,7 +440,8 @@ class VicStep:
                                 raise ValueError('无效的定位方式或定位符')
                             variable_elements = None
                             if self.ui_by == 'variable':
-                                variable_elements = vic_variables.get_elements(self.ui_locator, self.variables)
+                                variable_elements = vic_variables.get_elements(
+                                    self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
                                 self.ui_by, self.ui_locator = method.get_public_elements(
                                     self.ui_locator, public_elements)
@@ -436,7 +450,7 @@ class VicStep:
                                 base_element=self.ui_base_element, variable_elements=variable_elements,
                                 logger=self.logger)
                             if self.save_as != '':
-                                self.variables.set_variable(self.save_as, self.elements)
+                                vic_case.variables.set_variable(self.save_as, self.elements)
 
                         # 运行JavaScript
                         elif self.action_code == 'UI_EXECUTE_JS':
@@ -444,7 +458,8 @@ class VicStep:
                                 raise ValueError('未提供javascript代码')
                             variable_elements = None
                             if self.ui_by == 'variable':
-                                variable_elements = vic_variables.get_elements(self.ui_locator, self.variables)
+                                variable_elements = vic_variables.get_elements(
+                                    self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
                                 self.ui_by, self.ui_locator = method.get_public_elements(
                                     self.ui_locator, public_elements)
@@ -453,7 +468,7 @@ class VicStep:
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
                             if self.save_as != '':
-                                self.variables.set_variable(self.save_as, js_result)
+                                vic_case.variables.set_variable(self.save_as, js_result)
 
                         # 验证JavaScript结果
                         elif self.action_code == 'UI_VERIFY_JS_RETURN':
@@ -461,7 +476,8 @@ class VicStep:
                                 raise ValueError('未提供javascript代码')
                             variable_elements = None
                             if self.ui_by == 'variable':
-                                variable_elements = vic_variables.get_elements(self.ui_locator, self.variables)
+                                variable_elements = vic_variables.get_elements(
+                                    self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
                                 self.ui_by, self.ui_locator = method.get_public_elements(
                                     self.ui_locator, public_elements)
@@ -472,7 +488,7 @@ class VicStep:
                             if js_result is not True:
                                 self.run_result = ('f', self.run_result[1])
                             if self.save_as != '':
-                                self.variables.set_variable(self.save_as, js_result)
+                                vic_case.variables.set_variable(self.save_as, js_result)
 
                         # 保存元素变量
                         elif self.action_code == 'UI_SAVE_ELEMENT':
@@ -482,7 +498,8 @@ class VicStep:
                                 raise ValueError('无效的定位方式或定位符')
                             variable_elements = None
                             if self.ui_by == 'variable':
-                                variable_elements = vic_variables.get_elements(self.ui_locator, self.variables)
+                                variable_elements = vic_variables.get_elements(
+                                    self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
                                 self.ui_by, self.ui_locator = method.get_public_elements(
                                     self.ui_locator, public_elements)
@@ -491,7 +508,7 @@ class VicStep:
                                 base_element=self.ui_base_element, variable_elements=variable_elements,
                                 logger=self.logger)
                             if self.run_result[0] == 'p':
-                                msg = self.variables.set_variable(self.save_as, self.elements)
+                                msg = vic_case.variables.set_variable(self.save_as, self.elements)
                                 self.run_result = ('p', msg)
                             else:
                                 raise NoSuchElementException('无法保存变量，{}'.format(self.run_result[1]))
@@ -502,7 +519,7 @@ class VicStep:
                                 raise ValueError('没有提供变量名')
                             self.run_result, data_ = method.get_url(dr=dr, condition_value=str(self.ui_data))
                             if self.run_result[0] == 'p':
-                                msg = self.variables.set_variable(self.save_as, data_)
+                                msg = vic_case.variables.set_variable(self.save_as, data_)
                                 self.run_result = ('p', msg)
                             else:
                                 raise WebDriverException('无法保存变量，{}'.format(self.run_result[1]))
@@ -531,10 +548,11 @@ class VicStep:
                                 raise ValueError('没有提供表达式')
                             else:
                                 eo = vic_eval.EvalObject(
-                                    self.other_data, vic_variables.get_variable_dict(self.variables))
+                                    self.other_data,
+                                    vic_variables.get_variable_dict(vic_case.variables, global_variables), self.logger)
                                 eval_success, eval_result, final_expression = eo.get_eval_result()
                                 if eval_success:
-                                    self.variables.set_variable(self.save_as, eval_result)
+                                    vic_case.variables.set_variable(self.save_as, eval_result)
                                     self.run_result = (
                                         'p',
                                         '计算表达式：{}\n结果为：{}\n保存到局部变量【{}】'.format(
@@ -551,7 +569,8 @@ class VicStep:
                                 raise ValueError('没有提供表达式')
                             else:
                                 eo = vic_eval.EvalObject(
-                                    self.other_data, vic_variables.get_variable_dict(self.variables))
+                                    self.other_data,
+                                    vic_variables.get_variable_dict(vic_case.variables, global_variables), self.logger)
                                 eval_success, eval_result, final_expression = eo.get_eval_result()
                                 if eval_success:
                                     global_variables.set_variable(self.save_as, eval_result)
@@ -564,13 +583,38 @@ class VicStep:
 
                         # 转换变量类型
                         elif self.action_code == 'OTHER_CHANGE_VARIABLE_TYPE':
-                            pass
+                            if self.other_data not in ('str', 'int', 'float', 'time', 'datetime'):
+                                raise ValueError('无效的转换类型【{}】'.format(self.other_data))
+                            found, variable = vic_variables.get_variable(
+                                self.save_as, vic_case.variables, global_variables)
+                            if not found:
+                                raise ValueError('找不到名为【{}】的变量'.format(self.save_as))
+                            try:
+                                if self.other_data == 'str':
+                                    variable = str(variable)
+                                elif self.other_data == 'int':
+                                    variable = int(variable)
+                                elif self.other_data == 'float':
+                                    variable = float(variable)
+                                elif self.other_data == 'bool':
+                                    variable = bool(variable)
+                                elif self.other_data in ('time', 'datetime'):
+                                    variable = vic_date_handle.str_to_time(str(variable))
+                            except ValueError as e:
+                                raise ValueError('变量类型转换失败，{}'.format(e))
+                            if found == 'local':
+                                vic_case.variables.set_variable(self.save_as, variable)
+                            else:
+                                global_variables.set_variable(self.save_as, variable)
+                            self.run_result = ('p', '转换成功')
 
                         # 验证表达式
                         elif self.action_code == 'OTHER_VERIFY_EXPRESSION':
                             if self.other_data == '':
                                 raise ValueError('未提供表达式')
-                            eo = vic_eval.EvalObject(self.other_data, vic_variables.get_variable_dict(self.variables))
+                            eo = vic_eval.EvalObject(
+                                self.other_data, vic_variables.get_variable_dict(vic_case.variables, global_variables),
+                                self.logger)
                             eval_success, eval_result, final_expression = eo.get_eval_result()
                             if eval_success:
                                 if eval_result is True:
@@ -595,13 +639,13 @@ class VicStep:
                                     case_order=None,
                                     user=self.user,
                                     execute_str=self.execute_id,
-                                    variables=self.variables,
+                                    variables=vic_case.variables,
                                     step_result=self.step_result,
                                     parent_case_pk_list=self.parent_case_pk_list,
                                     dr=dr,
                                     execute_uuid=self.execute_uuid,
                                     websocket_sender=self.websocket_sender)
-                                case_result_ = sub_case.execute()
+                                case_result_ = sub_case.execute(global_variables, public_elements)
                                 self.step_result.has_sub_case = True
                                 if case_result_.error_count > 0:
                                     raise RuntimeError('子用例执行时出现错误')
@@ -699,33 +743,4 @@ class VicStep:
         self.step_result.end_date = datetime.datetime.now()
         self.step_result.save()
 
-        # 关闭日志文件句柄
-        for h in self.logger.handlers:
-            h.close()
         return self.step_result
-
-
-def debug(log_level=10):
-    from main.models import Config, Step, CaseResult
-    import logging
-    from django.contrib.auth.models import User
-
-    logger = logging.getLogger('py_test')
-    logger.setLevel(log_level)
-    # 设置线程日志level
-    vic_log.THREAD_LEVEL = log_level
-
-    config = Config.objects.get(pk=5)
-
-    step = Step.objects.get(pk=5)
-    case_result = CaseResult.objects.all()[0]
-
-    step_order = 1
-    user = User.objects.all()[0]
-    execute_str = '<debug>'
-    variables = vic_variables.Variables()
-    parent_case_pk_list = None
-    dr = method.get_driver(config)
-    step = VicStep(step, case_result, step_order, user, execute_str, variables, parent_case_pk_list, dr)
-
-    return step.execute()

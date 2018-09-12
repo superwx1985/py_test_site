@@ -54,6 +54,11 @@
                             var suite_socket = new WebSocket(websocket_url);
                             var execute_uuid = guid();
 
+                            var auto_scroll = true;
+                            execute_log_div.scroll(function () {
+                                auto_scroll = (execute_log_div.get(0).scrollHeight - execute_log_div.height() <= execute_log_div.scrollTop());
+                            });
+
                             execute_button.off('click').on('click', function () {
                                 execute_button.off('click');
                                 var suite_socket_stop = new WebSocket(websocket_url);
@@ -72,7 +77,6 @@
 
                             suite_socket.onmessage = function(data) {
                                 var type = JSON.parse(data.data)['type'];
-                                var auto_scroll = false;
                                 if (type === 'ready'){
                                     suite_socket.send(JSON.stringify({'command': 'start', 'execute_uuid': execute_uuid}));
                                 } else if (type === 'message'){
@@ -80,12 +84,10 @@
                                     var level = JSON.parse(data.data)['level'];
                                     var pre = $('<pre>').text(message);
                                     if (level) {
-                                        if (level>=40) {pre.addClass('text-danger')}
-                                        else if (level>=30) {pre.addClass('text-warning')}
+                                        if (level>=40) { pre.addClass('text-danger') }
+                                        else if (level>=30) { pre.addClass('text-warning') }
                                     }
-                                    if (execute_log_div.get(0).scrollHeight - execute_log_div.scrollTop() <= execute_log_div.height()) {
-                                        auto_scroll = true;
-                                    }
+
                                     execute_log_div.append(pre);
                                     if (auto_scroll) {
                                         execute_log_div.scrollTop(execute_log_div.get(0).scrollHeight);

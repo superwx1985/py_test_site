@@ -2,8 +2,8 @@ import datetime
 import httplib2
 import json
 import socket
+import logging
 from py_test.vic_tools import vic_find_object
-from py_test.general.vic_log import get_thread_logger
 
 
 # 发送http请求
@@ -39,8 +39,7 @@ def send_http_request(method='GET', url='http://127.0.0.1', headers=None, body=N
 
 
 # 验证http请求
-def verify_http_response(expect, response):
-    logger = get_thread_logger()
+def verify_http_response(expect, response, logger=logging.getLogger('py_test')):
     is_pass, pass_group, fail_group, condition_count, response_object = vic_find_object.find_with_multiple_condition(
         expect, response)
 

@@ -1,12 +1,12 @@
+import logging
 from selenium.common import exceptions
 from selenium.webdriver.remote.webelement import WebElement
-from py_test.general.vic_log import get_thread_logger
 
 
 class Variables:
-    def __init__(self):
+    def __init__(self, logger=logging.getLogger('py_test')):
         self.variable_dict = dict()
-        self.logger = get_thread_logger()
+        self.logger = logger
 
     @staticmethod
     def check_name(name):
@@ -34,26 +34,28 @@ class Variables:
         return found, variable_
 
 
-# 初始化全局变量
-global_variables = Variables()
-
-
 # 先获取局部变量，找不到则获取全局变量
-def get_variable(name, variables=None):
+def get_variable(name, variables=None, global_variables=None):
     variable_ = None
     found = False
+    found_local = False
+    found_global = False
     if isinstance(variables, Variables):
-        found, variable_ = variables.get_variable(name)
+        found_local, variable_ = variables.get_variable(name)
+    if not found_local:
+        found_global, variable_ = global_variables.get_variable(name)
+    if found_local:
+        found = 'local'
+    elif found_global:
+        found = 'global'
     if not found:
-        found, variable_ = global_variables.get_variable(name)
-    if not found:
-        raise ValueError('没找到名为【{}】的变量'.format(name))
+        raise ValueError('找不到名为【{}】的变量'.format(name))
     return found, variable_
 
 
 # 取变量的字符串
-def get_str(name, variables=None):
-    found, variable_ = get_variable(name, variables)
+def get_str(name, variables=None, global_variables=None):
+    found, variable_ = get_variable(name, variables, global_variables)
     if isinstance(variable_, list):
         str_ = name
     else:
@@ -62,8 +64,8 @@ def get_str(name, variables=None):
 
 
 # 取变量的元素
-def get_elements(name, variables=None):
-    found, variable_ = get_variable(name, variables)
+def get_elements(name, variables=None, global_variables=None):
+    found, variable_ = get_variable(name, variables, global_variables)
     if isinstance(variable_, WebElement):
         elements = [variable_]
     elif isinstance(variable_, list) and isinstance(variable_[0], WebElement):
@@ -74,8 +76,10 @@ def get_elements(name, variables=None):
 
 
 # 获取相关变量字典
-def get_variable_dict(variables=None):
-    dict_ = global_variables.variable_dict
+def get_variable_dict(variables=None, global_variables=None):
+    dict_ = dict()
+    if isinstance(global_variables, Variables):
+        dict_ = global_variables.variable_dict
     if isinstance(variables, Variables):
         local_dict_ = variables.variable_dict
         dict_ = {**dict_, **local_dict_}

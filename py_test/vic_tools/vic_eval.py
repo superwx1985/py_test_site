@@ -1,11 +1,11 @@
 import ast
 import datetime
+import logging
 from copy import deepcopy
-from py_test.general.vic_log import get_thread_logger
 
 
 class EvalObject:
-    def __init__(self, eval_expression, variable_dict=None):
+    def __init__(self, eval_expression, variable_dict=None, logger=logging.getLogger('py_test')):
         if isinstance(eval_expression, str):
             self.__eval_expression = eval_expression.replace('\n', '').replace('\r', '').strip()
         else:
@@ -31,7 +31,7 @@ class EvalObject:
         # self.__invalid_value_list = self.get_invalid_value_list()
         self.__left_separator = '$['
         self.__right_separator = ']$'
-        self.logger = get_thread_logger()
+        self.logger = logger
 
     # 去掉表达式中的变量
     def _get_without_variables_expression(self, expression):

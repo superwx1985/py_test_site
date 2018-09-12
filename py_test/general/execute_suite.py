@@ -34,9 +34,9 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
     # 读取公共变量及元素组
     if suite.variable_group:
         variable_objects = suite.variable_group.variable_set.all()
-        global_variables = vic_variables.global_variables  # 初始化全局变量
-        public_elements = vic_public_elements.public_elements  # 初始化公共元素组
-        load_public_data(variable_objects, global_variables, public_elements)
+        global_variables = vic_variables.Variables(logger)  # 初始化全局变量
+        public_elements = vic_public_elements.PublicElements(logger)  # 初始化公共元素组
+        load_public_data(variable_objects, global_variables, public_elements, logger)
 
     # 获取配置
     config = suite.config
@@ -95,7 +95,7 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
     case_order = 0
     for case in vic_cases:
         case_order += 1
-        futures.append(pool.submit(case.execute))
+        futures.append(pool.submit(case.execute, global_variables, public_elements))
 
     future_results = wait(futures)
     for future_result in future_results.done:
@@ -128,6 +128,11 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
     # 清除停止信号
     if FORCE_STOP.get(execute_uuid):
         del FORCE_STOP[execute_uuid]
+
+    # 关闭日志文件句柄
+    for h in logger.handlers:
+        h.close()
+
     return suite_result
 
 

@@ -2,7 +2,8 @@ import datetime
 import json
 import traceback
 import uuid
-from py_test.general import vic_variables, vic_public_elements, vic_method, vic_log
+import logging
+from py_test.general import vic_variables, vic_public_elements, vic_method
 from py_test.ui_test import method
 from selenium.common.exceptions import UnexpectedAlertPresentException
 from main.models import CaseResult, Step
@@ -15,7 +16,7 @@ class VicCase:
     def __init__(self, case, suite_result, case_order, user, execute_str, variables=None, step_result=None,
                  parent_case_pk_list=None, dr=None, execute_uuid=uuid.uuid1(), websocket_sender=None):
         self.start_date = datetime.datetime.now()
-        self.logger = vic_log.get_thread_logger(execute_uuid)
+        self.logger = logging.getLogger('py_test.{}'.format(execute_uuid))
 
         self.case = case
         self.suite_result = suite_result
@@ -55,7 +56,7 @@ class VicCase:
             error_count=0,
         )
 
-    def execute(self):
+    def execute(self, global_variables, public_elements):
         self.case_result.start_date = self.start_date
         # 保存result数据库对象
         self.case_result.save()
@@ -71,11 +72,12 @@ class VicCase:
 
             # 读取本地变量
             if self.variables is None:
-                self.variables = vic_variables.Variables()
+                self.variables = vic_variables.Variables(self.logger)
             local_variable_group = self.case.variable_group
             if local_variable_group is not None:
                 for variable in local_variable_group.variable_set.all():
-                    value = vic_method.replace_special_value(variable.value, self.variables)
+                    value = vic_method.replace_special_value(
+                        variable.value, self.variables, global_variables, self.logger)
                     self.variables.set_variable(variable.name, value)
 
             # 读取测试步骤数据
@@ -87,9 +89,8 @@ class VicCase:
                 self.steps.append(
                     VicStep(
                         step=step, case_result=self.case_result, step_order=step_order, user=self.user,
-                        execute_str=self.execute_str, variables=self.variables,
-                        parent_case_pk_list=self.parent_case_pk_list, execute_uuid=self.execute_uuid,
-                        websocket_sender=self.websocket_sender)
+                        execute_str=self.execute_str, parent_case_pk_list=self.parent_case_pk_list,
+                        execute_uuid=self.execute_uuid, websocket_sender=self.websocket_sender)
                 )
 
         except Exception as e:
@@ -123,7 +124,7 @@ class VicCase:
                         execute_id, alert_handle_text, alert_text))
 
             # 执行步骤
-            step_result_ = step.execute(self)
+            step_result_ = step.execute(self, global_variables, public_elements)
 
             # 获取最后一次弹窗处理方式
             ui_alert_handle = step.ui_alert_handle
@@ -163,7 +164,5 @@ class VicCase:
             self.case_result.result_message = '通过'
         self.case_result.end_date = datetime.datetime.now()
         self.case_result.save()
-        # 关闭日志文件句柄
-        for h in self.logger.handlers:
-            h.close()
+
         return self.case_result
