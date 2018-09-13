@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 import uuid
+from py_test.vic_tools.vic_date_handle import get_timedelta_str
 
 
 # 用例表
@@ -385,7 +386,6 @@ class SuiteResult(models.Model):
         if self.elapsed_time is None:
             return 'N/A'
         else:
-            from py_test.vic_tools.vic_date_handle import get_timedelta_str
             return get_timedelta_str(self.elapsed_time, 1)
 
     class Meta:
@@ -436,7 +436,6 @@ class CaseResult(models.Model):
         if self.elapsed_time is None:
             return 'N/A'
         else:
-            from py_test.vic_tools.vic_date_handle import get_timedelta_str
             return get_timedelta_str(self.elapsed_time, 1)
 
 
@@ -483,7 +482,6 @@ class StepResult(models.Model):
         if self.elapsed_time is None:
             return 'N/A'
         else:
-            from py_test.vic_tools.vic_date_handle import get_timedelta_str
             return get_timedelta_str(self.elapsed_time, 1)
 
 

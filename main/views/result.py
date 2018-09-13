@@ -1,5 +1,6 @@
 import logging
 import json
+import datetime
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -13,6 +14,7 @@ from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, StepForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie
 from django.template.loader import render_to_string
 from utils import other
+from py_test.vic_tools.vic_date_handle import get_timedelta_str
 
 logger = logging.getLogger('django.request')
 
@@ -47,13 +49,21 @@ def list_(request):
     else:
         q &= Q(is_active=True) & Q(creator=request.user)
     objects = SuiteResult.objects.filter(q).values(
-        'pk', 'uuid', 'name', 'keyword', 'project__name', 'start_date', 'result_status', 'creator', 'creator__username',
-        'modified_date').annotate(
+        'pk', 'uuid', 'name', 'keyword', 'project__name', 'start_date', 'end_date', 'result_status', 'creator',
+        'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     result_status_list = SuiteResult.result_status_list
     d = {l[0]: l[1] for l in result_status_list}
     for o in objects:
         o['result_status_str'] = d.get(o['result_status'], 'N/A')
+        if o['end_date'] is None or o['start_date'] is None:
+            o['elapsed_time'] = datetime.timedelta(days=9999)
+        else:
+            o['elapsed_time'] = o['end_date'] - o['start_date']
+        if o['elapsed_time'] >= datetime.timedelta(days=9999):
+            o['elapsed_time_str'] = 'N/A'
+        else:
+            o['elapsed_time_str'] = get_timedelta_str(o['elapsed_time'], 1)
     # 排序
     if objects:
         if order_by not in objects[0]:

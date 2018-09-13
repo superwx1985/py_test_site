@@ -13,9 +13,8 @@ from django.forms.models import model_to_dict
 
 
 class VicStep:
-    def __init__(self, step, case_result, step_order, user, execute_str, parent_case_pk_list,
-                 execute_uuid=uuid.uuid1(), websocket_sender=None):
-        self.start_date = datetime.datetime.now()
+    def __init__(
+            self, step, case_result, step_order, user, execute_str, execute_uuid=uuid.uuid1(), websocket_sender=None):
         self.logger = logging.getLogger('py_test.{}'.format(execute_uuid))
 
         self.step = step
@@ -32,13 +31,6 @@ class VicStep:
         self.execute_id = '{}-{}'.format(execute_str, step_order)
         # 截图列表
         self.img_list = list()
-
-        # 记录运行的case，防止递归调用
-        if parent_case_pk_list is None:
-            self.parent_case_pk_list = [case_result.case.pk]
-        else:
-            self.parent_case_pk_list = parent_case_pk_list
-            self.parent_case_pk_list.append(case_result.case.pk)
 
         # 初始化result数据库对象
         self.step_result = StepResult(
@@ -120,10 +112,13 @@ class VicStep:
             raise
 
     def execute(self, vic_case, global_variables, public_elements):
-        self.step_result.start_date = self.start_date
+        # 记录开始执行时的时间
+        self.step_result.start_date = datetime.datetime.now()
         # 保存result数据库对象
         self.step_result.save()
-        dr = vic_case.dr
+
+        # 获取driver
+        dr = vic_case.driver_container[0]
 
         # 根据当前变量组替换数据
         self.ui_locator = str(vic_method.replace_special_value(
@@ -139,7 +134,7 @@ class VicStep:
             # ===== UI 初始化检查 =====
             if self.action_type_code == 'UI':
                 if dr is None:
-                    raise WebDriverException('浏览器未初始化，请检查是否配置有误或被关闭')
+                    raise WebDriverException('浏览器未初始化，请检查是否配置有误或浏览器被意外关闭')
                 # 设置selenium超时时间
                 dr.implicitly_wait(self.timeout)
                 dr.set_page_load_timeout(self.timeout)
@@ -279,9 +274,14 @@ class VicStep:
                         # 重置浏览器
                         elif self.action_code == 'UI_RESET_BROWSER':
                             if dr is not None:
-                                dr.quit()
-                                vic_case.dr = dr = method.get_driver(
+                                try:
+                                    dr.quit()
+                                except Exception as e:
+                                    self.logger.error('有一个driver（浏览器）无法关闭，请手动关闭。错误信息 => {}'.format(e))
+                                del dr
+                                dr = method.get_driver(
                                     self.case_result.suite_result.suite.config, 3, self.timeout, logger=self.logger)
+                                vic_case.driver_container[0] = dr
 
                         # 单击
                         elif self.action_code == 'UI_CLICK':
@@ -552,11 +552,11 @@ class VicStep:
                                     vic_variables.get_variable_dict(vic_case.variables, global_variables), self.logger)
                                 eval_success, eval_result, final_expression = eo.get_eval_result()
                                 if eval_success:
-                                    vic_case.variables.set_variable(self.save_as, eval_result)
+                                    msg = vic_case.variables.set_variable(self.save_as, eval_result)
                                     self.run_result = (
                                         'p',
-                                        '计算表达式：{}\n结果为：{}\n保存到局部变量【{}】'.format(
-                                            final_expression, eval_result, self.save_as))
+                                        '计算表达式：{}\n结果为：{}\n用例{}'.format(
+                                            final_expression, eval_result, msg))
 
                                 else:
                                     raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
@@ -573,11 +573,11 @@ class VicStep:
                                     vic_variables.get_variable_dict(vic_case.variables, global_variables), self.logger)
                                 eval_success, eval_result, final_expression = eo.get_eval_result()
                                 if eval_success:
-                                    global_variables.set_variable(self.save_as, eval_result)
+                                    msg = global_variables.set_variable(self.save_as, eval_result)
                                     self.run_result = (
                                         'p',
-                                        '计算表达式：{}\n结果为：{}\n保存到全局变量【{}】'.format(
-                                            final_expression, eval_result, self.save_as))
+                                        '计算表达式：{}\n结果为：{}\n全局{}'.format(
+                                            final_expression, eval_result, msg))
                                 else:
                                     raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
 
@@ -628,7 +628,7 @@ class VicStep:
                         elif self.action_code == 'OTHER_CALL_SUB_CASE':
                             if self.other_sub_case is None:
                                 raise ValueError('子用例为空或不存在')
-                            elif self.other_sub_case.pk in self.parent_case_pk_list:
+                            elif self.other_sub_case.pk in vic_case.parent_case_pk_list:
                                 raise ValueError('子用例[ID:{}]【{}】被递归调用'.format(
                                     self.other_sub_case.pk, self.other_sub_case.name))
                             else:
@@ -641,11 +641,14 @@ class VicStep:
                                     execute_str=self.execute_id,
                                     variables=vic_case.variables,
                                     step_result=self.step_result,
-                                    parent_case_pk_list=self.parent_case_pk_list,
-                                    dr=dr,
+                                    parent_case_pk_list=vic_case.parent_case_pk_list,
                                     execute_uuid=self.execute_uuid,
-                                    websocket_sender=self.websocket_sender)
+                                    websocket_sender=self.websocket_sender,
+                                    driver_container=vic_case.driver_container
+                                )
                                 case_result_ = sub_case.execute(global_variables, public_elements)
+                                # 更新driver
+                                dr = vic_case.driver_container[0]
                                 self.step_result.has_sub_case = True
                                 if case_result_.error_count > 0:
                                     raise RuntimeError('子用例执行时出现错误')
@@ -719,7 +722,7 @@ class VicStep:
             self.step_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
             self.step_result.result_error = traceback.format_exc()
 
-        # 获取报错时URL
+        # 获取当前URL
         try:
             last_url = dr.current_url
             self.step_result.ui_last_url = last_url if last_url != 'data:,' else ''

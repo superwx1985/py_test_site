@@ -72,12 +72,18 @@
         {% include 'main/include/submit_button_group.html' %}
     </form>
     <div class="row align-items-center">
+        <div class="col-1 text-center font-weight-bold">测试时间</div>
+        <div class="col">
+            {% include 'main/include/result_time.html' with start_date=obj.start_date end_date=obj.end_date elapsed_time_str=obj.elapsed_time_str%}
+        </div>
+    </div>
+    <div class="row align-items-center">
         <div class="col-1 text-center font-weight-bold">用例执行情况</div>
         <div class="col">
             {% if sub_objects %}
                 <ul class="nav nav-tabs" role="tablist">
                     {% for case_result in sub_objects %}
-                        <li class="nav-item">
+                        <li class="nav-item" data-toggle="tooltip" title="{{ case_result.name }}">
                             <a class="nav-link {% if forloop.counter == 1 %}active{% endif %}" data-toggle="tab" href="#case_result_{{ case_result.pk }}">{% include 'main/include/status_icon.html' with status=case_result.result_status %}{{ forloop.counter }}.&nbsp;{{ case_result.name|truncatechars_html:10 }}</a>
                         </li>
                     {% endfor %}

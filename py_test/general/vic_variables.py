@@ -19,7 +19,7 @@ class Variables:
         if name in self.variable_dict:
             msg = '变量【{}】的值由【{}】变更为【{}】'.format(name, self.variable_dict[name], value)
         else:
-            msg = '【{}】保存为变量【{}】'.format(value, name)
+            msg = '变量【{}】被赋值为【{}】'.format(name, value)
         self.logger.debug(msg)
         self.variable_dict[name] = value
         return msg

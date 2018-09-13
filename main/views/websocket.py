@@ -59,13 +59,13 @@ class SuiteConsumer(WebsocketConsumer):
         return self.scope['url_route']['kwargs']['suite_pk']
 
     @staticmethod
-    def get_result_data(result):
-        sub_objects = result.caseresult_set.filter(step_result=None).order_by('case_order')
+    def get_result_data(suite_result):
+        sub_objects = suite_result.caseresult_set.filter(step_result=None).order_by('case_order')
         suite_result_content = render_to_string('main/include/suite_result_content.html', locals())
         data_dict = dict()
         data_dict['suite_result_content'] = suite_result_content
-        data_dict['suite_result_status'] = result.result_status
-        data_dict['suite_result_url'] = reverse('result', args=[result.pk])
+        data_dict['suite_result_status'] = suite_result.result_status
+        data_dict['suite_result_url'] = reverse('result', args=[suite_result.pk])
         return data_dict
 
 
