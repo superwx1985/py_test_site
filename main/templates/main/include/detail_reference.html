@@ -7,6 +7,7 @@
             <col>
             <col style='width: 100px;'>
             <col style='width: 180px;'>
+            <col style='width: 100px;'>
         </colgroup>
         <thead class="thead-light middle">
             <tr>
@@ -16,6 +17,7 @@
                 <th>关键字</th>
                 <th>作者</th>
                 <th>修改时间</th>
+                <th>调用位置</th>
             </tr>
         </thead>
         <tbody>
@@ -27,10 +29,11 @@
                     <td col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
                     <td col_name='real_name' class="middle">{{ obj.real_name }}</td>
                     <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
+                    <td col_name='order' class="middle">{{ obj.order|default:"N/A" }}</td>
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
+                    <td colspan="7" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
                 </tr>
             {% endfor %}
         </tbody>

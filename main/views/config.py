@@ -5,7 +5,7 @@ from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
-from django.db.models import Q, CharField
+from django.db.models import Q, CharField, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -49,6 +49,14 @@ def list_(request):
     objects = Config.objects.filter(q).values(
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
+
+    # 获取被调用次数
+    objects2 = Config.objects.filter(is_active=True, suite__is_active=True).values('pk').annotate(
+        reference_count=Count('*'))
+    count_ = {o['pk']: o['reference_count'] for o in objects2}
+    for o in objects:
+        o['reference_count'] = count_.get(o['pk'], 0)
+
     # 排序
     if objects:
         if order_by not in objects[0]:

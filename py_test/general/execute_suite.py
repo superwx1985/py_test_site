@@ -3,10 +3,9 @@ import json
 import logging
 import uuid
 # import pytz
-from py_test.general import vic_variables, vic_public_elements, vic_config, vic_log
+from py_test.general import vic_variables, vic_public_elements, vic_config, vic_log, vic_method
 from .vic_case import VicCase
 from concurrent.futures import ThreadPoolExecutor, wait
-from py_test.general.vic_method import load_public_data
 from main.models import Case, SuiteResult
 from django.forms.models import model_to_dict
 from utils.system import FORCE_STOP
@@ -32,11 +31,11 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
     logger.info('开始')
 
     # 读取公共变量及元素组
+    global_variables = vic_variables.Variables(logger)  # 初始化全局变量
+    public_elements = vic_public_elements.PublicElements(logger)  # 初始化公共元素组
     if suite.variable_group:
         variable_objects = suite.variable_group.variable_set.all()
-        global_variables = vic_variables.Variables(logger)  # 初始化全局变量
-        public_elements = vic_public_elements.PublicElements(logger)  # 初始化公共元素组
-        load_public_data(variable_objects, global_variables, public_elements, logger)
+        vic_method.load_public_data(variable_objects, global_variables, public_elements, logger)
 
     # 获取配置
     config = suite.config
@@ -105,13 +104,15 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
             suite_result.pass_count += 1
         elif case_result.result_status == 2:
             suite_result.fail_count += 1
-        else:
+        elif case_result.result_status == 3:
             suite_result.error_count += 1
 
     if suite_result.error_count > 0:
         suite_result.result_status = 3
     elif suite_result.fail_count > 0:
         suite_result.result_status = 2
+    elif suite_result.execute_count == 0:
+        suite_result.result_status = 0
     else:
         suite_result.result_status = 1
     suite_result.end_date = datetime.datetime.now()
@@ -119,8 +120,9 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
 
     logger.info('测试用例执行完毕')
     logger.info('========================================')
-    logger.info('执行: %d | 通过: %d | 失败: %d | 出错: %d' % (
-        suite_result.execute_count, suite_result.pass_count, suite_result.fail_count, suite_result.error_count))
+    logger.info('执行: %d | 通过: %d | 失败: %d | 出错: %d | 跳过: %d' % (
+        suite_result.execute_count, suite_result.pass_count, suite_result.fail_count, suite_result.error_count,
+        suite_result.execute_count - suite_result.pass_count - suite_result.fail_count - suite_result.error_count))
     logger.info('耗时: ' + str(suite_result.end_date - suite_result.start_date))
     logger.info('========================================')
     logger.info('结束')

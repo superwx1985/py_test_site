@@ -176,13 +176,13 @@
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="设置本次测试每一步的默认超时值。如果步骤单独设置了超时值，将使用步骤的超时值（单位：秒）"></i>&nbsp;全局超时设置</div>
+            <div class="col-1 text-center font-weight-bold">全局超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置本次测试每一步的默认超时值。如果步骤单独设置了超时值，将使用步骤的超时值（单位：秒）"></i></div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.timeout %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试的验证步骤时是否自动截图"></i>&nbsp;自动截图</div>
+            <div class="col-1 text-center font-weight-bold">自动截图&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试的验证步骤时是否自动截图"></i></div>
             <div class="col" form_data>
                 {{ form.ui_get_ss }}
                 {% for error in form.ui_get_ss.errors %}
@@ -191,19 +191,19 @@
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="本次测试的日志详细程度，选择DEV将不会自动关闭浏览器"></i>&nbsp;日志级别</div>
+            <div class="col-1 text-center font-weight-bold">日志级别&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试的日志详细程度，选择DEV将不会自动关闭浏览器"></i></div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.log_level %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="可同时运行的用例数量。设置更高的值可以加快测试速度，但会打乱用例执行顺序，导致一些意外情况。"></i>&nbsp;测试线程池</div>
+            <div class="col-1 text-center font-weight-bold">测试线程池&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="可同时运行的用例数量。设置更高的值可以加快测试速度，但会打乱用例执行顺序，导致一些意外情况。"></i></div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.thread_count %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的配置项"></i>&nbsp;测试配置</div>
+            <div class="col-1 text-center font-weight-bold">测试配置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的配置项"></i></div>
             <div class="col" form_data>
                 <div id="config_dropdown" name="config"></div>
                 {% for error in form.config.errors %}
@@ -212,7 +212,7 @@
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的公共变量组。如果用例中单独设置了变量组，或测试过程中定义了同名变量，将使用内部变量代替公共变量"></i>&nbsp;公共变量组</div>
+            <div class="col-1 text-center font-weight-bold">公共变量组&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的公共变量组。如果用例中单独设置了变量组，或测试过程中定义了同名变量，将使用内部变量代替公共变量"></i></div>
             <div class="col" form_data>
                 <div id="variable_group_dropdown" name="variable_group"></div>
                 {% for error in form.variable_group.errors %}
@@ -231,7 +231,7 @@
 {% block detail_inner_list %}
     <div id='case' class="row">
         <div id="m2m_all" class="col-6 text-center">
-            <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="拖动到右侧添加"></i>&nbsp;可选用例列表</h5>
+            <h5 class="ui-widget-header">可选用例列表&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="拖动到右侧添加"></i></h5>
             <form method="post" id="m2m_objects_form" novalidate onsubmit="return submit_m2m_all_objects_form('/suite', '{% url "case_list_json" %}');">
                 <input type="hidden" name="order_by" id="id_order_by">
                 <input type="hidden" name="order_by_reverse" id="id_order_by_reverse">
@@ -265,7 +265,7 @@
             </form>
         </div>
         <div id="m2m_selected" class="col-6 text-center">
-            <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="上下拖动进行排序，从待选列表拖动到拖动到已选列表进行添加，拖动回待选列表则删除"></i>&nbsp;待选用例列表</h5>
+            <h5 class="ui-widget-header">待选用例列表&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="上下拖动进行排序，从待选列表拖动到拖动到已选列表进行添加，拖动回待选列表则删除"></i></h5>
             <div style="padding-bottom: 10px">
                 <div style="padding: 0" class="container-fluid">
                     <div class="row align-items-center">

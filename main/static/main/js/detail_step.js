@@ -83,7 +83,7 @@ function show_action_field($actionSelect) {
 		introduce.children('div').text('验证页面是否包含指定元素，且该元素可见。可以通过数量表达式验证找到的元素数量，如果不提供表达式则表示找到任意数量的元素都可以通过验证');
 		$('[ui],div[name=timeout]').show();
 		$('div[name=ui_special_action]').hide();
-		$('div[name=ui_data] .col-1').html('<i class="icon-question-sign" data-toggle="tooltip" title="在表达式中以$[x]$代表找到的元素数量。例：1 < $[x]$ <= 5 代表找到的元素数量必须大于1且小于等于5"></i>&nbsp;数量表达式');
+		$('div[name=ui_data] .col-1').html('数量表达式&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="在表达式中以$[x]$代表找到的元素数量。例：1 < $[x]$ <= 5 代表找到的元素数量必须大于1且小于等于5"></i>');
 	} else if (select_value === 'UI_VERIFY_ELEMENT_HIDE') {
 		introduce.children('div').text('验证页面是否包含指定元素，且该元素不可见');
 		$('[ui],div[name=timeout]').show();
@@ -210,7 +210,7 @@ function show_special_action_field($actionSelect) {
 	} else if (select_value === '9') {
 		introduce.empty().append($('<div>').text('把一个元素（通过定位信息指定）拖动到目标元素（一个已预先保存为变量的元素）中间'));
 		$('[ui]').show();
-		$('div[name=ui_data] .col-1').html('<i class="icon-question-sign" data-toggle="tooltip" title="需在之前的步骤预先保存，使用${变量名}$调用"></i>&nbsp;目标元素');
+		$('div[name=ui_data] .col-1').html('目标元素&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="需在之前的步骤预先保存，使用${变量名}$调用"></i>');
 	} else if (select_value === '10') {
 		introduce.empty().append($('<div>').text('把一个元素（通过定位信息指定）拖动偏移一定距离。偏移量x,y为一对半角逗号分隔的数字（单位：像素，水平方向为x轴，左负右正，垂直方向为y轴，上正下负）。例：300,200'));
 		$('[ui]').show();
@@ -218,21 +218,21 @@ function show_special_action_field($actionSelect) {
 	} else if (select_value === '11') {
 		introduce.empty().append($('<div>').text('在指定的元素里按下某个键盘按键不释放，该方法应该只被用于发送修饰键（$SHIFT，$CONTROL，$ALT），否则会导致输入的字符长度不可预期。不指定元素则在当前焦点所在元素触发'));
 		$('[ui]').show();
-		$('div[name=ui_data] .col-1').html('<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头"></i>&nbsp;按键');
+		$('div[name=ui_data] .col-1').html('按键&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头"></i>');
 	} else if (select_value === '12') {
 		introduce.empty().append($('<div>').text('在指定的元素里释放某个键盘按键。不指定元素则在当前焦点所在元素触发'));
 		$('[ui]').show();
-		$('div[name=ui_data] .col-1').html('<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头"></i>&nbsp;按键');
+		$('div[name=ui_data] .col-1').html('按键&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头"></i>');
 	} else if (select_value === '13') {
 		introduce.empty().append($('<div>').text('向当前焦点所在元素里发送按键（组），修饰键发送一次后一直有效，直到出现相同的修饰键'));
 		introduce.append($('<div>').html('常用的特殊键：<span class="mark">$SHIFT $CONTROL $ALT $ENTER $ESCAPE $SPACE $BACKSPACE $TAB $PAGE_UP $PAGE_DOWN $END $HOME $LEFT $UP $RIGHT $DOWN $INSERT $DELETE</span>'));
 		$('div[name=ui_alert_handle],div[name=ui_data]').show();
-		$('div[name=ui_data] .col-1').html('<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头，多个特殊按键以+分隔，连续的普通按键可以不分隔，如需输入正常的$和+请用\\转义，如\\$，\\+"></i>&nbsp;按键（组）');
+		$('div[name=ui_data] .col-1').html('按键（组）&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头，多个特殊按键以+分隔，连续的普通按键可以不分隔，如需输入正常的$和+请用\\转义，如\\$，\\+"></i>');
 	} else if (select_value === '14') {
 		introduce.empty().append($('<div>').text('向指定的元素发送按键（组），修饰键发送一次后一直有效，直到出现相同的修饰键'));
 		introduce.append($('<div>').html('常用的特殊键：<span class="mark">$SHIFT $CONTROL $ALT $ENTER $ESCAPE $SPACE $BACKSPACE $TAB $PAGE_UP $PAGE_DOWN $END $HOME $LEFT $UP $RIGHT $DOWN $INSERT $DELETE</span>'));
 		$('[ui]').show();
-		$('div[name=ui_data] .col-1').html('<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头，多个特殊按键以+分隔，连续的普通按键可以不分隔，如需输入正常的$和+请用\\转义，如\\$，\\+"></i>&nbsp;按键（组）');
+		$('div[name=ui_data] .col-1').html('按键（组）&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头，多个特殊按键以+分隔，连续的普通按键可以不分隔，如需输入正常的$和+请用\\转义，如\\$，\\+"></i>');
 	}
 	// 注册提示框
 	$('[data-toggle=tooltip]').tooltip();

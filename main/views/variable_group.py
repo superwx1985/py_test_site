@@ -51,6 +51,17 @@ def list_(request):
         'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
         variable_count=Count('variable'),
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
+
+    # 获取被调用次数
+    objects2 = VariableGroup.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(
+        reference_count=Count('*'))
+    count_ = {o['pk']: o['reference_count'] for o in objects2}
+    objects3 = VariableGroup.objects.filter(is_active=True, suite__is_active=True).values('pk').annotate(
+        reference_count=Count('*'))
+    count_3 = {o['pk']: o['reference_count'] for o in objects3}
+    for o in objects:
+        o['reference_count'] = count_.get(o['pk'], 0) + count_3.get(o['pk'], 0)
+
     # 排序
     if objects:
         if order_by not in objects[0]:

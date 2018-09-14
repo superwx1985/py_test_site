@@ -167,7 +167,7 @@
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold"><i class="icon-question-sign" data-toggle="tooltip" title="如果用例中单独设置了变量组，或测试过程中定义了同名变量，将使用内部变量代替公共变量"></i>&nbsp;本地变量组</div>
+            <div class="col-1 text-center font-weight-bold">本地变量组&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="如果用例中单独设置了变量组，或测试过程中定义了同名变量，将使用内部变量代替公共变量"></i></div>
             <div class="col" form_data>
                 <div id="variable_group_dropdown" name="variable_group"></div>
                 {% for error in form.variable_group.errors %}
@@ -191,7 +191,7 @@
 {% block detail_inner_list %}
     <div id='step' class="row">
         <div id="m2m_all" class="col-6 text-center">
-            <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="拖动到右侧添加"></i>&nbsp;可选步骤列表</h5>
+            <h5 class="ui-widget-header">可选步骤列表&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="拖动到右侧添加"></i></h5>
             <form method="post" id="m2m_objects_form" novalidate onsubmit="return submit_m2m_all_objects_form('/case', '{% url "step_list_json" %}');">
                 <input type="hidden" name="order_by" id="id_order_by">
                 <input type="hidden" name="order_by_reverse" id="id_order_by_reverse">
@@ -227,7 +227,7 @@
             </form>
         </div>
         <div id="m2m_selected" class="col-6 text-center">
-            <h5 class="ui-widget-header"><i class="icon-question-sign" data-toggle="tooltip" title="上下拖动进行排序，从待选列表拖动到拖动到已选列表进行添加，拖动回待选列表则删除"></i>&nbsp;已选步骤列表</h5>
+            <h5 class="ui-widget-header">已选步骤列表&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="上下拖动进行排序，从待选列表拖动到拖动到已选列表进行添加，拖动回待选列表则删除"></i></h5>
             <div style="padding-bottom: 10px">
                 <div style="padding: 0" class="container-fluid">
                     <div class="row align-items-center">

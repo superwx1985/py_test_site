@@ -63,7 +63,7 @@ def list_(request):
 
     # 获取被调用次数
     objects2 = Step.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(
-        reference_count=Count('case'))
+        reference_count=Count('*'))
     count_ = {o['pk']: o['reference_count'] for o in objects2}
     for o in objects:
         o['reference_count'] = count_.get(o['pk'], 0)
@@ -326,9 +326,10 @@ def reference(request, pk):
     except Step.DoesNotExist:
         raise Http404('Step does not exist')
     objects = obj.case_set.filter(is_active=True).order_by('-modified_date').values(
-        'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date', 'casevsstep__order').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
         obj_['url'] = reverse(case.detail, args=[obj_['pk']])
         obj_['type'] = '用例'
+        obj_['order'] = obj_['casevsstep__order']
     return render(request, 'main/include/detail_reference.html', locals())

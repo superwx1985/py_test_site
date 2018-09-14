@@ -19,6 +19,7 @@
                 <col style='width: 200px;'>
                 <col style='width: 150px;'>
                 <col style='width: 100px;'>
+                <col style='width: 130px;'>
                 <col style='width: 105px;'>
                 <col style='width: 180px;'>
                 <col style='width: 170px;'>
@@ -30,6 +31,7 @@
                     <th order_by_text="keyword">关键字</th>
                     <th order_by_text="project__name">项目</th>
                     <th order_by_text="m2m_count">步骤数</th>
+                    <th order_by_text="reference_count">被调用次数</th>
                     <th order_by_text="real_name">作者</th>
                     <th order_by_text="modified_date">修改时间</th>
                     <th>操作</th>
@@ -43,6 +45,7 @@
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='m2m_count' class="middle">{{ obj.m2m_count }}</td>
+                        <td col_name='reference_count' class="middle"><a href="javascript:show_reference('{% url "case_reference" obj.pk %}')"><span class="font-weight-bold">{{ obj.reference_count }}</span></a></td>
                         <td col_name='real_name' class="middle">{{ obj.real_name }}</td>
                         <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
                         <td>
@@ -60,7 +63,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
+                        <td colspan="9" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
                     </tr>
                 {% endfor %}
             </tbody>

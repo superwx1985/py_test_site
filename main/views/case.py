@@ -67,8 +67,22 @@ def list_(request):
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     objects2 = Case.objects.filter(is_active=True, step__is_active=True).values('pk').annotate(m2m_count=Count('step'))
     count_ = {o['pk']: o['m2m_count'] for o in objects2}
+
+    # 获取被调用次数
+    objects2 = Case.objects.filter(is_active=True, suite__is_active=True).values('pk').annotate(
+        reference_count=Count('*'))
+    count_ = {o['pk']: o['reference_count'] for o in objects2}
+    objects3 = Step.objects.filter(
+        is_active=True, action__code='OTHER_CALL_SUB_CASE').values('other_sub_case_id').annotate(
+        reference_count=Count('*')).order_by()  # 此处加上order_by是因为step默认按修改时间排序，会导致分组加入修改时间
+    count_3 = {o['other_sub_case_id']: o['reference_count'] for o in objects3}
+
     for o in objects:
+        # 添加子对象数量
         o['m2m_count'] = count_.get(o['pk'], 0)
+        # 添加被调用次数
+        o['reference_count'] = count_.get(o['pk'], 0) + count_3.get(o['pk'], 0)
+
     # 排序
     if objects:
         if order_by not in objects[0]:
@@ -262,7 +276,8 @@ def quick_update(request, pk):
 @login_required
 def steps(_, pk):
     objects = Step.objects.filter(case=pk, is_active=True).order_by('casevsstep__order').values(
-        'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date', order=F('casevsstep__order')
+        'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date',
+        order=F('casevsstep__order')
     ).annotate(action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()),
                real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj in objects:
@@ -426,11 +441,12 @@ def reference(request, pk):
     except Case.DoesNotExist:
         raise Http404('Case does not exist')
     objects = obj.suite_set.filter(is_active=True).order_by('-modified_date').values(
-        'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date', 'suitevscase__order').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
         obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
         obj_['type'] = '套件'
+        obj_['order'] = obj_['suitevscase__order']
     action = Action.objects.get(code='OTHER_CALL_SUB_CASE')
     objects2 = Step.objects.filter(is_active=True, other_sub_case=obj, action=action).order_by('-modified_date').values(
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
