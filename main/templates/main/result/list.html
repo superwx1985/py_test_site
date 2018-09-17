@@ -19,6 +19,7 @@
                 <col>
                 <col style='width: 200px;'>
                 <col style='width: 150px;'>
+                <col style='width: 100px;'>
                 <col style='width: 180px;'>
                 <col style='width: 150px;'>
                 <col style='width: 80px;'>
@@ -32,6 +33,7 @@
                     <th order_by_text="name">名称</th>
                     <th order_by_text="keyword">关键字</th>
                     <th order_by_text="project__name">项目</th>
+                    <th order_by_text="m2m_count">用例数</th>
                     <th order_by_text="start_date">测试开始时间</th>
                     <th order_by_text="elapsed_time">测试耗时</th>
                     <th order_by_text="result_status_str">结果</th>
@@ -47,9 +49,12 @@
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
+                        <td col_name='m2m_count' class="middle">{{ obj.m2m_count }}</td>
                         <td col_name='start_date' class="middle">{{ obj.start_date }}</td>
                         <td col_name='elapsed_time_str' class="middle">{{ obj.elapsed_time_str }}</td>
-                        {% if obj.result_status == 1 %}
+                        {% if obj.result_status == 0 %}
+                            <td class="middle"><span class="badge badge-pill badge-secondary">{{ obj.result_status_str }}</span></td>
+                        {% elif obj.result_status == 1 %}
                             <td class="middle"><span class="badge badge-pill badge-success">{{ obj.result_status_str }}</span></td>
                         {% elif obj.result_status == 2 %}
                             <td class="middle"><span class="badge badge-pill badge-warning">{{ obj.result_status_str }}</span></td>

@@ -1,5 +1,4 @@
 {% extends 'main/detail_base.html' %}
-{% load widget_tweaks %}
 {% block title %}
     {{ form.initial.name }} - 结果 - {{ block.super }}
 {% endblock %}
@@ -71,6 +70,22 @@
         {% include 'main/include/detail_redirect.html' %}
         {% include 'main/include/submit_button_group.html' %}
     </form>
+    <div class="row align-items-center">
+        <div class="col-1 text-center font-weight-bold">测试配置</div>
+        <div class="col">
+            <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '配置快照', '{% url "config_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;查看快照</button>
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-center font-weight-bold">公共变量组</div>
+        <div class="col">
+            {% if obj.variable_group %}
+                <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '变量组快照', '{% url "variable_group_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;查看快照</button>
+            {% else %}
+                <span>【未配置】</span>
+            {% endif %}
+        </div>
+    </div>
     <div class="row align-items-center">
         <div class="col-1 text-center font-weight-bold">测试时间</div>
         <div class="col">

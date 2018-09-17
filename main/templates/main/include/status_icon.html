@@ -1,9 +1,9 @@
 {% if status == 0 %}
-    <i class="icon-ban-circle text-secondary"></i>
+    <i class="icon-ban-circle text-secondary" data-toggle="tooltip" title="跳过" data-placement="left"></i>
 {% elif status == 1 %}
-    <i class="icon-ok-sign text-success"></i>
+    <i class="icon-ok-sign text-success" data-toggle="tooltip" title="成功" data-placement="left"></i>
 {% elif status == 2 %}
-    <i class="icon-remove-sign text-warning"></i>
+    <i class="icon-remove-sign text-warning" data-toggle="tooltip" title="失败" data-placement="left"></i>
 {% else %}
-    <i class="icon-exclamation-sign text-danger"></i>
+    <i class="icon-exclamation-sign text-danger" data-toggle="tooltip" title="出错" data-placement="left"></i>
 {% endif %}

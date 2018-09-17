@@ -44,6 +44,15 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
     # 限制进程数
     thread_count = suite.thread_count if suite.thread_count <= 10 else 10
 
+    # 获取变量组json
+    if suite.variable_group:
+        v_list = list(suite.variable_group.variable_set.all().values('pk', 'name', 'description', 'value', 'order'))
+        variable_group_dict = model_to_dict(suite.variable_group)
+        variable_group_dict['variables'] = v_list
+        variable_group_json = json.dumps(variable_group_dict)
+    else:
+        variable_group_json = None
+
     # 初始化suite result
     suite_result = SuiteResult.objects.create(
         name=suite.name,
@@ -53,7 +62,7 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
         ui_get_ss=suite.ui_get_ss,
         thread_count=suite.thread_count,
         config=json.dumps(model_to_dict(suite.config)) if suite.config else None,
-        variable_group=json.dumps(model_to_dict(suite.variable_group)) if suite.variable_group else None,
+        variable_group=variable_group_json,
         project=suite.project,
 
         suite=suite,
@@ -107,11 +116,13 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
         elif case_result.result_status == 3:
             suite_result.error_count += 1
 
+    skip_count = suite_result.execute_count - suite_result.pass_count - suite_result.fail_count - suite_result.error_count
+
     if suite_result.error_count > 0:
         suite_result.result_status = 3
     elif suite_result.fail_count > 0:
         suite_result.result_status = 2
-    elif suite_result.execute_count == 0:
+    elif suite_result.execute_count == skip_count:
         suite_result.result_status = 0
     else:
         suite_result.result_status = 1
@@ -122,7 +133,7 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
     logger.info('========================================')
     logger.info('执行: %d | 通过: %d | 失败: %d | 出错: %d | 跳过: %d' % (
         suite_result.execute_count, suite_result.pass_count, suite_result.fail_count, suite_result.error_count,
-        suite_result.execute_count - suite_result.pass_count - suite_result.fail_count - suite_result.error_count))
+        skip_count))
     logger.info('耗时: ' + str(suite_result.end_date - suite_result.start_date))
     logger.info('========================================')
     logger.info('结束')

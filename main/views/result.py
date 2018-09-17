@@ -1,16 +1,16 @@
 import logging
 import json
 import datetime
-from django.http import HttpResponseRedirect, JsonResponse, Http404
+from django.http import HttpResponseRedirect, JsonResponse, Http404, HttpResponse
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.urls import reverse
-from django.db.models import Q, CharField
+from django.db.models import Q, CharField, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import SuiteResult, StepResult, CaseResult, Project
-from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, StepForm
+from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, StepForm, ConfigForm, VariableGroupForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie
 from django.template.loader import render_to_string
 from utils import other
@@ -54,8 +54,13 @@ def list_(request):
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     result_status_list = SuiteResult.result_status_list
     d = {l[0]: l[1] for l in result_status_list}
+    objects2 = SuiteResult.objects.filter(is_active=True).values('pk').annotate(m2m_count=Count('caseresult'))
+    count_ = {o['pk']: o['m2m_count'] for o in objects2}
     for o in objects:
+        # 获取状态文字
         o['result_status_str'] = d.get(o['result_status'], 'N/A')
+        # 获取耗时
+        # 为了减少查询数据库，没有使用models里的方法
         if o['end_date'] is None or o['start_date'] is None:
             o['elapsed_time'] = datetime.timedelta(days=9999)
         else:
@@ -64,6 +69,8 @@ def list_(request):
             o['elapsed_time_str'] = 'N/A'
         else:
             o['elapsed_time_str'] = get_timedelta_str(o['elapsed_time'], 1)
+        # 获取子对象数量
+        o['m2m_count'] = count_.get(o['pk'], 0)
     # 排序
     if objects:
         if order_by not in objects[0]:
@@ -166,6 +173,41 @@ def quick_update(request, pk):
         return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
+# 配置快照
+@login_required
+def config_snapshot(request, pk):
+    try:
+        obj = SuiteResult.objects.get(pk=pk)
+    except SuiteResult.DoesNotExist:
+        raise Http404('SuiteResult does not exist')
+    try:
+        snapshot_obj = json.loads(obj.config)
+    except:
+        logger.warning('快照数据损坏，无法展示。', exc_info=True)
+        return HttpResponse('<div style="color: red;">快照数据损坏，无法展示。</div>')
+    else:
+        form = ConfigForm(initial=snapshot_obj)
+        return render(request, 'main/config/snapshot.html', locals())
+
+
+# 变量组快照
+@login_required
+def variable_group_snapshot(request, pk):
+    try:
+        obj = SuiteResult.objects.get(pk=pk)
+    except SuiteResult.DoesNotExist:
+        raise Http404('SuiteResult does not exist')
+    try:
+        snapshot_obj = json.loads(obj.variable_group)
+        variables_json = json.dumps({'data': snapshot_obj['variables']})
+    except:
+        logger.warning('快照数据损坏，无法展示。', exc_info=True)
+        return HttpResponse('<div style="color: red;">快照数据损坏，无法展示。</div>')
+    else:
+        form = VariableGroupForm(initial=snapshot_obj)
+        return render(request, 'main/variable_group/snapshot.html', locals())
+
+
 @login_required
 def step_result_json(_, pk):
     try:
@@ -228,11 +270,17 @@ def step_result(request, pk):
 # 步骤快照
 @login_required
 def step_snapshot(request, pk):
+    # 获取action映射json
     action_map_json = other.get_action_map_json()
     try:
         obj = StepResult.objects.get(pk=pk)
     except StepResult.DoesNotExist:
         raise Http404('StepResult does not exist')
-    snapshot_obj = json.loads(obj.snapshot)
-    form = StepForm(initial=snapshot_obj)
-    return render(request, 'main/step/snapshot.html', locals())
+    try:
+        snapshot_obj = json.loads(obj.snapshot)
+    except:
+        logger.warning('快照数据损坏，无法展示。', exc_info=True)
+        return HttpResponse('<div style="color: red;">快照数据损坏，无法展示。</div>')
+    else:
+        form = StepForm(initial=snapshot_obj)
+        return render(request, 'main/step/snapshot.html', locals())

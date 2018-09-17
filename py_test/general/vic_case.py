@@ -40,12 +40,21 @@ class VicCase:
         self.step_active = True
         self.config = self.suite_result.suite.config
 
+        # 获取变量组json
+        if case.variable_group:
+            v_list = list(case.variable_group.variable_set.all().values('pk', 'name', 'description', 'value', 'order'))
+            variable_group_dict = model_to_dict(case.variable_group)
+            variable_group_dict['variables'] = v_list
+            variable_group_json = json.dumps(variable_group_dict)
+        else:
+            variable_group_json = None
+
         # 初始化result数据库对象
         self.case_result = CaseResult(
             name=case.name,
             description=case.description,
             keyword=case.keyword,
-            variable_group=json.dumps(model_to_dict(case.variable_group)) if case.variable_group else None,
+            variable_group=variable_group_json,
 
             suite_result=suite_result,
             step_result=step_result,

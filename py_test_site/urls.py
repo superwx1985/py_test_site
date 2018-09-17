@@ -95,6 +95,8 @@ urlpatterns = [
     path('result/<str:pk>/', result.detail, name='result'),
     path('result/<str:pk>/delete/', result.delete, name='result_delete'),
     path('result/<str:pk>/quick_update/', result.quick_update, name='result_quick_update'),
+    path('result/<str:pk>/config_snapshot', result.config_snapshot, name='config_snapshot'),
+    path('result/<str:pk>/variable_group_snapshot', result.variable_group_snapshot, name='variable_group_snapshot'),
 
     path('step_result/<str:pk>/', result.step_result, name='step_result'),
     path('step_result/<str:pk>/json', result.step_result_json, name='step_result_json'),
