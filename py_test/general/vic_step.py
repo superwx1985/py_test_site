@@ -727,7 +727,7 @@ class VicStep:
             last_url = dr.current_url
             self.step_result.ui_last_url = last_url if last_url != 'data:,' else ''
         except:
-            self.logger.warning('【{}】\t无法获取报错时的URL'.format(self.execute_id), exc_info=True)
+            self.logger.warning('【{}】\t无法获取报错时的URL'.format(self.execute_id))
             self.step_result.ui_last_url = 'URL获取失败'
 
         # 获取报错时截图
@@ -737,7 +737,7 @@ class VicStep:
                 self.run_result, image = method.get_screenshot(dr)
                 self.img_list.append(image)
             except:
-                self.logger.warning('【{}】\t无法获取错误截图'.format(self.execute_id), exc_info=True)
+                self.logger.warning('【{}】\t无法获取错误截图'.format(self.execute_id))
 
         # 关联截图
         for img in self.img_list:

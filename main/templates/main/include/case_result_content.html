@@ -1,13 +1,25 @@
 {% include 'main/include/result_time.html' with start_date=case_result.start_date end_date=case_result.end_date elapsed_time_str=case_result.elapsed_time_str%}
+<hr>
 <div class="row">
     <div class="col"><span class="font-weight-bold">用例名称：</span><span>{{ case_result.name }}</span></div>
 </div>
 <div class="row">
     <div class="col"><span class="small">{{ case_result.description }}</span></div>
 </div>
+<div class="row">
+    <div class="col">
+        <span class="font-weight-bold">用例变量组：</span>
+        {% if case_result.variable_group %}
+            <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '变量组快照', '{% url "case_variable_group_snapshot" case_result.pk %}')"><i class="icon-time"></i>&nbsp;查看快照</button>
+        {% else %}
+            <span>【未配置】</span>
+        {% endif %}
+    </div>
+</div>
+<hr>
 {% if case_result.result_error %}
     <div class="row">
-        <div class="col"><pre class="lead">{{ case_result.result_message }}</pre></div>
+        <div class="col"><pre class="text-danger lead">{{ case_result.result_message }}</pre></div>
     </div>
     <div class="row">
         <div class="col"><pre class="text-danger pre-scrollable">{{ case_result.result_error }}</pre></div>

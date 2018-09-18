@@ -26,7 +26,9 @@ import main.views.step as step
 import main.views.config as config
 import main.views.variable_group as variable_group
 import main.views.suite as suite
-import main.views.result as result
+import main.views.suite_result as suite_result
+import main.views.case_result as case_result
+import main.views.step_result as step_result
 import main.views.help as help_
 import main.views.websocket as ws
 
@@ -40,7 +42,7 @@ urlpatterns = [
     path('user/logout/', user.logout, name='user_logout'),
     path('user/', user.detail, name='user'),
 
-    path('home/', result.list_, name='home'),
+    path('home/', suite_result.list_, name='home'),
 
     path('cases/', case.list_, name='cases'),
     path('case/add/', case.add, name='case_add'),
@@ -91,16 +93,18 @@ urlpatterns = [
     # path('suite/<str:pk>/execute/', suite.execute_, name='suite_execute'),
     path('ws/suite_execute/<int:suite_pk>', ws.SuiteConsumer, name='suite_execute'),  # 只用于url翻译
 
-    path('results/', result.list_, name='results'),
-    path('result/<str:pk>/', result.detail, name='result'),
-    path('result/<str:pk>/delete/', result.delete, name='result_delete'),
-    path('result/<str:pk>/quick_update/', result.quick_update, name='result_quick_update'),
-    path('result/<str:pk>/config_snapshot', result.config_snapshot, name='config_snapshot'),
-    path('result/<str:pk>/variable_group_snapshot', result.variable_group_snapshot, name='variable_group_snapshot'),
+    path('results/', suite_result.list_, name='results'),
+    path('result/<str:pk>/', suite_result.detail, name='result'),
+    path('result/<str:pk>/delete/', suite_result.delete, name='result_delete'),
+    path('result/<str:pk>/quick_update/', suite_result.quick_update, name='result_quick_update'),
+    path('result/<str:pk>/config_snapshot', suite_result.config_snapshot, name='config_snapshot'),
+    path('result/<str:pk>/variable_group_snapshot', suite_result.variable_group_snapshot, name='suite_variable_group_snapshot'),
 
-    path('step_result/<str:pk>/', result.step_result, name='step_result'),
-    path('step_result/<str:pk>/json', result.step_result_json, name='step_result_json'),
-    path('step_result/<str:pk>/snapshot', result.step_snapshot, name='step_snapshot'),
+    path('case_result/<str:pk>/variable_group_snapshot', case_result.variable_group_snapshot, name='case_variable_group_snapshot'),
+
+    path('step_result/<str:pk>/', step_result.detail, name='step_result'),
+    path('step_result/<str:pk>/json', step_result.json, name='step_result_json'),
+    path('step_result/<str:pk>/snapshot', step_result.snapshot, name='step_snapshot'),
 
     path('helps/', help_.list_, name='helps'),
     path('help/<str:pk>/', help_.detail, name='help'),

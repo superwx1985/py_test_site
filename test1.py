@@ -1,3 +1,2 @@
-end = float('')
-
-print(end)
+for i in range(3):
+    print(i)

@@ -87,15 +87,15 @@ class VicCase:
         if force_stop and force_stop == self.user.pk:
             pass
         else:
-            # 初始化driver
-            if dr is None and self.step_result is None and self.config.ui_selenium_client != 0:
-                dr = method.get_driver(self.config, 3, self.timeout, logger=self.logger)
-                self.driver_container[0] = dr
-
             # 用例初始化
             execute_id = '{}-{}'.format(self.execute_str, 0)
             try:
                 self.logger.info('【{}】\t初始化 => {}'.format(execute_id, self.name))
+
+                # 初始化driver
+                if dr is None and self.step_result is None and self.config.ui_selenium_client != 0:
+                    dr = method.get_driver(self.config, 3, self.timeout, logger=self.logger)
+                    self.driver_container[0] = dr
 
                 # 读取本地变量
                 if self.variables is None:
