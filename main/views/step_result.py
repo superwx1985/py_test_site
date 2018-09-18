@@ -38,7 +38,7 @@ def detail(request, pk):
 
 
 @login_required
-def json(_, pk):
+def detail_json(_, pk):
     try:
         obj = StepResult.objects.get(pk=pk)
     except StepResult.DoesNotExist:

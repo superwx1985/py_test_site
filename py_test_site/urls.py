@@ -103,7 +103,7 @@ urlpatterns = [
     path('case_result/<str:pk>/variable_group_snapshot', case_result.variable_group_snapshot, name='case_variable_group_snapshot'),
 
     path('step_result/<str:pk>/', step_result.detail, name='step_result'),
-    path('step_result/<str:pk>/json', step_result.json, name='step_result_json'),
+    path('step_result/<str:pk>/detail_json', step_result.detail_json, name='step_result_detail_json'),
     path('step_result/<str:pk>/snapshot', step_result.snapshot, name='step_snapshot'),
 
     path('helps/', help_.list_, name='helps'),
