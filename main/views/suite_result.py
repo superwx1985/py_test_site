@@ -51,7 +51,8 @@ def list_(request):
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     result_status_list = SuiteResult.result_status_list
     d = {l[0]: l[1] for l in result_status_list}
-    objects2 = SuiteResult.objects.filter(is_active=True).values('pk').annotate(m2m_count=Count('caseresult'))
+    objects2 = SuiteResult.objects.filter(is_active=True, caseresult__case_order__isnull=False).values('pk').annotate(
+        m2m_count=Count('caseresult'))
     count_ = {o['pk']: o['m2m_count'] for o in objects2}
     for o in objects:
         # 获取状态文字
