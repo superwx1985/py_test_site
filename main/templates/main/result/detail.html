@@ -99,7 +99,7 @@
                 <ul class="nav nav-tabs" role="tablist">
                     {% for case_result in sub_objects %}
                         <li class="nav-item" data-toggle="tooltip" title="{{ case_result.name }}">
-                            <a class="nav-link {% if forloop.counter == 1 %}active{% endif %}" data-toggle="tab" href="#case_result_{{ case_result.pk }}">{% include 'main/include/status_icon.html' with status=case_result.result_status %}{{ forloop.counter }}.&nbsp;{{ case_result.name|truncatechars_html:10 }}</a>
+                            <a class="nav-link {% if forloop.counter == 1 %}active{% endif %}" data-toggle="tab" href="#case_result_{{ case_result.pk }}">{% include 'main/include/status_icon.html' with status=case_result.result_status %}{{ forloop.counter }}.&nbsp;{{ case_result.name|truncatechars_html:20 }}</a>
                         </li>
                     {% endfor %}
                 </ul>

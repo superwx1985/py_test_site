@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import SuiteResult, Project
 from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, ConfigForm, VariableGroupForm
-from utils.other import get_query_condition, change_to_positive_integer, Cookie
+from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list
 from py_test.vic_tools.vic_date_handle import get_timedelta_str
 
 logger = logging.getLogger('django.request')
@@ -19,12 +19,19 @@ logger = logging.getLogger('django.request')
 # 用例列表
 @login_required
 def list_(request):
+    if request.session.get('status', None) == 'success':
+        prompt = 'success'
+    request.session['status'] = None
+
+    project_list = get_project_list()
+
     page = request.GET.get('page')
     size = request.GET.get('size', request.COOKIES.get('size'))
-    search_text = str(request.GET.get('search_text', ''))
-    order_by = request.GET.get('order_by', 'start_date')
+    search_text = request.GET.get('search_text', '')
+    order_by = request.GET.get('order_by', 'modified_date')
     order_by_reverse = request.GET.get('order_by_reverse', 'True')
     all_ = request.GET.get('all_', 'False')
+    search_project = request.GET.get('search_project', None)
 
     page = change_to_positive_integer(page, 1)
     size = change_to_positive_integer(size, 10)
@@ -36,15 +43,16 @@ def list_(request):
         all_ = False
     else:
         all_ = True
+    if search_project in ('', 'None'):
+        search_project = None
 
-    if request.session.get('status', None) == 'success':
-        prompt = 'success'
-    request.session['status'] = None
     q = get_query_condition(search_text)
-    if all_:
-        q &= Q(is_active=True)
-    else:
-        q &= Q(is_active=True) & Q(creator=request.user)
+    q &= Q(is_active=True)
+    if not all_:
+        q &= Q(creator=request.user)
+    if search_project:
+        q &= Q(project=search_project)
+
     objects = SuiteResult.objects.filter(q).values(
         'pk', 'uuid', 'name', 'keyword', 'project__name', 'start_date', 'end_date', 'result_status', 'creator',
         'creator__username', 'modified_date').annotate(

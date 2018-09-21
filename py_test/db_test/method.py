@@ -2,9 +2,6 @@ import cx_Oracle
 import logging
 
 
-logger = logging.getLogger('py_test')
-
-
 # 获取查询结果
 def get_sql_result(database_type, database_host, database_port, database_name, user, password, sql):
     if database_type.lower() == 'oracle':
@@ -21,7 +18,7 @@ def get_sql_result(database_type, database_host, database_port, database_name, u
 
 
 # 验证查询结果
-def verify_sql_result(expect, sql_result):
+def verify_sql_result(expect, sql_result, logger=logging.getLogger('py_test')):
     i = -1
     for line in sql_result:
         i += 1

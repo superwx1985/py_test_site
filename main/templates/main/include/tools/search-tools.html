@@ -1,13 +1,16 @@
 <div class="input-group">
-{#    <div class="input-group-prepend">#}
-{#        <select class="form-control" name="project">#}
-{#            {% for project in project_list %}#}
-{#                <option value={{ project.0 }}>{{ project.1 }}</option>#}
-{#            {% endfor %}#}
-{#        </select>#}
-{#    </div>#}
-    <input type="text" id="search_text" name="search_text" value="{{ search_text }}" class="form-control" placeholder="可搜索名称和关键字">
+    {% if project_list %}
+        <div class="input-group-prepend">
+            <select class="form-control" name="search_project" data-toggle="tooltip" title="按项目过滤">
+                {% for project_ in project_list %}
+                    <option value{% if project_.0 %}={{ project_.0 }}{% endif %} {% if search_project == project_.0 %}selected{% endif %}>{{ project_.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    {% endif %}
+    <input type="text" id="search_text" name="search_text" value="{{ search_text }}" class="form-control" placeholder="可搜索ID、名称和关键字">
     <div class="input-group-append">
-        <button type="submit" id='search_button' class="btn btn-primary" data-toggle="tooltip" title="多条件并集用空格分隔, 多条件交集用#&&#分隔，要搜索空格用转义加空格表示"><i class="icon-search"></i>&nbsp;搜索</button>
+        <button type="button" id='clear_button' class="btn btn-warning"><i class="icon-remove"></i></button>
+        <button type="submit" id='search_button' class="btn btn-primary" data-toggle="tooltip" title="多条件并集用空格分隔, 多条件交集用#&&#分隔，要搜索空格用\转义加空格表示"><i class="icon-search"></i>&nbsp;搜索</button>
     </div>
 </div>

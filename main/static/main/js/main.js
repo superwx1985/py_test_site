@@ -394,9 +394,12 @@ function modal_with_iframe_max(modal_name, modal_title, url, modal_option, callb
 }
 
 // 查看被调用弹窗
-function show_reference(url) {
+function show_reference(url, title) {
+    if (!title) {
+        var title = '被调用情况';
+    }
 	bootbox.dialog({
-		title: '被调用情况',
+		title: title,
 		message: '<div id="reference_div" class="middle"><i class="icon-spinner icon-spin icon-5x"></i></div>',
 		size: 'large',
 		onEscape: true,

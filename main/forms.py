@@ -1,8 +1,8 @@
 from django import forms
 from main.models import *
-from django.contrib.auth.models import User
 from django.contrib.auth import password_validation
 from django.utils.translation import gettext_lazy as _
+from utils.other import get_project_list
 
 
 class StepForm0(forms.Form):
@@ -200,14 +200,6 @@ class SuiteForm(forms.ModelForm):
     class Meta:
         model = Suite
         fields = '__all__'
-
-
-# 动态获取project
-def get_project_list():
-    project_list = list()
-    project_list.append((None, '---------'))
-    project_list.extend(list(Project.objects.values_list('pk', 'name')))
-    return project_list
 
 
 class SuiteResultForm(forms.Form):

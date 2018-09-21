@@ -187,6 +187,11 @@ function submit_m2m_all_objects_form(cookie_path, json_url, last_condition_json)
 			console.log(err);
 		}
 		$('input[name=search_text]').val(last_condition.search_text);
+		if (last_condition.search_project === '') {
+			$('select[name=search_project]').val('');
+		} else {
+			$('select[name=search_project]').val(last_condition.search_project);
+		}
 		if (last_condition.all_ === 'True') {
 			$('input[name=all_]').prop('checked', true);
 		} else {
@@ -214,6 +219,7 @@ function submit_m2m_all_objects_form(cookie_path, json_url, last_condition_json)
 		} else {
 			var all_ = 'False';
 		}
+		var search_project = $('select[name=search_project]').val();
 		if ($('input[name=order_by]').val()) {
 			var order_by = $('input[name=order_by]').val();
 		} else {
@@ -232,6 +238,7 @@ function submit_m2m_all_objects_form(cookie_path, json_url, last_condition_json)
 			'max_page': max_page,
 			'search_text': search_text,
 			'all_': all_,
+			'search_project': search_project,
 			'order_by_reverse': order_by_reverse,
 			'order_by': order_by
 		};

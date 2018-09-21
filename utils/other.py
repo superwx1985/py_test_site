@@ -1,7 +1,8 @@
 import json
 from django.db import connection
-from django.db.models import Q
-from main.models import Action
+from django.db.models import Q, CharField, Value
+from django.db.models.functions import Concat
+from main.models import Action, Project
 
 
 class Cookie:
@@ -25,13 +26,19 @@ def get_query_condition(search_text):
         q1 = Q()
         q2 = Q()
         q3 = Q()
+        q4 = Q()
         for search_text_and in search_text_and_list:
             if search_text_and == '':
                 continue
-            q1 &= Q(name__icontains=search_text_and)
-            q2 &= Q(keyword__icontains=search_text_and)
-            # q3 &= Q(project__name__icontains=search_text_and)
-        q |= q1 | q2
+            try:
+                int(search_text_and)
+                q1 &= Q(pk=search_text_and)
+            except ValueError:
+                pass
+            q2 &= Q(name__icontains=search_text_and)
+            q3 &= Q(keyword__icontains=search_text_and)
+            # q4 &= Q(project__name__icontains=search_text_and)
+        q |= q1 | q2 | q3
     return q
 
 
@@ -66,3 +73,12 @@ def get_action_map_json():
     for action_obj in Action.objects.values('pk', 'code'):
         action_map[action_obj['pk']] = action_obj['code']
     return json.dumps(action_map)
+
+
+# 动态获取project
+def get_project_list():
+    project_list = list()
+    project_list.append((None, '---------'))
+    project_list.extend(
+        list(Project.objects.annotate(pk=Concat('pk', Value(''), output_field=CharField())).values_list('pk', 'name')))
+    return project_list

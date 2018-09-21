@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Case, Step, CaseVsStep, Action
 from main.forms import OrderByForm, PaginatorForm, CaseForm
-from utils.other import get_query_condition, change_to_positive_integer, Cookie
+from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list
 from urllib.parse import quote
 from main.views import step, suite
 
@@ -22,26 +22,19 @@ logger = logging.getLogger('django.request')
 # 用例列表
 @login_required
 def list_(request):
-    # if request.method == 'POST':
-    #     page = request.GET.get('page', 1)
-    #     size = request.GET.get('size', 10)
-    #     search_text = request.GET.get('search_text', '')
-    #     order_by = request.GET.get('order_by', 'modified_date')
-    #     order_by_reverse = request.GET.get('order_by_reverse', 'on')
-    #     own = request.GET.get('own', 'on')
-    # else:
-    #     page = request.COOKIES.get('page')
-    #     size = request.COOKIES.get('size')
-    #     search_text = request.COOKIES.get('search_text')
-    #     order_by = request.COOKIES.get('order_by')
-    #     order_by_reverse = request.COOKIES.get('order_by_reverse')
-    #     own = request.COOKIES.get('own')
+    if request.session.get('status', None) == 'success':
+        prompt = 'success'
+    request.session['status'] = None
+
+    project_list = get_project_list()
+
     page = request.GET.get('page')
     size = request.GET.get('size', request.COOKIES.get('size'))
-    search_text = str(request.GET.get('search_text', ''))
+    search_text = request.GET.get('search_text', '')
     order_by = request.GET.get('order_by', 'modified_date')
     order_by_reverse = request.GET.get('order_by_reverse', 'True')
     all_ = request.GET.get('all_', 'False')
+    search_project = request.GET.get('search_project', None)
 
     page = change_to_positive_integer(page, 1)
     size = change_to_positive_integer(size, 10)
@@ -53,15 +46,16 @@ def list_(request):
         all_ = False
     else:
         all_ = True
+    if search_project in ('', 'None'):
+        search_project = None
 
-    if request.session.get('status', None) == 'success':
-        prompt = 'success'
-    request.session['status'] = None
     q = get_query_condition(search_text)
-    if all_:
-        q &= Q(is_active=True)
-    else:
-        q &= Q(is_active=True) & Q(creator=request.user)
+    q &= Q(is_active=True)
+    if not all_:
+        q &= Q(creator=request.user)
+    if search_project:
+        q &= Q(project=search_project)
+
     objects = Case.objects.filter(q).values(
         'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
@@ -117,6 +111,7 @@ def detail(request, pk):
     order = request.GET.get('order')
     copy_sub_item = True  # 可以拷贝子对象
     reference_url = reverse(reference, args=[pk])  # 被其他对象调用
+    project_list = get_project_list()
     try:
         obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
     except Case.DoesNotExist:
@@ -187,6 +182,7 @@ def add(request):
     next_ = request.GET.get('next', '/home/')
     inside = request.GET.get('inside')
     copy_sub_item = True
+    project_list = get_project_list()
     if request.method == 'GET':
         form = CaseForm()
         if request.session.get('status', None) == 'success':
@@ -302,6 +298,7 @@ def list_json(request):
     order_by = condition.get('order_by', 'modified_date')
     order_by_reverse = condition.get('order_by_reverse', 'True')
     all_ = condition.get('all_', 'False')
+    search_project = condition.get('search_project', None)
 
     page = change_to_positive_integer(page, 1)
     size = change_to_positive_integer(size, 10)
@@ -313,12 +310,16 @@ def list_json(request):
         all_ = False
     else:
         all_ = True
+    if search_project in ('', 'None'):
+        search_project = None
 
     q = get_query_condition(search_text)
-    if all_:
-        q &= Q(is_active=True)
-    else:
-        q &= Q(is_active=True) & Q(creator=request.user)
+    q &= Q(is_active=True)
+    if not all_:
+        q &= Q(creator=request.user)
+    if search_project:
+        q &= Q(project=search_project)
+
     objects = Case.objects.filter(q).values(
         'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))

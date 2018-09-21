@@ -30,7 +30,7 @@ from py_test.general import vic_variables
 
 
 # 获取浏览器driver
-def get_driver_(config, timeout, logger):
+def get_driver_(config, timeout, logger=logging.getLogger('py_test')):
     dr = None
     try:
         chrome_options = webdriver.ChromeOptions()

@@ -20,9 +20,13 @@ logger = logging.getLogger('django.request')
 
 @login_required
 def list_(request):
+    if request.session.get('status', None) == 'success':
+        prompt = 'success'
+    request.session['status'] = None
+
     page = request.GET.get('page')
     size = request.GET.get('size', request.COOKIES.get('size'))
-    search_text = str(request.GET.get('search_text', ''))
+    search_text = request.GET.get('search_text', '')
     order_by = request.GET.get('order_by', 'modified_date')
     order_by_reverse = request.GET.get('order_by_reverse', 'True')
     all_ = request.GET.get('all_', 'False')
@@ -38,14 +42,11 @@ def list_(request):
     else:
         all_ = True
 
-    if request.session.get('status', None) == 'success':
-        prompt = 'success'
-    request.session['status'] = None
     q = get_query_condition(search_text)
-    if all_:
-        q &= Q(is_active=True)
-    else:
-        q &= Q(is_active=True) & Q(creator=request.user)
+    q &= Q(is_active=True)
+    if not all_:
+        q &= Q(creator=request.user)
+
     objects = Config.objects.filter(q).values(
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))

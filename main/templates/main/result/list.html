@@ -16,6 +16,7 @@
         <table class="table table-bordered table-hover" id='result_table'>
             <colgroup>
                 <col style='width: 60px;'>
+                <col style='width: 60px;'>
                 <col>
                 <col style='width: 200px;'>
                 <col style='width: 150px;'>
@@ -30,6 +31,7 @@
             <thead class="thead-light middle">
                 <tr>
                     <th>序号</th>
+                    <th order_by_text="pk">ID</th>
                     <th order_by_text="name">名称</th>
                     <th order_by_text="keyword">关键字</th>
                     <th order_by_text="project__name">项目</th>
@@ -45,7 +47,8 @@
             <tbody>
                 {% for obj in objects %}
                     <tr pk="{{ obj.pk }}" uuid="{{ obj.uuid }}" edit_url="{% url 'result' obj.pk %}" quick_update_url="{% url 'result_quick_update' obj.pk %}" del_url="{% url 'result_delete' obj.pk %}">
-                        <td col_name='index' class="middle"></td>
+                        <td col_name='index' class="middle small"></td>
+                        <td col_name='pk' class="middle small">{{ obj.pk }}</td>
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
@@ -76,7 +79,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="11" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
+                        <td colspan="12" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
                     </tr>
                 {% endfor %}
             </tbody>
