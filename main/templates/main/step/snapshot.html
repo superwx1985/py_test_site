@@ -145,6 +145,54 @@
                     {% include 'main/include/form_textarea.html' with field=form.api_data rows='2' %}
                 </div>
             </div>
+            <div class="row align-items-center" db>
+                <div class="col-1 text-center font-weight-bold">数据库类型</div>
+                <div class="col" form_data>
+                    {% include 'main/include/form_input.html' with field=form.db_type %}
+                </div>
+            </div>
+            <div class="row align-items-center" db>
+                <div class="col-1 text-center font-weight-bold">数据库地址</div>
+                <div class="col" form_data>
+                    {% include 'main/include/form_input.html' with field=form.db_host %}
+                </div>
+            </div>
+            <div class="row align-items-center" db>
+                <div class="col-1 text-center font-weight-bold">数据库端口</div>
+                <div class="col" form_data>
+                    {% include 'main/include/form_input.html' with field=form.db_port %}
+                </div>
+            </div>
+            <div class="row align-items-center" db>
+                <div class="col-1 text-center font-weight-bold">数据库名称</div>
+                <div class="col" form_data>
+                    {% include 'main/include/form_input.html' with field=form.db_name %}
+                </div>
+            </div>
+            <div class="row align-items-center" db>
+                <div class="col-1 text-center font-weight-bold">数据库账号</div>
+                <div class="col" form_data>
+                    {% include 'main/include/form_input.html' with field=form.db_user %}
+                </div>
+            </div>
+            <div class="row align-items-center" db>
+                <div class="col-1 text-center font-weight-bold">数据库密码</div>
+                <div class="col" form_data>
+                    {% include 'main/include/form_input.html' with field=form.db_password %}
+                </div>
+            </div>
+            <div class="row align-items-center" db>
+                <div class="col-1 text-center font-weight-bold">SQL</div>
+                <div class="col" form_data>
+                    {% include 'main/include/form_textarea.html' with field=form.db_sql rows='2' %}
+                </div>
+            </div>
+            <div class="row align-items-center" db>
+                <div class="col-1 text-center font-weight-bold">待验证内容</div>
+                <div class="col" form_data>
+                    {% include 'main/include/form_textarea.html' with field=form.db_data rows='2' %}
+                </div>
+            </div>
             <div class="row align-items-center" other name="other_data">
                 <div class="col-1 text-center font-weight-bold">表达式</div>
                 <div class="col" form_data>

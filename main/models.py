@@ -95,6 +95,20 @@ class Step(models.Model):
     other_data = models.TextField(blank=True)
     other_sub_case = models.ForeignKey(
         'main.Case', on_delete=models.SET_NULL, blank=True, null=True, related_name='step_sub_case')
+    db_type_list = (
+        (1, 'Oracle'),
+        (2, 'MysSQL'),
+    )
+    db_type = models.IntegerField(choices=db_type_list, default=1)
+    db_host = models.CharField(max_length=255, blank=True)
+    db_port = models.CharField(max_length=255, blank=True)
+    db_name = models.CharField(max_length=255, blank=True)
+    db_user = models.CharField(max_length=255, blank=True)
+    db_password = models.CharField(max_length=255, blank=True)
+    db_sql = models.TextField(blank=True)
+    db_data = models.TextField(blank=True)
+
+
 
     class Meta:
         # db_table = 'test_case_step'

@@ -152,6 +152,9 @@ function show_action_field($actionSelect) {
 		introduce.children('div').text('条件判断分支的否则分支。如果条件为假，将执行后续的步骤');
 	} else if (select_value === 'OTHER_END_IF') {
 		introduce.children('div').text('条件判断分支的结束标志。');
+	} else if (select_value === 'DB_EXECUTE_SQL') {
+		introduce.children('div').text('执行SQL，如果提供了待验证内容，将对执行结果进行验证。');
+		$('div[db]').show();
 	} else if ($.inArray(select_value, ["test"]) >= 0) {
 	}
 	// 注册提示框

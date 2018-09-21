@@ -39,7 +39,7 @@
                 <th>结果</th>
                 <th>顺序</th>
                 <th>步骤名称</th>
-                <th>Action</th>
+                <th>动作</th>
                 <th>耗时&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="" data-original-title="未包含初始化的耗时（如初次启动浏览器和读取步骤数据的时间）"></i></th>
             </tr>
         </thead>
@@ -49,7 +49,7 @@
                     <td class="middle">{% include 'main/include/status_icon.html' with status=step_result.result_status %}</td>
                     <td class="middle">{{ forloop.counter }}</td>
                     <td><a name="step_result" step_result_pk={{ step_result.pk }} href="javascript:">{{ step_result.name }}</a></td>
-                    <td>{{ step_result.action }}</td>
+                    <td class="middle">{{ step_result.action }}</td>
                     <td class="middle">{{ step_result.elapsed_time_str }}</td>
                 </tr>
             {% endfor %}
