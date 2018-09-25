@@ -1,8 +1,8 @@
-import cx_Oracle
 import os
-import logging
 import json
 import datetime
+import cx_Oracle
+import pymysql
 from py_test.vic_tools import vic_find_object
 
 
@@ -16,19 +16,45 @@ def makedict(cursor):
 
 
 # 获取查询结果
-def get_sql_result(db_type, db_host, db_port, db_name, db_user, db_password, sql):
+def get_sql_result(
+        db_type, db_host, db_port, db_name, db_user, db_password, db_lang, sql):
+    select_result = list()
     if db_type == 1:
-        os.environ['NLS_LANG'] = 'simplified chinese_china.UTF8'
+        if db_lang:
+            os.environ['NLS_LANG'] = db_lang
         database_connect_string = '{}:{}/{}'.format(db_host, db_port, db_name)
         with cx_Oracle.connect(db_user, db_password, database_connect_string) as conn:
             cursor = conn.cursor()
             raw_result = cursor.execute(sql)
-            cursor.rowfactory = makedict(cursor)
-            sql_result = raw_result.fetchall()
+            # 如果是查询操作，cursor.description不为空
+            if cursor.description:
+                cursor.rowfactory = makedict(cursor)
+                select_result = raw_result.fetchall()
+                sql_result = '查询到{}行数据'.format(cursor.rowcount)
+            else:
+                sql_result = '影响行数{}'.format(cursor.rowcount)
             cursor.close()
+    elif db_type == 2:
+        if db_lang:
+            charset = db_lang
+        else:
+            charset = ''
+        if isinstance(db_port, str) and db_port.isdigit():
+            port = int(db_port)
+        else:
+            port = 3306
+        with pymysql.connect(host=db_host, user=db_user, password=db_password, database=db_name, port=port,
+                             cursorclass=pymysql.cursors.DictCursor, charset=charset) as cursor:
+            cursor.execute(sql)
+            # 如果是查询操作，cursor.description不为空
+            if cursor.description:
+                select_result = cursor.fetchall()
+                sql_result = '查询到{}行数据'.format(cursor.rowcount)
+            else:
+                sql_result = '影响行数{}'.format(cursor.rowcount)
     else:
-        raise ValueError('目前只支持oracle数据库')
-    return sql_result
+        raise ValueError('不支持的数据库类型')
+    return sql_result, select_result
 
 
 # json dump操作时处理datetime对象

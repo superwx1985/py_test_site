@@ -198,6 +198,12 @@
             </div>
         </div>
         <div class="row align-items-center" db>
+            <div class="col-1 text-center font-weight-bold">查询字符集</div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.db_lang %}
+            </div>
+        </div>
+        <div class="row align-items-center" db>
             <div class="col-1 text-center font-weight-bold">SQL</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.db_sql rows='2' %}

@@ -97,7 +97,7 @@ class Step(models.Model):
         'main.Case', on_delete=models.SET_NULL, blank=True, null=True, related_name='step_sub_case')
     db_type_list = (
         (1, 'Oracle'),
-        (2, 'MysSQL'),
+        (2, 'MySQL'),
     )
     db_type = models.IntegerField(choices=db_type_list, default=1)
     db_host = models.CharField(max_length=255, blank=True)
@@ -105,10 +105,9 @@ class Step(models.Model):
     db_name = models.CharField(max_length=255, blank=True)
     db_user = models.CharField(max_length=255, blank=True)
     db_password = models.CharField(max_length=255, blank=True)
+    db_lang = models.CharField(max_length=255, blank=True)
     db_sql = models.TextField(blank=True)
     db_data = models.TextField(blank=True)
-
-
 
     class Meta:
         # db_table = 'test_case_step'
@@ -212,7 +211,7 @@ class Config(models.Model):
         (2, 'Selenium - 远程'),
     )
     ui_selenium_client = models.IntegerField(choices=ui_selenium_client_list, default=0)
-    ui_remote_ip = models.CharField(max_length=100, blank=True, default='')
+    ui_remote_ip = models.CharField(max_length=100, blank=True)
     ui_remote_port = models.IntegerField(blank=True, null=True)
     ui_driver_list = (
         (1, 'Chrome'),
@@ -228,7 +227,7 @@ class Config(models.Model):
     ui_window_size = models.IntegerField(choices=ui_window_size_list, default=1)
     ui_window_width = models.IntegerField(blank=True, null=True)
     ui_window_height = models.IntegerField(blank=True, null=True)
-    ui_driver_ff_profile = models.CharField(max_length=100, blank=True, default='')
+    ui_driver_ff_profile = models.CharField(max_length=100, blank=True)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return self.name

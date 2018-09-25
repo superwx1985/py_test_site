@@ -112,6 +112,7 @@ class VicStep:
             self.db_name = step.db_name
             self.db_user = step.db_user
             self.db_password = step.db_password
+            self.db_lang = step.db_lang
             self.db_sql = step.db_sql
             self.db_data = step.db_data
         except Exception as e:
@@ -144,6 +145,7 @@ class VicStep:
         self.db_name = str(vic_method.replace_special_value(self.db_name, vic_case.variables, global_variables))
         self.db_user = str(vic_method.replace_special_value(self.db_user, vic_case.variables, global_variables))
         self.db_password = str(vic_method.replace_special_value(self.db_password, vic_case.variables, global_variables))
+        self.db_lang = str(vic_method.replace_special_value(self.db_lang, vic_case.variables, global_variables))
         self.db_sql = str(vic_method.replace_special_value(self.db_sql, vic_case.variables, global_variables))
         self.db_data = str(vic_method.replace_special_value(self.db_data, vic_case.variables, global_variables))
 
@@ -548,31 +550,36 @@ class VicStep:
                         # ===== DB =====
                         elif self.action_code == 'DB_EXECUTE_SQL':
                             try:
-                                sql_result = db_method.get_sql_result(
+                                row_count, sql_result = db_method.get_sql_result(
                                     db_type=self.db_type, db_host=self.db_host, db_port=self.db_port,
                                     db_name=self.db_name, db_user=self.db_user, db_password=self.db_password,
-                                    sql=self.db_sql)
+                                    db_lang=self.db_lang, sql=self.db_sql)
                             except:
+                                self.logger.warning('【{}】\t连接数据库或SQL执行报错\nSQL语句：\n{}'.format(
+                                    self.execute_id, self.db_sql), exc_info=True)
                                 e_str = traceback.format_exc()
-                                self.run_result = ('f', '数据库连接报错：\n%s' % e_str)
+                                self.run_result = ('f', '连接数据库或SQL执行报错\nSQL语句：\n{}\n{}'.format(
+                                    self.db_sql, e_str))
                             else:
+                                pretty_result = json.dumps(
+                                    sql_result, indent=1, ensure_ascii=False, cls=db_method.JsonDatetimeEncoder)
+                                self.logger.debug('【{}】\tSQL执行完毕\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
+                                    self.execute_id, self.db_sql, row_count, pretty_result))
                                 if self.db_data != '':
                                     run_result = db_method.verify_sql_result(expect=self.db_data, sql_result=sql_result)
-                                    pretty_result = json.dumps(
-                                        sql_result, indent=1, ensure_ascii=False, cls=db_method.JsonDatetimeEncoder)
-                                    self.logger.debug('SQL执行结果：\n{}'.format(pretty_result))
-                                    if len(pretty_result) > 1000:
-                                        pretty_result = '（返回结果大于1000字符，未能入库，无法展示）'
+                                    if len(pretty_result) > 10000:
+                                        pretty_result = '（返回结果大于10000字符，为节约空间未保存）'
                                     if run_result[0] == 'p':
                                         self.run_result = (
-                                            'p', 'SQL执行完毕，结果验证通过\nSQL语句：\n{}\n结果：\n{}'.format(
-                                                self.db_sql, pretty_result))
+                                            'p', 'SQL执行完毕，结果验证通过\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
+                                                self.db_sql, row_count, pretty_result))
                                     else:
                                         self.run_result = (
-                                            'f', 'SQL执行完毕，结果验证失败\nSQL语句：\n{}\n结果：\n{}'.format(
-                                                self.db_sql, pretty_result))
+                                            'f', 'SQL执行完毕，结果验证失败\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
+                                                self.db_sql, row_count, pretty_result))
                                 else:
-                                    self.run_result = ('p', 'SQL执行完毕\n{}'.format(self.db_sql))
+                                    self.run_result = ('p', 'SQL执行完毕\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
+                                        self.db_sql, row_count, pretty_result))
 
                         # ===== OTHER =====
                         # 等待

@@ -96,7 +96,7 @@ def get_driver_(config, timeout, logger=logging.getLogger('py_test')):
             if dr:
                 dr.quit()
         except Exception as e:
-            logger.warning('有一个driver（浏览器）初始化出错且无法关闭，请手动关闭。错误信息 => {}'.format(e))
+            logger.error('有一个driver（浏览器）无法关闭，请手动关闭。错误信息 => {}'.format(e))
         raise
     else:
         return dr
@@ -111,6 +111,9 @@ def get_driver(config, retry=3, timeout=10, logger=logging.getLogger('py_test'))
         futures.append(pool.submit(get_driver_, config=config, timeout=timeout, logger=logger))
         # t = threading.Thread(target=get_driver_, args=(config, timeout, logger), daemon=True)
         future_results = wait(futures, timeout=timeout+5, return_when='FIRST_EXCEPTION')
+        if len(future_results.done) == 0:
+            logger.error('有一个driver（浏览器）初始化超时，请手动关闭。')
+            continue
         for future_result in future_results.done:
             try:
                 dr = future_result.result()
