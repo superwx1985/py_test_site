@@ -131,25 +131,25 @@ class VicStep:
         # 获取driver
         dr = vic_case.driver_container[0]
 
-        # 根据当前变量组替换数据
-        self.ui_locator = str(vic_method.replace_special_value(
-            self.ui_locator, vic_case.variables, global_variables, self.logger))
-        ui_base_element = str(vic_method.replace_special_value(
-            self.ui_base_element, vic_case.variables, global_variables, self.logger))
-        self.ui_base_element = vic_variables.get_elements(ui_base_element, vic_case.variables, global_variables)[0] \
-            if ui_base_element != '' else None
-        self.ui_data = str(vic_method.replace_special_value(self.ui_data, vic_case.variables, global_variables))
-        self.other_data = str(vic_method.replace_special_value(self.other_data, vic_case.variables, global_variables))
-        self.db_host = str(vic_method.replace_special_value(self.db_host, vic_case.variables, global_variables))
-        self.db_port = str(vic_method.replace_special_value(self.db_port, vic_case.variables, global_variables))
-        self.db_name = str(vic_method.replace_special_value(self.db_name, vic_case.variables, global_variables))
-        self.db_user = str(vic_method.replace_special_value(self.db_user, vic_case.variables, global_variables))
-        self.db_password = str(vic_method.replace_special_value(self.db_password, vic_case.variables, global_variables))
-        self.db_lang = str(vic_method.replace_special_value(self.db_lang, vic_case.variables, global_variables))
-        self.db_sql = str(vic_method.replace_special_value(self.db_sql, vic_case.variables, global_variables))
-        self.db_data = str(vic_method.replace_special_value(self.db_data, vic_case.variables, global_variables))
-
         try:
+            # 根据当前变量组替换数据
+            self.ui_locator = str(vic_method.replace_special_value(
+                self.ui_locator, vic_case.variables, global_variables, self.logger))
+            ui_base_element = str(vic_method.replace_special_value(
+                self.ui_base_element, vic_case.variables, global_variables, self.logger))
+            self.ui_base_element = vic_variables.get_elements(ui_base_element, vic_case.variables, global_variables)[0] \
+                if ui_base_element != '' else None
+            self.ui_data = str(vic_method.replace_special_value(self.ui_data, vic_case.variables, global_variables))
+            self.other_data = str(vic_method.replace_special_value(self.other_data, vic_case.variables, global_variables))
+            self.db_host = str(vic_method.replace_special_value(self.db_host, vic_case.variables, global_variables))
+            self.db_port = str(vic_method.replace_special_value(self.db_port, vic_case.variables, global_variables))
+            self.db_name = str(vic_method.replace_special_value(self.db_name, vic_case.variables, global_variables))
+            self.db_user = str(vic_method.replace_special_value(self.db_user, vic_case.variables, global_variables))
+            self.db_password = str(vic_method.replace_special_value(self.db_password, vic_case.variables, global_variables))
+            self.db_lang = str(vic_method.replace_special_value(self.db_lang, vic_case.variables, global_variables))
+            self.db_sql = str(vic_method.replace_special_value(self.db_sql, vic_case.variables, global_variables))
+            self.db_data = str(vic_method.replace_special_value(self.db_data, vic_case.variables, global_variables))
+
             # ===== UI 初始化检查 =====
             if self.action_type_code == 'UI':
                 if dr is None:

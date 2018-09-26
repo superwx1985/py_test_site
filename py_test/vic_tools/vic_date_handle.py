@@ -35,7 +35,7 @@ def str_to_time(str_='now', time_format=''):
 
 # 时间转字符串
 def time_to_str(time_=datetime.datetime.now(), time_format=''):
-    time_format_ = time_format.strip().lower()
+    time_format_ = time_format.strip()
     if time_format_ in ('', 'default', None):
         time_format = '%Y-%m-%d %H:%M:%S'
     elif time_format_ == 'date':
@@ -48,25 +48,25 @@ def time_to_str(time_=datetime.datetime.now(), time_format=''):
         time_format = '%Y%m%d'
     elif time_format_ in ('full_without_separator', 'fws'):
         time_format = '%Y%m%d%H%M%S%f'
-    elif time_format_ in ('year', 'Y'):
+    elif time_format_ == 'year':
         time_format = '%Y'
-    elif time_format_ in ('month', 'm'):
+    elif time_format_ == 'month':
         time_format = '%m'
-    elif time_format_ in ('day', 'd'):
+    elif time_format_ == 'day':
         time_format = '%d'
-    elif time_format_ in ('hour', 'H'):
+    elif time_format_ == 'hour':
         time_format = '%H'
-    elif time_format_ in ('minute', 'M'):
+    elif time_format_ == 'minute':
         time_format = '%M'
-    elif time_format_ in ('second', 'S'):
+    elif time_format_ == 'second':
         time_format = '%S'
-    elif time_format_ in ('microsecond', 'ms', 'f'):
+    elif time_format_ in ('microsecond', 'ms'):
         time_format = '%f'
-    elif time_format_ in ('week', 'W'):
+    elif time_format_ == 'week':
         time_format = '%W'
-    elif time_format_ in ('week_day', 'wd', 'w'):
+    elif time_format_ in ('week_day', 'wd'):
         time_format = '%w'
-    elif time_format_ in ('year_day', 'yd', 'j'):
+    elif time_format_ in ('year_day', 'yd'):
         time_format = '%j'
     elif '%' not in time_format:
         raise ValueError('无效的时间格式【{}】'.format(time_format))

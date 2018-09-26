@@ -136,25 +136,25 @@
                             <p>代表将要生成的时间格式，时间格式为python的datetime对象strftime方法支持的格式，也可以使用快捷格式（见下表）。注意：时间格式不能包含逗号。</p>
                             <table class="table table-bordered table-sm">
                                 <thead class="thead-light">
-                                    <tr><th>快捷格式</th><th>实际格式</th></tr>
+                                    <tr><th>快捷格式</th><th>实际格式</th><th>例</th></tr>
                                 </thead>
                                 <tbody>
-                                    <tr><td>default或不填</td><td>%Y-%m-%d %H:%M:%S</td></tr>
-                                    <tr><td>date</td><td>%Y-%m-%d</td></tr>
-                                    <tr><td>full</td><td>%Y-%m-%d %H:%M:%S.%f</td></tr>
-                                    <tr><td>without_separator或ws</td><td>%Y%m%d%H%M%S</td></tr>
-                                    <tr><td>date_without_separator或dws</td><td>%Y%m%d</td></tr>
-                                    <tr><td>full_without_separator或fws</td><td>%Y%m%d%H%M%S%f</td></tr>
-                                    <tr><td>year或Y</td><td>%Y</td></tr>
-                                    <tr><td>month或m</td><td>%m</td></tr>
-                                    <tr><td>day或d</td><td>%d</td></tr>
-                                    <tr><td>hour或H</td><td>%H</td></tr>
-                                    <tr><td>minute或M</td><td>%M</td></tr>
-                                    <tr><td>second或S</td><td>%S</td></tr>
-                                    <tr><td>microsecond或ms或f</td><td>%f</td></tr>
-                                    <tr><td>week或W</td><td>%W</td></tr>
-                                    <tr><td>week_day或wd或w</td><td>%w</td></tr>
-                                    <tr><td>year_day或yd或j</td><td>%j</td></tr>
+                                    <tr><td>default或不填</td><td>%Y-%m-%d %H:%M:%S</td><td class="text-info">2018-09-26 09:28:15</td></tr>
+                                    <tr><td>date</td><td>%Y-%m-%d</td><td class="text-info">2018-09-26</td></tr>
+                                    <tr><td>full</td><td>%Y-%m-%d %H:%M:%S.%f</td><td class="text-info">2018-09-26 09:28:15.956083</td></tr>
+                                    <tr><td>without_separator或ws</td><td>%Y%m%d%H%M%S</td><td class="text-info">20180926092815</td></tr>
+                                    <tr><td>date_without_separator或dws</td><td>%Y%m%d</td><td class="text-info">20180926</td></tr>
+                                    <tr><td>full_without_separator或fws</td><td>%Y%m%d%H%M%S%f</td><td class="text-info">20180926092815956083</td></tr>
+                                    <tr><td>year</td><td>%Y</td><td class="text-info">2018</td></tr>
+                                    <tr><td>month</td><td>%m</td><td class="text-info">09</td></tr>
+                                    <tr><td>day</td><td>%d</td><td class="text-info">26</td></tr>
+                                    <tr><td>hour</td><td>%H</td><td class="text-info">09</td></tr>
+                                    <tr><td>minute</td><td>%M</td><td class="text-info">28</td></tr>
+                                    <tr><td>second</td><td>%S</td><td class="text-info">15</td></tr>
+                                    <tr><td>microsecond或ms</td><td>%f</td><td class="text-info">956083</td></tr>
+                                    <tr><td>week</td><td>%W</td><td class="text-info">39</td></tr>
+                                    <tr><td>week_day或wd</td><td>%w</td><td class="text-info">3</td></tr>
+                                    <tr><td>year_day或yd</td><td>%j</td><td class="text-info">269</td></tr>
                                 </tbody>
                             </table>
                             <p>例：
