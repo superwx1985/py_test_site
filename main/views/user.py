@@ -4,9 +4,8 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.contrib import auth
 from django.contrib.auth.decorators import login_required
-from main.forms import LoginForm, UserForm
-from django.contrib.auth.models import User
 from django.conf import settings
+from main.forms import LoginForm, UserForm
 
 logger = logging.getLogger('django.request')
 

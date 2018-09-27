@@ -323,13 +323,13 @@ def reference(request, pk):
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
-        obj_['url'] = reverse(case.detail, args=[obj_['pk']])
+        obj_['url'] = '{}?next={}'.format(reverse(case.detail, args=[obj_['pk']]), reverse(case.list_))
         obj_['type'] = '用例'
     objects2 = Suite.objects.filter(is_active=True, variable_group=obj).order_by('-modified_date').values(
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects2:
-        obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
+        obj_['url'] = '{}?next={}'.format(reverse(suite.detail, args=[obj_['pk']]), reverse(suite.list_))
         obj_['type'] = '套件'
     objects = list(objects)
     objects.extend(list(objects2))

@@ -342,7 +342,7 @@ def reference(request, pk):
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date', 'casevsstep__order').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
-        obj_['url'] = reverse(case.detail, args=[obj_['pk']])
+        obj_['url'] = '{}?next={}'.format(reverse(case.detail, args=[obj_['pk']]), reverse(case.list_))
         obj_['type'] = '用例'
         obj_['order'] = obj_['casevsstep__order']
     return render(request, 'main/include/detail_reference.html', locals())

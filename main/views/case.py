@@ -445,7 +445,7 @@ def reference(request, pk):
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date', 'suitevscase__order').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
-        obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
+        obj_['url'] = '{}?next={}'.format(reverse(suite.detail, args=[obj_['pk']]), reverse(suite.list_))
         obj_['type'] = '套件'
         obj_['order'] = obj_['suitevscase__order']
     action = Action.objects.get(code='OTHER_CALL_SUB_CASE')
@@ -453,7 +453,7 @@ def reference(request, pk):
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects2:
-        obj_['url'] = reverse(step.detail, args=[obj_['pk']])
+        obj_['url'] = '{}?next={}'.format(reverse(step.detail, args=[obj_['pk']]), reverse(step.list_))
         obj_['type'] = '步骤'
     objects = list(objects)
     objects.extend(list(objects2))

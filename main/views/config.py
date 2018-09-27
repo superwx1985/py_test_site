@@ -216,6 +216,6 @@ def reference(request, pk):
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
-        obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
+        obj_['url'] = '{}?next={}'.format(reverse(suite.detail, args=[obj_['pk']]), reverse(suite.list_))
         obj_['type'] = '套件'
     return render(request, 'main/include/detail_reference.html', locals())

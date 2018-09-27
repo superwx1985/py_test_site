@@ -7,15 +7,14 @@ from py_test.vic_tools import vic_find_object
 
 
 # 发送http请求
-def send_http_request(method='GET', url='http://127.0.0.1', headers=None, body=None, timeout=30):
+def send_http_request(url, method='GET', headers=None, body=None, timeout=30, logger=logging.getLogger('py_test')):
     method = method.upper()
     if headers:
         try:
             headers = json.loads(headers)
         except ValueError as e:
-            raise ValueError(str(e) +
-                             'Cannot change [' + headers + '] to dict.\n' +
-                             'Please check the [header] column in your test data.')
+            logger.error('header格式不正确，请使用正确的json格式', exc_info=True)
+            raise ValueError('header格式不正确，请使用正确的json格式。错误信息：{}'.format(getattr(e, 'msg', str(e))))
     else:
         headers = None
     h = httplib2.Http(timeout=timeout)
