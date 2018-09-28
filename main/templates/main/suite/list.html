@@ -98,7 +98,7 @@
                                     execute_result_div.append(content_div);
                                     execute_button.text('查看详情').removeClass('btn-danger').addClass('btn-primary');
                                     execute_button.off('click').on('click', function () {
-                                        modal_with_iframe_max('m2m_detail_modal', '', data_.suite_result_url + '?inside=1')
+                                        modal_with_iframe_max('m2m_detail_modal', '结果详情', data_.suite_result_url + '?inside=1')
                                     });
                                     my_modal.find('.modal-title').text('执行结束');
                                     // 使modal可以通过点击外部关闭

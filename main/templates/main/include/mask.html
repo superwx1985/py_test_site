@@ -1,6 +1,6 @@
-<div class="modal-backdrop show" id='mask'>
-    <div style="position: fixed; top: 50%; left: 50%;">
-        <div style="position: fixed; bottom: 50%; right: 50%;">
+<div class="{{ mask_class|default:'modal-backdrop' }} show" id="{{ mask_id|default:'mask' }}">
+    <div style="position: absolute; top: 50%; left: 50%;">
+        <div style="position: absolute; bottom: 50%; right: 50%;">
             <i class="icon-spinner icon-spin icon-5x" style="color: white"></i>
         </div>
     </div>

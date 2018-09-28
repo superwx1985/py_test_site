@@ -73,36 +73,34 @@ function update_other_sub_case_dropdown_readonly(success, data) {
 	}
 }
 
-function m2m_detail_popup(url) {
-	modal_with_iframe_max('m2m_detail_modal', '', url, '', update_m2m_objects)
+function m2m_detail_popup(title, url) {
+	modal_with_iframe_max('m2m_detail_modal', title, url, '', update_m2m_objects)
 }
 
 // 更新已选m2m的序号，更新m2m field内容
-function update_m2m_selected_index_and_field($input) {
+function update_m2m_selected_index_and_field($input, title) {
 	var m2m = $('#m2m_selected tbody tr:not([placeholder])');
 	var m2m_list = [];
 
 	m2m.each(function(i) {
 		$(this).children('[index]').text(i+1);
-		var href = "javascript:m2m_detail_popup('" + $(this).attr('url') + "?inside=1&order=" + (i+1) + "')";
+		var href = "javascript:m2m_detail_popup('" + title + "','" + $(this).attr('url') + "?inside=1&order=" + (i+1) + "')";
 		$(this).find('[name]>a').attr('href', href);
 		m2m_list.push($(this).attr('pk'));
 	});
 	var json_str = JSON.stringify(m2m_list);
 	$input.val(json_str);
-	// 关闭遮罩
-	$('#mask').hide();
 }
 
 // 处理m2m拖动及排序
-function m2m_handle($input, col) {
+function m2m_handle($input, col, title) {
 	$('#m2m_selected tbody').sortable({
 		items: "tr:not([placeholder])",
 		distance: 15,
 		handle: "[moveable]",
 		placeholder: 'ui-state-highlight',
 		stop: function( event, ui ) {
-			update_m2m_selected_index_and_field($input);
+			update_m2m_selected_index_and_field($input, title);
 		}
 	});
 	$('#m2m_selected tbody').droppable({
@@ -175,6 +173,7 @@ function update_and_bind_paginator(page, max_page, size) {
 
 // 获取待选m2m
 function submit_m2m_all_objects_form(cookie_path, json_url, last_condition_json) {
+	$('#m2m_all_mask').show();
 	var condition_json = '{}';
 	// 如果传入了上次的条件，则使用上次的条件初始化搜索信息
 	if (last_condition_json) {
