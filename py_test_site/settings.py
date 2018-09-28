@@ -293,5 +293,5 @@ ASGI_APPLICATION = 'py_test_site.routing.application'
 SITE_NAME = '汇智自动化测试工具'
 
 # 站点版本
-SITE_VERSION = 'V1.4.20180927.01'
+SITE_VERSION = 'V1.4.20180928.01'
 

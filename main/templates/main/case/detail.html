@@ -57,9 +57,11 @@
             // 处理m2m拖动及排序
             m2m_handle(window.$m2m_input, 8);
             // 注册搜索按钮
-            $('#search_button').off('click').on('click', function() { $('input[name=page]').val(1) });
+            $('#search_button').off('click').on('click', function() { go_to_first_page(window.not_go_to_first_page, set_page_to_one, $('input[name=page]')); window.not_go_to_first_page = 0});
             // 注册清空按钮
-            $('#clear_button').off('click').on('click', function() { $('input[name=search_text]').val(''); $('select[name=search_project]').val(''); $('#search_button').click() });
+            $('#clear_button').off('click').on('click', function() { window.not_go_to_first_page = 0; $('input[name=search_text]').val(''); $('select[name=search_project]').val(''); $('#search_button').click() });
+            // 如果手动修改了页码，提交时不返回首页
+            $('input[name=page]').off('change').on('change', function() { window.not_go_to_first_page = 1 });
         });
         // 回调更新m2m
         function update_m2m_objects() {

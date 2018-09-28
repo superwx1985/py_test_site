@@ -92,6 +92,7 @@ class Step(models.Model):
     api_headers = models.TextField(blank=True)
     api_body = models.TextField(blank=True)
     api_data = models.TextField(blank=True)
+    api_save = models.TextField(blank=True)
     other_data = models.TextField(blank=True)
     other_sub_case = models.ForeignKey(
         'main.Case', on_delete=models.SET_NULL, blank=True, null=True, related_name='step_sub_case')

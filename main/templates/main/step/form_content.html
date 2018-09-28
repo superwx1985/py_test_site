@@ -1,0 +1,192 @@
+<div class="row align-items-center" base>
+    <div class="col-1 text-center font-weight-bold">名称</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.name %}
+    </div>
+</div>
+<div class="row align-items-center" base>
+    <div class="col-1 text-center font-weight-bold">描述</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.description rows='2' %}
+    </div>
+</div>
+<div class="row align-items-center" base>
+    <div class="col-1 text-center font-weight-bold">关键字</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.keyword %}
+    </div>
+</div>
+<div class="row align-items-center" base>
+    <div class="col-1 text-center font-weight-bold">项目</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.project %}
+    </div>
+</div>
+<div class="row align-items-center" base>
+    <div class="col-1 text-center font-weight-bold">动作</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.action %}
+    </div>
+</div>
+<div class="row align-items-center" ui name="ui_special_action">
+    <div class="col-1 text-center font-weight-bold">特殊动作</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.ui_special_action %}
+    </div>
+</div>
+<div class="row align-items-center" base>
+    <div class="col-1 text-center font-weight-bold">说明</div>
+    <div class="col">
+        <div id="introduce" class="bg-light"><div>请选择动作</div></div>
+    </div>
+</div>
+<div class="row align-items-center" ui name="ui_by">
+    <div class="col-1 text-center font-weight-bold">定位方式&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="选择要使用的定位方式"></i></div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.ui_by %}
+    </div>
+</div>
+<div class="row align-items-center" ui name="ui_locator">
+    <div class="col-1 text-center font-weight-bold">定位值&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="要传给定位方式的值或表达式。例：定位方式为id，则此处填入id的值；定位方式为css selector，则此处填入css表达式"></i></div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.ui_locator rows='2' %}
+    </div>
+</div>
+<div class="row align-items-center" ui name="ui_index">
+    <div class="col-1 text-center font-weight-bold">索引&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="如果提供的定位方式和定位值得到的元素大于1个，可以使用索引来指定唯一元素"></i></div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.ui_index %}
+    </div>
+</div>
+<div class="row align-items-center" ui name="ui_base_element">
+    <div class="col-1 text-center font-weight-bold">基元素&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="把该元素作为定位的基元素"></i></div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.ui_base_element %}
+    </div>
+</div>
+<div class="row align-items-center" ui name="ui_data">
+    <div class="col-1 text-center font-weight-bold">数据</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.ui_data rows='2' %}
+    </div>
+</div>
+<div class="row align-items-center" ui name="ui_alert_handle">
+    <div class="col-1 text-center font-weight-bold">弹窗处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="选择如果遇到浏览器弹窗（非页面内部弹窗）的处理方式"></i></div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.ui_alert_handle %}
+    </div>
+</div>
+<div class="row align-items-center" api>
+    <div class="col-1 text-center font-weight-bold">请求地址</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.api_url rows='2' %}
+    </div>
+</div>
+<div class="row align-items-center" api>
+    <div class="col-1 text-center font-weight-bold">请求 Headers</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.api_headers rows='2' %}
+    </div>
+</div>
+<div class="row align-items-center" api>
+    <div class="col-1 text-center font-weight-bold">请求 Body</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.api_body rows='2' %}
+    </div>
+</div>
+<div class="row align-items-center" api>
+    <div class="col-1 text-center font-weight-bold">待验证内容</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.api_data rows='2' %}
+    </div>
+</div>
+<div class="row align-items-center" db>
+    <div class="col-1 text-center font-weight-bold">数据库类型</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.db_type %}
+    </div>
+</div>
+<div class="row align-items-center" db>
+    <div class="col-1 text-center font-weight-bold">数据库地址</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.db_host %}
+    </div>
+</div>
+<div class="row align-items-center" db>
+    <div class="col-1 text-center font-weight-bold">数据库端口</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.db_port %}
+    </div>
+</div>
+<div class="row align-items-center" db>
+    <div class="col-1 text-center font-weight-bold">数据库名称</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.db_name %}
+    </div>
+</div>
+<div class="row align-items-center" db>
+    <div class="col-1 text-center font-weight-bold">数据库账号</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.db_user %}
+    </div>
+</div>
+<div class="row align-items-center" db>
+    <div class="col-1 text-center font-weight-bold">数据库密码</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.db_password %}
+    </div>
+</div>
+<div class="row align-items-center" db>
+    <div class="col-1 text-center font-weight-bold">查询字符集</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.db_lang %}
+    </div>
+</div>
+<div class="row align-items-center" db>
+    <div class="col-1 text-center font-weight-bold">SQL</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.db_sql rows='2' %}
+    </div>
+</div>
+<div class="row align-items-center" db>
+    <div class="col-1 text-center font-weight-bold">待验证内容</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.db_data rows='2' %}
+    </div>
+</div>
+<div class="row align-items-center" other name="other_data">
+    <div class="col-1 text-center font-weight-bold">表达式</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.other_data rows='2'%}
+    </div>
+</div>
+<div class="row align-items-center" other name="other_sub_case">
+    <div class="col-1 text-center font-weight-bold">子用例</div>
+    {% if snapshot %}
+        <div class="col-10" form_data>
+            {% include 'main/include/form_input.html' with field=form.other_sub_case %}
+        </div>
+        <div class="col-1 text-info font-weight-bold text-right" form_data>
+            ID: {{ form.other_sub_case.value }}
+        </div>
+    {% else %}
+        <div class="col" form_data>
+            <div id="other_sub_case_dropdown" name="other_sub_case"></div>
+            {% for error in form.other_sub_case.errors %}
+                <div class="invalid-feedback" style="display: block">{{ error }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+<div class="row align-items-center" common name="timeout">
+    <div class="col-1 text-center font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该步骤的超时值，如留空将使用测试套件设置的全局超时值（单位：秒）"></i></div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.timeout %}
+    </div>
+</div>
+<div class="row align-items-center" common name="save_as">
+    <div class="col-1 text-center font-weight-bold">变量名&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="填入要保存的变量名称，不能包含 ${  }$"></i></div>
+    <div class="col mx-auto" form_data>
+        {% include 'main/include/form_input.html' with field=form.save_as %}
+    </div>
+</div>

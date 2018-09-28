@@ -409,3 +409,17 @@ function show_reference(url, title) {
 		}, 'html')
 	})
 }
+
+// 搜索时是否回到第一页
+function go_to_first_page(not_go_to_first_page, f, $e) {
+    console.log(not_go_to_first_page)
+    console.log(!not_go_to_first_page)
+    if (!not_go_to_first_page) {
+        f($e)
+    }
+}
+
+// 修改页码为1
+function set_page_to_one($e) {
+    $e.val(1)
+}
