@@ -64,31 +64,44 @@ class Step(models.Model):
     ui_index = models.IntegerField(blank=True, null=True)
     ui_base_element = models.CharField(max_length=1000, blank=True)
     ui_data = models.TextField(blank=True)
-    ui_special_action_list = (
-        (0, ''),
-        (1, '鼠标 - 单击'),
-        (2, '鼠标 - 点击后不放'),
-        (3, '鼠标 - 右键单击'),
-        (4, '鼠标 - 双击'),
-        (5, '鼠标 - 释放'),
-        (6, '鼠标 - 移动到偏移点位置'),
-        (7, '鼠标 - 移动到某元素中间'),
-        (8, '鼠标 - 移动到某元素左上角为基准的偏移点位置'),
-        (9, '鼠标 - 拖动某元素到另一元素上'),
-        (10, '鼠标 - 拖动某元素到偏移点位置'),
-        (11, '键盘 - 按下某键不释放'),
-        (12, '键盘 - 释放某键'),
-        (13, '键盘 - 发送按键（组）到当前焦点元素'),
-        (14, '键盘 - 发送按键（组）到指定元素'),
+    ui_special_action_list_ = (
+        (0, '', ''),
+        (1, '鼠标 - 单击', 'click'),
+        (2, '鼠标 - 点击后不放', 'click_and_hold'),
+        (3, '鼠标 - 右键单击', 'context_click'),
+        (4, '鼠标 - 双击', 'double_click'),
+        (5, '鼠标 - 释放', 'release'),
+        (6, '鼠标 - 移动到偏移点位置', 'move_by_offset'),
+        (7, '鼠标 - 移动到某元素中间', 'move_to_element'),
+        (8, '鼠标 - 移动到某元素左上角为基准的偏移点位置', 'move_to_element_with_offset'),
+        (9, '鼠标 - 拖动某元素到另一元素上', 'drag_and_drop'),
+        (10, '鼠标 - 拖动某元素到偏移点位置', 'drag_and_drop_by_offset'),
+        (11, '键盘 - 按下某键不释放', 'key_down'),
+        (12, '键盘 - 释放某键', 'key_up'),
+        (13, '键盘 - 发送按键（组）到当前焦点元素', 'send_keys'),
+        (14, '键盘 - 发送按键（组）到指定元素', 'send_keys_to_element'),
     )
+    ui_special_action_list = [(i[0], i[1]) for i in ui_special_action_list_]
     ui_special_action = models.IntegerField(choices=ui_special_action_list, default=0)
-    ui_alert_handle_list = (
-        (1, '确定'),
-        (2, '取消'),
-        (3, '忽略'),
+    ui_alert_handle_list_ = (
+        (1, '确定', 'accept'),
+        (2, '取消', 'dismiss'),
+        (3, '忽略', 'ignore'),
     )
+    ui_alert_handle_list = [(i[0], i[1]) for i in ui_alert_handle_list_]
     ui_alert_handle = models.IntegerField(choices=ui_alert_handle_list, default=1)
     api_url = models.TextField(blank=True)
+    api_method_list = (
+        (1, 'GET'),
+        (2, 'HEAD'),
+        (3, 'POST'),
+        (4, 'PUT'),
+        (5, 'PATCH'),
+        (6, 'DELETE'),
+        (7, 'OPTIONS'),
+        (8, 'TRACE'),
+    )
+    api_method = models.IntegerField(choices=api_method_list, default=1)
     api_headers = models.TextField(blank=True)
     api_body = models.TextField(blank=True)
     api_data = models.TextField(blank=True)

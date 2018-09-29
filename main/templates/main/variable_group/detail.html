@@ -26,10 +26,6 @@
 {% block script %}
     <script>
         $(function () {
-            // 注册添加按钮
-            $('#new_helper td[col_move]').on('click', function () {
-                addVariable();
-            });
             {% if temp_list_json %}
                 // 获取暂存变量
                 variable_update(true, $.parseJSON("{{ temp_list_json|escapejs }}"));
@@ -42,6 +38,10 @@
                     update_variable_index_and_field(true);
                 {% endif %}
             {% endif %}
+            // 注册添加按钮
+            $('#new_helper td[col_move]').on('click', function () {
+                add_variable();
+            });
             // 注册new helper的删除按钮事件
             $('#new_helper [col_del]').off('click').on('click', function () {
                 $('#new_helper [col_name] input,#new_helper [col_value] input,#new_helper [col_description] input').val('').removeClass('is-invalid').siblings('div.invalid-feedback').remove();
@@ -95,29 +95,27 @@
     <div class="row">
         <div class="col text-center">
             <h5 class="ui-widget-header">变量列表&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="变量的加载是有序的，先加载的变量可以被后加载的变量调用"></i></h5>
-            <div class="ui-widget-content">
-                <table id='variable_table' class="table table-sm table-bordered" style="width: 100%">
-                    <colgroup>
-                        <col style='width: 60px;'>
-                        <col style='width: 60px;'>
-                        <col style='width: 60px;'>
-                        <col style='width: 20%;'>
-                        <col>
-                        <col>
-                    </colgroup>
-                    <thead class="thead-light"><tr><th></th><th></th><th>顺序</th><th>名称</th><th>值</th><th>备注</th></tr></thead>
-                    <tbody class="text-left">
-                        <tr id="new_helper" class="bg-light">
-                            <td class="middle" col_move><i class="icon-ok-circle icon-2x text-success" data-toggle="tooltip" title="添加到变量组"></i></td>
-                            <td class="middle" col_del><i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i></td>
-                            <td class="middle" col_index><span></span></td>
-                            <td col_name><input placeholder="请输入变量名" class="form-control"></td>
-                            <td col_value><input placeholder="请输入变量值" class="form-control"></td>
-                            <td col_description><input placeholder="" class="form-control"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <table id='variable_table' class="table table-sm table-bordered" style="width: 100%">
+                <colgroup>
+                    <col style='width: 60px;'>
+                    <col style='width: 60px;'>
+                    <col style='width: 60px;'>
+                    <col style='width: 20%;'>
+                    <col>
+                    <col>
+                </colgroup>
+                <thead class="thead-light"><tr><th></th><th></th><th>顺序</th><th>名称</th><th>值</th><th>备注</th></tr></thead>
+                <tbody class="text-left">
+                    <tr id="new_helper" class="bg-light">
+                        <td class="middle" col_move><i class="icon-ok-circle icon-2x text-success" data-toggle="tooltip" title="添加到变量组"></i></td>
+                        <td class="middle" col_del><i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i></td>
+                        <td class="middle" col_index><span></span></td>
+                        <td col_name><input placeholder="请输入变量名" class="form-control"></td>
+                        <td col_value><input placeholder="请输入变量值" class="form-control"></td>
+                        <td col_description><input placeholder="" class="form-control"></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 {% endblock %}

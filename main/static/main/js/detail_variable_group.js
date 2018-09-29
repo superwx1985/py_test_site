@@ -36,7 +36,7 @@ function variable_update(success, data) {
 	}
 }
 // 添加变量
-function addVariable() {
+function add_variable() {
 	var new_helper = $('#new_helper');
 	var name_input = $('#new_helper td[col_name] input');
 	name_input.removeClass('is-invalid');
@@ -175,7 +175,7 @@ function check_unsaved() {
 			},
 			callback: function (result) {
 				if (result === true) {
-					if (addVariable()) {
+					if (add_variable()) {
 						$('#object_form').removeAttr('onsubmit').submit();
 					}
 				}

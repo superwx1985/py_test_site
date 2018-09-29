@@ -4,13 +4,14 @@ import json
 import traceback
 import uuid
 import logging
+from django.forms.models import model_to_dict
+from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException, NoSuchElementException, TimeoutException, StaleElementReferenceException, InvalidSwitchToTargetException
 from py_test.general import vic_variables, vic_public_elements, vic_method
 from py_test.ui_test import method as ui_method
+from py_test.api_test import method as api_method
 from py_test.db_test import method as db_method
-from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException, NoSuchElementException, TimeoutException, StaleElementReferenceException, InvalidSwitchToTargetException
 from py_test.vic_tools import vic_eval, vic_date_handle
-from main.models import StepResult
-from django.forms.models import model_to_dict
+from main.models import StepResult, Step
 
 
 class VicStep:
@@ -55,53 +56,25 @@ class VicStep:
             self.timeout = step.timeout if step.timeout else case_result.suite_result.timeout
             self.ui_get_ss = case_result.suite_result.ui_get_ss
             self.save_as = step.save_as
-            ui_by_dict = {
-                0: '',
-                1: 'id',
-                2: 'xpath',
-                3: 'link text',
-                4: 'partial link text',
-                5: 'name',
-                6: 'tag name',
-                7: 'class name',
-                8: 'css selector',
-                9: 'public element',
-                10: 'variable',
-            }
+
+            ui_by_dict = {i[0]: i[1] for i in Step.ui_by_list}
             self.ui_by = ui_by_dict[step.ui_by]
             self.ui_locator = step.ui_locator
             self.ui_index = step.ui_index
             self.ui_base_element = step.ui_base_element
             self.ui_data = step.ui_data
-            ui_special_action_dict = {
-                0: '',
-                1: 'click',
-                2: 'click_and_hold',
-                3: 'context_click',
-                4: 'double_click',
-                5: 'release',
-                6: 'move_by_offset',
-                7: 'move_to_element',
-                8: 'move_to_element_with_offset',
-                9: 'drag_and_drop',
-                10: 'drag_and_drop_by_offset',
-                11: 'key_down',
-                12: 'key_up',
-                13: 'send_keys',
-                14: 'send_keys_to_element',
-            }
+            ui_special_action_dict = {i[0]: i[2] for i in Step.ui_special_action_list_}
             self.ui_special_action = ui_special_action_dict[step.ui_special_action]
-            ui_alert_handle_dict = {
-                1: 'accept',
-                2: 'dismiss',
-                3: 'ignore',
-            }
+            ui_alert_handle_dict = {i[0]: i[2] for i in Step.ui_alert_handle_list_}
             self.ui_alert_handle = ui_alert_handle_dict.get(step.ui_alert_handle, 'accept')
 
             self.api_url = step.api_url
+            api_method_dict = {i[0]: i[1] for i in Step.api_method_list}
+            self.api_method = api_method_dict[step.api_method]
             self.api_headers = step.api_headers
             self.api_body = step.api_body
             self.api_data = step.api_data
+            self.api_save = step.api_save
 
             self.other_data = step.other_data
             self.other_sub_case = step.other_sub_case
@@ -137,10 +110,15 @@ class VicStep:
                 self.ui_locator, vic_case.variables, global_variables, self.logger))
             ui_base_element = str(vic_method.replace_special_value(
                 self.ui_base_element, vic_case.variables, global_variables, self.logger))
-            self.ui_base_element = vic_variables.get_elements(ui_base_element, vic_case.variables, global_variables)[0] \
-                if ui_base_element != '' else None
+            self.ui_base_element = vic_variables.get_elements(ui_base_element, vic_case.variables, global_variables)[0] if ui_base_element != '' else None
             self.ui_data = str(vic_method.replace_special_value(self.ui_data, vic_case.variables, global_variables))
             self.other_data = str(vic_method.replace_special_value(self.other_data, vic_case.variables, global_variables))
+
+            self.api_url = str(vic_method.replace_special_value(self.api_url, vic_case.variables, global_variables))
+            self.api_headers = str(vic_method.replace_special_value(self.api_headers, vic_case.variables, global_variables))
+            self.api_body = str(vic_method.replace_special_value(self.api_body, vic_case.variables, global_variables))
+            self.api_data = str(vic_method.replace_special_value(self.api_data, vic_case.variables, global_variables))
+
             self.db_host = str(vic_method.replace_special_value(self.db_host, vic_case.variables, global_variables))
             self.db_port = str(vic_method.replace_special_value(self.db_port, vic_case.variables, global_variables))
             self.db_name = str(vic_method.replace_special_value(self.db_name, vic_case.variables, global_variables))
@@ -544,8 +522,23 @@ class VicStep:
                                 raise WebDriverException('无法保存变量，{}'.format(self.run_result[1]))
 
                         # ===== API =====
-                        elif self.action_code == 0:
-                            pass
+                        elif self.action_code == 'API_SEND_HTTP_REQUEST':
+                            if not self.api_url:
+                                raise ValueError('请提供请求地址')
+                            response, content, response_start_time, response_end_time = api_method.send_http_request(
+                                self.api_url, method=self.api_method, headers=self.api_headers, body=self.api_body,
+                                timeout=self.timeout, logger=self.logger)
+                            pretty_response = json.dumps(response, indent=1, ensure_ascii=False)
+                            if self.api_data:
+                                run_result = api_method.verify_http_response(self.api_data, content)
+                                if run_result[0] == 'p':
+                                    self.run_result = (
+                                        'p', '请求发送完毕，结果验证通过\n请求地址：\n{}\n请求方式：\n{}\n响应header：\n{}\n验证结果：\n{}'.format(
+                                            self.api_url, self.api_method, pretty_response, run_result[1]))
+                            else:
+                                self.run_result = (
+                                    'p', '请求发送完毕，结果验证通过\n请求地址：\n{}\n请求方式：\n{}\n响应header：\n{}'.format(
+                                        self.api_url, self.api_method, pretty_response))
 
                         # ===== DB =====
                         elif self.action_code == 'DB_EXECUTE_SQL':
@@ -553,7 +546,7 @@ class VicStep:
                                 row_count, sql_result = db_method.get_sql_result(
                                     db_type=self.db_type, db_host=self.db_host, db_port=self.db_port,
                                     db_name=self.db_name, db_user=self.db_user, db_password=self.db_password,
-                                    db_lang=self.db_lang, sql=self.db_sql)
+                                    db_lang=self.db_lang, sql=self.db_sql, timeout=self.timeout)
                             except:
                                 self.logger.warning('【{}】\t连接数据库或SQL执行报错\nSQL语句：\n{}'.format(
                                     self.execute_id, self.db_sql), exc_info=True)
@@ -565,7 +558,7 @@ class VicStep:
                                     sql_result, indent=1, ensure_ascii=False, cls=db_method.JsonDatetimeEncoder)
                                 self.logger.debug('【{}】\tSQL执行完毕\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
                                     self.execute_id, self.db_sql, row_count, pretty_result))
-                                if self.db_data != '':
+                                if self.db_data:
                                     run_result = db_method.verify_sql_result(expect=self.db_data, sql_result=sql_result)
                                     if len(pretty_result) > 10000:
                                         pretty_result = '（返回结果大于10000字符，为节约空间未保存）'

@@ -83,13 +83,19 @@
     </div>
 </div>
 <div class="row align-items-center" api>
-    <div class="col-1 text-center font-weight-bold">请求 Headers</div>
+    <div class="col-1 text-center font-weight-bold">请求方式</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.api_method %}
+    </div>
+</div>
+<div class="row align-items-center" api>
+    <div class="col-1 text-center font-weight-bold">Headers</div>
     <div class="col" form_data>
         {% include 'main/include/form_textarea.html' with field=form.api_headers rows='2' %}
     </div>
 </div>
 <div class="row align-items-center" api>
-    <div class="col-1 text-center font-weight-bold">请求 Body</div>
+    <div class="col-1 text-center font-weight-bold">Body</div>
     <div class="col" form_data>
         {% include 'main/include/form_textarea.html' with field=form.api_body rows='2' %}
     </div>
@@ -98,6 +104,38 @@
     <div class="col-1 text-center font-weight-bold">待验证内容</div>
     <div class="col" form_data>
         {% include 'main/include/form_textarea.html' with field=form.api_data rows='2' %}
+    </div>
+</div>
+<div class="row align-items-center" api>
+    <input name="api_save" value="{{ form.api_save.value }}" hidden>
+    <div class="col-1 text-center font-weight-bold">保存响应内容</div>
+    <div class="col" form_data>
+        <table id='variable_table' class="table table-sm table-bordered" style="width: 100%">
+            <colgroup>
+                <col style='width: 60px;'>
+                <col style='width: 60px;'>
+                <col style='width: 60px;'>
+                <col style='width: 20%;'>
+                <col style='width: 120px;'>
+                <col>
+            </colgroup>
+            <thead class="thead-light middle"><tr><th></th><th></th><th>顺序</th><th>名称</th><th>从何处获取</th><th>表达式</th></tr></thead>
+            <tbody class="text-left">
+                <tr id="new_helper" class="bg-light">
+                    <td class="middle" col_move><i class="icon-ok-circle icon-2x text-success" data-toggle="tooltip" title="添加到变量组"></i></td>
+                    <td class="middle" col_del><i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i></td>
+                    <td class="middle" col_index><span></span></td>
+                    <td col_name><input placeholder="请输入变量名" class="form-control"></td>
+                    <td col_part>
+                        <select class="form-control">
+                            <option value="1">Header</option>
+                            <option value="2">Body</option>
+                        </select>
+                    </td>
+                    <td col_expression><input class="form-control"></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 <div class="row align-items-center" db>

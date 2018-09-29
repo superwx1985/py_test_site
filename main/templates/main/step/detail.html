@@ -45,6 +45,9 @@
             {% else %}
                 getList("{% url 'case_select_json' %}", window.$csrf_input.val(), update_other_sub_case_dropdown_readonly, '{"selected_pk": "{{ form.other_sub_case.value }}"}');
             {% endif %}
+            // 更新http request变量列表
+            var o = {"data": $.parseJSON($('input[name=api_save]').val())}
+            variable_update(true, o);
             // 关闭遮罩
             $('#mask').hide();
         });
@@ -57,7 +60,7 @@
 {% endblock %}
 
 {% block detail_form %}
-    <form method="post" id="object_form" novalidate>
+    <form method="post" id="object_form" novalidate onsubmit="return check_unsaved();">
         {% csrf_token %}
         {% include 'main/step/form_content.html' %}
         {% include 'main/include/detail_redirect.html' %}

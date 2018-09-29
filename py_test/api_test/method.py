@@ -22,18 +22,20 @@ def send_http_request(url, method='GET', headers=None, body=None, timeout=30, lo
     str_content = None
     try:
         response, content = h.request(uri=url, method=method, headers=headers, body=body)
+        response_end_time = datetime.datetime.now()
     except socket.timeout:
+        response_end_time = datetime.datetime.now()
         response = None
-        content = None
-    response_end_time = datetime.datetime.now()
-    if content is not None:
-        try:
-            str_content = content.decode('utf-8')  # 处理中文乱码
-        except UnicodeDecodeError:
+        str_content = ''
+    else:
+        if content is not None:
             try:
-                str_content = content.decode('GBK')  # 处理中文乱码
+                str_content = content.decode('utf-8')  # 处理中文乱码
             except UnicodeDecodeError:
-                str_content = str(content)
+                try:
+                    str_content = content.decode('GBK')  # 处理中文乱码
+                except UnicodeDecodeError:
+                    str_content = str(content)
     return response, str_content, response_start_time, response_end_time
 
 
