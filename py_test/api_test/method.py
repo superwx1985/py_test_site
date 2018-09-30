@@ -109,3 +109,43 @@ def verify_http_response(expect, response, logger=logging.getLogger('py_test')):
     logger.debug(run_result[1])
 
     return run_result
+
+
+# 获取响应内容，保存为变量
+def save_http_response(response, content, save_as_group, variables, logger=logging.getLogger('py_test')):
+    success = True
+    msg = ''
+    for save_as in save_as_group:
+        error_msg = None
+        try:
+            name = save_as['name']
+            part = save_as['part']
+            expression = save_as['expression']
+        except KeyError:
+            continue
+        else:
+            if part == '1':
+                if expression:
+                    value = response.get(expression, None)
+                    if not value:
+                        error_msg = '响应头中没有找到键为【{}】的值'.format(expression)
+                        logger.warning(error_msg)
+                        value = ''
+                else:
+                    value = json.dumps(response)
+            else:
+                if expression:
+                    find_result = vic_find_object.find_with_condition(expression, content, logger)
+                    if find_result.is_matched and find_result.re_result:
+                        value = find_result.re_result[0]
+                    else:
+                        error_msg = '响应体中没有找到满足正则表达式【{}】的内容'.format(expression)
+                        logger.warning(error_msg)
+                        value = ''
+                else:
+                    value = content
+        msg_ = variables.set_variable(name, value, 1000)
+        if error_msg:
+            msg_ = '{}\n{}'.format(error_msg, msg_)
+        msg = msg + '用例' + msg_ + '\n'
+    return success, msg

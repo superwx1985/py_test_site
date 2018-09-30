@@ -529,16 +529,31 @@ class VicStep:
                                 self.api_url, method=self.api_method, headers=self.api_headers, body=self.api_body,
                                 timeout=self.timeout, logger=self.logger)
                             pretty_response = json.dumps(response, indent=1, ensure_ascii=False)
+                            run_result_statue = 'p'
+                            msg = '\n请求地址：\n{}\n请求方式：\n{}\n响应头：\n{}\n响应体：\n{}'.format(
+                                self.api_url, self.api_method, pretty_response, content[:1000])
                             if self.api_data:
                                 run_result = api_method.verify_http_response(self.api_data, content)
+                                msg = '{}\n验证结果：\n{}'.format(msg, run_result[1])
                                 if run_result[0] == 'p':
-                                    self.run_result = (
-                                        'p', '请求发送完毕，结果验证通过\n请求地址：\n{}\n请求方式：\n{}\n响应header：\n{}\n验证结果：\n{}'.format(
-                                            self.api_url, self.api_method, pretty_response, run_result[1]))
+                                    msg = '请求发送完毕，结果验证通过{}'.format(msg)
+                                else:
+                                    run_result_statue = 'f'
+                                    msg = '请求发送完毕，结果验证失败{}'.format(msg)
                             else:
-                                self.run_result = (
-                                    'p', '请求发送完毕，结果验证通过\n请求地址：\n{}\n请求方式：\n{}\n响应header：\n{}'.format(
-                                        self.api_url, self.api_method, pretty_response))
+                                msg = '请求发送完毕{}'.format(msg)
+                            if self.api_save:
+                                try:
+                                    api_save = json.loads(self.api_save)
+                                except:
+                                    self.logger.warning('【{}】\t待保存内容无法解析'.format(self.execute_id))
+                                else:
+                                    success, msg_ = api_method.save_http_response(
+                                        response, content, api_save, vic_case.variables, logger=self.logger)
+                                    msg = '{}\n{}'.format(msg, msg_)
+                                    if not success:
+                                        run_result_statue = 'f'
+                            self.run_result = (run_result_statue, msg)
 
                         # ===== DB =====
                         elif self.action_code == 'DB_EXECUTE_SQL':

@@ -14,14 +14,18 @@ class Variables:
             raise ValueError('The variable name [' + name + '] is invalid, it should not have "${" or "}$"')
 
     # 设置变量
-    def set_variable(self, name, value):
+    def set_variable(self, name, value, msg_len=None):
         self.check_name(name)
-        if name in self.variable_dict:
-            msg = '变量【{}】的值由【{}】变更为【{}】'.format(name, self.variable_dict[name], value)
+        if msg_len and str(msg_len).isdigit() and len(str(value)) > msg_len:
+            value_ = '{}【变量值过长，后续部分不再显示】'.format(str(value)[:msg_len])
         else:
-            msg = '变量【{}】被赋值为【{}】'.format(name, value)
-        self.logger.debug(msg)
+            value_ = value
+        if name in self.variable_dict:
+            msg = '变量【{}】的值由【{}】变更为【{}】'.format(name, self.variable_dict[name], value_)
+        else:
+            msg = '变量【{}】被赋值为【{}】'.format(name, value_)
         self.variable_dict[name] = value
+        self.logger.debug(msg)
         return msg
 
     # 获取变量
