@@ -429,7 +429,7 @@ def select_json(request):
             d['selected'] = True
         else:
             d['selected'] = False
-        d['url'] = reverse(detail, args=[obj['pk']])
+        d['url'] = '{}?next={}'.format(reverse(detail, args=[obj['pk']]), reverse(list_))
         data.append(d)
 
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': data})

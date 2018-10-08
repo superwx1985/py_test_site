@@ -46,8 +46,13 @@
                 getList("{% url 'case_select_json' %}", window.$csrf_input.val(), update_other_sub_case_dropdown_readonly, '{"selected_pk": "{{ form.other_sub_case.value }}"}');
             {% endif %}
             // 更新http request变量列表
-            var o = {"data": $.parseJSON($('input[name=api_save]').val())}
-            variable_update(true, o);
+            var api_save_data = {};
+            var success = false;
+            try {
+                api_save_data = {"data": $.parseJSON($('input[name=api_save]').val())};
+                success = true;
+            } catch (e) {}
+            variable_update(success, api_save_data);
             // 关闭遮罩
             $('#mask').hide();
         });
