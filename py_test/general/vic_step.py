@@ -73,6 +73,7 @@ class VicStep:
             self.api_method = api_method_dict[step.api_method]
             self.api_headers = step.api_headers
             self.api_body = step.api_body
+            self.api_decode = step.api_decode
             self.api_data = step.api_data
             self.api_save = step.api_save
 
@@ -117,6 +118,7 @@ class VicStep:
             self.api_url = str(vic_method.replace_special_value(self.api_url, vic_case.variables, global_variables))
             self.api_headers = str(vic_method.replace_special_value(self.api_headers, vic_case.variables, global_variables))
             self.api_body = str(vic_method.replace_special_value(self.api_body, vic_case.variables, global_variables))
+            self.api_decode = str(vic_method.replace_special_value(self.api_decode, vic_case.variables, global_variables))
             self.api_data = str(vic_method.replace_special_value(self.api_data, vic_case.variables, global_variables))
 
             self.db_host = str(vic_method.replace_special_value(self.db_host, vic_case.variables, global_variables))
@@ -514,7 +516,8 @@ class VicStep:
                         elif self.action_code == 'UI_SAVE_URL':
                             if self.save_as == '':
                                 raise ValueError('没有提供变量名')
-                            self.run_result, data_ = ui_method.get_url(dr=dr, condition_value=str(self.ui_data))
+                            self.run_result, data_ = ui_method.get_url(
+                                dr=dr, condition_value=str(self.ui_data), logger=self.logger)
                             if self.run_result[0] == 'p':
                                 msg = vic_case.variables.set_variable(self.save_as, data_)
                                 self.run_result = ('p', msg)
@@ -525,35 +528,48 @@ class VicStep:
                         elif self.action_code == 'API_SEND_HTTP_REQUEST':
                             if not self.api_url:
                                 raise ValueError('请提供请求地址')
-                            response, content, response_start_time, response_end_time = api_method.send_http_request(
+                            response, response_body, response_start_time, response_end_time = api_method.send_http_request(
                                 self.api_url, method=self.api_method, headers=self.api_headers, body=self.api_body,
-                                timeout=self.timeout, logger=self.logger)
-                            pretty_response = json.dumps(response, indent=1, ensure_ascii=False)
+                                decode=self.api_decode, timeout=self.timeout, logger=self.logger)
+                            try:
+                                headers = json.loads(self.api_headers)
+                                pretty_request_header = json.dumps(headers, indent=1, ensure_ascii=False)
+                            except ValueError:
+                                pretty_request_header = self.api_headers
+                            pretty_response_header = json.dumps(response, indent=1, ensure_ascii=False)
                             run_result_statue = 'p'
-                            msg = '\n请求地址：\n{}\n请求方式：\n{}\n响应头：\n{}\n响应体：\n{}'.format(
-                                self.api_url, self.api_method, pretty_response, content[:1000])
+
+                            response_body_msg = response_body
                             if self.api_data:
-                                run_result = api_method.verify_http_response(self.api_data, content)
-                                msg = '{}\n验证结果：\n{}'.format(msg, run_result[1])
+                                run_result, response_body_msg = api_method.verify_http_response(self.api_data, response_body)
                                 if run_result[0] == 'p':
-                                    msg = '请求发送完毕，结果验证通过{}'.format(msg)
+                                    prefix_msg = '请求发送完毕，结果验证通过'
                                 else:
                                     run_result_statue = 'f'
-                                    msg = '请求发送完毕，结果验证失败{}'.format(msg)
+                                    prefix_msg = '请求发送完毕，结果验证失败'
+                                suffix_msg = '验证结果：\n{}'.format(run_result[1])
                             else:
-                                msg = '请求发送完毕{}'.format(msg)
-                            if self.api_save:
+                                prefix_msg = '请求发送完毕'
+                                suffix_msg = ''
+
+                            if len(response_body_msg) > 10000:
+                                response_body_msg = '{}\n*****（为节约空间，只保存了前10000个字符）*****'.format(response_body_msg[:10000])
+                            msg = '{}\n请求地址：\n{}\n请求方式：\n{}\n请求头：\n{}\n请求体：\n{}\n响应状态：\n{} {}\n响应头：\n{}\n响应体：\n{}\n{}'.format(
+                                prefix_msg, self.api_url, self.api_method, pretty_request_header, self.api_body, response.status, response.reason, pretty_response_header, response_body_msg, suffix_msg)
+
+                            if self.api_save and self.api_save != '[]':
                                 try:
                                     api_save = json.loads(self.api_save)
                                 except:
                                     self.logger.warning('【{}】\t待保存内容无法解析'.format(self.execute_id))
                                 else:
                                     success, msg_ = api_method.save_http_response(
-                                        response, content, api_save, vic_case.variables, logger=self.logger)
-                                    msg = '{}\n{}'.format(msg, msg_)
+                                        response, response_body, api_save, vic_case.variables, logger=self.logger)
+                                    msg = '{}\n保存：\n{}'.format(msg, msg_)
                                     if not success:
                                         run_result_statue = 'f'
                             self.run_result = (run_result_statue, msg)
+                            self.logger.debug('【{}】\t{}'.format(self.execute_id, msg))
 
                         # ===== DB =====
                         elif self.action_code == 'DB_EXECUTE_SQL':
@@ -571,23 +587,26 @@ class VicStep:
                             else:
                                 pretty_result = json.dumps(
                                     sql_result, indent=1, ensure_ascii=False, cls=db_method.JsonDatetimeEncoder)
+                                if len(pretty_result) > 10000:
+                                    pretty_result_ = '{}\n*****（为节约空间，只保存了前10000个字符）*****'.format(pretty_result[:10000])
+                                else:
+                                    pretty_result_ = pretty_result
                                 self.logger.debug('【{}】\tSQL执行完毕\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
-                                    self.execute_id, self.db_sql, row_count, pretty_result))
+                                    self.execute_id, self.db_sql, row_count, pretty_result_))
                                 if self.db_data:
-                                    run_result = db_method.verify_sql_result(expect=self.db_data, sql_result=sql_result)
-                                    if len(pretty_result) > 10000:
-                                        pretty_result = '（返回结果大于10000字符，为节约空间未保存）'
+                                    run_result = db_method.verify_sql_result(
+                                        expect=self.db_data, sql_result=sql_result, logger=self.logger)
                                     if run_result[0] == 'p':
                                         self.run_result = (
                                             'p', 'SQL执行完毕，结果验证通过\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
-                                                self.db_sql, row_count, pretty_result))
+                                                self.db_sql, row_count, pretty_result_))
                                     else:
                                         self.run_result = (
                                             'f', 'SQL执行完毕，结果验证失败\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
-                                                self.db_sql, row_count, pretty_result))
+                                                self.db_sql, row_count, pretty_result_))
                                 else:
                                     self.run_result = ('p', 'SQL执行完毕\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
-                                        self.db_sql, row_count, pretty_result))
+                                        self.db_sql, row_count, pretty_result_))
 
                         # ===== OTHER =====
                         # 等待

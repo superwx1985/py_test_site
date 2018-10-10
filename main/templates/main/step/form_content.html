@@ -89,15 +89,21 @@
     </div>
 </div>
 <div class="row align-items-center" api>
-    <div class="col-1 text-center font-weight-bold">Headers</div>
+    <div class="col-1 text-center font-weight-bold">请求头</div>
     <div class="col" form_data>
         {% include 'main/include/form_textarea.html' with field=form.api_headers rows='2' %}
     </div>
 </div>
 <div class="row align-items-center" api>
-    <div class="col-1 text-center font-weight-bold">Body</div>
+    <div class="col-1 text-center font-weight-bold">请求体</div>
     <div class="col" form_data>
         {% include 'main/include/form_textarea.html' with field=form.api_body rows='2' %}
+    </div>
+</div>
+<div class="row align-items-center" api>
+    <div class="col-1 text-center font-weight-bold">字符编码&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="默认（留空）使用utf-8编码处理响应内容"></i></div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.api_decode rows='2' %}
     </div>
 </div>
 <div class="row align-items-center" api>
@@ -119,7 +125,7 @@
                 <col style='width: 120px;'>
                 <col>
             </colgroup>
-            <thead class="thead-light middle"><tr><th></th><th></th><th>顺序</th><th>名称</th><th>从何处获取</th><th>表达式</th></tr></thead>
+            <thead class="thead-light middle"><tr><th></th><th></th><th>顺序</th><th>名称</th><th>从何处获取</th><th>表达式&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title='返回的header是一个字典，可以直接通过key获取value，也可以通过#{json}#表达式获取，例：#{json|re}#{"set-cookie":"sessionid=(.*?);"}。返回的body是一个字符串，可通过#{json}#表达式获取。'></i></th></tr></thead>
             <tbody class="text-left">
                 <tr id="new_helper" class="bg-light">
                     <td class="middle" col_move><i class="icon-ok-circle icon-2x text-success" data-toggle="tooltip" title="添加到变量组"></i></td>

@@ -2,6 +2,7 @@ import os
 import json
 import datetime
 import threading
+import logging
 import cx_Oracle
 import pymysql
 from py_test.vic_tools import vic_find_object
@@ -76,8 +77,8 @@ class JsonDatetimeEncoder(json.JSONEncoder):
 
 
 # 验证查询结果
-def verify_sql_result(expect, sql_result):
-    find_result = vic_find_object.find_with_condition(expect, sql_result)
+def verify_sql_result(expect, sql_result, logger=logging.getLogger('py_test')):
+    find_result = vic_find_object.find_with_condition(expect, sql_result, logger=logger)
     if find_result.is_matched:
         run_result = ('p', find_result)
     else:

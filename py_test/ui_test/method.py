@@ -188,7 +188,7 @@ def wait_for_text_present(dr, text, timeout, base_element, print_=True, logger=l
     last_print_time = 0
     while (time.time() - start_time) <= timeout:
         if isinstance(base_element, WebElement):
-            find_result = vic_find_object.find_with_condition(text, base_element.text)
+            find_result = vic_find_object.find_with_condition(text, base_element.text, logger=logger)
             if find_result.is_matched:
                 elements_temp = base_element.find_elements_by_xpath('.//*[contains(text(),"' + text + '")]')
                 for element in elements_temp:
@@ -209,7 +209,7 @@ def wait_for_text_present(dr, text, timeout, base_element, print_=True, logger=l
                 elements.append(base_element)
         else:
             _body = dr.find_element_by_tag_name('body')
-            find_result = vic_find_object.find_with_condition(text, _body.text)
+            find_result = vic_find_object.find_with_condition(text, _body.text, logger=logger)
             if find_result.is_matched:
                 elements_temp = dr.find_elements_by_xpath('//body//*[contains(text(),"' + text + '")]')
                 for element in elements_temp:
@@ -261,7 +261,7 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
                     element_text = dr.execute_script(
                         'return arguments[0].textContent||arguments[0].innerText||arguments[0].value',
                         element_temp)
-                    find_result = vic_find_object.find_with_condition(text, element_text)
+                    find_result = vic_find_object.find_with_condition(text, element_text, logger=logger)
                     if find_result.is_matched:
                         elements.append(element_temp)
                     else:
@@ -274,7 +274,7 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
                 element_text = dr.execute_script(
                     'return arguments[0].textContent||arguments[0].innerText||arguments[0].value',
                     elements_temp[index_])
-                find_result = vic_find_object.find_with_condition(text, element_text)
+                find_result = vic_find_object.find_with_condition(text, element_text, logger=logger)
                 if find_result.is_matched:
                     elements.append(elements_temp[index_])
                 else:
@@ -476,7 +476,7 @@ def wait_for_page_redirect(dr, new_url, timeout, print_=True, logger=logging.get
             elapsed_time = str(round(now_time - start_time, 2))
             logger.info('经过%s秒 - 验证新URL是否符合期望' % elapsed_time)
             last_print_time = now_time
-        find_result = vic_find_object.find_with_condition(new_url, current_url)
+        find_result = vic_find_object.find_with_condition(new_url, current_url, logger=logger)
         if find_result.is_matched:
             is_passed = True
             break
@@ -489,10 +489,10 @@ def wait_for_page_redirect(dr, new_url, timeout, print_=True, logger=logging.get
 
 
 # 获取URL
-def get_url(dr, condition_value):
+def get_url(dr, condition_value, logger=logging.getLogger('py_test')):
     data = dr.current_url
     if condition_value:
-        find_result = vic_find_object.find_with_condition(condition_value, data)
+        find_result = vic_find_object.find_with_condition(condition_value, data, logger=logger)
         if find_result.is_matched:
             data = ''
             if find_result.re_result:
