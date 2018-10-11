@@ -5,12 +5,12 @@ import sys
 
 # 获取工程根目录
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
-# 日志目录
-LOG_DIR = os.path.join(PROJECT_ROOT, 'log')
-# 检查日志目录是否存在
-if not os.path.exists(LOG_DIR):
-    os.makedirs(LOG_DIR)
-    print('***** 创建日志文件夹 [%s] *****' % LOG_DIR)
+# # 日志目录
+# LOG_DIR = os.path.join(PROJECT_ROOT, 'log')
+# # 检查日志目录是否存在
+# if not os.path.exists(LOG_DIR):
+#     os.makedirs(LOG_DIR)
+#     print('***** 创建日志文件夹 [%s] *****' % LOG_DIR)
 
 if __name__ == "__main__":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "py_test_site.settings")

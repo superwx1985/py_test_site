@@ -1,11 +1,18 @@
 import os
 import sys
 from django.urls import reverse_lazy
+from manage import PROJECT_ROOT
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# 日志目录
+LOG_DIR = os.path.join(PROJECT_ROOT, '../py_test_site_log/')
+# 检查日志目录是否存在
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+    print('***** 创建日志文件夹 [{}] *****'.format(os.path.abspath(LOG_DIR)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '-8=0r94)m^&x^v7)886@@&iq$2aa*#8@d)dji+x)o(5l1a4dui'
@@ -197,7 +204,7 @@ LOGGING = {
         'default': {
             'level': 'DEBUG',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': 'log/all.log',  # 日志输出文件
+            'filename': os.path.join(LOG_DIR, 'all.log'),  # 日志输出文件
             'when': 'D',                # 时间间隔单位
             'interval': 1,              # 时间间隔值
             'backupCount': 30,          # 保留日志数量
@@ -207,7 +214,7 @@ LOGGING = {
         'error': {
             'level': 'ERROR',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'log/error.log',
+            'filename': os.path.join(LOG_DIR, 'error.log'),
             'maxBytes': 1024*1024*10,
             'backupCount': 10,
             'formatter': 'standard',
@@ -222,7 +229,7 @@ LOGGING = {
         'request_handler': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'log/request.log',
+            'filename': os.path.join(LOG_DIR, 'request.log'),
             'maxBytes': 1024*1024*10,
             'backupCount': 10,
             'formatter': 'standard',
@@ -231,7 +238,7 @@ LOGGING = {
         'sql_handler': {
             'level': 'DEBUG',
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': 'log/sql.log',
+            'filename': os.path.join(LOG_DIR, 'sql.log'),
             'maxBytes': 1024*1024*10,
             'backupCount': 10,
             'formatter': 'standard',
@@ -240,7 +247,7 @@ LOGGING = {
         'py_test_file_handler': {
             'level': 'DEBUG',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': 'log/py_test.log',
+            'filename': os.path.join(LOG_DIR, 'py_test.log'),
             'when': 'D',
             'interval': 1,
             'backupCount': 30,
