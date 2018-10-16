@@ -18,7 +18,7 @@ if not os.path.exists(LOG_DIR):
 SECRET_KEY = '-8=0r94)m^&x^v7)886@@&iq$2aa*#8@d)dji+x)o(5l1a4dui'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -154,8 +154,7 @@ LOGIN_URL = reverse_lazy('user_login')
 
 
 # 日志配置
-# log_level = 'DEBUG' if DEBUG else 'INFO'
-log_level = 'INFO'
+log_level = 'DEBUG' if DEBUG else 'INFO'  # 如果DEBUG打开则启动DEBUG日志
 
 LOGGING = {
     'version': 1,
@@ -257,7 +256,6 @@ LOGGING = {
     'loggers': {
         'django': {
             'handlers': ['default', 'console_normal', 'console_warning'],
-            # 'level': 'DEBUG' if DEBUG else 'INFO',  # 如果DEBUG打开则启动DEBUG日志
             'level': log_level,
             'propagate': False
         },
@@ -300,5 +298,5 @@ ASGI_APPLICATION = 'py_test_site.routing.application'
 SITE_NAME = '汇智自动化测试工具'
 
 # 站点版本
-SITE_VERSION = 'V1.5.20181011.01'
+SITE_VERSION = 'V1.5.20181016.01'
 
