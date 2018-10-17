@@ -119,5 +119,6 @@ urlpatterns = [
     path('debug3/', general.debug3, name='debug3'),
 ]
 
-# 添加media文件映射
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# debug模式下添加media文件映射
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
