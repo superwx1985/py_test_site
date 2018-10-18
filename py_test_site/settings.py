@@ -18,7 +18,7 @@ if not os.path.exists(LOG_DIR):
 SECRET_KEY = '-8=0r94)m^&x^v7)886@@&iq$2aa*#8@d)dji+x)o(5l1a4dui'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -257,7 +257,6 @@ LOGGING = {
         'django': {
             'handlers': ['default', 'console_normal', 'console_warning'],
             'level': log_level,
-            'propagate': False
         },
         # sql日志
         'django.db.backends': {
@@ -286,12 +285,11 @@ LOGGING = {
         'daphne': {
             'handlers': ['default', 'console_normal', 'console_warning'],
             'level': log_level,
-            'propagate': False,
         },
+        # 测试日志，此处为顶层日志，其level应固定为DEBUG，每次测试的日志level由测试套件指定
         'py_test': {
             'handlers': ['console_normal', 'console_warning', 'py_test_file_handler'],
-            'level': log_level,
-            'propagate': False
+            'level': 'DEBUG',
         },
     },
 }

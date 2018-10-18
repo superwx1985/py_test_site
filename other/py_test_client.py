@@ -13,24 +13,25 @@ class NonWarningFilter(logging.Filter):
         return True
 
 
-def get_log_level_name(levelno):
+def get_logger_with_level(levelno, _logger):
     if levelno <= 0:
-        level_name = 'notset'
+        level_logger = _logger.notset
     elif levelno <= 10:
-        level_name = 'debug'
+        level_logger = _logger.debug
     elif levelno <= 20:
-        level_name = 'info'
+        level_logger = _logger.info
     elif levelno <= 30:
-        level_name = 'warning'
+        level_logger = _logger.warning
     elif levelno <= 40:
-        level_name = 'error'
+        level_logger = _logger.error
     else:
-        level_name = 'critical'
-    return level_name
+        level_logger = _logger.critical
+    return level_logger
 
 
 run_result = None
 logger = logging.getLogger('py_test_client')
+test_logger = logging.getLogger('test_logger')
 
 format_ = logging.Formatter('%(asctime)s [%(levelname)s] - %(message)s')
 
@@ -47,6 +48,10 @@ logger.addHandler(info_handler)
 logger.addHandler(error_handler)
 logger.setLevel(logging.INFO)
 
+test_logger.addHandler(info_handler)
+test_logger.addHandler(error_handler)
+test_logger.setLevel(logging.DEBUG)
+
 
 def on_message(ws, message):
 
@@ -59,12 +64,8 @@ def on_message(ws, message):
             ws.send(json.dumps({'command': 'start', 'execute_uuid': str(uuid.uuid1())}))
         elif msg_obj['type'] == 'message':
             msg_level = msg_obj.get('level', logging.INFO)
-            msg_level_name = get_log_level_name(msg_level)
-            try:
-                logger_level = getattr(logger, msg_level_name)
-            except AttributeError:
-                logger_level = logger.info
-            logger_level(msg_obj['message'])
+            level_logger = get_logger_with_level(msg_level, test_logger)
+            level_logger(msg_obj['message'])
         elif msg_obj['type'] == 'error':
             logger.error(msg_obj['data'])
         elif msg_obj['type'] == 'end':
