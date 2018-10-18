@@ -272,6 +272,11 @@ LOGGING = {
             'level': log_level,
             'propagate': True,
         },
+        # 模板日志
+        'django.template': {
+            'level': 'INFO',
+            'propagate': True,
+        },
         # channels日志
         'django.channels': {
             'level': log_level,
@@ -298,5 +303,5 @@ ASGI_APPLICATION = 'py_test_site.routing.application'
 SITE_NAME = '汇智自动化测试工具'
 
 # 站点版本
-SITE_VERSION = 'V1.5.20181016.01'
+SITE_VERSION = 'V1.5.20181018.01'
 

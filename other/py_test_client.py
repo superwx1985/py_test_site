@@ -86,27 +86,56 @@ def on_open(ws):
 
 if __name__ == "__main__":
     from sys import argv
+    import argparse
 
-    # 需要N个参数
-    n = 5
-    msg = '''只接收到[{}]个参数。请提供[{}]个参数，依次是：
-1. 测试服务器地址
-2. 套件ID
-3. token
-4. websocket超时设置（秒）
-5. 日志级别（10/20/30/40/50）'''
+    parser = argparse.ArgumentParser(description='py_test命令行客户端')
+    parser.add_argument(
+        "-s",
+        "--server",
+        help="测试服务器地址",
+        required=True,
+    )
+    parser.add_argument(
+        "-i",
+        "--id",
+        dest="suite_id",
+        help="测试套件ID",
+        required=True,
+    )
+    parser.add_argument(
+        "-t",
+        "--token",
+        help="授权token",
+        required=True,
+    )
+    parser.add_argument(
+        "-o",
+        "--timeout",
+        type=int,
+        help="客户端超时设置（秒）",
+        default=300,
+    )
+    parser.add_argument(
+        "-l",
+        "--log_level",
+        type=int,
+        help="客户端日志级别（1=DEBUG，2=INFO，3=WARNING，4=ERROR，5=CRITICAL）",
+        choices=[1, 2, 3, 4, 5],
+        default=2,
+    )
 
-    if len(argv) < n + 1:
-        raise ValueError(msg.format(len(argv) - 1, n))
-    test_server = str(argv[1])
-    pk = str(argv[2])
-    token = str(argv[3])
-    timeout = int(argv[4])
-    level = int(argv[5])
+    args = parser.parse_args(argv[1:])
 
-    # websocket.enableTrace(True)  # 打印连接信息
+    test_server = args.server
+    pk = args.suite_id
+    token = args.token
+    timeout = args.timeout
+    log_level = args.log_level*10
 
-    logger.setLevel(level)
+    if log_level <= logging.DEBUG:
+        websocket.enableTrace(True)  # 打印连接信息
+
+    logger.setLevel(log_level)
     pk = urllib.parse.quote(pk, encoding='utf-8')
     token = urllib.parse.quote(token, encoding='utf-8')
     ws_url = 'ws://{}/ws/suite_execute_remote/?pk={}&token={}'.format(test_server, pk, token)

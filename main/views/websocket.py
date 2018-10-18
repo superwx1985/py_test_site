@@ -34,14 +34,18 @@ class SuiteConsumer(WebsocketConsumer):
                 try:
                     pk = int(self.get_pk())
                 except KeyError as e:
-                    self.send(text_data=json.dumps({'type': 'error', 'message': e}), close=True)
+                    self.send(text_data=json.dumps({'type': 'error', 'data': e}), close=True)
                 except ValueError as e:
-                    self.send(text_data=json.dumps({'type': 'error', 'message': e}), close=True)
+                    self.send(text_data=json.dumps({'type': 'error', 'data': e}), close=True)
                 else:
-                    suite_ = Suite.objects.get(pk=pk, is_active=True)
-                    suite_result = execute_suite(suite_, user, execute_uuid, self.sender)
-                    data_dict = self.get_result_data(suite_result)
-                    self.send(text_data=json.dumps({'type': 'end', 'data': data_dict}), close=True)
+                    try:
+                        suite_ = Suite.objects.get(pk=pk, is_active=True)
+                    except Suite.DoesNotExist:
+                        self.send(text_data=json.dumps({'type': 'error', 'data': '找不到对应的测试套件'}), close=True)
+                    else:
+                        suite_result = execute_suite(suite_, user, execute_uuid, self.sender)
+                        data_dict = self.get_result_data(suite_result)
+                        self.send(text_data=json.dumps({'type': 'end', 'data': data_dict}), close=True)
             elif command == 'stop':
                 FORCE_STOP[execute_uuid] = user.pk
                 self.send(text_data=json.dumps({'type': 'message', 'message': '已接收到强制停止指令，将在当前步骤完成后停止。'}), close=True)
