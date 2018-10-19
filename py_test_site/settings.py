@@ -191,102 +191,103 @@ LOGGING = {
             'formatter': 'standard',
             'stream': sys.stderr,
         },
-        # 全部日志文件
-        # 'default': {
-        #     'level': 'DEBUG',
-        #     'class': 'logging.handlers.RotatingFileHandler',
-        #     'filename': 'log/all.log',    # 日志输出文件
-        #     'maxBytes': 1024*1024*10,     # 文件大小
-        #     'backupCount': 10,            # 保留日志数量
-        #     'formatter': 'standard',      # 使用哪种formatters日志格式
-        # },
-        'default': {
+        # 服务器日志文件
+        'server': {
             'level': 'DEBUG',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': os.path.join(LOG_DIR, 'all.log'),  # 日志输出文件
+            'filename': os.path.join(LOG_DIR, 'server.log'),  # 日志输出文件
             'when': 'D',                # 时间间隔单位
             'interval': 1,              # 时间间隔值
             'backupCount': 30,          # 保留日志数量
-            'formatter': 'standard',    # 使用哪种formatters日志格式
+            'formatter': 'detail',    # 使用哪种formatters日志格式
         },
-        # 错误日志文件
-        'error': {
-            'level': 'ERROR',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(LOG_DIR, 'error.log'),
-            'maxBytes': 1024*1024*10,
-            'backupCount': 10,
-            'formatter': 'standard',
-        },
+        # 服务器错误日志文件
+        # 'server_error': {
+        #     'level': 'ERROR',
+        #     'class': 'logging.handlers.RotatingFileHandler',
+        #     'filename': os.path.join(LOG_DIR, 'server_error.log'),
+        #     'maxBytes': 1024*1024*10,
+        #     'backupCount': 10,
+        #     'formatter': 'detail',
+        # },
         # 邮件通知
-        'mail_admins': {
-            'level': 'ERROR',
-            'class': 'django.utils.log.AdminEmailHandler',
-            'include_html': True,
-        },
+        # 'mail_admins': {
+        #     'level': 'ERROR',
+        #     'class': 'django.utils.log.AdminEmailHandler',
+        #     'include_html': True,
+        # },
         # 请求日志文件
-        'request_handler': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(LOG_DIR, 'request.log'),
-            'maxBytes': 1024*1024*10,
-            'backupCount': 10,
-            'formatter': 'standard',
-        },
+        # 'server_request': {
+        #     'level': 'DEBUG',
+        #     'class': 'logging.handlers.RotatingFileHandler',
+        #     'filename': os.path.join(LOG_DIR, 'server_request.log'),
+        #     'maxBytes': 1024*1024*10,
+        #     'backupCount': 3,
+        #     'formatter': 'standard',
+        # },
         # sql日志文件
-        'sql_handler': {
-            'level': 'DEBUG',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(LOG_DIR, 'sql.log'),
-            'maxBytes': 1024*1024*10,
-            'backupCount': 10,
-            'formatter': 'standard',
-        },
-        # 测试日志文件
-        'py_test_file_handler': {
+        # 'server_sql': {
+        #     'level': 'DEBUG',
+        #     'class': 'logging.handlers.RotatingFileHandler',
+        #     'filename': os.path.join(LOG_DIR, 'server_sql.log'),
+        #     'maxBytes': 1024*1024*10,
+        #     'backupCount': 3,
+        #     'formatter': 'standard',
+        # },
+        # 测试执行日志文件
+        'py_test': {
             'level': 'DEBUG',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(LOG_DIR, 'py_test.log'),
             'when': 'D',
             'interval': 1,
             'backupCount': 30,
-            'formatter': 'standard',
-        }
+            'formatter': 'detail',
+        },
+        # 测试执行错误日志文件
+        # 'py_test_error': {
+        #     'level': 'ERROR',
+        #     'class': 'logging.handlers.RotatingFileHandler',
+        #     'filename': os.path.join(LOG_DIR, 'py_test_error.log'),
+        #     'maxBytes': 1024*1024*10,
+        #     'backupCount': 10,
+        #     'formatter': 'detail',
+        # },
     },
     'loggers': {
+        # django主日志
         'django': {
-            'handlers': ['default', 'console_normal', 'console_warning'],
+            'handlers': ['server', 'console_normal', 'console_warning'],
             'level': log_level,
             'propagate': False,
         },
-        # sql日志
-        'django.db.backends': {
-            'handlers': ['sql_handler'],
-            'level': log_level,
-            # 'level': 'DEBUG',
-        },
-        # 请求日志
-        'django.request': {
-            'handlers': ['request_handler'],
-            'level': log_level,
-        },
-        # 模板日志
+        # # 请求日志
+        # 'django.request': {
+        #     'handlers': ['server_request'],
+        #     'level': log_level,
+        # },
+        # # sql日志
+        # 'django.db.backends': {
+        #     'handlers': ['server_sql'],
+        #     'level': log_level,
+        # },
+        # 模板日志，模板debug内容太多，此处固定为INFO级别
         'django.template': {
             'level': 'INFO',
         },
         # channels日志
-        'django.channels': {
-            'level': log_level,
-        },
+        # 'django.channels': {
+        #     'level': log_level,
+        # },
         # daphne服务日志
         'daphne': {
-            'handlers': ['default', 'console_normal', 'console_warning'],
+            'handlers': ['server', 'console_normal', 'console_warning'],
             'level': log_level,
             'propagate': False,
         },
-        # 测试日志，此处为顶层日志，其level应固定为DEBUG，每次测试的日志level由测试套件指定
+        # 测试执行日志，此为顶层日志，应固定为DEBUG级别，每次测试的具体日志级别由测试套件指定
         'py_test': {
-            'handlers': ['console_normal', 'console_warning', 'py_test_file_handler'],
+            'handlers': ['py_test', 'console_normal', 'console_warning'],
             'level': 'DEBUG',
             'propagate': False,
         },
