@@ -257,39 +257,38 @@ LOGGING = {
         'django': {
             'handlers': ['default', 'console_normal', 'console_warning'],
             'level': log_level,
+            'propagate': False,
         },
         # sql日志
         'django.db.backends': {
             'handlers': ['sql_handler'],
             'level': log_level,
             # 'level': 'DEBUG',
-            'propagate': True
         },
         # 请求日志
         'django.request': {
             'handlers': ['request_handler'],
             'level': log_level,
-            'propagate': True,
         },
         # 模板日志
         'django.template': {
             'level': 'INFO',
-            'propagate': True,
         },
         # channels日志
         'django.channels': {
             'level': log_level,
-            'propagate': True,
         },
         # daphne服务日志
         'daphne': {
             'handlers': ['default', 'console_normal', 'console_warning'],
             'level': log_level,
+            'propagate': False,
         },
         # 测试日志，此处为顶层日志，其level应固定为DEBUG，每次测试的日志level由测试套件指定
         'py_test': {
             'handlers': ['console_normal', 'console_warning', 'py_test_file_handler'],
             'level': 'DEBUG',
+            'propagate': False,
         },
     },
 }
@@ -301,5 +300,5 @@ ASGI_APPLICATION = 'py_test_site.routing.application'
 SITE_NAME = '汇智自动化测试工具'
 
 # 站点版本
-SITE_VERSION = 'V1.5.20181018.01'
+SITE_VERSION = 'V1.5.20181019.01'
 

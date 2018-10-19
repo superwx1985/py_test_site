@@ -539,7 +539,8 @@ class VicStep:
 
                             response_body_msg = response_body
                             if self.api_data:
-                                run_result, response_body_msg = api_method.verify_http_response(self.api_data, response_body)
+                                run_result, response_body_msg = api_method.verify_http_response(
+                                    self.api_data, response_body, self.logger)
                                 if run_result[0] == 'p':
                                     prefix_msg = '请求发送完毕，结果验证通过'
                                 else:
@@ -551,9 +552,11 @@ class VicStep:
                                 suffix_msg = ''
 
                             if len(response_body_msg) > 10000:
-                                response_body_msg = '{}\n*****（为节约空间，只保存了前10000个字符）*****'.format(response_body_msg[:10000])
+                                response_body_msg = '{}\n*****（为节约空间，只保存了前10000个字符）*****'.format(
+                                    response_body_msg[:10000])
                             msg = '{}\n请求地址：\n{}\n请求方式：\n{}\n请求头：\n{}\n请求体：\n{}\n响应状态：\n{} {}\n响应头：\n{}\n响应体：\n{}\n{}'.format(
-                                prefix_msg, self.api_url, self.api_method, pretty_request_header, self.api_body, response.status, response.reason, pretty_response_header, response_body_msg, suffix_msg)
+                                prefix_msg, self.api_url, self.api_method, pretty_request_header, self.api_body,
+                                response.status, response.reason, pretty_response_header, response_body_msg, suffix_msg)
 
                             if self.api_save and self.api_save != '[]':
                                 try:
@@ -563,7 +566,7 @@ class VicStep:
                                 else:
                                     success, msg_ = api_method.save_http_response(
                                         response, response_body, api_save, vic_case.variables, logger=self.logger)
-                                    msg = '{}\n保存：\n{}'.format(msg, msg_)
+                                    msg = '{}\n变量保存：\n{}'.format(msg, msg_)
                                     if not success:
                                         run_result_statue = 'f'
                             self.run_result = (run_result_statue, msg)
