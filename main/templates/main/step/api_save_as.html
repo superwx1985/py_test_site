@@ -1,0 +1,26 @@
+<table id='api_save_as_table' class="table table-sm table-bordered" style="width: 100%">
+    <colgroup>
+        <col style='width: 60px;'>
+        <col style='width: 60px;'>
+        <col style='width: 60px;'>
+        <col style='width: 20%;'>
+        <col style='width: 120px;'>
+        <col>
+    </colgroup>
+    <thead class="thead-light middle"><tr><th></th><th></th><th>顺序</th><th>名称</th><th>从何处获取</th><th>表达式&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title='返回的header是一个字典，可以直接通过key获取value，也可以通过#{json}#表达式获取，例：#{json|re}#{"set-cookie":"sessionid=(.*?);"}。返回的body是一个字符串，可通过#{json}#表达式获取。'></i></th></tr></thead>
+    <tbody class="text-left">
+        <tr id="new_helper" class="bg-light">
+            <td class="middle" col_move><i class="icon-ok-circle icon-2x text-success" data-toggle="tooltip" title="添加"></i></td>
+            <td class="middle" col_del><i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i></td>
+            <td class="middle" col_index><span></span></td>
+            <td col_name><input placeholder="请输入变量名" class="form-control"></td>
+            <td col_part>
+                <select class="form-control">
+                    <option value="header">Header</option>
+                    <option value="body">Body</option>
+                </select>
+            </td>
+            <td col_expression><input class="form-control"></td>
+        </tr>
+    </tbody>
+</table>

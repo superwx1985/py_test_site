@@ -1,0 +1,30 @@
+<div class="custom-control custom-checkbox custom-control-inline">
+    <input class="custom-control-input" type="checkbox" name="ui_data_select_all" id="ui_data_select_all">
+    <label class="custom-control-label" for="ui_data_select_all" data-toggle="tooltip" title="在单选列表使用全选操作会导致报错">全选</label>
+</div>
+
+<table id='ui_data_select_table' class="table table-sm table-bordered" style="width: 100%">
+    <colgroup>
+        <col style='width: 60px;'>
+        <col style='width: 60px;'>
+        <col style='width: 60px;'>
+        <col style='width: 150px;'>
+        <col>
+    </colgroup>
+    <thead class="thead-light middle"><tr><th></th><th></th><th>序号</th><th>标识类型</th><th>标识值&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title='注意：选项索引的起始值为0'></i></th></tr></thead>
+    <tbody class="text-left">
+        <tr id="new_helper" class="bg-light">
+            <td class="middle" col_move><i class="icon-ok-circle icon-2x text-success" data-toggle="tooltip" title="添加"></i></td>
+            <td class="middle" col_del><i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i></td>
+            <td class="middle" col_index><span></span></td>
+            <td col_select_by>
+                <select class="form-control">
+                    <option value="value">选项值</option>
+                    <option value="text">选项文字</option>
+                    <option value="index">选项索引</option>
+                </select>
+            </td>
+            <td col_select_value><input class="form-control"></td>
+        </tr>
+    </tbody>
+</table>

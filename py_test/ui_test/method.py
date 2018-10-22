@@ -600,17 +600,29 @@ def try_to_select(
         if not select.is_multiple and len(option_list) > 1:
             raise ValueError('单项选择框不允许多选')
         for option in option_list:
-            if 'value' in option:
-                select.select_by_value(option['value'])
-            elif 'index' in option:
-                select.select_by_index(option['index'])
-            elif 'text' in option:
-                select.select_by_visible_text(option['text'])
+            if 'all' in option and option['all']:
+                # 如果select是多选
+                if select.is_multiple:
+                    for i in range(len(select.options)):
+                        select.select_by_index(i)
+                else:
+                    raise ValueError('单项选择框不允许全选')
+                break
             else:
-                raise ValueError('无法解析的选项表达式！请按照格式提供表达式。')
+                try:
+                    if option['select_by'] == 'value':
+                        select.select_by_value(str(option['select_value']))
+                    elif option['select_by'] == 'text':
+                        select.select_by_visible_text(str(option['select_value']))
+                    elif option['select_by'] == 'index':
+                        select.select_by_index(int(option['select_value']))
+                    else:
+                        raise ValueError('无法解析的选项表达式！请按照格式提供表达式。')
+                except KeyError:
+                    raise ValueError('无法解析的选项表达式！请按照格式提供表达式。')
 
     selected_text_list = list()
-    [selected_text_list.append(option.text) for option in select.all_selected_options]
+    [selected_text_list.append(_option.text) for _option in select.all_selected_options]
 
     run_result = (
         'p', '在元素【By:{}|Locator:{}】中进行了选择操作，被选中的选项为【{}】'.format(

@@ -59,9 +59,20 @@ function show_action_field($actionSelect) {
 		introduce.append($('<div><span class="mark">[{"index": "0"}]</span>代表选中第一个选项；<span class="mark">[{"index": "0"}, {"index": "3"}]</span>代表选中第一个和第四个选项</div>'));
 		introduce.append($('<div><span class="mark">[{"text": "红色"}]</span>代表选中文字为“红色”的选项；<span class="mark">[{"text": "红色"}, {"text": "yellow"}]</span>代表选中文字为“红色”和“yellow”的选项</div>'));
 		introduce.append($('<div><span class="mark">[{"value": "1"}, {"text": "红色"}, {"index": "2"}]</span>代表选中value="1"，文字为“红色”以及第3个选项</div>'));
-		$('[ui],div[name=timeout]').show();
-		$('div[name=ui_special_action]').hide();
-		$('div[name=ui_data] .col-1').text('选项表达式');
+		$('[ui],div[name=timeout],div[name=ui_data_select]').show();
+		$('div[name=ui_special_action],div[name=ui_data]').hide();
+		// 注册添加按钮
+		$('#ui_data_select_table #new_helper td[col_move]').on('click', function () {
+			add_step_ui_data_select();
+		});
+		// 注册new helper的删除按钮事件
+		$('#ui_data_select_table #new_helper [col_del]').off('click').on('click', function () {
+			$('#ui_data_select_table #new_helper [col_select_by] select').val('value');
+			$('#ui_data_select_table #new_helper [col_select_value] input').val('').removeClass('is-invalid').siblings('div.invalid-feedback').remove();
+		});
+		// 注册全选复选框事件
+		$('[name=ui_data_select_all]').off('click').on('click', function () { check_step_ui_data_select_all_checkbox() });
+		// $('div[name=ui_data] .col-1').text('选项表达式');
 	} else if (select_value === 'UI_SPECIAL_ACTION') {
 		introduce.children('div').text('执行一些特殊的互动操作。请选择具体的特殊动作');
 		$('div[name=ui_special_action],div[name=timeout]').show();
@@ -159,17 +170,17 @@ function show_action_field($actionSelect) {
 		introduce.children('div').text('发送HTTP请求，如果提供了待验证内容，将对执行结果进行验证。');
 		$('div[api]').show();
 		// 注册添加按钮
-		$('#new_helper td[col_move]').on('click', function () {
-			add_variable();
+		$('#api_save_as_table #new_helper td[col_move]').on('click', function () {
+			add_step_api_save_as();
 		});
 		// 注册new helper的删除按钮事件
-		$('#new_helper [col_del]').off('click').on('click', function () {
-			$('#new_helper [col_name] input').val('').removeClass('is-invalid').siblings('div.invalid-feedback').remove();
-			$('#new_helper [col_part] select').val('1');
-			$('#new_helper [col_expression] input').val('');
+		$('#api_save_as_table #new_helper [col_del]').off('click').on('click', function () {
+			$('#api_save_as_table #new_helper [col_name] input').val('').removeClass('is-invalid').siblings('div.invalid-feedback').remove();
+			$('#api_save_as_table #new_helper [col_part] select').val('header');
+			$('#api_save_as_table #new_helper [col_expression] input').val('');
 		});
 		// 启用排序功能
-		sortable_variable();
+		sortable_api_save_as();
 	} else if ($.inArray(select_value, ["test"]) >= 0) {
 	}
 	// 注册提示框
@@ -182,6 +193,7 @@ function reset_action_field() {
 	$('div[name=ui_data] .col-1').html('数据');
 	$('[common]').hide();
 	$('[ui]').hide();
+	$('[ui_hide]').hide();
 	$('[api]').hide();
 	$('[db]').hide();
 	$('[other]').hide();
@@ -263,126 +275,6 @@ function reset_special_action_field() {
 	$('div[name=ui_special_action]').show();
 }
 
-// API_SEND_HTTP_REQUEST变量列表
-// 启用排序功能
-function sortable_variable() {
-	$('#variable_table tbody').sortable({
-		items: "tr:not(#new_helper)",
-		distance: 15,
-		handle: "[moveable]",
-		placeholder: 'ui-state-highlight',
-		stop: function( event, ui ) {
-			update_variable_index_and_field();
-		}
-	});
-}
-// 更新变量列表
-function variable_update(success, data) {
-	if (success) {
-		if (data.data.length > 0) {
-			$.each(data.data, function (i, v) {
-				var tr = $('<tr></tr>');
-				$('<td class="middle" col_move moveable><i class="icon-sort icon-2x"></i></td>').appendTo(tr);
-				$('<td class="middle" col_del><i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i></td>').off('click').on(
-					'click', function() { del_variable(tr) }).appendTo(tr);
-				var span = $('<span></span>').text(i + 1);
-				$('<td index class="middle" col_index></td>').append(span).appendTo(tr);
-				var input = $('<input placeholder="请输入变量名" class="form-control">').val(v.name).off('change').on('change', function () { update_variable_index_and_field() });
-				$('<td col_name></td>').append(input).appendTo(tr);
-				var select = $('<select class="form-control">');
-				select.append('<option value="1">Header</option>');
-				select.append('<option value="2">Body</option>');
-				select.val(v.part);
-				$('<td col_part></td>').append(select).appendTo(tr);
-				var input = $('<input placeholder="" class="form-control">').val(v.expression);
-				$('<td col_expression></td>').append(input).appendTo(tr);
-				tr.insertBefore($('#new_helper'));
-			});
-		}
-		update_variable_index_and_field();
-		// 注册提示框
-		$('[data-toggle=tooltip]').tooltip();
-	}
-}
-// 添加变量
-function add_variable() {
-	var new_helper = $('#new_helper');
-	var name_input = $('#new_helper td[col_name] input');
-	name_input.removeClass('is-invalid');
-	name_input.siblings('div.invalid-feedback').remove();
-	var check_result = check_variable_name(name_input.val(), get_variable_name_list_());
-	if (check_result === true) {
-		var new_variable = new_helper.clone();
-		// 去掉new_helper id 和 背景色
-		new_variable.removeAttr('id').removeClass('bg-light');
-		// 改变新增按钮为排序按钮
-		new_variable.children('td[col_move]').attr('moveable', '').empty().append('<i class="icon-sort icon-2x"></i>');
-		// 重新注册删除按钮事件
-		new_variable.children('td[col_del]').off('click').on('click', function() { del_variable(new_variable) });
-		new_variable.find('td[col_name] input').off('change').on('change', function () { update_variable_index_and_field() });
-		// 插入并淡入
-		new_variable.insertBefore(new_helper).hide();
-		new_variable.fadeIn("slow");
-		$('#new_helper td[col_name] input').val('').focus();
-		$('#new_helper td[col_expression] input').val('');
-		update_variable_index_and_field();
-		// 注册提示框
-		$('[data-toggle=tooltip]').tooltip();
-		return true;
-	} else {
-		get_invalid_input(name_input, check_result);
-		return false;
-	}
-}
-// 删除变量
-function del_variable($tr) {
-	var name = $tr.find('td[col_name] input').val();
-	var msg = '要删除<span class="mark">' + name + '</span>吗？';
-	bootbox.confirm({
-		title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
-		message: msg,
-		size: 'large',
-		backdrop: true,
-		buttons: {
-			confirm: {
-				label: '<i class="icon-trash">&nbsp;</i>确定',
-				className: 'btn-danger'
-			},
-			cancel: {
-				label: '<i class="icon-undo">&nbsp;</i>取消',
-				className: 'btn-secondary'
-			}
-		},
-		callback: function (result) {
-			if (result === true) {
-				$tr.fadeOut("slow", function() {
-					$(this).remove();
-					update_variable_index_and_field();
-				});
-			}
-		}
-	});
-}
-// 获取当前变量名列表
-function get_variable_name_list_() {
-	var trs = $('#variable_table tbody tr:not(#new_helper)');
-	var variable_name_list = [];
-	trs.each(function(i) {
-		variable_name_list.push($(this).find('td[col_name] input').val());
-	});
-	return variable_name_list;
-}
-// 验证变量名
-function check_variable_name(name, variable_name_list_) {
-	if (!name || ''===name.trim()) {
-		return '变量名不能为空'
-	}
-	var index = $.inArray(name, variable_name_list_);
-	if (index >= 0) {
-		return '与第[' + (index + 1) + ']个变量重名'
-	}
-	return true;
-}
 // 生成带错误提示的输入框
 function get_invalid_input($input, check_result){
 	$input.removeClass('is-invalid');
@@ -391,41 +283,17 @@ function get_invalid_input($input, check_result){
 	$input.addClass('is-invalid');
 	$input.after(errorDiv);
 }
-// 更新变量列表序号，更新variable field内容
-function update_variable_index_and_field() {
-	var trs = $('#variable_table tbody tr:not(#new_helper)');
-	var variable_list = [];
-	var variable_name_list = [];
-	trs.each(function(i) {
-		$(this).find('td[col_index] span').text(i+1);
-		var name_input = $(this).find('td[col_name] input');
-		var name = name_input.val();
-		var check_result = check_variable_name(name, variable_name_list);
-		name_input.removeClass('is-invalid');
-		name_input.siblings('div.invalid-feedback').remove();
-		if (check_result === true) {
-			var part = $(this).find('td[col_part] select').val();
-			var expression = $(this).find('td[col_expression] input').val();
-			var variable = {};
-			variable.name = name;
-			variable.part = part;
-			variable.expression = expression;
-			variable_list.push(variable);
-			variable_name_list.push(name);
-		} else {
-			get_invalid_input(name_input, check_result);
-		}
-	});
-	var json_str = JSON.stringify(variable_list);
-	$('input[name=api_save]').val(json_str);
-	// 关闭遮罩
-	$('#api_send_http_request_mask').hide();
-}
+
 // 检查是否有未保存的变量
 function check_unsaved() {
-	var name = $('#new_helper td[col_name] input').val();
-	if (name !== '') {
-		var msg = '检查到有未保存的变量<span class="mark">' + name + '</span>，是否需要一并提交？';
+	var unsaved_names = [];
+	var unsaved1 = check_unsaved_step_api_save_as();
+	var unsaved2 = check_unsaved_step_ui_data_select();
+	if (unsaved1) {unsaved_names.push(unsaved1)}
+	if (unsaved2) {unsaved_names.push(unsaved2)}
+
+	if (unsaved_names.length > 0) {
+		var msg = '检查到有未保存的内容，是否需要一并提交？';
 		bootbox.confirm({
 			title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
 			message: msg,
@@ -443,15 +311,22 @@ function check_unsaved() {
 			},
 			callback: function (result) {
 				if (result === true) {
-					if (add_variable()) {
+					var save1 = true;
+					if (unsaved1) {save1 = add_step_api_save_as()}
+					var save2 = true;
+					if (unsaved2) {save2 = add_step_ui_data_select()}
+					if (save1 && save2) {
 						$('#object_form').removeAttr('onsubmit').submit();
 					}
 				}
 			}
 		});
 	} else {
-		update_variable_index_and_field();
-		$('#object_form').removeAttr('onsubmit').submit();
+		var save1 = update_step_api_save_as();
+		var save2 = update_step_ui_data_select();
+		if (save1 && save2) {
+			$('#object_form').removeAttr('onsubmit').submit();
+		}
 	}
 	return false;
 }

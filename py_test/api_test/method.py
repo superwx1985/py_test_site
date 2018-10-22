@@ -123,7 +123,7 @@ def save_http_response(response, content, save_as_group, variables, logger=loggi
         except KeyError:
             continue
         else:
-            if part == '1':
+            if part == 'header':
                 response_json = json.dumps(response)
                 if expression:
                     value = response.get(expression, None)

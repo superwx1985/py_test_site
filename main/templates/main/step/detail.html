@@ -45,19 +45,31 @@
             {% else %}
                 getList("{% url 'case_select_json' %}", window.$csrf_input.val(), update_other_sub_case_dropdown_readonly, '{"selected_pk": "{{ form.other_sub_case.value }}"}');
             {% endif %}
-            // 更新http request变量列表
+            // 更新api变量列表
             var api_save_data = {};
-            var success = false;
+            var api_save_data_success = false;
             try {
                 api_save_data = {"data": $.parseJSON($('input[name=api_save]').val())};
-                success = true;
-            } catch (e) {}
-            variable_update(success, api_save_data);
+                api_save_data_success = true;
+            } catch (e) {console.log(e)}
+            init_step_api_save_as(api_save_data_success, api_save_data);
+            // 更新step_ui_data_select
+            var step_ui_data_select = {};
+            var step_ui_data_select_success = false;
+            try {
+                step_ui_data_select = {"data": $.parseJSON($('textarea[name=ui_data]').val())};
+                step_ui_data_select_success = true;
+            } catch (e) {console.log(e)}
+            try {
+                init_step_ui_data_select(step_ui_data_select_success, step_ui_data_select);
+            } catch (e) {console.log(e)}
             // 关闭遮罩
             $('#mask').hide();
         });
     </script>
     <script src="{% static 'main/js/detail_step.js' %}"></script>
+    <script src="{% static 'main/js/detail_step_api_save_as.js' %}"></script>
+    <script src="{% static 'main/js/detail_step_ui_data_select.js' %}"></script>
 {% endblock %}
 
 {% block detail_header %}

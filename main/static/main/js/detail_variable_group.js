@@ -20,7 +20,7 @@ function variable_update(success, data) {
 				$('<td class="middle" col_del><i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i></td>').off('click').on(
 					'click', function() { del_variable(tr) }).appendTo(tr);
 				var span = $('<span></span>').text(i + 1);
-				$('<td index class="middle" col_index></td>').append(span).appendTo(tr);
+				$('<td class="middle" col_index></td>').append(span).appendTo(tr);
 				var input = $('<input placeholder="请输入变量名" class="form-control">').val(v.name).off('change').on('change', function () { update_variable_index_and_field() });
 				$('<td col_name></td>').append(input).appendTo(tr);
 				var input = $('<input placeholder="请输入变量值" class="form-control">').val(v.value);
