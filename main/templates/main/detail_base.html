@@ -83,10 +83,6 @@
                         {% endif %}
                         parent.window.$('[name=m2m_detail_modal]').modal('hide');
                     {% endif %}
-                    {% if request.user != obj.creator and form.initial %}
-                        // 禁用所有互动
-                        $('input,textarea,select').attr('disabled', true);
-                    {% endif %}
                 });
 
                 // 复制对象的回调函数
@@ -113,6 +109,16 @@
             </script>
         {% endblock %}
         {% block script %}
+        {% endblock %}
+        {% block postpositive_script %}
+            <script>
+                $(function () {
+                    if (!window.editable) {
+                        // 禁用所有互动
+                        disable_interaction();
+                    }
+                })
+            </script>
         {% endblock %}
     </head>
     <body>

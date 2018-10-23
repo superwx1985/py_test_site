@@ -22,16 +22,11 @@ function update_dropdown(data, $base_div, readonly) {
 // 更新变量组下拉项
 function update_variable_groups_dropdown(success, data) {
 	if (success) {
-		update_dropdown(data, $("#variable_group_dropdown"));
-    } else {
-		console.log(data);
-	}
-}
-
-// 更新变量组下拉项，只读
-function update_variable_groups_dropdown_readonly(success, data) {
-	if (success) {
-		update_dropdown(data, $("#variable_group_dropdown"), true);
+		if (window.editable) {
+			update_dropdown(data, $("#variable_group_dropdown"));
+		} else {
+			update_dropdown(data, $("#variable_group_dropdown"), true);
+		}
     } else {
 		console.log(data);
 	}
@@ -40,16 +35,11 @@ function update_variable_groups_dropdown_readonly(success, data) {
 // 更新配置下拉项
 function update_config_dropdown(success, data) {
 	if (success) {
-		update_dropdown(data, $("#config_dropdown"));
-    } else {
-		console.log(data);
-	}
-}
-
-// 更新配置下拉项，只读
-function update_config_dropdown_readonly(success, data) {
-	if (success) {
-		update_dropdown(data, $("#config_dropdown"), true);
+		if (window.editable) {
+			update_dropdown(data, $("#config_dropdown"));
+		} else {
+			update_dropdown(data, $("#config_dropdown"), true);
+		}
     } else {
 		console.log(data);
 	}
@@ -58,16 +48,12 @@ function update_config_dropdown_readonly(success, data) {
 // 更新子用例下拉项
 function update_other_sub_case_dropdown(success, data) {
 	if (success) {
-		update_dropdown(data, $("#other_sub_case_dropdown"));
-    } else {
-		console.log(data);
-	}
-}
+		if (window.editable) {
+			update_dropdown(data, $("#other_sub_case_dropdown"));
+		} else {
+			update_dropdown(data, $("#other_sub_case_dropdown"), true);
+		}
 
-// 更新子用例下拉项，只读
-function update_other_sub_case_dropdown_readonly(success, data) {
-	if (success) {
-		update_dropdown(data, $("#other_sub_case_dropdown"), true);
     } else {
 		console.log(data);
 	}
@@ -94,6 +80,7 @@ function update_m2m_selected_index_and_field($input, title) {
 
 // 处理m2m拖动及排序
 function m2m_handle($input, col, title) {
+	if (!window.editable) { return }
 	$('#m2m_selected tbody').sortable({
 		items: "tr:not([placeholder])",
 		distance: 15,
@@ -182,8 +169,8 @@ function submit_m2m_all_objects_form(cookie_path, json_url, last_condition_json)
 			last_condition = $.parseJSON(last_condition_json);
 			condition_json = last_condition_json;
 		}
-		catch(err) {
-			console.log(err);
+		catch (e) {
+			console.log(e);
 		}
 		$('input[name=search_text]').val(last_condition.search_text);
 		if (last_condition.search_project === '') {
@@ -279,7 +266,7 @@ function m2m_sort(order_by_text) {
 
 // 新增m2m主键到m2m字段
 function add_m2m($input, pk) {
-	console.log($input, pk)
+	console.log($input, pk);
 	var m2m_list = $.parseJSON($input.val());
 	m2m_list.push(String(pk));
 	$input.val(JSON.stringify(m2m_list))
@@ -290,4 +277,17 @@ function replace_m2m($input, pk, order) {
 	var m2m_list = $.parseJSON($input.val());
 	m2m_list.splice(order-1, 1, String(pk));
 	$input.val(JSON.stringify(m2m_list))
+}
+
+// 禁用所有互动
+function disable_interaction() {
+	$('input,textarea,select').attr('disabled', true);
+	$('tr#new_helper').hide();
+	$('td[col_del]').empty().off('click');
+	$('td[col_move]').empty().off('click');
+	$('[j_dropdown]').each(function(){$(this).data('dropdown').changeStatus('readonly')});
+	$('#m2m_add_button').off('click');
+	//$('#m2m_all tbody tr').draggable('option', 'disabled');
+	//$('#m2m_selected tbody').sortable('option', 'disabled');
+	//$('#m2m_selected tbody').droppable('option', 'disabled');
 }

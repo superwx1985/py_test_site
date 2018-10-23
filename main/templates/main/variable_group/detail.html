@@ -28,11 +28,15 @@
         $(function () {
             {% if temp_list_json %}
                 // 获取暂存变量
-                variable_update(true, $.parseJSON("{{ temp_list_json|escapejs }}"));
+                init_variable(true, $.parseJSON("{{ temp_list_json|escapejs }}"));
             {% else %}
                 {% if pk %}
                     // 获取变量
-                    getList("{% url 'variable_group_variables' pk %}", window.$csrf_input.val(), variable_update);
+                    {% if request.user != obj.creator %}
+                        getList("{% url 'variable_group_variables' pk %}", window.$csrf_input.val(), init_variable_readonly);
+                    {% else %}
+                        getList("{% url 'variable_group_variables' pk %}", window.$csrf_input.val(), init_variable);
+                    {% endif %}
                 {% else %}
                     // 初始化变量字段
                     update_variable_index_and_field(true);

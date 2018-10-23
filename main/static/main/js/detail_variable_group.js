@@ -10,8 +10,9 @@ function sortable_variable() {
 		}
 	});
 }
+
 // 更新变量列表
-function variable_update(success, data) {
+function init_variable(success, data) {
 	if (success) {
 		if (data.data.length > 0) {
 			$.each(data.data, function (i, v) {
@@ -34,6 +35,11 @@ function variable_update(success, data) {
 		// 注册提示框
 		$('[data-toggle=tooltip]').tooltip();
 	}
+}
+function init_variable_readonly(success, data) {
+	init_variable(success, data);
+	// 禁用所有互动
+	disable_interaction();
 }
 // 添加变量
 function add_variable() {

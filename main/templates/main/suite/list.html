@@ -102,7 +102,12 @@
                                     });
                                     my_modal.find('.modal-title').text('执行结束');
                                     // 使modal可以通过点击外部关闭
-                                    my_modal.data('bs.modal')._config.backdrop = true;
+                                    try {
+                                        my_modal.data('bs.modal')._config.backdrop = true;
+                                    }
+                                    catch (e) {
+                                        console.log(e);
+                                    }
                                 } else if (type === 'error'){
                                     var data_ = JSON.parse(data.data)['data'];
                                     var content_div = $('<div>').addClass('text-left lead text-danger').text(data_);
@@ -110,7 +115,12 @@
                                     execute_button.remove();
                                     my_modal.find('.modal-title').text('执行出错');
                                     // 使modal可以通过点击外部关闭
-                                    my_modal.data('bs.modal')._config.backdrop = true;
+                                    try {
+                                        my_modal.data('bs.modal')._config.backdrop = true;
+                                    }
+                                    catch (e) {
+                                        console.log(e);
+                                    }
                                 }
                             };
                             suite_socket.onclose = function(e) {

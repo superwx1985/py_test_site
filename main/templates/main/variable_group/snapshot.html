@@ -12,7 +12,7 @@
             }
         </style>
         {% include 'main/include/general_script.html' %}
-
+        <script src="{% static 'main/js/detail.js' %}"></script>
         <script>
             $(function () {
 
@@ -21,13 +21,11 @@
         <script>
             $(function () {
                 // 获取变量
-                variable_update(true, $.parseJSON("{{ variables_json|escapejs }}"));
+                init_variable(true, $.parseJSON("{{ variables_json|escapejs }}"));
                 // 关闭遮罩
                 $('#mask').hide();
                 // 禁用所有互动
-                $('input,textarea,select').attr('disabled', true);
-                // 隐藏新增变量行
-                $('#new_helper').hide()
+                disable_interaction();
             });
         </script>
 

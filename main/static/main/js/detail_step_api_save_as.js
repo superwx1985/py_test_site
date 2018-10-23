@@ -10,7 +10,7 @@ function sortable_api_save_as() {
 		}
 	});
 }
-// 更新变量列表
+// 初始化
 function init_step_api_save_as(success, data) {
 	if (success) {
 		if (data.data.length > 0) {

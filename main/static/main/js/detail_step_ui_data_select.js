@@ -162,7 +162,7 @@ function check_step_ui_data_select_all_checkbox() {
 // 检查select_by状态
 function check_step_ui_data_select_select_by_select($tr) {
 	if ($tr.find('td[col_select_by] select').val() === 'index') {
-		$tr.find('td[col_select_value] input').attr('type', 'number').attr('min', '1');
+		$tr.find('td[col_select_value] input').attr('type', 'number').attr('min', '0');
 	} else {
 		$tr.find('td[col_select_value] input').removeAttr('type').removeAttr('min');
 	}

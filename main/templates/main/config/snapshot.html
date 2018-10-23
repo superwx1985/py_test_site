@@ -12,11 +12,9 @@
             }
         </style>
         {% include 'main/include/general_script.html' %}
-
+        <script src="{% static 'main/js/detail.js' %}"></script>
         <script>
-            $(function () {
-
-            })
+            $(function () {})
         </script>
         <script>
             $(function () {
@@ -25,7 +23,7 @@
                 // 关闭遮罩
                 $('#mask').hide();
                 // 禁用所有互动
-                $('input,textarea,select').attr('disabled', true);
+                disable_interaction();
             });
         </script>
 

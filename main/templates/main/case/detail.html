@@ -20,6 +20,11 @@
             $('#nav_case').addClass('active');
             // 定义m2m字段
             window.$m2m_input = $('input[name=step]');
+            {% if request.user == obj.creator or not form.initial %}
+                window.editable = true;
+            {% else %}
+                window.editable = false;
+            {% endif %}
         })
     </script>
 {% endblock %}
@@ -28,11 +33,7 @@
     <script>
         $(function () {
             // 获取变量组下拉项
-            {% if request.user == obj.creator or not form.initial %}
-                getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_groups_dropdown, '{"selected_pk": "{{ form.variable_group.value }}"}');
-            {% else %}
-                getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_groups_dropdown_readonly, '{"selected_pk": "{{ form.variable_group.value }}"}');
-            {% endif %}
+            getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_groups_dropdown, '{"selected_pk": "{{ form.variable_group.value }}"}');
             // 注册只看自己复选框
             $('#all_').on('click', function() {$('#m2m_objects_form').submit()});
             // 注册m2m新增按钮
@@ -92,23 +93,25 @@
                         $('<td>').addClass('middle').append(span).appendTo(tr);
                         tbody.append(tr);
                     });
-                    // 使得步骤列表可拖动
-                    tbody.find('tr').draggable({
-                        appendTo: 'body',
-                        connectToSortable: '#m2m_selected tbody',
-                        cursor: "crosshair",
-                        handle: "[moveable]",
-                        distance: 15,
-                        scope: "m2m_all",
-                        helper: function() {
-                            var tr = $(this).clone().removeClass().css('background-color', 'lightblue');
-                            tr.children('[moveable]').after($('<td index class="text-center"></td>'));
-                            return tr;
-                        },
-                        stop: function( event, ui ) {
-                            ui.helper.removeAttr('style');
-                        }
-                    });
+                    if (window.editable) {
+                        // 使得步骤列表可拖动
+                        tbody.find('tr').draggable({
+                            appendTo: 'body',
+                            connectToSortable: '#m2m_selected tbody',
+                            cursor: "crosshair",
+                            handle: "[moveable]",
+                            distance: 15,
+                            scope: "m2m_all",
+                            helper: function() {
+                                var tr = $(this).clone().removeClass().css('background-color', 'lightblue');
+                                tr.children('[moveable]').after($('<td index class="text-center"></td>'));
+                                return tr;
+                            },
+                            stop: function( event, ui ) {
+                                ui.helper.removeAttr('style');
+                            }
+                        });
+                    }
                 } else {
                     var tr = $('<tr placeholder><td colspan="7" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
                     tbody.empty().append(tr);
