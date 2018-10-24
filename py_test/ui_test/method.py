@@ -104,7 +104,7 @@ def get_driver_(config, timeout, logger=logging.getLogger('py_test')):
 
 # 获取浏览器driver，添加重试功能
 def get_driver(config, retry=3, timeout=10, logger=logging.getLogger('py_test')):
-    timeout = timeout if timeout > 10 else 10
+    timeout = timeout if timeout > 30 else 30
     for i in range(retry):
         pool = ThreadPoolExecutor(1)
         futures = list()
