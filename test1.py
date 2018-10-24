@@ -1,2 +1,5 @@
-if not 2%1:
-    print(1)
+a = 2
+
+a *= 3
+
+print(a)

@@ -276,8 +276,9 @@ class VicStep:
                                 except Exception as e:
                                     self.logger.error('有一个driver（浏览器）无法关闭，请手动关闭。错误信息 => {}'.format(e))
                                 del dr
+                                init_timeout = self.timeout if self.timeout > 30 else 30
                                 dr = ui_method.get_driver(
-                                    self.case_result.suite_result.suite.config, 3, self.timeout, logger=self.logger)
+                                    self.case_result.suite_result.suite.config, 3, init_timeout, logger=self.logger)
                                 vic_case.driver_container[0] = dr
 
                         # 单击
