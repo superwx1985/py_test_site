@@ -20,11 +20,6 @@
             $('#nav_step').addClass('active');
             // 获取action映射表
             window.action_map = $.parseJSON('{{ action_map_json|escapejs }}');
-            {% if request.user == obj.creator or not form.initial %}
-                window.editable = true;
-            {% else %}
-                window.editable = false;
-            {% endif %}
         })
     </script>
 {% endblock %}

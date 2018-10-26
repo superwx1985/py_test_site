@@ -300,6 +300,53 @@ class Variable(models.Model):
         unique_together = ('name', 'variable_group')
 
 
+# 元素组表
+class ElementGroup(models.Model):
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(blank=True, max_length=100)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='element_group_creator', on_delete=models.SET_NULL, blank=True,
+        null=True)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='element_group_modifier', on_delete=models.SET_NULL, blank=True,
+        null=True)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    def natural_key(self):  # 序列化时，可以用此值代替外键ID
+        return self.name
+
+    class Meta:
+        ordering = ['-modified_date']
+
+    def __str__(self):
+        return self.name
+
+
+# 元素表
+class Element(models.Model):
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    by = models.IntegerField(choices=Step.ui_by_list, default=0)
+    locator = models.TextField(blank=True)
+    order = models.IntegerField(default=0)
+    element_group = models.ForeignKey('main.ElementGroup', on_delete=models.CASCADE)
+
+    def natural_key(self):  # 序列化时，可以用此值代替外键ID
+        return self.name
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        unique_together = ('name', 'element_group')
+
+
 # 测试套件
 class Suite(models.Model):
     uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
@@ -328,6 +375,7 @@ class Suite(models.Model):
     thread_count = models.IntegerField(default=1)
     config = models.ForeignKey('main.Config', on_delete=models.SET_NULL, blank=True, null=True)
     variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.SET_NULL, blank=True, null=True)
+    element_group = models.ForeignKey('main.ElementGroup', on_delete=models.SET_NULL, blank=True, null=True)
     case = models.ManyToManyField('Case', through='SuiteVsCase', through_fields=('suite', 'case'))
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
@@ -376,6 +424,7 @@ class SuiteResult(models.Model):
     thread_count = models.IntegerField(default=1)
     config = models.TextField(blank=True, null=True)
     variable_group = models.TextField(blank=True, null=True)
+    element_group = models.TextField(blank=True, null=True)
     project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
 
     suite = models.ForeignKey('main.Suite', on_delete=models.SET_NULL, null=True, blank=True)

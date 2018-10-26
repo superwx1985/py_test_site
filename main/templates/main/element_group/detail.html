@@ -1,0 +1,81 @@
+{% extends 'main/detail_base.html' %}
+{% load staticfiles %}
+{% block title %}
+    {% if form.initial %}
+        {{ form.initial.name }} - 元素组 - {{ block.super }}
+    {% else %}
+        新元素组 - {{ block.super }}
+    {% endif %}
+{% endblock %}
+
+{% block style %}
+    <style type='text/css' media='screen'>
+
+    </style>
+{% endblock %}
+
+{% block prepare_script %}
+    <script>
+        $(function () {
+            // 更新导航栏
+            $('#nav_element').addClass('active');
+            // 获取by list
+            window.by_list = $.parseJSON("{{ by_list_json|escapejs }}");
+            // 初始化by选项
+            $('td[col_by]').empty().append(generate_select(window.by_list));
+        });
+    </script>
+    <script src="{% static 'main/js/detail_element_group.js' %}"></script>
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(function () {
+            {% if temp_list_json %}
+                // 获取暂存元素
+                init_element(true, $.parseJSON("{{ temp_list_json|escapejs }}"));
+            {% else %}
+                {% if pk %}
+                    // 获取元素
+                    {% if request.user != obj.creator %}
+                        getList("{% url 'element_group_elements' pk %}", window.$csrf_input.val(), init_element_readonly);
+                    {% else %}
+                        getList("{% url 'element_group_elements' pk %}", window.$csrf_input.val(), init_element);
+                    {% endif %}
+                {% else %}
+                    // 初始化元素字段
+                    update_element_index_and_field(true);
+                {% endif %}
+            {% endif %}
+            // 注册添加按钮
+            $('#new_helper td[col_move]').on('click', function () {
+                add_element();
+            });
+            // 注册new helper的删除按钮事件
+            $('#new_helper [col_del]').off('click').on('click', function () {
+                $('#new_helper [col_name] input,#new_helper [col_value] input,#new_helper [col_description] input').val('').removeClass('is-invalid').siblings('div.invalid-feedback').remove();
+            });
+            // 启用排序功能
+            sortable_element();
+        });
+    </script>
+{% endblock %}
+
+{% block detail_header %}
+    {% include 'main/include/detail_header.html' with object_name='元素组' %}
+{% endblock %}
+
+{% block detail_form %}
+    <form method="post" id="object_form" novalidate onsubmit="return check_unsaved();">
+        {% csrf_token %}
+
+        {% include 'main/element_group/form_content.html' %}
+
+        {% include 'main/include/detail_redirect.html' %}
+        {% include 'main/include/submit_button_group.html' with copy_url='element_group_copy' %}
+    </form>
+{% endblock %}
+
+{% block detail_inner_list %}
+    {% include 'main/element_group/list_content.html' %}
+{% endblock %}

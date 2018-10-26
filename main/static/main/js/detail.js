@@ -20,12 +20,25 @@ function update_dropdown(data, $base_div, readonly) {
 }
 
 // 更新变量组下拉项
-function update_variable_groups_dropdown(success, data) {
+function update_variable_group_dropdown(success, data) {
 	if (success) {
 		if (window.editable) {
 			update_dropdown(data, $("#variable_group_dropdown"));
 		} else {
 			update_dropdown(data, $("#variable_group_dropdown"), true);
+		}
+    } else {
+		console.log(data);
+	}
+}
+
+// 更新变量组下拉项
+function update_element_group_dropdown(success, data) {
+	if (success) {
+		if (window.editable) {
+			update_dropdown(data, $("#element_group_dropdown"));
+		} else {
+			update_dropdown(data, $("#element_group_dropdown"), true);
 		}
     } else {
 		console.log(data);

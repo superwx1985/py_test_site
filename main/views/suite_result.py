@@ -212,3 +212,21 @@ def variable_group_snapshot(request, pk):
     else:
         form = VariableGroupForm(initial=snapshot_obj)
         return render(request, 'main/variable_group/snapshot.html', locals())
+
+
+# 元素组快照
+@login_required
+def element_group_snapshot(request, pk):
+    try:
+        obj = SuiteResult.objects.get(pk=pk)
+    except SuiteResult.DoesNotExist:
+        raise Http404('SuiteResult does not exist')
+    try:
+        snapshot_obj = json.loads(obj.element_group)
+        elements_json = json.dumps({'data': snapshot_obj['elements']})
+    except:
+        logger.warning('快照数据损坏，无法展示。', exc_info=True)
+        return HttpResponse('<div style="color: red;">快照数据损坏，无法展示。</div>')
+    else:
+        form = VariableGroupForm(initial=snapshot_obj)
+        return render(request, 'main/element_group/snapshot.html', locals())

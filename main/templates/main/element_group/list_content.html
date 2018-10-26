@@ -1,0 +1,28 @@
+<div class="row">
+    <div class="col text-center">
+        <h5 class="ui-widget-header">元素列表</h5>
+        <table id='element_table' class="table table-sm table-bordered" style="width: 100%">
+            <colgroup>
+                <col style='width: 60px;'>
+                <col style='width: 60px;'>
+                <col style='width: 60px;'>
+                <col style='width: 20%;'>
+                <col style='width: 170px;'>
+                <col>
+                <col>
+            </colgroup>
+            <thead class="thead-light"><tr><th></th><th></th><th>序号</th><th>名称</th><th>定位方式</th><th>定位值</th><th>备注</th></tr></thead>
+            <tbody class="text-left">
+                <tr id="new_helper" class="bg-light">
+                    <td class="middle" col_move><i class="icon-ok-circle icon-2x text-success" data-toggle="tooltip" title="添加"></i></td>
+                    <td class="middle" col_del><i class="icon-trash icon-2x" data-toggle="tooltip" title="删除"></i></td>
+                    <td class="middle" col_index><span></span></td>
+                    <td col_name><input placeholder="请输入元素名" class="form-control" maxlength="100"></td>
+                    <td col_by></td>
+                    <td col_locator><input placeholder="请输入定位值" class="form-control"></td>
+                    <td col_description><input placeholder="" class="form-control"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

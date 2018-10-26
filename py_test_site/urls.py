@@ -25,6 +25,7 @@ import main.views.case as case
 import main.views.step as step
 import main.views.config as config
 import main.views.variable_group as variable_group
+import main.views.element_group as element_group
 import main.views.suite as suite
 import main.views.suite_result as suite_result
 import main.views.case_result as case_result
@@ -84,6 +85,16 @@ urlpatterns = [
     path('variable_group/<str:pk>/copy/', variable_group.copy_, name='variable_group_copy'),
     path('variable_group/<str:pk>/reference/', variable_group.reference, name='variable_group_reference'),
 
+    path('element_groups/', element_group.list_, name='element_groups'),
+    path('element_group/add/', element_group.add, name='element_group_add'),
+    path('element_group/select_json/', element_group.select_json, name='element_group_select_json'),
+    path('element_group/<str:pk>/', element_group.detail, name='element_group'),
+    path('element_group/<str:pk>/delete/', element_group.delete, name='element_group_delete'),
+    path('element_group/<str:pk>/quick_update/', element_group.quick_update, name='element_group_quick_update'),
+    path('element_group/<str:pk>/elements/', element_group.elements, name='element_group_elements'),
+    path('element_group/<str:pk>/copy/', element_group.copy_, name='element_group_copy'),
+    path('element_group/<str:pk>/reference/', element_group.reference, name='element_group_reference'),
+
     path('suites/', suite.list_, name='suites'),
     path('suite/add/', suite.add, name='suite_add'),
     path('suite/<str:pk>/', suite.detail, name='suite'),
@@ -99,6 +110,7 @@ urlpatterns = [
     path('result/<str:pk>/quick_update/', suite_result.quick_update, name='result_quick_update'),
     path('result/<str:pk>/config_snapshot', suite_result.config_snapshot, name='config_snapshot'),
     path('result/<str:pk>/variable_group_snapshot', suite_result.variable_group_snapshot, name='suite_variable_group_snapshot'),
+    path('result/<str:pk>/element_group_snapshot', suite_result.element_group_snapshot, name='suite_element_group_snapshot'),
 
     path('case_result/<str:pk>/variable_group_snapshot', case_result.variable_group_snapshot, name='case_variable_group_snapshot'),
 

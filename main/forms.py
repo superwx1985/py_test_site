@@ -173,15 +173,15 @@ class VariableGroupForm(forms.ModelForm):
         fields = '__all__'
 
 
-# class VariableForm(forms.ModelForm):
-#     # 不验证某些字段
-#     creator = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-#     modifier = forms.ModelChoiceField(queryset=User.objects, required=False, validators=[])
-#     is_active = forms.CharField(required=False, validators=[])
-#
-#     class Meta:
-#         model = Variable
-#         fields = '__all__'
+class ElementGroupForm(forms.ModelForm):
+    # 不验证某些字段
+    is_active = forms.CharField(required=False, validators=[])
+    # 限制project为必选
+    project = forms.ModelChoiceField(queryset=Project.objects, required=True)
+
+    class Meta:
+        model = ElementGroup
+        fields = '__all__'
 
 
 class SuiteForm(forms.ModelForm):

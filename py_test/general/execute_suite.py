@@ -53,6 +53,15 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
     else:
         variable_group_json = None
 
+    # 获取元素组json
+    if suite.element_group:
+        v_list = list(suite.element_group.element_set.all().values('pk', 'name', 'description', 'by', 'locator', 'order'))
+        element_group_dict = model_to_dict(suite.element_group)
+        element_group_dict['element'] = v_list
+        element_group_json = json.dumps(element_group_dict)
+    else:
+        element_group_json = None
+
     # 初始化suite result
     suite_result = SuiteResult.objects.create(
         name=suite.name,
@@ -63,6 +72,7 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
         thread_count=suite.thread_count,
         config=json.dumps(model_to_dict(suite.config)) if suite.config else None,
         variable_group=variable_group_json,
+        element_group=element_group_json,
         project=suite.project,
 
         suite=suite,

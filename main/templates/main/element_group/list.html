@@ -1,0 +1,75 @@
+{% extends 'main/list_base.html' %}
+{% block title %}元素组 - {{ block.super }}{% endblock %}
+{% block script %}
+    <script>
+        $(function () {
+            // 更新导航栏
+            $('#nav_element').addClass('active');
+            // 获取添加地址
+            window.addUrl="{% url 'element_group_add' %}"
+        })
+    </script>
+{% endblock %}
+{% block result_table %}
+    <div class="table-responsive" id='result_div'>
+        <table class="table table-bordered table-hover" id='result_table'>
+            <colgroup>
+                <col style='width: 60px;'>
+                <col style='width: 60px;'>
+                <col>
+                <col style='width: 200px;'>
+                <col style='width: 150px;'>
+                <col style='width: 100px;'>
+                <col style='width: 130px;'>
+                <col style='width: 105px;'>
+                <col style='width: 180px;'>
+                <col style='width: 170px;'>
+            </colgroup>
+            <thead class="thead-light middle">
+                <tr>
+                    <th>序号</th>
+                    <th order_by_text="pk">ID</th>
+                    <th order_by_text="name">名称</th>
+                    <th order_by_text="keyword">关键字</th>
+                    <th order_by_text="project__name">项目</th>
+                    <th order_by_text="element_count">元素数</th>
+                    <th order_by_text="reference_count">被调用次数</th>
+                    <th order_by_text="real_name">作者</th>
+                    <th order_by_text="modified_date">修改时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj in objects %}
+                    <tr pk="{{ obj.pk }}" uuid="{{ obj.uuid }}" edit_url="{% url 'element_group' obj.pk %}" quick_update_url="{% url 'element_group_quick_update' obj.pk %}" del_url="{% url 'element_group_delete' obj.pk %}">
+                        <td col_name='index' class="middle small"></td>
+                        <td col_name='pk' class="middle small">{{ obj.pk }}</td>
+                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
+                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
+                        <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
+                        <td col_name='element_count' class="middle">{{ obj.element_count }}</td>
+                        <td col_name='reference_count' class="middle"><a href="javascript:show_reference('{% url "element_group_reference" obj.pk %}', '<span class=\'mark small\'>{{ obj.name }}</span>被调用情况')"><span class="font-weight-bold">{{ obj.reference_count }}</span></a></td>
+                        <td col_name='real_name' class="middle">{{ obj.real_name }}</td>
+                        <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
+                        <td>
+                            <div class="middle">
+                                {% if request.user.pk == obj.creator %}
+                                    <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="编辑"><i class="icon-edit"></i></button>
+                                    <button copy_url="{% url 'element_group_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
+                                    <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除"><i class="icon-trash"></i></button>
+                                {% else %}
+                                    <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="查看"><i class="icon-list"></i></button>
+                                    <button copy_url="{% url 'element_group_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

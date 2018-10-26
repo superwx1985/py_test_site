@@ -24,7 +24,12 @@
             <script>
                 $(function () {
                     window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
-                })
+                    {% if request.user == obj.creator or not form.initial %}
+                        window.editable = true;
+                    {% else %}
+                        window.editable = false;
+                    {% endif %}
+                });
             </script>
         {% endblock %}
         {% block prepare_script %}

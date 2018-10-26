@@ -20,11 +20,6 @@
             $('#nav_suite').addClass('active');
             // 定义m2m字段
             window.$m2m_input = $('input[name=case]');
-            {% if request.user == obj.creator or not form.initial %}
-                window.editable = true;
-            {% else %}
-                window.editable = false;
-            {% endif %}
         })
     </script>
 {% endblock %}
@@ -35,7 +30,9 @@
             // 获取配置下拉项
             getList("{% url 'config_select_json' %}", window.$csrf_input.val(), update_config_dropdown, '{"selected_pk": "{{ form.config.value }}"}');
             // 获取变量组下拉项
-            getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_groups_dropdown, '{"selected_pk": "{{ form.variable_group.value }}"}');
+            getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_group_dropdown, '{"selected_pk": "{{ form.variable_group.value }}"}');
+            // 获取元素组下拉项
+            getList("{% url 'element_group_select_json' %}", window.$csrf_input.val(), update_element_group_dropdown, '{"selected_pk": "{{ form.element_group.value }}"}');
             // 注册只看自己复选框
             $('#all_').on('click', function() {$('#m2m_objects_form').submit()});
             // 注册m2m新增按钮
@@ -225,6 +222,15 @@
             <div class="col" form_data>
                 <div id="variable_group_dropdown" name="variable_group"></div>
                 {% for error in form.variable_group.errors %}
+                    <div class="invalid-feedback" style="display: block">{{ error }}</div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">公共元素组&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的公共元素组。"></i></div>
+            <div class="col" form_data>
+                <div id="element_group_dropdown" name="element_group"></div>
+                {% for error in form.element_group.errors %}
                     <div class="invalid-feedback" style="display: block">{{ error }}</div>
                 {% endfor %}
             </div>
