@@ -132,8 +132,8 @@ def get_public_elements(name, public_elements):
         element_info = public_elements.get_element_info(name)
     except KeyError:
         raise ValueError('找不到公共元素【{}】'.format(name))
-    element_by = element_info.by
-    element_locator = element_info.locator
+    element_by = element_info[0]
+    element_locator = element_info[1]
     return element_by, element_locator
 
 

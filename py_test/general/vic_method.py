@@ -6,32 +6,6 @@ from py_test.general import vic_variables
 from py_test.vic_tools import vic_eval, vic_date_handle
 
 
-# 读取公共内容
-def load_public_data(variable_objects, global_variables, public_elements, logger=logging.getLogger('py_test')):
-    # 读取公共变量表，保存到全局变量中
-    for obj in variable_objects:
-        value = replace_special_value(obj.value, global_variables, None, logger)
-        global_variables.set_variable(obj.name, value)
-
-    # 读取公共元素表，保存到公共元素组中
-    # todo()
-    # data = dict()
-    # if data:
-    #     col_map = get_excel_col_map(data)
-    #     col_check_list = ('name', 'by', 'locator')
-    #     for col in col_check_list:
-    #         if col not in col_map:
-    #             raise ValueError('公共配置文件【{}】的【{}】表缺少【{}】列'.format(excel_file, 'Element', col))
-    #     for row in range(2, data['rows'] + 1):
-    #         name = str(load_data_in_dict(data, '{}{}'.format(col_map['name'], row)))
-    #         if name != '':
-    #             by = str(load_data_in_dict(data, '{}{}'.format(col_map['by'], row)))
-    #             by = replace_special_value(by, global_variables)
-    #             locator = str(load_data_in_dict(data, '{}{}'.format(col_map['locator'], row)))
-    #             locator = replace_special_value(locator, global_variables)
-    #             public_elements.add_element_info(name, vic_public_elements.ElementInfo(by, locator))
-
-
 # 验证文件名称是否合法
 def check_name(name, invalid_character=r'\/:*?<>|'):
     check_result = [True, name]

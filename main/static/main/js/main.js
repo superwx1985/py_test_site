@@ -46,7 +46,7 @@ function quick_update(tds, func, callback_func) {
             td.data('oldText', td.text());
             var old_value = td.text();
             // 插入输入框
-            var textarea = $("<textarea class='input_area'></textarea>");
+            var textarea = $("<textarea class='input-area'></textarea>");
             textarea.css({'height': '100%', 'background-color': 'lightyellow'});
             textarea.text(old_value);
             td.text('');

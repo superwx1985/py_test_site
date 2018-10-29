@@ -57,6 +57,8 @@
             });
             // 启用排序功能
             sortable_element();
+            // 列表可调宽度
+            $('th').resizable({maxHeight: 1, alsoResize: '#element_table'});
         });
     </script>
 {% endblock %}

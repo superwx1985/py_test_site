@@ -136,6 +136,8 @@
                     $('[data-toggle=tooltip]').tooltip();
                     // 弹出框
                     $('[data-toggle=popover]').popover();
+                    // 列表可调宽度
+                    $('th').resizable({maxHeight: 1, alsoResize: '#result_table'});
                     // 关闭遮罩
                     $('#mask').hide();
                 });

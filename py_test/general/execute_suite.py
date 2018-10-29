@@ -6,7 +6,7 @@ import uuid
 from py_test.general import vic_variables, vic_public_elements, vic_config, vic_log, vic_method
 from .vic_case import VicCase
 from concurrent.futures import ThreadPoolExecutor, wait
-from main.models import Case, SuiteResult
+from main.models import Case, SuiteResult, Step
 from django.forms.models import model_to_dict
 from utils.system import FORCE_STOP
 
@@ -30,12 +30,23 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
 
     logger.info('开始')
 
-    # 读取公共变量及元素组
-    global_variables = vic_variables.Variables(logger)  # 初始化全局变量
-    public_elements = vic_public_elements.PublicElements(logger)  # 初始化公共元素组
+    # 初始化全局变量
+    global_variables = vic_variables.Variables(logger)
     if suite.variable_group:
         variable_objects = suite.variable_group.variable_set.all()
-        vic_method.load_public_data(variable_objects, global_variables, public_elements, logger)
+        for obj in variable_objects:
+            value = vic_method.replace_special_value(obj.value, global_variables, None, logger)
+            global_variables.set_variable(obj.name, value)
+
+    # 初始化公共元素组
+    public_elements = vic_public_elements.PublicElements(logger)
+    if suite.element_group:
+        element_objects = suite.element_group.element_set.all()
+        # 获取by映射
+        ui_by_dict = {i[0]: i[1] for i in Step.ui_by_list}
+        for obj in element_objects:
+            ui_by = ui_by_dict[obj.by]
+            public_elements.add_element_info(obj.name, (ui_by, obj.locator))
 
     # 获取配置
     config = suite.config
