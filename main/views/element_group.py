@@ -157,6 +157,7 @@ def detail(request, pk):
 @login_required
 def add(request):
     next_ = request.GET.get('next', '/home/')
+    by_list_json = json.dumps(Step.ui_by_list)
     if request.method == 'GET':
         form = ElementGroupForm()
         if request.session.get('status', None) == 'success':
