@@ -42,23 +42,27 @@
             // 获取子用例下拉项
             getList("{% url 'case_select_json' %}", window.$csrf_input.val(), update_other_sub_case_dropdown, '{"selected_pk": "{{ form.other_sub_case.value }}"}');
             // 更新api变量列表
-            var api_save_data = {};
-            var api_save_data_success = false;
-            try {
-                api_save_data = {"data": $.parseJSON($('input[name=api_save]').val())};
-                api_save_data_success = true;
-            } catch (e) {console.log(e)}
-            init_step_api_save_as(api_save_data_success, api_save_data);
+            if (select_value === 'API_SEND_HTTP_REQUEST') {
+                var api_save_data = {};
+                var api_save_data_success = false;
+                try {
+                    api_save_data = {"data": $.parseJSON($('input[name=api_save]').val())};
+                    api_save_data_success = true;
+                } catch (e) {console.log(e)}
+                init_step_api_save_as(api_save_data_success, api_save_data);
+            }
             // 更新step_ui_data_select
-            var step_ui_data_select = {};
-            var step_ui_data_select_success = false;
-            try {
-                step_ui_data_select = {"data": $.parseJSON($('textarea[name=ui_data]').val())};
-                step_ui_data_select_success = true;
-            } catch (e) {console.log(e)}
-            try {
-                init_step_ui_data_select(step_ui_data_select_success, step_ui_data_select);
-            } catch (e) {console.log(e)}
+            if (window.select_value === 'UI_SELECT') {
+                var step_ui_data_select = {};
+                var step_ui_data_select_success = false;
+                try {
+                    step_ui_data_select = {"data": $.parseJSON($('textarea[name=ui_data]').val())};
+                    step_ui_data_select_success = true;
+                } catch (e) {console.log(e)}
+                try {
+                    init_step_ui_data_select(step_ui_data_select_success, step_ui_data_select);
+                } catch (e) {console.log(e)}
+            }
             // 关闭遮罩
             $('#mask').hide();
         });

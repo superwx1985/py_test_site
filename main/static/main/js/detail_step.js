@@ -1,7 +1,7 @@
 // 展示Action相关内容
 function show_action_field($actionSelect) {
 	reset_action_field();
-	var select_value = window.action_map[$actionSelect.find('option:selected').val()];
+	window.select_value = window.action_map[$actionSelect.find('option:selected').val()];
 	var introduce = $('#introduce');
 	if (select_value === 'UI_GO_TO_URL') {
 		introduce.children('div').text('打开一个页面，请填入页面URL');
@@ -51,14 +51,8 @@ function show_action_field($actionSelect) {
 		$('div[name=ui_data] .col-1').text('文字内容');
 	} else if (select_value === 'UI_SELECT') {
 		introduce.children('div').text('在指定的下拉列表进行选择操作，如果找不到元素或元素当前不可见会报错。此动作只能操作由select，option元素组成的标准下拉列表，其他类型的下拉列表请使用单击或JS进行选择');
-		introduce.append($('<div>').text('请在选项表达式中填入欲选中的选项。'));
-		introduce.append($('<div>').text('不填入值代表取消选中任何选项。'));
-		introduce.append($('<div>').text('all代表全选（只能在多选框生效）。'));
-		introduce.append($('<div>').text('使用json格式提供选项表达式，例如：'));
-		introduce.append($('<div><span class="mark">[{"value": "1"}]</span>代表选中value="1"的选项；<span class="mark">[{"value": "1"}, {"value": "3"}]</span>代表选中value="1"和value="3"的选项</div>'));
-		introduce.append($('<div><span class="mark">[{"index": "0"}]</span>代表选中第一个选项；<span class="mark">[{"index": "0"}, {"index": "3"}]</span>代表选中第一个和第四个选项</div>'));
-		introduce.append($('<div><span class="mark">[{"text": "红色"}]</span>代表选中文字为“红色”的选项；<span class="mark">[{"text": "红色"}, {"text": "yellow"}]</span>代表选中文字为“红色”和“yellow”的选项</div>'));
-		introduce.append($('<div><span class="mark">[{"value": "1"}, {"text": "红色"}, {"index": "2"}]</span>代表选中value="1"，文字为“红色”以及第3个选项</div>'));
+		introduce.append($('<div>').text('不提供选项代表在指定的下拉列表取消所有选择。'));
+		introduce.append($('<div>').text('全选只能在多选下拉列表生效。'));
 		$('[ui],div[name=timeout],div[name=ui_data_select]').show();
 		$('div[name=ui_special_action],div[name=ui_data]').hide();
 		// 注册添加按钮
@@ -286,13 +280,14 @@ function get_invalid_input($input, check_result){
 
 // 检查是否有未保存的变量
 function check_unsaved() {
-	var unsaved_names = [];
-	var unsaved1 = check_unsaved_step_api_save_as();
-	var unsaved2 = check_unsaved_step_ui_data_select();
-	if (unsaved1) {unsaved_names.push(unsaved1)}
-	if (unsaved2) {unsaved_names.push(unsaved2)}
+	var unsaved = false;
+	if (window.select_value === 'UI_SELECT') {
+		unsaved = check_unsaved_step_ui_data_select();
+	} else if (select_value === 'API_SEND_HTTP_REQUEST') {
+		unsaved = check_unsaved_step_api_save_as();
+	}
 
-	if (unsaved_names.length > 0) {
+	if (unsaved) {
 		var msg = '检查到有未保存的内容，是否需要一并提交？';
 		bootbox.confirm({
 			title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
@@ -311,20 +306,30 @@ function check_unsaved() {
 			},
 			callback: function (result) {
 				if (result === true) {
-					var save1 = true;
-					if (unsaved1) {save1 = add_step_api_save_as()}
-					var save2 = true;
-					if (unsaved2) {save2 = add_step_ui_data_select()}
-					if (save1 && save2) {
+					var save = false;
+					if (window.select_value === 'UI_SELECT') {
+						save = add_step_ui_data_select();
+					} else if (select_value === 'API_SEND_HTTP_REQUEST') {
+						save = add_step_api_save_as();
+					} else {
+						save = true;
+					}
+					if (save) {
 						$('#object_form').removeAttr('onsubmit').submit();
 					}
 				}
 			}
 		});
 	} else {
-		var save1 = update_step_api_save_as();
-		var save2 = update_step_ui_data_select();
-		if (save1 && save2) {
+		var save = false;
+		if (window.select_value === 'UI_SELECT') {
+			save = update_step_ui_data_select();
+		} else if (select_value === 'API_SEND_HTTP_REQUEST') {
+			save = update_step_api_save_as();
+		} else {
+			save = true;
+		}
+		if (save) {
 			$('#object_form').removeAttr('onsubmit').submit();
 		}
 	}
