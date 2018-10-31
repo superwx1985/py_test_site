@@ -140,13 +140,25 @@ USE_TZ = False
 
 # 静态文件地址
 STATIC_URL = '/static/'
+
+# 当执行manage collectstatic时，静态文件的集中存放路径
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
+# 项目公用静态文件的路径
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'common_static/'),
+]
+
+# 静态文件查找顺序，默认先找STATICFILES_DIRS中的，然后找各应用的，找到则停止
+# STATICFILES_FINDERS = [
+#     'django.contrib.staticfiles.finders.FileSystemFinder',
+#     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+# ]
 
 # 媒体文件地址
 MEDIA_URL = '/media/'
 
-# 默认上传位置
-
+# 默认上传路径
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # 登陆页面
