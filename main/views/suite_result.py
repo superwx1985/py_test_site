@@ -101,7 +101,6 @@ def list_(request):
     return respond
 
 
-# 用例详情
 @login_required
 def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
@@ -113,31 +112,21 @@ def detail(request, pk):
     sub_objects = obj.caseresult_set.filter(step_result=None).order_by('case_order')
     if request.method == 'GET':
         _project = obj.project.pk if obj.project is not None else None
-        form = SuiteResultForm(initial={
-            'name': obj.name, 'description': obj.description, 'keyword': obj.keyword, 'project': _project})
+        form = SuiteResultForm(instance=obj)
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/result/detail.html', locals())
     elif request.method == 'POST':
-        form = SuiteResultForm(data=request.POST)
+        import copy
+        obj_temp = copy.deepcopy(obj)
+        form = SuiteResultForm(data=request.POST, instance=obj_temp)
         if form.is_valid():
-            obj.name = form.cleaned_data['name']
-            obj.description = form.cleaned_data['description']
-            obj.keyword = form.cleaned_data['keyword']
-            project_pk = form.cleaned_data['project']
-            if project_pk.isdigit():
-                try:
-                    project = Project.objects.get(pk=project_pk)
-                    obj.project = project
-                except Project.DoesNotExist:
-                    logger.warning('ID为[{}]的项目不存在'.format(project_pk))
-            else:
-                obj.project = None
-            obj.modifier = request.user
-            obj.clean_fields()
-            obj.save()
+            form_ = form.save(commit=False)
+            form_.modifier = request.user
+            form_.save()
+            form.save_m2m()
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect:
@@ -155,6 +144,20 @@ def delete(request, pk):
         return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
     else:
         return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': pk})
+
+
+@login_required
+def multiple_delete(request):
+    if request.method == 'POST':
+        try:
+            pk_list = json.loads(request.POST['pk_list'])
+            SuiteResult.objects.filter(pk__in=pk_list, creator=request.user).update(
+                is_active=False, modifier=request.user, modified_date=timezone.now())
+        except Exception as e:
+            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+    else:
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 @login_required

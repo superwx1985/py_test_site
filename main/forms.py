@@ -204,8 +204,40 @@ class SuiteForm(forms.ModelForm):
         fields = '__all__'
 
 
-class SuiteResultForm(forms.Form):
+class SuiteResultForm_(forms.Form):
     name = forms.CharField(max_length=100)
     description = forms.CharField(required=False, widget=forms.Textarea())
     keyword = forms.CharField(required=False, max_length=100)
     project = forms.ChoiceField(choices=get_project_list, required=False)
+
+class SuiteResultForm(forms.ModelForm):
+    name = forms.CharField(max_length=100)
+    description = forms.CharField(required=False, widget=forms.Textarea())
+    keyword = forms.CharField(required=False, max_length=100)
+    project = forms.ModelChoiceField(queryset=Project.objects, required=False)
+
+    class Meta:
+        model = SuiteResult
+        fields = '__all__'
+        exclude = [
+            'thread_count',
+            'timeout',
+            'ui_get_ss',
+            'config',
+            'variable_group',
+            'element_group',
+            'suite',
+            'start_date',
+            'end_date',
+            'execute_count',
+            'pass_count',
+            'fail_count',
+            'error_count',
+            'result_status',
+            'result_message',
+            'result_error',
+
+            'is_active',
+            'creator',
+            'created_date',
+        ]

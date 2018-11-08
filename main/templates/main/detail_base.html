@@ -72,10 +72,10 @@
                         $('[name=return_button]').on('click', function() { window.open($('#submit_button_group').attr('next_'), '_self') });
                         $('[name=save_and_return_button]').on('click', function() { $('[name=redirect]').val(true) });
                         $('[name=add_another_button]').on('click', function() { $('[name=redirect]').val('add_another') });
-                        $('[name=copy_button]').on('click', function() { copy_obj($('#id_name').val(), $(this).attr('copy_url'), $(this).attr('copy_sub_item')) });
+                        $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url')) });
                     {% else %}
                         $('[name=return_button]').on('click', function() { parent.window.$('[name=m2m_detail_modal]').modal('hide') });
-                        $('[name=copy_button]').on('click', function() { copy_obj($('#id_name').val(), $(this).attr('copy_url'), $(this).attr('copy_sub_item')) });
+                        $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url')) });
                     {% endif %}
                     {#如果是内嵌窗口而且含有成功标志，那么关闭父页面的弹窗#}
                     {% if inside and prompt == 'success' %}
@@ -91,18 +91,18 @@
                 });
 
                 // 复制对象的回调函数
-                function callback_copy_obj(copy_url, name) {
+                function callback_copy_obj(copy_url, name_prefix) {
                     copy_obj_post(copy_url, name)
                 }
 
                 // 复制对象及子对象的的回调函数
-                function callback_copy_obj_sub_item(copy_url, name) {
-                    copy_obj_post(copy_url, name, 1)
+                function callback_copy_obj_sub_item(copy_url, name_prefix) {
+                    copy_obj_post(copy_url, name_prefix, 1)
                 }
 
                 // 复制对象
-                function copy_obj_post(copy_url, name, copy_sub_item) {
-                    $.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name': name, 'order': '{{ order }}', 'copy_sub_item': copy_sub_item}, function(data) {
+                function copy_obj_post(copy_url, name_prefix, copy_sub_item) {
+                    $.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name_prefix': name_prefix, 'order': '{{ order }}', 'copy_sub_item': copy_sub_item}, function(data) {
                         // 如果返回包含有效order，则添加new_pk及order至参数，用于内嵌窗口复制后更新m2m列表
                         if (data.data.order > 0) {
                             window.open(data.data.new_url + window.location.search + '&new_pk=' + data.data.new_pk + '&order=' + data.data.order, '_self');

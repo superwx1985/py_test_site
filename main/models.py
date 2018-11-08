@@ -450,6 +450,8 @@ class SuiteResult(models.Model):
         (3, '异常'),
     )
     result_status = models.IntegerField(choices=result_status_list, blank=True, null=True)
+    result_message = models.TextField(blank=True)
+    result_error = models.TextField(blank=True)
 
     @property
     def elapsed_time(self):

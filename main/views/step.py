@@ -187,6 +187,20 @@ def delete(request, pk):
 
 
 @login_required
+def multiple_delete(request):
+    if request.method == 'POST':
+        try:
+            pk_list = json.loads(request.POST['pk_list'])
+            Step.objects.filter(pk__in=pk_list, creator=request.user).update(
+                is_active=False, modifier=request.user, modified_date=timezone.now())
+        except Exception as e:
+            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+    else:
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
+
+
+@login_required
 def quick_update(request, pk):
     if request.method == 'POST':
         try:
@@ -310,26 +324,49 @@ def list_temp(request):
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': data_list})
 
 
+# 复制操作
+def copy_action(pk, user, name_prefix=None):
+    obj = Step.objects.get(pk=pk)
+    obj.pk = None
+    if name_prefix:
+        obj.name = name_prefix + obj.name
+    obj.creator = obj.modifier = user
+    obj.uuid = uuid.uuid1()
+    obj.clean_fields()
+    obj.save()
+    return obj
+
+
 # 复制
 @login_required
 def copy_(request, pk):
-    name = request.POST.get('name', '')
+    name_prefix = request.POST.get('name_prefix', '')
     order = request.POST.get('order')
     order = change_to_positive_integer(order, 0)
     try:
-        obj = Step.objects.get(pk=pk)
-        obj.pk = None
-        obj.name = name
-        obj.creator = obj.modifier = request.user
-        obj.uuid = uuid.uuid1()
-        obj.clean_fields()
-        obj.save()
+        obj = copy_action(pk, request.user, name_prefix)
         return JsonResponse({
             'statue': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
         })
-    except Step.DoesNotExist as e:
-        return JsonResponse({'statue': 1, 'message': 'ERROR', 'data': str(e)})
+    except Exception as e:
+        return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+
+
+# 批量复制
+@login_required
+def multiple_copy(request):
+    if request.method == 'POST':
+        try:
+            pk_list = json.loads(request.POST['pk_list'])
+            name_prefix = request.POST.get('name_prefix', '')
+            for pk in pk_list:
+                _ = copy_action(pk, request.user, name_prefix)
+        except Exception as e:
+            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+    else:
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 # 获取调用列表

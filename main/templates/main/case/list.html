@@ -7,6 +7,14 @@
             $('#nav_case').addClass('active');
             // 获取添加地址
             window.addUrl="{% url 'case_add' %}";
+            // 获取批量删除地址
+            window.multiple_delete_url="{% url 'cases_multiple_delete' %}";
+            // 获取批量复制地址
+            window.multiple_copy_url="{% url 'cases_multiple_copy' %}";
+            // 标识子对象
+            {% if has_sub_object %}
+                window.has_sub_object = true;
+            {% endif %}
         })
     </script>
 {% endblock %}
@@ -27,7 +35,7 @@
             </colgroup>
             <thead class="thead-light middle">
                 <tr>
-                    <th>序号</th>
+                    <th index data-toggle="tooltip" title="全选/全不选">序号</th>
                     <th order_by_text="pk">ID</th>
                     <th order_by_text="name">名称</th>
                     <th order_by_text="keyword">关键字</th>
@@ -45,7 +53,7 @@
                         <td col_name='index' class="middle small"></td>
                         <td col_name='pk' class="middle small">{{ obj.pk }}</td>
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
-                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
+                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="middle">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='m2m_count' class="middle">{{ obj.m2m_count }}</td>
                         <td col_name='reference_count' class="middle"><a href="javascript:show_reference('{% url "case_reference" obj.pk %}', '<span class=\'mark small\'>{{ obj.name }}</span>被调用情况')"><span class="font-weight-bold">{{ obj.reference_count }}</span></a></td>
@@ -55,11 +63,11 @@
                             <div class="middle">
                                 {% if request.user.pk == obj.creator %}
                                     <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="编辑"><i class="icon-edit"></i></button>
-                                    <button copy_url="{% url 'case_copy' obj.pk %}" copy_sub_item=true type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
+                                    <button copy_url="{% url 'case_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
                                     <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除"><i class="icon-trash"></i></button>
                                 {% else %}
                                     <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="查看"><i class="icon-list"></i></button>
-                                    <button copy_url="{% url 'case_copy' obj.pk %}" copy_sub_item=true type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
+                                    <button copy_url="{% url 'case_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
                                 {% endif %}
                             </div>
                         </td>

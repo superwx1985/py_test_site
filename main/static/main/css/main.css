@@ -37,12 +37,14 @@ body {
 /*分页工具栏div*/
 div.paginator{
 	margin: 0 auto;
-	text-align: center
+	text-align: center;
+
 }
 div.paginator>div{
 	float: left;
     position: relative;
-    left: 50%
+    left: 50%;
+	bottom: 5px;
 }
 div.paginator>div>div{
     position: relative;
@@ -155,4 +157,12 @@ div.div_center>div>div{
 .btn-warning-dark:not(:disabled):not(.disabled):active:focus, .btn-warning-dark:not(:disabled):not(.disabled).active:focus,
 .show > .btn-warning-dark.dropdown-toggle:focus {
   box-shadow: 0 0 0 0.2rem rgba(255, 93, 7, 0.5);
+}
+#go_to_top {
+	position: fixed;
+	bottom: 5px;
+	right: 20px;
+	z-index: 1040;
+	cursor: pointer;
+	opacity: 0.75;
 }

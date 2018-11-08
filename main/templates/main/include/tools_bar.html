@@ -7,7 +7,9 @@
             {% include 'main/include/tools/see_all.html' %}
         </div>
         <div class="col text-right">
-            {% if add_button %}{% include 'main/include/tools/add_button.html' %}{% endif %}
+            {% if copy_button %}<button type="button" id="multiple_copy_button" class="btn btn-warning" disabled="disabled"><i class="icon-copy"></i>&nbsp;批量复制</button>{% endif %}
+            <button type="button" id="multiple_delete_button" class="btn btn-danger" disabled="disabled"><i class="icon-trash"></i>&nbsp;批量删除</button>
+            {% if add_button %}<button type="button" id="add_button" class="btn btn-success"><i class="icon-plus"></i>&nbsp;添加</button>{% endif %}
         </div>
     </div>
 </div>

@@ -1,6 +1,7 @@
 import json
 import logging
 import copy
+import uuid
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -15,7 +16,7 @@ from utils.other import get_query_condition, change_to_positive_integer, Cookie,
 from py_test.general.execute_suite import execute_suite
 from django.template.loader import render_to_string
 from urllib.parse import quote
-from main.views import case
+from main.views import case, config, variable_group, element_group
 
 logger = logging.getLogger('django.request')
 
@@ -28,6 +29,7 @@ def list_(request):
     request.session['status'] = None
 
     project_list = get_project_list()
+    has_sub_object = True
 
     page = request.GET.get('page')
     size = request.GET.get('size', request.COOKIES.get('size'))
@@ -94,6 +96,7 @@ def list_(request):
 def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
     project_list = get_project_list()
+    has_sub_object = True
     try:
         obj = Suite.objects.select_related('creator', 'modifier').get(pk=pk)
     except Suite.DoesNotExist:
@@ -225,6 +228,20 @@ def delete(request, pk):
 
 
 @login_required
+def multiple_delete(request):
+    if request.method == 'POST':
+        try:
+            pk_list = json.loads(request.POST['pk_list'])
+            Suite.objects.filter(pk__in=pk_list, creator=request.user).update(
+                is_active=False, modifier=request.user, modified_date=timezone.now())
+        except Exception as e:
+            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+    else:
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
+
+
+@login_required
 def quick_update(request, pk):
     if request.method == 'POST':
         try:
@@ -244,6 +261,73 @@ def quick_update(request, pk):
         return JsonResponse({'statue': 1, 'message': 'OK', 'data': new_value})
     else:
         return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': None})
+
+
+# 复制操作
+def copy_action(pk, user, copy_sub_item, name_prefix=None):
+    obj = Suite.objects.get(pk=pk)
+    m2m_objects = obj.case.filter(is_active=True).order_by('suitevscase__order')
+    obj.pk = None
+    if name_prefix:
+        obj.name = name_prefix + obj.name
+    if copy_sub_item:
+        if obj.config:
+            obj.config = config.copy_action(obj.config.pk, user, name_prefix)
+        if obj.variable_group:
+            obj.variable_group = variable_group.copy_action(obj.variable_group.pk, user, name_prefix)
+        if obj.element_group:
+            obj.element_group = element_group.copy_action(obj.element_group.pk, user, name_prefix)
+    obj.creator = obj.modifier = user
+    obj.uuid = uuid.uuid1()
+    obj.clean_fields()
+    obj.save()
+    m2m_order = 0
+    for m2m_obj in m2m_objects:
+        if copy_sub_item:
+            m2m_obj = case.copy_action(m2m_obj.pk, user, copy_sub_item, name_prefix=name_prefix)
+            # m2m_obj.pk = None
+            # m2m_obj.creator = m2m_obj.modifier = user
+            # m2m_obj.uuid = uuid.uuid1()
+            # m2m_obj.clean_fields()
+            # m2m_obj.save()
+        m2m_order += 1
+        SuiteVsCase.objects.create(
+            suite=obj, case=m2m_obj, order=m2m_order, creator=user, modifier=user)
+    return obj
+
+
+# 复制
+@login_required
+def copy_(request, pk):
+    name_prefix = request.POST.get('name_prefix', '')
+    order = request.POST.get('order')
+    order = change_to_positive_integer(order, 0)
+    copy_sub_item = request.POST.get('copy_sub_item')
+    try:
+        obj = copy_action(pk, request.user, copy_sub_item, name_prefix)
+        return JsonResponse({
+            'statue': 1, 'message': 'OK', 'data': {
+                'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
+        })
+    except Exception as e:
+        return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+
+
+# 批量复制
+@login_required
+def multiple_copy(request):
+    if request.method == 'POST':
+        try:
+            pk_list = json.loads(request.POST['pk_list'])
+            name_prefix = request.POST.get('name_prefix', '')
+            copy_sub_item = request.POST.get('copy_sub_item')
+            for pk in pk_list:
+                _ = copy_action(pk, request.user, copy_sub_item, name_prefix)
+        except Exception as e:
+            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+    else:
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 # 获取选中的case

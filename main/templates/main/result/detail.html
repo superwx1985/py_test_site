@@ -87,6 +87,25 @@
         </div>
     </div>
     <div class="row align-items-center">
+        <div class="col-1 text-center font-weight-bold">测试结果</div>
+        <div class="col" class>
+            {% if obj.result_status == 0 %}
+                <div class="text-secondary">{{ obj.result_message|default:'跳过' }}</div>
+            {% elif obj.result_status == 2 %}
+                <div class="text-warning">{{ obj.result_message|default:'失败' }}</div>
+            {% elif obj.result_status == 3 %}
+                <div class="text-danger">{{ obj.result_message|default:'出错' }}</div>
+            {% else %}
+                <div class="text-success">{{ obj.result_message|default:'通过' }}</div>
+            {% endif %}
+            {% if obj.result_error %}
+                <div class="row">
+                    <div class="col"><pre class="text-danger pre-scrollable">{{ obj.result_error }}</pre></div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row align-items-center">
         <div class="col-1 text-center font-weight-bold">测试时间</div>
         <div class="col">
             {% include 'main/include/result_time.html' with start_date=obj.start_date end_date=obj.end_date elapsed_time_str=obj.elapsed_time_str%}

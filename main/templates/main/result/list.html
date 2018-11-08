@@ -5,6 +5,8 @@
         $(function () {
             // 更新导航栏
             $('#nav_result').addClass('active');
+            // 获取批量删除地址
+            window.multiple_delete_url="{% url 'results_multiple_delete' %}";
         })
     </script>
 {% endblock %}
@@ -30,7 +32,7 @@
             </colgroup>
             <thead class="thead-light middle">
                 <tr>
-                    <th>序号</th>
+                    <th index data-toggle="tooltip" title="全选/全不选">序号</th>
                     <th order_by_text="pk">ID</th>
                     <th order_by_text="name">名称</th>
                     <th order_by_text="keyword">关键字</th>
@@ -50,10 +52,10 @@
                         <td col_name='index' class="middle small"></td>
                         <td col_name='pk' class="middle small">{{ obj.pk }}</td>
                         <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
-                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="align-middle">{{ obj.keyword }}</td>
+                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="middle">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='m2m_count' class="middle">{{ obj.m2m_count }}</td>
-                        <td col_name='start_date' class="middle">{{ obj.start_date }}</td>
+                        <td col_name='start_date' class="middle">{{ obj.start_date|default_if_none:'N/A' }}</td>
                         <td col_name='elapsed_time_str' class="middle">{{ obj.elapsed_time_str }}</td>
                         {% if obj.result_status == 0 %}
                             <td class="middle"><span class="badge badge-pill badge-secondary">{{ obj.result_status_str }}</span></td>

@@ -221,6 +221,20 @@ def delete(request, pk):
 
 
 @login_required
+def multiple_delete(request):
+    if request.method == 'POST':
+        try:
+            pk_list = json.loads(request.POST['pk_list'])
+            VariableGroup.objects.filter(pk__in=pk_list, creator=request.user).update(
+                is_active=False, modifier=request.user, modified_date=timezone.now())
+        except Exception as e:
+            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+    else:
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
+
+
+@login_required
 def quick_update(request, pk):
     if request.method == 'POST':
         try:
@@ -280,37 +294,58 @@ def select_json(request):
     return JsonResponse({'statue': 1, 'message': 'OK', 'data': data})
 
 
+# 复制操作
+def copy_action(pk, user, name_prefix=None):
+    obj = VariableGroup.objects.get(pk=pk)
+    sub_object_values = list(
+        Variable.objects.filter(variable_group=obj).order_by('order').values('name', 'value', 'description'))
+    obj.pk = None
+    if name_prefix:
+        obj.name = name_prefix + obj.name
+    obj.creator = obj.modifier = user
+    obj.uuid = uuid.uuid1()
+    obj.clean_fields()
+    obj.save()
+
+    order = 0
+    for v in sub_object_values:
+        if not v or v['name'] is None or v['name'].strip() == '':
+            continue
+        else:
+            order += 1
+            Variable.objects.create(
+                variable_group=obj, name=v['name'].strip(), value=v['value'], description=v['description'], order=order)
+    return obj
+
+
 # 复制
 @login_required
 def copy_(request, pk):
-    name = request.POST.get('name', '')
+    name_prefix = request.POST.get('name_prefix', '')
     try:
-        obj = VariableGroup.objects.get(pk=pk)
-        sub_object_values = list(
-            Variable.objects.filter(variable_group=obj).order_by('order').values('name', 'value', 'description'))
-        obj.pk = None
-        obj.name = name
-        obj.creator = obj.modifier = request.user
-        obj.uuid = uuid.uuid1()
-        obj.clean_fields()
-        obj.save()
-
-        order = 0
-        for v in sub_object_values:
-            if not v or v['name'] is None or v['name'].strip() == '':
-                continue
-            else:
-                order += 1
-                Variable.objects.create(
-                    variable_group=obj, name=v['name'].strip(), value=v['value'], description=v['description'],
-                    order=order)
-
+        obj = copy_action(pk, request.user, name_prefix)
         return JsonResponse({
             'statue': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk])}
         })
-    except VariableGroup.DoesNotExist as e:
-        return JsonResponse({'statue': 1, 'message': 'ERROR', 'data': str(e)})
+    except Exception as e:
+        return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+
+
+# 批量复制
+@login_required
+def multiple_copy(request):
+    if request.method == 'POST':
+        try:
+            pk_list = json.loads(request.POST['pk_list'])
+            name_prefix = request.POST.get('name_prefix', '')
+            for pk in pk_list:
+                _ = copy_action(pk, request.user, name_prefix)
+        except Exception as e:
+            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+    else:
+        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 # 获取调用列表

@@ -102,6 +102,22 @@ class VariableAdmin(admin.ModelAdmin):
     search_fields = ('pk', 'name',)
 
 
+class ElementGroupAdmin(admin.ModelAdmin):
+    list_display = (
+        'pk', 'name', 'project', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date', 'is_active',)
+    list_display_links = ('pk', 'name',)
+    list_filter = ('is_active', 'creator', 'project', 'created_date',)
+    list_editable = ('is_active',)
+    search_fields = ('pk', 'name', 'keyword',)
+
+
+class ElementAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name', 'by', 'locator', 'order', 'element_group')
+    list_display_links = ('pk', 'name',)
+    list_filter = ('element_group',)
+    search_fields = ('pk', 'name',)
+
+
 class SuiteAdmin(admin.ModelAdmin):
     list_display = (
         'pk', 'name', 'project', 'variable_group', 'config', 'keyword', 'creator', 'created_date', 'modifier',
@@ -165,6 +181,8 @@ admin_site.register(Config, ConfigAdmin)
 admin_site.register(CaseVsStep, CaseVsStepAdmin)
 admin_site.register(VariableGroup, VariableGroupAdmin)
 admin_site.register(Variable, VariableAdmin)
+admin_site.register(ElementGroup, ElementGroupAdmin)
+admin_site.register(Element, ElementAdmin)
 admin_site.register(Suite, SuiteAdmin)
 admin_site.register(SuiteVsCase, SuiteVsCaseAdmin)
 admin_site.register(SuiteResult, SuiteResultAdmin)

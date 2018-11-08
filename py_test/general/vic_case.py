@@ -1,8 +1,8 @@
 import datetime
 import json
 import traceback
-import uuid
 import logging
+import uuid
 from py_test.general import vic_variables, vic_public_elements, vic_method
 from py_test.ui_test import method
 from selenium.common.exceptions import UnexpectedAlertPresentException
@@ -41,13 +41,12 @@ class VicCase:
         self.config = self.suite_result.suite.config
 
         # 获取变量组json
-        if case.variable_group:
+        variable_group_json = None
+        if case.variable_group and case.variable_group.is_active:
             v_list = list(case.variable_group.variable_set.all().values('pk', 'name', 'description', 'value', 'order'))
             variable_group_dict = model_to_dict(case.variable_group)
             variable_group_dict['variables'] = v_list
             variable_group_json = json.dumps(variable_group_dict)
-        else:
-            variable_group_json = None
 
         # 初始化result数据库对象
         self.case_result = CaseResult(
@@ -102,7 +101,7 @@ class VicCase:
                 if self.variables is None:
                     self.variables = vic_variables.Variables(self.logger)
                 local_variable_group = self.case.variable_group
-                if local_variable_group is not None:
+                if local_variable_group and local_variable_group.is_active:
                     for variable in local_variable_group.variable_set.all():
                         value = vic_method.replace_special_value(
                             variable.value, self.variables, global_variables, self.logger)
