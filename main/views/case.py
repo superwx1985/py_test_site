@@ -243,18 +243,18 @@ def add(request):
 def delete(request, pk):
     if request.method == 'POST':
         Case.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': pk})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': pk})
 
 
 @login_required
 def delete(request, pk):
     if request.method == 'POST':
         Case.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': pk})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': pk})
 
 
 @login_required
@@ -265,10 +265,10 @@ def multiple_delete(request):
             Case.objects.filter(pk__in=pk_list, creator=request.user).update(
                 is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
-            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 @login_required
@@ -287,10 +287,10 @@ def quick_update(request, pk):
             else:
                 raise ValueError('非法的字段名称')
         except Exception as e:
-            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': new_value})
+            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': new_value})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': None})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
 # 获取选中的step
@@ -305,7 +305,7 @@ def steps(_, pk):
         obj['url'] = reverse(step.detail, args=[obj['pk']])
         obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
         obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
-    return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
+    return JsonResponse({'status': 1, 'message': 'OK', 'data': list(objects)})
 
 
 # 获取m2m json
@@ -368,7 +368,7 @@ def list_json(request):
         obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
         obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
 
-    return JsonResponse({'statue': 1, 'message': 'OK', 'data': {
+    return JsonResponse({'status': 1, 'message': 'OK', 'data': {
         'objects': list(objects), 'page': page, 'max_page': paginator.num_pages, 'size': size}})
 
 
@@ -394,16 +394,18 @@ def list_temp(request):
         obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
         obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
         data_list.append(objects[0])
-    return JsonResponse({'statue': 1, 'message': 'OK', 'data': data_list})
+    return JsonResponse({'status': 1, 'message': 'OK', 'data': data_list})
 
 
 # 复制操作
-def copy_action(pk, user, copy_sub_item, name_prefix=None):
+def copy_action(pk, user, copy_sub_item, name_prefix=None, copied_items=None):
     obj = Case.objects.get(pk=pk)
     m2m_objects = obj.step.filter(is_active=True).order_by('casevsstep__order')
     obj.pk = None
     if name_prefix:
         obj.name = name_prefix + obj.name
+        if len(obj.name) > 100:
+            obj.name = obj.name[0:97] + '...'
     if copy_sub_item and obj.variable_group:
         obj.variable_group = variable_group.copy_action(obj.variable_group.pk, user, name_prefix)
     obj.creator = obj.modifier = user
@@ -411,17 +413,28 @@ def copy_action(pk, user, copy_sub_item, name_prefix=None):
     obj.clean_fields()
     obj.save()
     m2m_order = 0
+    m2m_dict = dict()
+    # 合并已复制容器字典
+    if copied_items and isinstance(copied_items, list):
+        copied_items_dict = copied_items[0]
+        m2m_dict = {**m2m_dict, **copied_items_dict}
     for m2m_obj in m2m_objects:
+        # 判断是否需要复制子对象
         if copy_sub_item:
-            m2m_obj = step.copy_action(m2m_obj.pk, user, name_prefix)
-            # m2m_obj.pk = None
-            # m2m_obj.creator = m2m_obj.modifier = user
-            # m2m_obj.uuid = uuid.uuid1()
-            # m2m_obj.clean_fields()
-            # m2m_obj.save()
+            # 判断子对象是否已被复制
+            if m2m_obj in m2m_dict:
+                m2m_obj_ = m2m_dict[m2m_obj]
+            else:
+                m2m_obj_ = step.copy_action(m2m_obj.pk, user, name_prefix)
+                m2m_dict[m2m_obj] = m2m_obj_
+        else:
+            m2m_obj_ = m2m_obj
         m2m_order += 1
         CaseVsStep.objects.create(
-            case=obj, step=m2m_obj, order=m2m_order, creator=user, modifier=user)
+            case=obj, step=m2m_obj_, order=m2m_order, creator=user, modifier=user)
+    # 把已复制对象列表放入容器
+    copied_items.clear()
+    copied_items.append(m2m_dict)
     return obj
 
 
@@ -435,11 +448,11 @@ def copy_(request, pk):
     try:
         obj = copy_action(pk, request.user, copy_sub_item, name_prefix)
         return JsonResponse({
-            'statue': 1, 'message': 'OK', 'data': {
+            'status': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
         })
     except Exception as e:
-        return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 2, 'message': str(e), 'data': None})
 
 
 # 批量复制
@@ -453,10 +466,10 @@ def multiple_copy(request):
             for pk in pk_list:
                 _ = copy_action(pk, request.user, copy_sub_item, name_prefix)
         except Exception as e:
-            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 # 获取带搜索信息的下拉列表数据
@@ -483,7 +496,7 @@ def select_json(request):
         d['url'] = '{}?next={}'.format(reverse(detail, args=[obj['pk']]), reverse(list_))
         data.append(d)
 
-    return JsonResponse({'statue': 1, 'message': 'OK', 'data': data})
+    return JsonResponse({'status': 1, 'message': 'OK', 'data': data})
 
 
 # 获取调用列表

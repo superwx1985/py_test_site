@@ -141,9 +141,9 @@ def detail(request, pk):
 def delete(request, pk):
     if request.method == 'POST':
         SuiteResult.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': pk})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': pk})
 
 
 @login_required
@@ -154,10 +154,10 @@ def multiple_delete(request):
             SuiteResult.objects.filter(pk__in=pk_list, creator=request.user).update(
                 is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
-            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 @login_required
@@ -176,10 +176,10 @@ def quick_update(request, pk):
             else:
                 raise ValueError('非法的字段名称')
         except Exception as e:
-            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': new_value})
+            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': new_value})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': None})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
 # 配置快照

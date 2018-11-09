@@ -222,9 +222,9 @@ def add(request):
 def delete(request, pk):
     if request.method == 'POST':
         Suite.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': pk})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': pk})
 
 
 @login_required
@@ -235,10 +235,10 @@ def multiple_delete(request):
             Suite.objects.filter(pk__in=pk_list, creator=request.user).update(
                 is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
-            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 @login_required
@@ -257,10 +257,10 @@ def quick_update(request, pk):
             else:
                 raise ValueError('非法的字段名称')
         except Exception as e:
-            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': new_value})
+            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': new_value})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': None})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
 # 复制操作
@@ -270,6 +270,8 @@ def copy_action(pk, user, copy_sub_item, name_prefix=None):
     obj.pk = None
     if name_prefix:
         obj.name = name_prefix + obj.name
+        if len(obj.name) > 100:
+            obj.name = obj.name[0:97] + '...'
     if copy_sub_item:
         if obj.config:
             obj.config = config.copy_action(obj.config.pk, user, name_prefix)
@@ -282,17 +284,27 @@ def copy_action(pk, user, copy_sub_item, name_prefix=None):
     obj.clean_fields()
     obj.save()
     m2m_order = 0
+    m2m_dict = dict()
+    copied_items = list()
     for m2m_obj in m2m_objects:
+        # 判断是否需要复制子对象
         if copy_sub_item:
-            m2m_obj = case.copy_action(m2m_obj.pk, user, copy_sub_item, name_prefix=name_prefix)
-            # m2m_obj.pk = None
-            # m2m_obj.creator = m2m_obj.modifier = user
-            # m2m_obj.uuid = uuid.uuid1()
-            # m2m_obj.clean_fields()
-            # m2m_obj.save()
+            # 判断子对象是否已被复制
+            if m2m_obj in m2m_dict:
+                m2m_obj_ = m2m_dict[m2m_obj]
+            else:
+                m2m_obj_ = case.copy_action(m2m_obj.pk, user, copy_sub_item, name_prefix, copied_items)
+                m2m_dict[m2m_obj] = m2m_obj_
+                # 合并已复制容器字典，并放入容器
+                if copied_items and isinstance(copied_items, list):
+                    copied_items_dict = copied_items[0]
+                    m2m_dict = {**m2m_dict, **copied_items_dict}
+                    copied_items[0] = m2m_dict
+        else:
+            m2m_obj_ = m2m_obj
         m2m_order += 1
         SuiteVsCase.objects.create(
-            suite=obj, case=m2m_obj, order=m2m_order, creator=user, modifier=user)
+            suite=obj, case=m2m_obj_, order=m2m_order, creator=user, modifier=user)
     return obj
 
 
@@ -306,11 +318,11 @@ def copy_(request, pk):
     try:
         obj = copy_action(pk, request.user, copy_sub_item, name_prefix)
         return JsonResponse({
-            'statue': 1, 'message': 'OK', 'data': {
+            'status': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
         })
     except Exception as e:
-        return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 2, 'message': str(e), 'data': None})
 
 
 # 批量复制
@@ -324,10 +336,10 @@ def multiple_copy(request):
             for pk in pk_list:
                 _ = copy_action(pk, request.user, copy_sub_item, name_prefix)
         except Exception as e:
-            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 # 获取选中的case
@@ -341,7 +353,7 @@ def cases(_, pk):
         obj['url'] = reverse(case.detail, args=[obj['pk']])
         obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
         obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
-    return JsonResponse({'statue': 1, 'message': 'OK', 'data': list(objects)})
+    return JsonResponse({'status': 1, 'message': 'OK', 'data': list(objects)})
 
 
 # 执行套件
@@ -355,6 +367,6 @@ def execute_(request, pk):
         data_dict = dict()
         data_dict['suite_result_content'] = suite_result_content
         data_dict['suite_result_url'] = reverse('result', args=[suite_result.pk])
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': data_dict})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': data_dict})
     except Suite.DoesNotExist:
-        return JsonResponse({'statue': 2, 'message': 'Suite does not exist', 'data': None})
+        return JsonResponse({'status': 2, 'message': 'Suite does not exist', 'data': None})

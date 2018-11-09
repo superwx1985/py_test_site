@@ -536,7 +536,7 @@ class VicStep:
                             except ValueError:
                                 pretty_request_header = self.api_headers
                             pretty_response_header = json.dumps(response, indent=1, ensure_ascii=False)
-                            run_result_statue = 'p'
+                            run_result_status = 'p'
 
                             response_body_msg = response_body
                             if self.api_data:
@@ -545,7 +545,7 @@ class VicStep:
                                 if run_result[0] == 'p':
                                     prefix_msg = '请求发送完毕，结果验证通过'
                                 else:
-                                    run_result_statue = 'f'
+                                    run_result_status = 'f'
                                     prefix_msg = '请求发送完毕，结果验证失败'
                                 suffix_msg = '验证结果：\n{}'.format(run_result[1])
                             else:
@@ -569,8 +569,8 @@ class VicStep:
                                         response, response_body, api_save, vic_case.variables, logger=self.logger)
                                     msg = '{}\n变量保存：\n{}'.format(msg, msg_)
                                     if not success:
-                                        run_result_statue = 'f'
-                            self.run_result = (run_result_statue, msg)
+                                        run_result_status = 'f'
+                            self.run_result = (run_result_status, msg)
                             self.logger.debug('【{}】\t{}'.format(self.execute_id, msg))
 
                         # ===== DB =====

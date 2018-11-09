@@ -153,9 +153,9 @@ def add(request):
 def delete(request, pk):
     if request.method == 'POST':
         Config.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': pk})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': pk})
 
 
 @login_required
@@ -166,10 +166,10 @@ def multiple_delete(request):
             Config.objects.filter(pk__in=pk_list, creator=request.user).update(
                 is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
-            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 @login_required
@@ -188,10 +188,10 @@ def quick_update(request, pk):
             else:
                 raise ValueError('非法的字段名称')
         except Exception as e:
-            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': new_value})
+            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': new_value})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': None})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
 # 获取带搜索信息的下拉列表数据
@@ -218,7 +218,7 @@ def select_json(request):
         d['url'] = '{}?next={}'.format(reverse(detail, args=[obj['pk']]), reverse(list_))
         data.append(d)
 
-    return JsonResponse({'statue': 1, 'message': 'OK', 'data': data})
+    return JsonResponse({'status': 1, 'message': 'OK', 'data': data})
 
 
 # 复制操作
@@ -227,6 +227,8 @@ def copy_action(pk, user, name_prefix=None):
     obj.pk = None
     if name_prefix:
         obj.name = name_prefix + obj.name
+        if len(obj.name) > 100:
+            obj.name = obj.name[0:97] + '...'
     obj.creator = obj.modifier = user
     obj.uuid = uuid.uuid1()
     obj.clean_fields()
@@ -243,11 +245,11 @@ def copy_(request, pk):
     try:
         obj = copy_action(pk, request.user, name_prefix)
         return JsonResponse({
-            'statue': 1, 'message': 'OK', 'data': {
+            'status': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
         })
     except Exception as e:
-        return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 2, 'message': str(e), 'data': None})
 
 
 # 批量复制
@@ -260,10 +262,10 @@ def multiple_copy(request):
             for pk in pk_list:
                 _ = copy_action(pk, request.user, name_prefix)
         except Exception as e:
-            return JsonResponse({'statue': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'statue': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'statue': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 # 获取调用列表

@@ -91,7 +91,7 @@ function bind_select_all_button() {
             window.muliple_selected_id.push($(e).attr('pk'))
         });
     }
-    multiple_operate_button_statue();
+    multiple_operate_button_status();
     });
 }
 
@@ -109,11 +109,11 @@ function multiple_select($td) {
         $td.css('background-color', '');
         window.muliple_selected_id.splice($.inArray(selected_id, window.muliple_selected_id), 1)
     }
-    multiple_operate_button_statue();
+    multiple_operate_button_status();
 }
 
 // 批量操作按钮状态
-function multiple_operate_button_statue() {
+function multiple_operate_button_status() {
     if (muliple_selected_id.length > 0) {
         $('#multiple_copy_button').removeAttr('disabled');
         $('#multiple_delete_button').removeAttr('disabled');
@@ -148,7 +148,11 @@ function bind_multiple_delete_button() {
                 callback: function (result) {
                     if (result === true) {
                         $.post(url, {'csrfmiddlewaretoken': csrf_token, 'pk_list': json_str}, function(data) {
-                            $("#objects_form").submit()
+                            if (data.status === 1) {
+                                $('#objects_form').submit();
+                            } else {
+                                bootbox.alert('<span class="text-danger">'+data.message+'</span>');
+                            }
                         });
                     }
                 }
@@ -242,7 +246,11 @@ function bind_delete_button() {
             callback: function (result) {
                 if (result === true) {
                     $.post(url, {'csrfmiddlewaretoken': csrf_token}, function(data) {
-                        $("#objects_form").submit()
+                        if (data.status === 1) {
+                                $('#objects_form').submit();
+                            } else {
+                                bootbox.alert('<span class="text-danger">'+data.message+'</span>');
+                            }
                     });
                     // 如使用delete方式，需要在ajax头文件中设置X-CSRFToken
                     // $.ajaxSetup({
@@ -305,7 +313,7 @@ function update_single_column(url, csrf_token, pk, new_value, old_value, col_nam
             // console.log("data['new_value']: " + data['new_value']);
             // console.log("textStatus: " + textStatus);
             console.log(data)
-            if (data.statue === 1) {
+            if (data.status === 1) {
                 callback_func(true, pk, new_value, old_value, col_name);
             } else {
                 callback_func(false, pk, new_value, old_value, col_name, data.message);
@@ -337,8 +345,12 @@ function callback_copy_obj_sub_item(copy_url, name_prefix) {
 
 // 复制对象
 function copy_obj_post(copy_url, name_prefix, copy_sub_item) {
-    $.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name_prefix': name_prefix, 'copy_sub_item': copy_sub_item}, function() {
-        $('#objects_form').submit();
+    $.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name_prefix': name_prefix, 'copy_sub_item': copy_sub_item}, function(data) {
+        if (data.status === 1) {
+            $('#objects_form').submit();
+        } else {
+            bootbox.alert('<span class="text-danger">'+data.message+'</span>');
+        }
     });
 }
 
@@ -355,7 +367,22 @@ function callback_multiple_copy_obj_sub_item(url, name_prefix) {
 // 批量复制对象
 function multiple_copy_obj_post(url, name_prefix, copy_sub_item) {
     var json_str = JSON.stringify(window.muliple_selected_id);
-    $.post(url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name_prefix': name_prefix, 'copy_sub_item': copy_sub_item, 'pk_list': json_str}, function() {
-        $('#objects_form').submit();
+    $.post(url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name_prefix': name_prefix, 'copy_sub_item': copy_sub_item, 'pk_list': json_str}, function(data) {
+        if (data.status === 1) {
+            $('#objects_form').submit();
+        } else {
+            bootbox.alert('<span class="text-danger">'+data.message+'</span>');
+        }
     });
+}
+
+// 更新排序标志
+function update_sort_icon() {
+    $('#result_table th[order_by_text]').find('i').remove();
+    var sort_col = $('#result_table th[order_by_text=' + $('input[name=order_by]').val() + ']');
+    if ($('input[name=order_by_reverse]').val() === 'True') {
+        sort_col.prepend('<i class="icon-circle-arrow-down">&nbsp;</i>');
+    } else {
+        sort_col.prepend('<i class="icon-circle-arrow-up">&nbsp;</i>');
+    }
 }

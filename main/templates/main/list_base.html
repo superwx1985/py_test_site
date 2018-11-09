@@ -165,17 +165,6 @@
                     // 关闭遮罩
                     $('#mask').hide();
                 });
-
-                // 更新排序标志
-                function update_sort_icon() {
-                    $('#result_table th[order_by_text]').find('i').remove();
-                    var sort_col = $('#result_table th[order_by_text=' + $('input[name=order_by]').val() + ']');
-                    if ($('input[name=order_by_reverse]').val() === 'True') {
-                        sort_col.prepend('<i class="icon-circle-arrow-down">&nbsp;</i>');
-                    } else {
-                        sort_col.prepend('<i class="icon-circle-arrow-up">&nbsp;</i>');
-                    }
-                }
             </script>
         {% endblock %}
         {% block script %}
