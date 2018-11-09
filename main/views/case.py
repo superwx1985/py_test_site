@@ -133,12 +133,9 @@ def detail(request, pk):
             logger.warning('无法获取m2m值', exc_info=True)
             m2m_list = None
         if form.is_valid():
-            form_ = form.save(commit=False)
-            form_.creator = obj.creator
-            form_.modifier = request.user
-            form_.is_active = obj.is_active
-            form_.save()
-            # form.save_m2m()
+            obj_temp = form.save(commit=False)
+            obj_temp.modifier = request.user
+            obj_temp.save()
             if m2m_list is not None:
                 m2m = CaseVsStep.objects.filter(case=obj).order_by('order')
                 original_m2m_list = list()
@@ -199,13 +196,10 @@ def add(request):
             logger.warning('无法获取m2m值', exc_info=True)
             m2m_list = None
         if form.is_valid():
-            form_ = form.save(commit=False)
-            form_.creator = request.user
-            form_.modifier = request.user
-            form_.is_active = True
-            form_.save()
-            # form.save_m2m()
-            obj = form_
+            obj_temp = form.save(commit=False)
+            obj_temp.creator = obj_temp.modifier = request.user
+            obj_temp.save()
+            obj = obj_temp
             pk = obj.id
             if m2m_list is not None:
                 order = 0

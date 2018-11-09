@@ -19,6 +19,8 @@
         $(function () {
             // 更新导航栏
             $('#nav_variable').addClass('active');
+            // 列表可调宽度
+            $('th').resizable({maxHeight: 1, alsoResize: '#element_table'});
         });
     </script>
     <script src="{% static 'main/js/detail_variable_group.js' %}"></script>
@@ -53,8 +55,6 @@
             });
             // 启用排序功能
             sortable_variable();
-            // 列表可调宽度
-            $('th').resizable({maxHeight: 1, alsoResize: '#variable_table'});
         });
     </script>
 {% endblock %}
@@ -110,7 +110,7 @@
                     <col>
                     <col>
                 </colgroup>
-                <thead class="thead-light"><tr><th></th><th></th><th>顺序</th><th>名称</th><th>值</th><th>备注</th></tr></thead>
+                <thead class="thead-light"><tr><th>排序</th><th>删除</th><th>顺序</th><th>名称</th><th>值</th><th>备注</th></tr></thead>
                 <tbody class="text-left">
                     <tr id="new_helper" class="bg-light">
                         <td class="middle" col_move><i class="icon-ok-circle icon-2x text-success" data-toggle="tooltip" title="添加"></i></td>

@@ -118,11 +118,9 @@ def detail(request, pk):
             logger.warning('无法获取m2m值', exc_info=True)
             variable_list = None
         if form.is_valid():
-            form_ = form.save(commit=False)
-            form_.creator = obj.creator
-            form_.modifier = request.user
-            form_.is_active = obj.is_active
-            form_.save()
+            obj_temp = form.save(commit=False)
+            obj_temp.modifier = request.user
+            obj_temp.save()
             form.save_m2m()
             if variable_list is not None:
                 objects = Variable.objects.filter(variable_group=obj)
@@ -173,13 +171,11 @@ def add(request):
             logger.warning('无法获取m2m值', exc_info=True)
             variable_list = None
         if form.is_valid():
-            form_ = form.save(commit=False)
-            form_.creator = request.user
-            form_.modifier = request.user
-            form_.is_active = True
-            form_.save()
+            obj_temp = form.save(commit=False)
+            obj_temp.creator = obj_temp.modifier = request.user
+            obj_temp.save()
             form.save_m2m()
-            obj = form_
+            obj = obj_temp
             pk = obj.id
             if variable_list:
                 order = 0

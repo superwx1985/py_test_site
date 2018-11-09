@@ -8,8 +8,8 @@ from django.db.models import Q, CharField, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from main.models import SuiteResult, Project
-from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, ConfigForm, VariableGroupForm
+from main.models import SuiteResult, Step
+from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, ConfigForm, VariableGroupForm, ElementGroupForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list
 from py_test.vic_tools.vic_date_handle import get_timedelta_str
 
@@ -231,5 +231,6 @@ def element_group_snapshot(request, pk):
         logger.warning('快照数据损坏，无法展示。', exc_info=True)
         return HttpResponse('<div style="color: red;">快照数据损坏，无法展示。</div>')
     else:
-        form = VariableGroupForm(initial=snapshot_obj)
+        form = ElementGroupForm(initial=snapshot_obj)
+        by_list_json = json.dumps(Step.ui_by_list)
         return render(request, 'main/element_group/snapshot.html', locals())

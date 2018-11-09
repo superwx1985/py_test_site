@@ -15,7 +15,12 @@
         <script src="{% static 'main/js/detail.js' %}"></script>
         <script>
             $(function () {
-
+                // 获取by list
+                window.by_list = $.parseJSON("{{ by_list_json|escapejs }}");
+                // 初始化by选项
+                $('td[col_by]').empty().append(generate_select(window.by_list));
+                // 列表可调宽度
+                $('th').resizable({maxHeight: 1, alsoResize: '#element_table'});
             })
         </script>
         <script>

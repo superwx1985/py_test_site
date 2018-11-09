@@ -123,11 +123,9 @@ def detail(request, pk):
         obj_temp = copy.deepcopy(obj)
         form = StepForm(data=request.POST, instance=obj_temp)
         if form.is_valid():
-            form_ = form.save(commit=False)
-            form_.creator = obj.creator
-            form_.modifier = request.user
-            form_.is_active = obj.is_active
-            form_.save()
+            obj_temp = form.save(commit=False)
+            obj_temp.modifier = request.user
+            obj_temp.save()
             form.save_m2m()
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
@@ -154,13 +152,11 @@ def add(request):
     elif request.method == 'POST':
         form = StepForm(data=request.POST)
         if form.is_valid():
-            form_ = form.save(commit=False)
-            form_.creator = request.user
-            form_.modifier = request.user
-            form_.is_active = True
-            form_.save()
+            obj_temp = form.save(commit=False)
+            obj_temp.creator = obj_temp.modifier = request.user
+            obj_temp.save()
             form.save_m2m()
-            pk = form_.id
+            pk = obj_temp.id
             request.session['status'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect == 'add_another':

@@ -84,7 +84,7 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
             v_list = list(
                 suite.element_group.element_set.all().values('pk', 'name', 'description', 'by', 'locator', 'order'))
             element_group_dict = model_to_dict(suite.element_group)
-            element_group_dict['element'] = v_list
+            element_group_dict['elements'] = v_list
             suite_result.element_group = json.dumps(element_group_dict)
 
         # 限制进程数

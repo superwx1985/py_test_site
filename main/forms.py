@@ -99,6 +99,11 @@ class CaseForm(forms.ModelForm):
     class Meta:
         model = Case
         fields = '__all__'
+        exclude = [
+            'is_active',
+            'creator',
+            'created_date',
+        ]
         widgets = {
             # 'name': forms.Textarea(),
             # 'keyword': forms.Textarea(),
@@ -137,22 +142,11 @@ class StepForm(forms.ModelForm):
     class Meta:
         model = Step
         fields = '__all__'
-        widgets = {
-            # 'name': forms.Textarea(),
-            # 'keyword': forms.Textarea(),
-            # 'save_as': forms.Textarea(),
-            # 'ui_alert_handle': forms.RadioSelect,
-        }
-
-    # def __init__(self, *args, **kwargs):
-    #     super(StepForm, self).__init__(*args, **kwargs)
-    #
-    #     for k, v in self.fields.items():
-    #         # 如果widget是Textarea，rows属性设置为空
-    #         if isinstance(v.widget, forms.Textarea):
-    #             v.widget.attrs.update({'rows': '', 'class': 'form-control'})
-    #         else:
-    #             v.widget.attrs.update({'class': 'form-control'})
+        exclude = [
+            'is_active',
+            'creator',
+            'created_date',
+        ]
 
 
 class ConfigForm(forms.ModelForm):
@@ -162,6 +156,11 @@ class ConfigForm(forms.ModelForm):
     class Meta:
         model = Config
         fields = '__all__'
+        exclude = [
+            'is_active',
+            'creator',
+            'created_date',
+        ]
 
 
 class VariableGroupForm(forms.ModelForm):
@@ -173,6 +172,11 @@ class VariableGroupForm(forms.ModelForm):
     class Meta:
         model = VariableGroup
         fields = '__all__'
+        exclude = [
+            'is_active',
+            'creator',
+            'created_date',
+        ]
 
 
 class ElementGroupForm(forms.ModelForm):
@@ -184,6 +188,11 @@ class ElementGroupForm(forms.ModelForm):
     class Meta:
         model = ElementGroup
         fields = '__all__'
+        exclude = [
+            'is_active',
+            'creator',
+            'created_date',
+        ]
 
 
 class SuiteForm(forms.ModelForm):
@@ -202,13 +211,12 @@ class SuiteForm(forms.ModelForm):
     class Meta:
         model = Suite
         fields = '__all__'
+        exclude = [
+            'is_active',
+            'creator',
+            'created_date',
+        ]
 
-
-class SuiteResultForm_(forms.Form):
-    name = forms.CharField(max_length=100)
-    description = forms.CharField(required=False, widget=forms.Textarea())
-    keyword = forms.CharField(required=False, max_length=100)
-    project = forms.ChoiceField(choices=get_project_list, required=False)
 
 class SuiteResultForm(forms.ModelForm):
     name = forms.CharField(max_length=100)

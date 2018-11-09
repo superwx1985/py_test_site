@@ -10,7 +10,7 @@
     <div class="col">
         <span class="font-weight-bold">用例变量组：</span>
         {% if case_result.variable_group %}
-            <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '变量组快照', '{% url "case_variable_group_snapshot" case_result.pk %}')"><i class="icon-time"></i>&nbsp;查看快照</button>
+            <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '用例变量组快照', '{% url "case_variable_group_snapshot" case_result.pk %}')"><i class="icon-time"></i>&nbsp;查看快照</button>
         {% else %}
             <span>【未配置】</span>
         {% endif %}
