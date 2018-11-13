@@ -70,14 +70,12 @@
 {% block detail_form %}
     <form method="post" id="object_form" novalidate onsubmit="return check_unsaved();">
         {% csrf_token %}
-
-        {% include 'main/element_group/form_content.html' %}
-
+        {% include 'main/element_group/detail_form_content.html' %}
         {% include 'main/include/detail_redirect.html' %}
         {% include 'main/include/submit_button_group.html' with copy_url='element_group_copy' %}
     </form>
 {% endblock %}
 
 {% block detail_inner_list %}
-    {% include 'main/element_group/list_content.html' %}
+    {% include 'main/element_group/detail_list_content.html' %}
 {% endblock %}

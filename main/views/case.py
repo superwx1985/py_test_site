@@ -14,7 +14,7 @@ from main.models import Case, Step, CaseVsStep, Action
 from main.forms import OrderByForm, PaginatorForm, CaseForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list
 from urllib.parse import quote
-from main.views import step, suite, variable_group
+from main.views import step, suite, variable_group, general
 
 logger = logging.getLogger('django.request')
 
@@ -28,6 +28,7 @@ def list_(request):
 
     project_list = get_project_list()
     has_sub_object = True
+    is_admin = general.is_admin(request.user)
 
     page = request.GET.get('page')
     size = request.GET.get('size', request.COOKIES.get('size'))
@@ -60,23 +61,23 @@ def list_(request):
     objects = Case.objects.filter(q).values(
         'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
-    objects2 = Case.objects.filter(is_active=True, step__is_active=True).values('pk').annotate(m2m_count=Count('step'))
-    m2m_count = {o['pk']: o['m2m_count'] for o in objects2}
+    m2m_objects = Case.objects.filter(is_active=True, step__is_active=True).values('pk').annotate(m2m_count=Count('step'))
+    m2m_count = {o['pk']: o['m2m_count'] for o in m2m_objects}
 
     # 获取被调用次数
-    objects2 = Case.objects.filter(is_active=True, suite__is_active=True).values('pk').annotate(
+    reference_objects1 = Case.objects.filter(is_active=True, suite__is_active=True).values('pk').annotate(
         reference_count=Count('*'))
-    count_ = {o['pk']: o['reference_count'] for o in objects2}
-    objects3 = Step.objects.filter(
+    reference_count1 = {o['pk']: o['reference_count'] for o in reference_objects1}
+    reference_objects2 = Step.objects.filter(
         is_active=True, action__code='OTHER_CALL_SUB_CASE').values('other_sub_case_id').annotate(
         reference_count=Count('*')).order_by()  # 此处加上order_by是因为step默认按修改时间排序，会导致分组加入修改时间
-    count_3 = {o['other_sub_case_id']: o['reference_count'] for o in objects3}
+    reference_count2 = {o['other_sub_case_id']: o['reference_count'] for o in reference_objects2}
 
     for o in objects:
         # 添加子对象数量
         o['m2m_count'] = m2m_count.get(o['pk'], 0)
         # 添加被调用次数
-        o['reference_count'] = count_.get(o['pk'], 0) + count_3.get(o['pk'], 0)
+        o['reference_count'] = reference_count1.get(o['pk'], 0) + reference_count2.get(o['pk'], 0)
 
     # 排序
     if objects:
@@ -235,20 +236,27 @@ def add(request):
 
 @login_required
 def delete(request, pk):
+    err = None
     if request.method == 'POST':
-        Case.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
+        try:
+            obj = Case.objects.get(pk=pk)
+        except Case.DoesNotExist:
+            err = '对象不存在'
+        else:
+            is_admin = general.is_admin(request.user)
+            if is_admin or obj.creator == request.user:
+                obj.is_active = False
+                obj.modifier = request.user
+                obj.save()
+            else:
+                err = '无权限'
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': pk})
+        err = '无效请求'
 
-
-@login_required
-def delete(request, pk):
-    if request.method == 'POST':
-        Case.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
+    if err:
+        return JsonResponse({'status': 2, 'message': err, 'data': pk})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': pk})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
 
 
 @login_required
@@ -256,8 +264,32 @@ def multiple_delete(request):
     if request.method == 'POST':
         try:
             pk_list = json.loads(request.POST['pk_list'])
-            Case.objects.filter(pk__in=pk_list, creator=request.user).update(
-                is_active=False, modifier=request.user, modified_date=timezone.now())
+            is_admin = general.is_admin(request.user)
+            if is_admin:
+                Case.objects.filter(pk__in=pk_list).update(
+                    is_active=False, modifier=request.user, modified_date=timezone.now())
+            else:
+                Case.objects.filter(pk__in=pk_list, creator=request.user).update(
+                    is_active=False, modifier=request.user, modified_date=timezone.now())
+        except Exception as e:
+            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
+    else:
+        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
+
+
+@login_required
+def multiple_delete(request):
+    if request.method == 'POST':
+        try:
+            pk_list = json.loads(request.POST['pk_list'])
+            is_admin = general.is_admin(request.user)
+            if is_admin:
+                Case.objects.filter(pk__in=pk_list).update(
+                    is_active=False, modifier=request.user, modified_date=timezone.now())
+            else:
+                Case.objects.filter(pk__in=pk_list, creator=request.user).update(
+                    is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
             return JsonResponse({'status': 2, 'message': str(e), 'data': None})
         return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})

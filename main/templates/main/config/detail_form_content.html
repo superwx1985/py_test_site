@@ -1,0 +1,78 @@
+<div class="row align-items-center">
+    <div class="col-1 text-center font-weight-bold">名称</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.name %}
+    </div>
+</div>
+<div class="row align-items-center">
+    <div class="col-1 text-center font-weight-bold">描述</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.description rows='2' %}
+    </div>
+</div>
+<div class="row align-items-center">
+    <div class="col-1 text-center font-weight-bold">关键字</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.keyword %}
+    </div>
+</div>
+<div class="row align-items-center">
+    <div class="col-1 text-center font-weight-bold">配置项</div>
+    <div class="col" form_data>
+        <ul class="nav nav-tabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#ui_config">UI测试配置</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#api_config">API测试配置</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#db_config">DB测试配置</a>
+            </li>
+        </ul>
+        <div class="tab-content bg-light">
+            <div id="ui_config" class="container tab-pane active" style="padding: 1em">
+                <div class="form-inline">
+                    <div class="form-group" style="padding: 0 5px" form_data>
+                        <label>驱动类型：</label>
+                        {% include 'main/include/form_input.html' with field=form.ui_selenium_client %}
+                    </div>
+                    <div class="form-group" style="padding: 0 5px" form_data>
+                        <label>IP：</label>
+                        {% include 'main/include/form_input.html' with field=form.ui_remote_ip %}
+                    </div>
+                    <div class="form-group" style="padding: 0 5px" form_data>
+                        <label>端口：</label>
+                        {% include 'main/include/form_input.html' with field=form.ui_remote_port %}
+                    </div>
+                </div>
+                <br>
+                <div class="form-inline">
+                    <div class="form-group" style="padding: 0 5px" form_data>
+                        <label>浏览器类型：</label>
+                        {% include 'main/include/form_input.html' with field=form.ui_driver_type %}
+                    </div>
+                    <div class="form-group" style="padding: 0 5px" form_data>
+                        <label>窗口大小：</label>
+                        {% include 'main/include/form_input.html' with field=form.ui_window_size %}
+                    </div>
+                </div>
+                <br>
+                <div class="form-inline">
+                    <div class="form-group" style="padding: 0 5px" form_data>
+                        <label>窗口宽度：</label>
+                        {% include 'main/include/form_input.html' with field=form.ui_window_width %}
+                    </div>
+                    <div class="form-group" style="padding: 0 5px" form_data>
+                        <label>窗口高度：</label>
+                        {% include 'main/include/form_input.html' with field=form.ui_window_height %}
+                    </div>
+                </div>
+            </div>
+            <div id="api_config" class="container tab-pane" style="padding: 1em">
+            </div>
+            <div id="db_config" class="container tab-pane" style="padding: 1em">
+            </div>
+        </div>
+    </div>
+</div>

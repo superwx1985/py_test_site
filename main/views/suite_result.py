@@ -8,8 +8,9 @@ from django.db.models import Q, CharField, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from main.models import SuiteResult, Step
+from main.models import SuiteResult, Step, Suite
 from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, ConfigForm, VariableGroupForm, ElementGroupForm
+from main.views import general
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list
 from py_test.vic_tools.vic_date_handle import get_timedelta_str
 
@@ -24,6 +25,7 @@ def list_(request):
     request.session['status'] = None
 
     project_list = get_project_list()
+    is_admin = general.is_admin(request.user)
 
     page = request.GET.get('page')
     size = request.GET.get('size', request.COOKIES.get('size'))
@@ -32,6 +34,7 @@ def list_(request):
     order_by_reverse = request.GET.get('order_by_reverse', 'True')
     all_ = request.GET.get('all_', 'False')
     search_project = request.GET.get('search_project', None)
+    suite_id = request.GET.get('suite_id', None)
 
     page = change_to_positive_integer(page, 1)
     size = change_to_positive_integer(size, 10)
@@ -52,16 +55,22 @@ def list_(request):
         q &= Q(creator=request.user)
     if search_project:
         q &= Q(project=search_project)
+    if suite_id:
+        try:
+            obj = Suite.objects.get(pk=suite_id)
+        except Suite.DoesNotExist:
+            raise Http404('Suite does not exist')
+        q &= Q(suite=obj)
 
     objects = SuiteResult.objects.filter(q).values(
         'pk', 'uuid', 'name', 'keyword', 'project__name', 'start_date', 'end_date', 'result_status', 'creator',
-        'creator__username', 'modified_date').annotate(
+        'creator__username', 'modified_date', 'suite__pk').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     result_status_list = SuiteResult.result_status_list
     d = {l[0]: l[1] for l in result_status_list}
-    objects2 = SuiteResult.objects.filter(is_active=True, caseresult__case_order__isnull=False).values('pk').annotate(
+    m2m_objects = SuiteResult.objects.filter(is_active=True, caseresult__case_order__isnull=False).values('pk').annotate(
         m2m_count=Count('caseresult'))
-    count_ = {o['pk']: o['m2m_count'] for o in objects2}
+    m2m_count = {o['pk']: o['m2m_count'] for o in m2m_objects}
     for o in objects:
         # 获取状态文字
         o['result_status_str'] = d.get(o['result_status'], 'N/A')
@@ -76,7 +85,7 @@ def list_(request):
         else:
             o['elapsed_time_str'] = get_timedelta_str(o['elapsed_time'], 1)
         # 获取子对象数量
-        o['m2m_count'] = count_.get(o['pk'], 0)
+        o['m2m_count'] = m2m_count.get(o['pk'], 0)
     # 排序
     if objects:
         if order_by not in objects[0]:
@@ -139,11 +148,27 @@ def detail(request, pk):
 
 @login_required
 def delete(request, pk):
+    err = None
     if request.method == 'POST':
-        SuiteResult.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
+        try:
+            obj = SuiteResult.objects.get(pk=pk)
+        except SuiteResult.DoesNotExist:
+            err = '对象不存在'
+        else:
+            is_admin = general.is_admin(request.user)
+            if is_admin or obj.creator == request.user:
+                obj.is_active = False
+                obj.modifier = request.user
+                obj.save()
+            else:
+                err = '无权限'
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': pk})
+        err = '无效请求'
+
+    if err:
+        return JsonResponse({'status': 2, 'message': err, 'data': pk})
+    else:
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
 
 
 @login_required
@@ -151,8 +176,13 @@ def multiple_delete(request):
     if request.method == 'POST':
         try:
             pk_list = json.loads(request.POST['pk_list'])
-            SuiteResult.objects.filter(pk__in=pk_list, creator=request.user).update(
-                is_active=False, modifier=request.user, modified_date=timezone.now())
+            is_admin = general.is_admin(request.user)
+            if is_admin:
+                SuiteResult.objects.filter(pk__in=pk_list).update(
+                    is_active=False, modifier=request.user, modified_date=timezone.now())
+            else:
+                SuiteResult.objects.filter(pk__in=pk_list, creator=request.user).update(
+                    is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
             return JsonResponse({'status': 2, 'message': str(e), 'data': None})
         return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})

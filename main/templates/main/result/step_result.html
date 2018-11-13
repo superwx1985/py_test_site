@@ -25,7 +25,8 @@
             function step_result_detail_popup() {
                 $('[name=step_result]').off('click').on('click', function() {
                     var url = $(this).parents('tr').attr('step_result_url');
-                    modal_with_iframe_max('step_result_modal', '', url);
+                    var title = $(this).text();
+                    modal_with_iframe_max('step_result_modal', title, url);
                 });
             }
         </script>
@@ -33,12 +34,12 @@
     <body>
         {% include 'main/include/mask.html' %}
         <div class="container-fluid">
-            <div class="row">
-                <div class="col">
-                    <span class="font-weight-bold lead">{{ obj.name }}</span>
-                    <button type="button" class="close" onclick="parent.window.$('[name=step_result_modal]').modal('hide')">×</button>
-                </div>
-            </div>
+{#            <div class="row">#}
+{#                <div class="col">#}
+{#                    <span class="font-weight-bold lead">{{ obj.name }}</span>#}
+{#                    <button type="button" class="close" onclick="parent.window.$('[name=step_result_modal]').modal('hide')">×</button>#}
+{#                </div>#}
+{#            </div>#}
             {% include 'main/include/result_time.html' with start_date=obj.start_date end_date=obj.end_date elapsed_time_str=obj.elapsed_time_str %}
             <hr>
             <div class="row">

@@ -43,7 +43,7 @@
             // 获取待选m2m
             submit_m2m_all_objects_form('/suite', '{% url "case_list_json" %}', get_cookie('last_condition_json'));
             // 注册待选m2m排序
-            $('#m2m_all th[order_by_text]').on('dblclick', function () {m2m_sort($(this).attr('order_by_text'))});
+            $('#m2m_all_table th[order_by_text]').on('dblclick', function () {m2m_sort($(this).attr('order_by_text'))});
             {% if temp_list_json %}
                 // 获取暂存m2m
                 getList("{% url 'case_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, "{{ temp_list_json|escapejs }}");
@@ -79,7 +79,7 @@
             if (success) {
                 // 更新并注册分页工具
                 update_and_bind_paginator(data.data.page, data.data.max_page, data.data.size);
-                var tbody = $('#m2m_all tbody');
+                var tbody = $('#m2m_all_table tbody');
                 tbody.empty();
                 if (data.data.objects.length > 0) {
                     $.each(data.data.objects, function (i, v) {
@@ -98,7 +98,7 @@
                     if (window.editable) {
                         tbody.find('tr').draggable({
                             appendTo: 'body',
-                            connectToSortable: '#m2m_selected tbody',
+                            connectToSortable: '#m2m_selected_table tbody',
                             cursor: "crosshair",
                             handle: "[moveable]",
                             distance: 15,
@@ -125,7 +125,7 @@
         // 更新已选步骤列表
         function m2m_list_selected_update(success, data) {
             if (success) {
-                var tbody = $('#m2m_selected tbody');
+                var tbody = $('#m2m_selected_table tbody');
                 if (data.data.length > 0) {
                     tbody.empty();
                     $.each(data.data, function (i, v) {
@@ -258,7 +258,7 @@
                 </div>
                 <div class="small" style="min-height: 310px; position: relative">
                     {% include 'main/include/mask.html' with mask_class='element-mask' mask_id='m2m_all_mask' %}
-                    <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                    <table id="m2m_all_table" class="table table-sm table-bordered table-hover" style="width: 100%">
                         <colgroup>
                             <col style='width: 30px;'>
                             <col>
@@ -296,7 +296,7 @@
             </div>
             <div class="small" style="min-height: 310px; position: relative">
                 {% include 'main/include/mask.html' with mask_class='element-mask' mask_id='m2m_selected_mask' %}
-                <table class="table table-sm table-bordered table-hover" style="width: 100%">
+                <table id="m2m_selected_table" class="table table-sm table-bordered table-hover" style="width: 100%">
                     <colgroup>
                         <col style='width: 30px;'>
                         <col style='width: 40px;'>

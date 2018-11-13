@@ -1,10 +1,13 @@
 <div style="padding: 0" class="container-fluid">
     <div class="row align-items-center">
         <div class="col">
-            {% include 'main/include/tools/search-tools.html' %}
-        </div>
-        <div class="col-lg-3">
-            {% include 'main/include/tools/see_all.html' %}
+            <table style="width: 100%">
+                <colgroup><col><col style="width: 120px;"></colgroup>
+                <tr>
+                    <td>{% include 'main/include/tools/search-tools.html' %}</td>
+                    <td class="middle">{% include 'main/include/tools/see_all.html' %}</td>
+                </tr>
+            </table>
         </div>
     </div>
 </div>

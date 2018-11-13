@@ -152,6 +152,7 @@
                 <col style='width: 150px;'>
                 <col>
                 <col style='width: 100px;'>
+                <col style='width: 100px;'>
                 <col style='width: 105px;'>
                 <col style='width: 180px;'>
                 <col style='width: 220px;'>
@@ -165,6 +166,7 @@
                     <th order_by_text="project__name">项目</th>
                     <th order_by_text="config__name">配置</th>
                     <th order_by_text="m2m_count">用例数</th>
+                    <th order_by_text="result_count">结果数</th>
                     <th order_by_text="real_name">作者</th>
                     <th order_by_text="modified_date">修改时间</th>
                     <th>操作</th>
@@ -175,31 +177,30 @@
                     <tr pk="{{ obj.pk }}" uuid="{{ obj.uuid }}" edit_url="{% url 'suite' obj.pk %}" quick_update_url="{% url 'suite_quick_update' obj.pk %}" del_url="{% url 'suite_delete' obj.pk %}" exe_url="{% url 'suite_execute' obj.pk %}">
                         <td col_name='index' class="middle small"></td>
                         <td col_name='pk' class="middle small">{{ obj.pk }}</td>
-                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
-                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="middle">{{ obj.keyword }}</td>
+                        <td col_name='name' class="align-middle">{{ obj.name }}</td>
+                        <td col_name='keyword' class="middle">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='config__name' class="middle">{{ obj.config__name|default_if_none:'N/A' }}</td>
                         <td col_name='m2m_count' class="middle">{{ obj.m2m_count }}</td>
+                        <td col_name='result_count' class="middle"><a href="javascript:window.open('{% url "results" %}'+'?all_=True&suite_id={{ obj.pk }}');"><span class="font-weight-bold">{{ obj.result_count }}</span></a></td>
                         <td col_name='real_name' class="middle">{{ obj.real_name|default:obj.creator__username }}</td>
                         <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
-                        <td>
-                            <div class="middle">
-                                {% if request.user.pk == obj.creator %}
+                        <td class="middle">
+                            <div>
+                                {% if request.user.pk == obj.creator or is_admin %}
                                     <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="编辑"><i class="icon-edit"></i></button>
-                                    <button copy_url="{% url 'suite_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
-                                    <button type="button" name="execute_button" class="btn btn-outline-success list_button" data-toggle="tooltip" title="执行"><i class="icon-play"></i></button>
-                                    <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除"><i class="icon-trash"></i></button>
                                 {% else %}
                                     <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="查看"><i class="icon-list"></i></button>
-                                    <button copy_url="{% url 'suite_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
-                                    <button type="button" name="execute_button" class="btn btn-outline-success list_button" data-toggle="tooltip" title="执行"><i class="icon-play"></i></button>
                                 {% endif %}
+                                <button copy_url="{% url 'suite_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
+                                <button type="button" name="execute_button" class="btn btn-outline-success list_button" data-toggle="tooltip" title="执行"><i class="icon-play"></i></button>
+                                <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除" {% if request.user.pk != obj.creator and not is_admin %}disabled="disabled"{% endif %}><i class="icon-trash"></i></button>
                             </div>
                         </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="10" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
+                        <td colspan="11" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
                     </tr>
                 {% endfor %}
             </tbody>

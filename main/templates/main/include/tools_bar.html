@@ -1,11 +1,25 @@
 <div style="padding: 5px 0" class="container-fluid">
     <div class="row align-items-center">
-        <div class="col-6">
-            {% include 'main/include/tools/search-tools.html' %}
+        <div class="col-5">
+            <table style="width: 100%">
+                <colgroup><col><col style="width: 120px;"></colgroup>
+                <tr>
+                    <td>{% include 'main/include/tools/search-tools.html' %}</td>
+                    <td class="middle">{% include 'main/include/tools/see_all.html' %}</td>
+                </tr>
+            </table>
         </div>
-        <div class="col-2">
-            {% include 'main/include/tools/see_all.html' %}
-        </div>
+        {% if parent_select %}
+            <div class="col-4">
+                <table style="width: 100%">
+                    <colgroup><col style="width: 45px;"><col></colgroup>
+                    <tr>
+                        <td class="small font-weight-bold">父对象</td>
+                        <td><div id="parent_select_dropdown" name="{{ parent_select }}"></div></td>
+                    </tr>
+                </table>
+            </div>
+        {% endif %}
         <div class="col text-right">
             {% if copy_button %}<button type="button" id="multiple_copy_button" class="btn btn-warning" disabled="disabled"><i class="icon-copy"></i>&nbsp;批量复制</button>{% endif %}
             <button type="button" id="multiple_delete_button" class="btn btn-danger" disabled="disabled"><i class="icon-trash"></i>&nbsp;批量删除</button>

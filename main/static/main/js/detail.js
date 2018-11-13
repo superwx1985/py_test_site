@@ -1,24 +1,3 @@
-// 更新下拉项
-function update_dropdown(data, $base_div, readonly) {
-	$base_div.empty();
-	var name = $base_div.attr('name');
-	var div_dropdown = $('<div j_dropdown><select style="display: none" placeholder="请选择" name="' + name + '"></select></div>');
-	$base_div.append(div_dropdown);
-	div_dropdown.j_dropdown({
-		data: data.data,
-		//multipleMode: 'label',
-		//limitCount: 1,
-		input: '<input type="text" maxLength="20" placeholder="筛选">',
-		choice: function() {
-			// console.log(this.selectId);
-			// window._selectId = JSON.stringify(this.selectId);
-		}
-	});
-	if (readonly) {
-		div_dropdown.data('dropdown').changeStatus('readonly')
-	}
-}
-
 // 更新变量组下拉项
 function update_variable_group_dropdown(success, data) {
 	if (success) {
@@ -32,7 +11,7 @@ function update_variable_group_dropdown(success, data) {
 	}
 }
 
-// 更新变量组下拉项
+// 更新元素组下拉项
 function update_element_group_dropdown(success, data) {
 	if (success) {
 		if (window.editable) {
@@ -72,13 +51,14 @@ function update_other_sub_case_dropdown(success, data) {
 	}
 }
 
+
 function m2m_detail_popup(title, url) {
 	modal_with_iframe_max('m2m_detail_modal', title, url, '', update_m2m_objects)
 }
 
 // 更新已选m2m的序号，更新m2m field内容
 function update_m2m_selected_index_and_field($input, title) {
-	var m2m = $('#m2m_selected tbody tr:not([placeholder])');
+	var m2m = $('#m2m_selected_table tbody tr:not([placeholder])');
 	var m2m_list = [];
 
 	m2m.each(function(i) {
@@ -94,7 +74,7 @@ function update_m2m_selected_index_and_field($input, title) {
 // 处理m2m拖动及排序
 function m2m_handle($input, col, title) {
 	if (!window.editable) { return }
-	$('#m2m_selected tbody').sortable({
+	$('#m2m_selected_table tbody').sortable({
 		items: "tr:not([placeholder])",
 		distance: 15,
 		handle: "[moveable]",
@@ -103,7 +83,7 @@ function m2m_handle($input, col, title) {
 			update_m2m_selected_index_and_field($input, title);
 		}
 	});
-	$('#m2m_selected tbody').droppable({
+	$('#m2m_selected_table tbody').droppable({
 		activeClass: 'ui-state-default',
 		hoverClass: 'ui-state-hover',
 		accept: 'tr',
@@ -112,13 +92,13 @@ function m2m_handle($input, col, title) {
 			$(this).children('[placeholder]').remove();
 		}
 	});
-	$('#m2m_all tbody').droppable({
+	$('#m2m_all_table tbody').droppable({
 		hoverClass: 'ui-state-hover',
-		accept: '#m2m_selected tr:not([placeholder])',
+		accept: '#m2m_selected_table tr:not([placeholder])',
 		drop: function (event, ui) {
 			ui.draggable.remove();
-			if ($('#m2m_selected tbody tr').length <= 1) {
-				$('#m2m_selected tbody').append($('<tr placeholder><td colspan=' + col + ' class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>'));
+			if ($('#m2m_selected_table tbody tr').length <= 1) {
+				$('#m2m_selected_table tbody').append($('<tr placeholder><td colspan=' + col + ' class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>'));
 			}
 		}
 	})
@@ -250,8 +230,8 @@ function submit_m2m_all_objects_form(cookie_path, json_url, last_condition_json)
 
 // 更新排序标志
 function update_sort_icon() {
-	$('#m2m_all th[order_by_text]').find('i').remove();
-	var sort_col = $('#m2m_all th[order_by_text=' + $('input[name=order_by]').val() + ']');
+	$('#m2m_all_table th[order_by_text]').find('i').remove();
+	var sort_col = $('#m2m_all_table th[order_by_text=' + $('input[name=order_by]').val() + ']');
 	if ($('input[name=order_by_reverse]').val() === 'True') {
 		sort_col.prepend('<i class="icon-circle-arrow-down">&nbsp;</i>');
 	} else {
@@ -300,9 +280,9 @@ function disable_interaction() {
 	$('td[col_move]').empty().off('click');
 	$('[j_dropdown]').each(function(){$(this).data('dropdown').changeStatus('readonly')});
 	$('#m2m_add_button').off('click');
-	//$('#m2m_all tbody tr').draggable('option', 'disabled');
-	//$('#m2m_selected tbody').sortable('option', 'disabled');
-	//$('#m2m_selected tbody').droppable('option', 'disabled');
+	//$('#m2m_all_table tbody tr').draggable('option', 'disabled');
+	//$('#m2m_selected_table tbody').sortable('option', 'disabled');
+	//$('#m2m_selected_table tbody').droppable('option', 'disabled');
 }
 
 // 复制对象的回调函数

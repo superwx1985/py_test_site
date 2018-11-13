@@ -79,7 +79,7 @@
 {% block detail_form %}
     <form method="post" id="object_form" novalidate onsubmit="return check_unsaved();">
         {% csrf_token %}
-        {% include 'main/step/form_content.html' %}
+        {% include 'main/step/detail_form_content.html' %}
         {% include 'main/include/detail_redirect.html' %}
         {% include 'main/include/submit_button_group.html' with copy_url='step_copy' %}
     </form>

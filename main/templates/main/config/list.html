@@ -44,21 +44,20 @@
                     <tr pk="{{ obj.pk }}" uuid="{{ obj.uuid }}" edit_url="{% url 'config' obj.pk %}" quick_update_url="{% url 'config_quick_update' obj.pk %}" del_url="{% url 'config_delete' obj.pk %}">
                         <td col_name='index' class="middle small"></td>
                         <td col_name='pk' class="middle small">{{ obj.pk }}</td>
-                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='name' class="align-middle">{{ obj.name }}</td>
-                        <td {% if request.user.pk == obj.creator %}quick_update{% endif %} col_name='keyword' class="middle">{{ obj.keyword }}</td>
+                        <td col_name='name' class="align-middle">{{ obj.name }}</td>
+                        <td col_name='keyword' class="middle">{{ obj.keyword }}</td>
                         <td col_name='reference_count' class="middle"><a href="javascript:show_reference('{% url "config_reference" obj.pk %}', '<span class=\'mark small\'>{{ obj.name }}</span>被调用情况')"><span class="font-weight-bold">{{ obj.reference_count }}</span></a></td>
                         <td col_name='real_name' class="middle">{{ obj.real_name }}</td>
                         <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
-                        <td>
-                            <div class="middle">
-                                {% if request.user.pk == obj.creator %}
+                        <td class="middle">
+                            <div>
+                                {% if request.user.pk == obj.creator or is_admin %}
                                     <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="编辑"><i class="icon-edit"></i></button>
-                                    <button copy_url="{% url 'config_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
-                                    <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除"><i class="icon-trash"></i></button>
                                 {% else %}
                                     <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="查看"><i class="icon-list"></i></button>
-                                    <button copy_url="{% url 'config_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
                                 {% endif %}
+                                <button copy_url="{% url 'config_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
+                                <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除" {% if request.user.pk != obj.creator and not is_admin %}disabled="disabled"{% endif %}><i class="icon-trash"></i></button>
                             </div>
                         </td>
                     </tr>

@@ -16,7 +16,7 @@ from utils.other import get_query_condition, change_to_positive_integer, Cookie,
 from py_test.general.execute_suite import execute_suite
 from django.template.loader import render_to_string
 from urllib.parse import quote
-from main.views import case, config, variable_group, element_group
+from main.views import case, config, variable_group, element_group, general
 
 logger = logging.getLogger('django.request')
 
@@ -30,6 +30,7 @@ def list_(request):
 
     project_list = get_project_list()
     has_sub_object = True
+    is_admin = general.is_admin(request.user)
 
     page = request.GET.get('page')
     size = request.GET.get('size', request.COOKIES.get('size'))
@@ -60,13 +61,18 @@ def list_(request):
         q &= Q(project=search_project)
 
     objects = Suite.objects.filter(q).values(
-        'pk', 'uuid', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username', 'modified_date').annotate(
+        'pk', 'uuid', 'name', 'keyword', 'project__name', 'config__name', 'creator', 'creator__username',
+        'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
-    objects2 = Suite.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(
+    m2m_objects = Suite.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(
         m2m_count=Count('case'))
-    count_ = {o['pk']: o['m2m_count'] for o in objects2}
+    m2m_count = {o['pk']: o['m2m_count'] for o in m2m_objects}
+    result_objects = Suite.objects.filter(is_active=True, suiteresult__is_active=True).values('pk').annotate(
+        result_count=Count('suiteresult'))
+    result_count = {o['pk']: o['result_count'] for o in result_objects}
     for o in objects:
-        o['m2m_count'] = count_.get(o['pk'], 0)
+        o['m2m_count'] = m2m_count.get(o['pk'], 0)
+        o['result_count'] = result_count.get(o['pk'], 0)
     # 排序
     if objects:
         if order_by not in objects[0]:
@@ -214,11 +220,27 @@ def add(request):
 
 @login_required
 def delete(request, pk):
+    err = None
     if request.method == 'POST':
-        Suite.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
+        try:
+            obj = Suite.objects.get(pk=pk)
+        except Suite.DoesNotExist:
+            err = '对象不存在'
+        else:
+            is_admin = general.is_admin(request.user)
+            if is_admin or obj.creator == request.user:
+                obj.is_active = False
+                obj.modifier = request.user
+                obj.save()
+            else:
+                err = '无权限'
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': pk})
+        err = '无效请求'
+
+    if err:
+        return JsonResponse({'status': 2, 'message': err, 'data': pk})
+    else:
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
 
 
 @login_required
@@ -226,8 +248,13 @@ def multiple_delete(request):
     if request.method == 'POST':
         try:
             pk_list = json.loads(request.POST['pk_list'])
-            Suite.objects.filter(pk__in=pk_list, creator=request.user).update(
-                is_active=False, modifier=request.user, modified_date=timezone.now())
+            is_admin = general.is_admin(request.user)
+            if is_admin:
+                Suite.objects.filter(pk__in=pk_list).update(
+                    is_active=False, modifier=request.user, modified_date=timezone.now())
+            else:
+                Suite.objects.filter(pk__in=pk_list, creator=request.user).update(
+                    is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
             return JsonResponse({'status': 2, 'message': str(e), 'data': None})
         return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
@@ -255,6 +282,34 @@ def quick_update(request, pk):
         return JsonResponse({'status': 1, 'message': 'OK', 'data': new_value})
     else:
         return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': None})
+
+
+# 获取带搜索信息的下拉列表数据
+@login_required
+def select_json(request):
+    condition = request.POST.get('condition', '{}')
+    try:
+        condition = json.loads(condition)
+    except json.decoder.JSONDecodeError:
+        condition = dict()
+    selected_pk = condition.get('selected_pk')
+
+    objects = Suite.objects.filter(is_active=True).values('pk', 'name', 'keyword', 'project__name')
+
+    data = list()
+    for obj in objects:
+        d = dict()
+        d['id'] = str(obj['pk'])
+        d['name'] = '{} | {}'.format(obj['name'], obj['project__name'])
+        d['search_info'] = '{} {} {}'.format(obj['name'], obj['project__name'], obj['keyword'])
+        if str(obj['pk']) == selected_pk:
+            d['selected'] = True
+        else:
+            d['selected'] = False
+        d['url'] = '{}?next={}'.format(reverse(detail, args=[obj['pk']]), reverse(list_))
+        data.append(d)
+
+    return JsonResponse({'status': 1, 'message': 'OK', 'data': data})
 
 
 # 复制操作

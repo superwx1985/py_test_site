@@ -110,6 +110,7 @@ urlpatterns = [
     path('suites/multiple_delete/', suite.multiple_delete, name='suites_multiple_delete'),
     path('suites/multiple_copy/', suite.multiple_copy, name='suites_multiple_copy'),
     path('suite/add/', suite.add, name='suite_add'),
+    path('suite/select_json/', suite.select_json, name='suite_select_json'),
     path('suite/<str:pk>/', suite.detail, name='suite'),
     path('suite/<str:pk>/delete/', suite.delete, name='suite_delete'),
     path('suite/<str:pk>/quick_update/', suite.quick_update, name='suite_quick_update'),

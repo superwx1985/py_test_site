@@ -29,7 +29,7 @@
             $('[name=step_result]').off('click').on('click', function() {
                 var url = $(this).parents('tr').attr('step_result_url');
                 var title = $(this).text();
-                modal_with_iframe_max('step_result_modal', '', url);
+                modal_with_iframe_max('step_result_modal', title, url);
             });
         }
     </script>

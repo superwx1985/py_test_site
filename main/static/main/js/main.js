@@ -258,3 +258,24 @@ Date.prototype.Format = function (fmt) {
         if (new RegExp('(' + k + ')').test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]): (('00' + o[k]).substr(('' + o[k]).length)));
     return fmt;
 };
+
+// 更新下拉项
+function update_dropdown(data, $base_div, readonly) {
+	$base_div.empty();
+	var name = $base_div.attr('name');
+	var div_dropdown = $('<div j_dropdown style="width: 100%"><select style="display: none;" placeholder="请选择" name="' + name + '"></select></div>');
+	$base_div.append(div_dropdown);
+	div_dropdown.j_dropdown({
+		data: data.data,
+		//multipleMode: 'label',
+		//limitCount: 1,
+		input: '<input type="text" maxLength="20" placeholder="筛选">',
+		choice: function() {
+			// console.log(this.selectId);
+			// window._selectId = JSON.stringify(this.selectId);
+		}
+	});
+	if (readonly) {
+		div_dropdown.data('dropdown').changeStatus('readonly')
+	}
+}

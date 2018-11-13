@@ -14,7 +14,7 @@ from main.models import VariableGroup, Variable, Case, Suite
 from main.forms import OrderByForm, PaginatorForm, VariableGroupForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list
 from urllib.parse import quote
-from main.views import case, suite
+from main.views import case, suite, general
 
 logger = logging.getLogger('django.request')
 
@@ -26,6 +26,7 @@ def list_(request):
     request.session['status'] = None
 
     project_list = get_project_list()
+    is_admin = general.is_admin(request.user)
 
     page = request.GET.get('page')
     size = request.GET.get('size', request.COOKIES.get('size'))
@@ -61,14 +62,14 @@ def list_(request):
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
 
     # 获取被调用次数
-    objects2 = VariableGroup.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(
+    reference_objects1 = VariableGroup.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(
         reference_count=Count('*'))
-    count_ = {o['pk']: o['reference_count'] for o in objects2}
-    objects3 = VariableGroup.objects.filter(is_active=True, suite__is_active=True).values('pk').annotate(
+    reference_count1 = {o['pk']: o['reference_count'] for o in reference_objects1}
+    reference_objects2 = VariableGroup.objects.filter(is_active=True, suite__is_active=True).values('pk').annotate(
         reference_count=Count('*'))
-    count_3 = {o['pk']: o['reference_count'] for o in objects3}
+    reference_count2 = {o['pk']: o['reference_count'] for o in reference_objects2}
     for o in objects:
-        o['reference_count'] = count_.get(o['pk'], 0) + count_3.get(o['pk'], 0)
+        o['reference_count'] = reference_count1.get(o['pk'], 0) + reference_count2.get(o['pk'], 0)
 
     # 排序
     if objects:
@@ -209,11 +210,27 @@ def add(request):
 
 @login_required
 def delete(request, pk):
+    err = None
     if request.method == 'POST':
-        VariableGroup.objects.filter(pk=pk).update(is_active=False, modifier=request.user, modified_date=timezone.now())
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
+        try:
+            obj = Variable.objects.get(pk=pk)
+        except Variable.DoesNotExist:
+            err = '对象不存在'
+        else:
+            is_admin = general.is_admin(request.user)
+            if is_admin or obj.creator == request.user:
+                obj.is_active = False
+                obj.modifier = request.user
+                obj.save()
+            else:
+                err = '无权限'
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': pk})
+        err = '无效请求'
+
+    if err:
+        return JsonResponse({'status': 2, 'message': err, 'data': pk})
+    else:
+        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
 
 
 @login_required
@@ -221,8 +238,13 @@ def multiple_delete(request):
     if request.method == 'POST':
         try:
             pk_list = json.loads(request.POST['pk_list'])
-            VariableGroup.objects.filter(pk__in=pk_list, creator=request.user).update(
-                is_active=False, modifier=request.user, modified_date=timezone.now())
+            is_admin = general.is_admin(request.user)
+            if is_admin:
+                Variable.objects.filter(pk__in=pk_list).update(
+                    is_active=False, modifier=request.user, modified_date=timezone.now())
+            else:
+                Variable.objects.filter(pk__in=pk_list, creator=request.user).update(
+                    is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
             return JsonResponse({'status': 2, 'message': str(e), 'data': None})
         return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
