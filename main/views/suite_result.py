@@ -114,20 +114,15 @@ def list_(request):
 def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
     inside = request.GET.get('inside')
+    is_admin = general.is_admin(request.user)
+
     try:
         obj = SuiteResult.objects.select_related('creator', 'modifier').get(pk=pk)
     except SuiteResult.DoesNotExist:
         raise Http404('SuiteResult does not exist')
     sub_objects = obj.caseresult_set.filter(step_result=None).order_by('case_order')
-    if request.method == 'GET':
-        _project = obj.project.pk if obj.project is not None else None
-        form = SuiteResultForm(instance=obj)
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
-        return render(request, 'main/result/detail.html', locals())
-    elif request.method == 'POST':
+
+    if request.method == 'POST' and (is_admin or request.user == obj.creator):
         import copy
         obj_temp = copy.deepcopy(obj)
         form = SuiteResultForm(data=request.POST, instance=obj_temp)
@@ -144,6 +139,13 @@ def detail(request, pk):
                 return HttpResponseRedirect(request.get_full_path())
 
         return render(request, 'main/result/detail.html', locals())
+    else:
+        _project = obj.project.pk if obj.project is not None else None
+        form = SuiteResultForm(instance=obj)
+        if request.session.get('status', None) == 'success':
+            prompt = 'success'
+        request.session['status'] = None
+        return render(request, 'main/result/detail.html', locals())
 
 
 @login_required
@@ -151,7 +153,7 @@ def delete(request, pk):
     err = None
     if request.method == 'POST':
         try:
-            obj = SuiteResult.objects.get(pk=pk)
+            obj = SuiteResult.objects.select_related('creator', 'modifier').get(pk=pk)
         except SuiteResult.DoesNotExist:
             err = '对象不存在'
         else:

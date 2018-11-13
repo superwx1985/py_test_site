@@ -103,18 +103,14 @@ def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
     project_list = get_project_list()
     has_sub_object = True
+    is_admin = general.is_admin(request.user)
+
     try:
         obj = Suite.objects.select_related('creator', 'modifier').get(pk=pk)
     except Suite.DoesNotExist:
         raise Http404('Suite does not exist')
-    if request.method == 'GET':
-        form = SuiteForm(instance=obj)
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
-        return render(request, 'main/suite/detail.html', locals())
-    elif request.method == 'POST':
+
+    if request.method == 'POST' and (is_admin or request.user == obj.creator):
         obj_temp = copy.deepcopy(obj)
         form = SuiteForm(data=request.POST, instance=obj_temp)
         try:
@@ -164,20 +160,20 @@ def detail(request, pk):
                     temp_list_json = json.dumps(m2m_list)
 
         return render(request, 'main/suite/detail.html', locals())
+    else:
+        form = SuiteForm(instance=obj)
+        if request.session.get('status', None) == 'success':
+            prompt = 'success'
+        request.session['status'] = None
+        return render(request, 'main/suite/detail.html', locals())
 
 
 @login_required
 def add(request):
     next_ = request.GET.get('next', '/home/')
     project_list = get_project_list()
-    if request.method == 'GET':
-        form = SuiteForm()
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
-        return render(request, 'main/suite/detail.html', locals())
-    elif request.method == 'POST':
+
+    if request.method == 'POST':
         form = SuiteForm(data=request.POST)
         try:
             m2m_list = json.loads(request.POST.get('case', 'null'))
@@ -216,6 +212,12 @@ def add(request):
                 temp_list_json = json.dumps(m2m_list)
 
         return render(request, 'main/suite/detail.html', locals())
+    else:
+        form = SuiteForm()
+        if request.session.get('status', None) == 'success':
+            prompt = 'success'
+        request.session['status'] = None
+        return render(request, 'main/suite/detail.html', locals())
 
 
 @login_required
@@ -223,7 +225,7 @@ def delete(request, pk):
     err = None
     if request.method == 'POST':
         try:
-            obj = Suite.objects.get(pk=pk)
+            obj = Suite.objects.select_related('creator', 'modifier').get(pk=pk)
         except Suite.DoesNotExist:
             err = '对象不存在'
         else:

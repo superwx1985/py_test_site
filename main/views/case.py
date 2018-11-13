@@ -115,17 +115,14 @@ def detail(request, pk):
     reference_url = reverse(reference, args=[pk])  # 被其他对象调用
     project_list = get_project_list()
     has_sub_object = True
+    is_admin = general.is_admin(request.user)
+
     try:
         obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
     except Case.DoesNotExist:
         raise Http404('Step does not exist')
-    if request.method == 'GET':
-        form = CaseForm(instance=obj)
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
-        return render(request, 'main/case/detail.html', locals())
-    elif request.method == 'POST':
+
+    if request.method == 'POST' and (is_admin or request.user == obj.creator):
         obj_temp = copy.deepcopy(obj)
         form = CaseForm(data=request.POST, instance=obj_temp)
         try:
@@ -175,6 +172,12 @@ def detail(request, pk):
                     temp_list_json = json.dumps(m2m_list)
 
         return render(request, 'main/case/detail.html', locals())
+    else:
+        form = CaseForm(instance=obj)
+        if request.session.get('status', None) == 'success':
+            prompt = 'success'
+        request.session['status'] = None
+        return render(request, 'main/case/detail.html', locals())
 
 
 @login_required
@@ -183,13 +186,8 @@ def add(request):
     inside = request.GET.get('inside')
     copy_sub_item = True
     project_list = get_project_list()
-    if request.method == 'GET':
-        form = CaseForm()
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
-        return render(request, 'main/case/detail.html', locals())
-    elif request.method == 'POST':
+
+    if request.method == 'POST':
         form = CaseForm(data=request.POST)
         try:
             m2m_list = json.loads(request.POST.get('step', 'null'))
@@ -232,6 +230,12 @@ def add(request):
                 temp_list_json = json.dumps(m2m_list)
 
         return render(request, 'main/case/detail.html', locals())
+    else:
+        form = CaseForm()
+        if request.session.get('status', None) == 'success':
+            prompt = 'success'
+        request.session['status'] = None
+        return render(request, 'main/case/detail.html', locals())
 
 
 @login_required
@@ -239,7 +243,8 @@ def delete(request, pk):
     err = None
     if request.method == 'POST':
         try:
-            obj = Case.objects.get(pk=pk)
+            obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
+            # obj = Case.objects.get(pk=pk)
         except Case.DoesNotExist:
             err = '对象不存在'
         else:

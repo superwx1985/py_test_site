@@ -1,7 +1,12 @@
 <ol class="breadcrumb my-4">
-    <li class="breadcrumb-item active">
+    <li class="breadcrumb-item active small">
     {% if form.initial %}
-        {{ object_name }}[<a href="#" data-toggle="popover" title="uuid" data-content="{{ obj.uuid }}">{{ obj.pk }}</a>]&nbsp;&nbsp;&nbsp;&nbsp;作者：{{ obj.creator.last_name }}{{ obj.creator.first_name }}[{{ obj.creator.username }}]&nbsp;&nbsp;&nbsp;&nbsp;创建时间：{{ obj.created_date }}&nbsp;&nbsp;&nbsp;&nbsp;修改时间：{{ obj.modified_date }}{% if reference_url %}&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:show_reference('{{ reference_url }}')">被调用情况</a>{% endif %}
+        <span class="font-weight-bold">{{ object_name }}</span>[<a href="#" data-toggle="popover" title="uuid" data-content="{{ obj.uuid }}">{{ obj.pk }}</a>]&nbsp;&nbsp;&nbsp;&nbsp;
+        <span class="font-weight-bold">作者：</span>{{ obj.creator.last_name }}{{ obj.creator.first_name }}[{{ obj.creator.username }}]&nbsp;&nbsp;&nbsp;&nbsp;
+        <span class="font-weight-bold">创建时间：</span>{{ obj.created_date }}&nbsp;&nbsp;&nbsp;&nbsp;
+        <span class="font-weight-bold">修改者：</span>{{ obj.modifier.last_name }}{{ obj.modifier.first_name }}[{{ obj.modifier.username }}]&nbsp;&nbsp;&nbsp;&nbsp;
+        <span class="font-weight-bold">修改时间：</span>{{ obj.modified_date }}{% if reference_url %}&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="javascript:show_reference('{{ reference_url }}')">被调用情况</a>{% endif %}
     {% else %}
         添加{{ object_name }}
     {% endif %}

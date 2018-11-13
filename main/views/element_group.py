@@ -98,18 +98,14 @@ def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
     reference_url = reverse(reference, args=[pk])  # 被其他对象调用
     by_list_json = json.dumps(Step.ui_by_list)
+    is_admin = general.is_admin(request.user)
+
     try:
         obj = ElementGroup.objects.select_related('creator', 'modifier').get(pk=pk)
     except ElementGroup.DoesNotExist:
         raise Http404('Step does not exist')
-    if request.method == 'GET':
-        form = ElementGroupForm(instance=obj)
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
-        return render(request, 'main/element_group/detail.html', locals())
-    elif request.method == 'POST':
+
+    if request.method == 'POST' and (is_admin or request.user == obj.creator):
         obj_temp = copy.deepcopy(obj)
         form = ElementGroupForm(data=request.POST, instance=obj_temp)
         try:
@@ -151,20 +147,20 @@ def detail(request, pk):
                 temp_list_json = json.dumps(temp_dict)
 
         return render(request, 'main/element_group/detail.html', locals())
+    else:
+        form = ElementGroupForm(instance=obj)
+        if request.session.get('status', None) == 'success':
+            prompt = 'success'
+        request.session['status'] = None
+        return render(request, 'main/element_group/detail.html', locals())
 
 
 @login_required
 def add(request):
     next_ = request.GET.get('next', '/home/')
     by_list_json = json.dumps(Step.ui_by_list)
-    if request.method == 'GET':
-        form = ElementGroupForm()
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
-        return render(request, 'main/element_group/detail.html', locals())
-    elif request.method == 'POST':
+
+    if request.method == 'POST':
         form = ElementGroupForm(data=request.POST)
         try:
             element_list = json.loads(request.POST.get('element', 'null'))
@@ -206,6 +202,12 @@ def add(request):
                 temp_list_json = json.dumps(temp_dict)
 
         return render(request, 'main/element_group/detail.html', locals())
+    else:
+        form = ElementGroupForm()
+        if request.session.get('status', None) == 'success':
+            prompt = 'success'
+        request.session['status'] = None
+        return render(request, 'main/element_group/detail.html', locals())
 
 
 @login_required
@@ -213,7 +215,7 @@ def delete(request, pk):
     err = None
     if request.method == 'POST':
         try:
-            obj = ElementGroup.objects.get(pk=pk)
+            obj = ElementGroup.objects.select_related('creator', 'modifier').get(pk=pk)
         except ElementGroup.DoesNotExist:
             err = '对象不存在'
         else:

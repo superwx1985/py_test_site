@@ -99,18 +99,14 @@ def list_(request):
 def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
     reference_url = reverse(reference, args=[pk])  # 被其他对象调用
+    is_admin = general.is_admin(request.user)
+
     try:
         obj = VariableGroup.objects.select_related('creator', 'modifier').get(pk=pk)
     except VariableGroup.DoesNotExist:
         raise Http404('Step does not exist')
-    if request.method == 'GET':
-        form = VariableGroupForm(instance=obj)
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
-        return render(request, 'main/variable_group/detail.html', locals())
-    elif request.method == 'POST':
+
+    if request.method == 'POST' and (is_admin or request.user == obj.creator):
         obj_temp = copy.deepcopy(obj)
         form = VariableGroupForm(data=request.POST, instance=obj_temp)
         try:
@@ -152,19 +148,19 @@ def detail(request, pk):
                 temp_list_json = json.dumps(temp_dict)
 
         return render(request, 'main/variable_group/detail.html', locals())
+    else:
+        form = VariableGroupForm(instance=obj)
+        if request.session.get('status', None) == 'success':
+            prompt = 'success'
+        request.session['status'] = None
+        return render(request, 'main/variable_group/detail.html', locals())
 
 
 @login_required
 def add(request):
     next_ = request.GET.get('next', '/home/')
-    if request.method == 'GET':
-        form = VariableGroupForm()
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
-        return render(request, 'main/variable_group/detail.html', locals())
-    elif request.method == 'POST':
+
+    if request.method == 'POST':
         form = VariableGroupForm(data=request.POST)
         try:
             variable_list = json.loads(request.POST.get('variable', 'null'))
@@ -206,6 +202,12 @@ def add(request):
                 temp_list_json = json.dumps(temp_dict)
 
         return render(request, 'main/variable_group/detail.html', locals())
+    else:
+        form = VariableGroupForm()
+        if request.session.get('status', None) == 'success':
+            prompt = 'success'
+        request.session['status'] = None
+        return render(request, 'main/variable_group/detail.html', locals())
 
 
 @login_required
@@ -213,7 +215,7 @@ def delete(request, pk):
     err = None
     if request.method == 'POST':
         try:
-            obj = Variable.objects.get(pk=pk)
+            obj = Variable.objects.select_related('creator', 'modifier').get(pk=pk)
         except Variable.DoesNotExist:
             err = '对象不存在'
         else:

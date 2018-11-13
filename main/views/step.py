@@ -109,18 +109,14 @@ def detail(request, pk):
     order = request.GET.get('order')
     reference_url = reverse(reference, args=[pk])  # 被其他对象调用
     action_map_json = other.get_action_map_json()
+    is_admin = general.is_admin(request.user)
+
     try:
         obj = Step.objects.select_related('creator', 'modifier').get(pk=pk)
     except Step.DoesNotExist:
         raise Http404('Step does not exist')
-    if request.method == 'GET':
-        form = StepForm(instance=obj)
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
-        return render(request, 'main/step/detail.html', locals())
-    elif request.method == 'POST':
+
+    if request.method == 'POST' and (is_admin or request.user == obj.creator):
         obj_temp = copy.deepcopy(obj)
         form = StepForm(data=request.POST, instance=obj_temp)
         if form.is_valid():
@@ -136,6 +132,12 @@ def detail(request, pk):
                 return HttpResponseRedirect(request.get_full_path())
 
         return render(request, 'main/step/detail.html', locals())
+    else:
+        form = StepForm(instance=obj)
+        if request.session.get('status', None) == 'success':
+            prompt = 'success'
+        request.session['status'] = None
+        return render(request, 'main/step/detail.html', locals())
 
 
 @login_required
@@ -143,14 +145,8 @@ def add(request):
     next_ = request.GET.get('next', '/home/')
     inside = request.GET.get('inside')
     action_map_json = other.get_action_map_json()
-    if request.method == 'GET':
-        form = StepForm()
-        if request.session.get('status', None) == 'success':
-            prompt = 'success'
-        request.session['status'] = None
-        redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
-        return render(request, 'main/step/detail.html', locals())
-    elif request.method == 'POST':
+
+    if request.method == 'POST':
         form = StepForm(data=request.POST)
         if form.is_valid():
             obj_temp = form.save(commit=False)
@@ -172,6 +168,12 @@ def add(request):
                 return HttpResponseRedirect('{}?next={}{}'.format(reverse(detail, args=[pk]), quote(next_), para))
 
         return render(request, 'main/step/detail.html', locals())
+    else:
+        form = StepForm()
+        if request.session.get('status', None) == 'success':
+            prompt = 'success'
+        request.session['status'] = None
+        return render(request, 'main/step/detail.html', locals())
 
 
 @login_required
@@ -179,7 +181,7 @@ def delete(request, pk):
     err = None
     if request.method == 'POST':
         try:
-            obj = Step.objects.get(pk=pk)
+            obj = Step.objects.select_related('creator', 'modifier').get(pk=pk)
         except Step.DoesNotExist:
             err = '对象不存在'
         else:
