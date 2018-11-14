@@ -9,13 +9,13 @@
                 </tr>
             </table>
         </div>
-        {% if parent_select %}
+        {% if parent_name %}
             <div class="col-4">
                 <table style="width: 100%">
-                    <colgroup><col style="width: 45px;"><col></colgroup>
+                    <colgroup><col style="width: 70px;"><col></colgroup>
                     <tr>
-                        <td class="small font-weight-bold">父对象</td>
-                        <td><div id="parent_select_dropdown" name="{{ parent_select }}"></div></td>
+                        <td class="small font-weight-bold">{{ parent_label }}</td>
+                        <td><div id="parent_select_dropdown" name="{{ parent_name }}"></div></td>
                     </tr>
                 </table>
             </div>

@@ -74,7 +74,7 @@
                         $('[name=add_another_button]').on('click', function() { $('[name=redirect]').val('add_another') });
                         $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url')) });
                     {% else %}
-                        $('[name=return_button]').on('click', function() { parent.window.$('[name=m2m_detail_modal]').modal('hide') });
+                        $('[name=return_button]').on('click', function() { parent.window.$('[name=inside_detail_modal]').modal('hide') });
                         $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url')) });
                     {% endif %}
                     {#如果是内嵌窗口而且含有成功标志，那么关闭父页面的弹窗#}
@@ -86,7 +86,7 @@
                         {% elif new_pk %}
                             parent.window.add_m2m(parent.window.$m2m_input, '{{ new_pk }}');
                         {% endif %}
-                        parent.window.$('[name=m2m_detail_modal]').modal('hide');
+                        parent.window.$('[name=inside_detail_modal]').modal('hide');
                     {% endif %}
                 });
             </script>
@@ -112,7 +112,7 @@
 {#            <div class="container-fluid">#}
 {#                <div class="row">#}
 {#                    <div class="col">#}
-{#                        <button type="button" class="close" onclick="parent.window.$('[name=m2m_detail_modal]').modal('hide')">×</button>#}
+{#                        <button type="button" class="close" onclick="parent.window.$('[name=inside_detail_modal]').modal('hide')">×</button>#}
 {#                    </div>#}
 {#                </div>#}
 {#            </div>#}

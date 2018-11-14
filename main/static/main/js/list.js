@@ -123,7 +123,7 @@ function multiple_operate_button_status() {
     }
 }
 
-// 批量删除
+// 批量删除按钮
 function bind_multiple_delete_button() {
     $('#multiple_delete_button').off('click').click(function () {
         var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
@@ -160,7 +160,7 @@ function bind_multiple_delete_button() {
     });
 }
 
-// 批量复制
+// 批量复制按钮
 function bind_multiple_copy_button() {
     $('#multiple_copy_button').off('click').click(function () {
         var body = $('<div>').addClass('modal-body');
@@ -213,15 +213,25 @@ function bind_multiple_copy_button() {
     });
 }
 
-// 详情
-function bind_edit_button() {
-    $('button[name=edit_button]').on('click', function() {
+// 详情按钮
+// function bind_edit_button() {
+//     $('button[name=edit_button]').on('click', function() {
+//         var url = $(this).parents('tr').attr('edit_url') + '?next=' + window.next_;
+//         window.open(url, '_self');
+//     });
+// }
+
+// 添加详情链接
+function add_edit_link() {
+    $('td[col_name=name]').each(function () {
         var url = $(this).parents('tr').attr('edit_url') + '?next=' + window.next_;
-        window.open(url, '_self');
+        var a = $('<a>');
+        a.attr('href', url).text($(this).text());
+        $(this).empty().append(a);
     });
 }
 
-// 删除
+// 删除按钮
 function bind_delete_button() {
     $('button[name="delete_button"]').off('click').click(function () {
         var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();

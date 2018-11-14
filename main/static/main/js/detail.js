@@ -53,7 +53,7 @@ function update_other_sub_case_dropdown(success, data) {
 
 
 function m2m_detail_popup(title, url) {
-	modal_with_iframe_max('m2m_detail_modal', title, url, '', update_m2m_objects)
+	modal_with_iframe_max('inside_detail_modal', title, url, '', update_m2m_objects)
 }
 
 // 更新已选m2m的序号，更新m2m field内容

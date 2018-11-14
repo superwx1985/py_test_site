@@ -101,6 +101,7 @@ def list_(request):
 @login_required
 def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
+    inside = request.GET.get('inside')
     project_list = get_project_list()
     has_sub_object = True
     is_admin = general.is_admin(request.user)

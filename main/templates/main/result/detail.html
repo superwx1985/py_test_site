@@ -115,7 +115,7 @@
             {% if obj.variable_group %}
                 <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '公共变量组快照', '{% url "suite_variable_group_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;查看快照</button>
             {% else %}
-                <span>【未配置】</span>
+                <span class="text-info">【未配置】</span>
             {% endif %}
         </div>
     </div>
@@ -125,7 +125,7 @@
             {% if obj.element_group %}
                 <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '公共元素组快照', '{% url "suite_element_group_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;查看快照</button>
             {% else %}
-                <span>【未配置】</span>
+                <span class="text-info">【未配置】</span>
             {% endif %}
         </div>
     </div>

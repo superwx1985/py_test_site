@@ -25,7 +25,7 @@
                 <col style='width: 130px;'>
                 <col style='width: 105px;'>
                 <col style='width: 180px;'>
-                <col style='width: 170px;'>
+                <col style='width: 120px;'>
             </colgroup>
             <thead class="thead-light middle">
                 <tr>
@@ -51,11 +51,6 @@
                         <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
                         <td class="middle">
                             <div>
-                                {% if request.user.pk == obj.creator or is_admin %}
-                                    <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="查看及编辑"><i class="icon-edit"></i></button>
-                                {% else %}
-                                    <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="查看"><i class="icon-list"></i></button>
-                                {% endif %}
                                 <button copy_url="{% url 'config_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
                                 <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除" {% if request.user.pk != obj.creator and not is_admin %}disabled="disabled"{% endif %}><i class="icon-trash"></i></button>
                             </div>

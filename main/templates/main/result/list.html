@@ -9,8 +9,9 @@
             window.multiple_delete_url="{% url 'results_multiple_delete' %}";
             // 查看套件
             $('[name=parent_button]').on('click', function () {
-                var url = $(this).parents('tr').attr('parent_url') + '?next=' + {% url 'suites' %};
-                window.open(url);
+                var url = $(this).parents('tr').attr('parent_url') + '?inside=1';
+                modal_with_iframe_max('inside_detail_modal', '套件详情', url, '');
+                $(this).tooltip('hide');
             });
             // 获取套件下拉项
             getList("{% url 'suite_select_json' %}", window.$csrf_input.val(), update_parent_select_dropdown, '{"selected_pk": "{{ suite_id }}"}');
@@ -18,7 +19,7 @@
     </script>
 {% endblock %}
 {% block tools_bar %}
-    {% include 'main/include/tools_bar.html' with parent_select='suite_id' %}
+    {% include 'main/include/tools_bar.html' with parent_name='suite_id' parent_label='按套件筛选' %}
 {% endblock %}
 {% block result_table %}
     <div class="table-responsive" id='result_div'>
@@ -35,7 +36,7 @@
                 <col style='width: 80px;'>
                 <col style='width: 105px;'>
                 <col style='width: 180px;'>
-                <col style='width: 170px;'>
+                <col style='width: 120px;'>
             </colgroup>
             <thead class="thead-light middle">
                 <tr>
@@ -77,11 +78,6 @@
                         <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
                         <td class="middle">
                             <div>
-                                {% if request.user.pk == obj.creator or is_admin %}
-                                    <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="查看及编辑"><i class="icon-edit"></i></button>
-                                {% else %}
-                                    <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="查看"><i class="icon-list"></i></button>
-                                {% endif %}
                                 <button type="button" name="parent_button" class="btn btn-primary list_button" data-toggle="tooltip" title="查看套件"><i class="icon-link"></i></button>
                                 <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除" {% if request.user.pk != obj.creator and not is_admin %}disabled="disabled"{% endif %}><i class="icon-trash"></i></button>
                             </div>

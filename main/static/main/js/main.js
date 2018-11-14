@@ -190,6 +190,7 @@ function show_my_modal(modal_name, modal_class, modal_style, modal_body_style, m
     }
     // 关闭modal后执行回调函数并清除modal代码
 	my_modal.off('hide.bs.modal').on('hide.bs.modal', function () {
+	    console.log(callback)
 	    if (callback) { callback() }
 	    my_modal.remove();
 	});
