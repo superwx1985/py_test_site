@@ -417,17 +417,7 @@ class SuiteResult(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    is_active = models.BooleanField(default=True)
-
-    timeout = models.FloatField(default=10)
-    ui_get_ss = models.BooleanField(default=True)
-    thread_count = models.IntegerField(default=1)
-    config = models.TextField(blank=True, null=True)
-    variable_group = models.TextField(blank=True, null=True)
-    element_group = models.TextField(blank=True, null=True)
     project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
-
-    suite = models.ForeignKey('main.Suite', on_delete=models.SET_NULL, null=True, blank=True)
     creator = models.ForeignKey(
         User, verbose_name='创建人', related_name='suite_result_creator', on_delete=models.SET_NULL, blank=True,
         null=True)
@@ -436,6 +426,17 @@ class SuiteResult(models.Model):
         User, verbose_name='修改人', related_name='suite_result_modifier', on_delete=models.SET_NULL, blank=True,
         null=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_active = models.BooleanField(default=True)
+
+    timeout = models.FloatField(default=10)
+    ui_get_ss = models.BooleanField(default=True)
+    log_level = models.IntegerField(default=20)
+    thread_count = models.IntegerField(default=1)
+    config = models.TextField(blank=True, null=True)
+    variable_group = models.TextField(blank=True, null=True)
+    element_group = models.TextField(blank=True, null=True)
+    suite = models.ForeignKey('main.Suite', on_delete=models.SET_NULL, null=True, blank=True)
+
     start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
     end_date = models.DateTimeField(verbose_name='结束时间', blank=True, null=True)
     execute_count = models.IntegerField(blank=True, null=True)

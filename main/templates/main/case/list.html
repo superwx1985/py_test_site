@@ -62,7 +62,7 @@
                         <td class="middle">
                             <div>
                                 {% if request.user.pk == obj.creator or is_admin %}
-                                    <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="编辑"><i class="icon-edit"></i></button>
+                                    <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="查看及编辑"><i class="icon-edit"></i></button>
                                 {% else %}
                                     <button type="button" name="edit_button" class="btn btn-info list_button" data-toggle="tooltip" title="查看"><i class="icon-list"></i></button>
                                 {% endif %}

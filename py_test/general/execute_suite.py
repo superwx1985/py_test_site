@@ -38,6 +38,7 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
         keyword=suite.keyword,
         timeout=suite.timeout,
         ui_get_ss=suite.ui_get_ss,
+        log_level=suite.log_level,
         thread_count=suite.thread_count,
         project=suite.project,
 

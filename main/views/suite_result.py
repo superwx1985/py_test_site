@@ -63,8 +63,8 @@ def list_(request):
         q &= Q(suite=obj)
 
     objects = SuiteResult.objects.filter(q).values(
-        'pk', 'uuid', 'name', 'keyword', 'project__name', 'start_date', 'end_date', 'result_status', 'creator',
-        'creator__username', 'modified_date', 'suite__pk').annotate(
+        'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date', 'suite__pk',
+        'start_date', 'end_date', 'result_status').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     result_status_list = SuiteResult.result_status_list
     d = {l[0]: l[1] for l in result_status_list}

@@ -21,6 +21,8 @@
     <script>
         $(function () {
             step_result_detail_popup();
+            // 更新日志级别
+            $('#id_log_level').val('{{ obj.log_level|default_if_none:20 }}');
             // 关闭遮罩
             $('#mask').hide();
         });
@@ -71,6 +73,37 @@
         {% include 'main/include/submit_button_group.html' %}
     </form>
     <div class="row align-items-center">
+        <div class="col-1 text-center font-weight-bold">全局超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置本次测试每一步的默认超时值。如果步骤单独设置了超时值，将使用步骤的超时值（单位：秒）"></i></div>
+        <div class="col" form_data>
+            <span class="text-info">{{ obj.timeout }}</span>&nbsp;秒
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-center font-weight-bold">自动截图&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试的验证步骤时是否自动截图"></i></div>
+        <div class="col" form_data>
+            <input type="checkbox" name="ui_get_ss" id="id_ui_get_ss" {% if obj.ui_get_ss %}checked{% endif %} disabled>
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-center font-weight-bold">日志级别&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试的日志详细程度，选择DEV将不会自动关闭浏览器"></i></div>
+        <div class="col" form_data>
+            <select name="log_level" class="form-control" placeholder="" id="id_log_level" disabled>
+                <option value="1">DEV</option>
+                <option value="10">DEBUG</option>
+                <option value="20">INFO</option>
+                <option value="30">WARNING</option>
+                <option value="40">ERROR</option>
+                <option value="50">CRITICAL</option>
+            </select>
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-center font-weight-bold">测试线程数&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="可同时运行的用例数量。设置更高的值可以加快测试速度，但会打乱用例执行顺序，导致一些意外情况。"></i></div>
+        <div class="col" form_data>
+            <span class="text-info">{{ obj.thread_count }}</span>
+        </div>
+    </div>
+    <div class="row align-items-center">
         <div class="col-1 text-center font-weight-bold">测试配置</div>
         <div class="col">
             <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '配置快照', '{% url "config_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;查看快照</button>
@@ -98,7 +131,7 @@
     </div>
     <div class="row align-items-center">
         <div class="col-1 text-center font-weight-bold">测试结果</div>
-        <div class="col" class>
+        <div class="col">
             {% if obj.result_status == 0 %}
                 <div class="text-secondary">{{ obj.result_message|default:'跳过' }}</div>
             {% elif obj.result_status == 2 %}
