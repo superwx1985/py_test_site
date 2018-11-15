@@ -240,7 +240,7 @@ function show_special_action_field($actionSelect) {
 		$('[ui]').show();
 		$('div[name=ui_data] .col-1').text('偏移量');
 	} else if (select_value === '11') {
-		introduce.empty().append($('<div>').text('在指定的元素里按下某个键盘按键不释放，该方法应该只被用于发送修饰键（$SHIFT，$CONTROL，$ALT），否则会导致输入的字符长度不可预期。不指定元素则在当前焦点所在元素触发'));
+		introduce.empty().append($('<div>').text('在指定的元素里按下某个键盘按键不释放，该方法应该只用于发送修饰键（$SHIFT，$CONTROL，$ALT），否则会导致不确定输出结果。不指定元素则在当前焦点所在元素触发'));
 		$('[ui]').show();
 		$('div[name=ui_data] .col-1').html('按键&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头"></i>');
 	} else if (select_value === '12') {
@@ -250,11 +250,13 @@ function show_special_action_field($actionSelect) {
 	} else if (select_value === '13') {
 		introduce.empty().append($('<div>').text('向当前焦点所在元素里发送按键（组），修饰键发送一次后一直有效，直到出现相同的修饰键'));
 		introduce.append($('<div>').html('常用的特殊键：<span class="mark">$SHIFT $CONTROL $ALT $ENTER $ESCAPE $SPACE $BACKSPACE $TAB $PAGE_UP $PAGE_DOWN $END $HOME $LEFT $UP $RIGHT $DOWN $INSERT $DELETE</span>'));
+		introduce.append($('<div>').html('特殊键和普通键之间，以及特殊键和特殊键之间，用+号分隔。例如要实现全选删除原有字符后输入Abc，可以使用：<span class="mark">$CONTROL+a+$CONTROL+$BACKSPACE+Abc</span>'));
 		$('div[name=ui_alert_handle],div[name=ui_data]').show();
 		$('div[name=ui_data] .col-1').html('按键（组）&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头，多个特殊按键以+分隔，连续的普通按键可以不分隔，如需输入正常的$和+请用\\转义，如\\$，\\+"></i>');
 	} else if (select_value === '14') {
 		introduce.empty().append($('<div>').text('向指定的元素发送按键（组），修饰键发送一次后一直有效，直到出现相同的修饰键'));
 		introduce.append($('<div>').html('常用的特殊键：<span class="mark">$SHIFT $CONTROL $ALT $ENTER $ESCAPE $SPACE $BACKSPACE $TAB $PAGE_UP $PAGE_DOWN $END $HOME $LEFT $UP $RIGHT $DOWN $INSERT $DELETE</span>'));
+		introduce.append($('<div>').html('特殊键和普通键之间，以及特殊键和特殊键之间，用+号分隔。例如要实现全选删除原有字符后输入Abc，可以使用：<span class="mark">$CONTROL+a+$CONTROL+$BACKSPACE+Abc</span>'));
 		$('[ui]').show();
 		$('div[name=ui_data] .col-1').html('按键（组）&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头，多个特殊按键以+分隔，连续的普通按键可以不分隔，如需输入正常的$和+请用\\转义，如\\$，\\+"></i>');
 	}
