@@ -12,11 +12,11 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Suite, Case, SuiteVsCase
 from main.forms import OrderByForm, PaginatorForm, SuiteForm
-from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list
+from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
 from py_test.general.execute_suite import execute_suite
 from django.template.loader import render_to_string
 from urllib.parse import quote
-from main.views import case, config, variable_group, element_group, general
+from main.views import case, config, variable_group, element_group
 
 logger = logging.getLogger('django.request')
 
@@ -30,12 +30,12 @@ def list_(request):
 
     project_list = get_project_list()
     has_sub_object = True
-    is_admin = general.is_admin(request.user)
+    is_admin = check_admin(request.user)
 
     page = request.GET.get('page')
     size = request.GET.get('size', request.COOKIES.get('size'))
     search_text = request.GET.get('search_text', '')
-    order_by = request.GET.get('order_by', 'modified_date')
+    order_by = request.GET.get('order_by', 'pk')
     order_by_reverse = request.GET.get('order_by_reverse', 'True')
     all_ = request.GET.get('all_', 'False')
     search_project = request.GET.get('search_project', None)
@@ -76,7 +76,7 @@ def list_(request):
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'modified_date'
+            order_by = 'pk'
         objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     paginator = Paginator(objects, size)
     try:
@@ -104,7 +104,7 @@ def detail(request, pk):
     inside = request.GET.get('inside')
     project_list = get_project_list()
     has_sub_object = True
-    is_admin = general.is_admin(request.user)
+    is_admin = check_admin(request.user)
 
     try:
         obj = Suite.objects.select_related('creator', 'modifier').get(pk=pk)
@@ -230,7 +230,7 @@ def delete(request, pk):
         except Suite.DoesNotExist:
             err = '对象不存在'
         else:
-            is_admin = general.is_admin(request.user)
+            is_admin = check_admin(request.user)
             if is_admin or obj.creator == request.user:
                 obj.is_active = False
                 obj.modifier = request.user
@@ -251,7 +251,7 @@ def multiple_delete(request):
     if request.method == 'POST':
         try:
             pk_list = json.loads(request.POST['pk_list'])
-            is_admin = general.is_admin(request.user)
+            is_admin = check_admin(request.user)
             if is_admin:
                 Suite.objects.filter(pk__in=pk_list).update(
                     is_active=False, modifier=request.user, modified_date=timezone.now())
@@ -347,7 +347,7 @@ def copy_action(pk, user, copy_sub_item, name_prefix=None):
             else:
                 m2m_obj_ = case.copy_action(m2m_obj.pk, user, copy_sub_item, name_prefix, copied_items)
                 m2m_dict[m2m_obj] = m2m_obj_
-                # 合并已复制容器字典，并放入容器
+                # 合并已复制对象字典，并放入容器
                 if copied_items and isinstance(copied_items, list):
                     copied_items_dict = copied_items[0]
                     m2m_dict = {**m2m_dict, **copied_items_dict}

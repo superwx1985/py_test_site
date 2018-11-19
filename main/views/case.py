@@ -12,9 +12,9 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Case, Step, CaseVsStep, Action
 from main.forms import OrderByForm, PaginatorForm, CaseForm
-from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list
+from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
 from urllib.parse import quote
-from main.views import step, suite, variable_group, general
+from main.views import step, suite, variable_group
 
 logger = logging.getLogger('django.request')
 
@@ -28,12 +28,12 @@ def list_(request):
 
     project_list = get_project_list()
     has_sub_object = True
-    is_admin = general.is_admin(request.user)
+    is_admin = check_admin(request.user)
 
     page = request.GET.get('page')
     size = request.GET.get('size', request.COOKIES.get('size'))
     search_text = request.GET.get('search_text', '')
-    order_by = request.GET.get('order_by', 'modified_date')
+    order_by = request.GET.get('order_by', 'pk')
     order_by_reverse = request.GET.get('order_by_reverse', 'True')
     all_ = request.GET.get('all_', 'False')
     search_project = request.GET.get('search_project', None)
@@ -61,7 +61,8 @@ def list_(request):
     objects = Case.objects.filter(q).values(
         'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
-    m2m_objects = Case.objects.filter(is_active=True, step__is_active=True).values('pk').annotate(m2m_count=Count('step'))
+    m2m_objects = Case.objects.filter(
+        is_active=True, step__is_active=True).values('pk').annotate(m2m_count=Count('step'))
     m2m_count = {o['pk']: o['m2m_count'] for o in m2m_objects}
 
     # 获取被调用次数
@@ -82,7 +83,7 @@ def list_(request):
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'modified_date'
+            order_by = 'pk'
         objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     # 分页
     paginator = Paginator(objects, size)
@@ -115,7 +116,7 @@ def detail(request, pk):
     reference_url = reverse(reference, args=[pk])  # 被其他对象调用
     project_list = get_project_list()
     has_sub_object = True
-    is_admin = general.is_admin(request.user)
+    is_admin = check_admin(request.user)
 
     try:
         obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
@@ -248,7 +249,7 @@ def delete(request, pk):
         except Case.DoesNotExist:
             err = '对象不存在'
         else:
-            is_admin = general.is_admin(request.user)
+            is_admin = check_admin(request.user)
             if is_admin or obj.creator == request.user:
                 obj.is_active = False
                 obj.modifier = request.user
@@ -269,7 +270,7 @@ def multiple_delete(request):
     if request.method == 'POST':
         try:
             pk_list = json.loads(request.POST['pk_list'])
-            is_admin = general.is_admin(request.user)
+            is_admin = check_admin(request.user)
             if is_admin:
                 Case.objects.filter(pk__in=pk_list).update(
                     is_active=False, modifier=request.user, modified_date=timezone.now())
@@ -288,7 +289,7 @@ def multiple_delete(request):
     if request.method == 'POST':
         try:
             pk_list = json.loads(request.POST['pk_list'])
-            is_admin = general.is_admin(request.user)
+            is_admin = check_admin(request.user)
             if is_admin:
                 Case.objects.filter(pk__in=pk_list).update(
                     is_active=False, modifier=request.user, modified_date=timezone.now())
@@ -351,7 +352,7 @@ def list_json(request):
     page = condition.get('page')
     size = 10
     search_text = condition.get('search_text', '')
-    order_by = condition.get('order_by', 'modified_date')
+    order_by = condition.get('order_by', 'pk')
     order_by_reverse = condition.get('order_by_reverse', 'True')
     all_ = condition.get('all_', 'False')
     search_project = condition.get('search_project', None)
@@ -382,7 +383,7 @@ def list_json(request):
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'modified_date'
+            order_by = 'pk'
         objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     paginator = Paginator(objects, size)
     try:
@@ -445,7 +446,7 @@ def copy_action(pk, user, copy_sub_item, name_prefix=None, copied_items=None):
     obj.save()
     m2m_order = 0
     m2m_dict = dict()
-    # 合并已复制容器字典
+    # 合并已复制对象字典
     if copied_items and isinstance(copied_items, list):
         copied_items_dict = copied_items[0]
         m2m_dict = {**m2m_dict, **copied_items_dict}
@@ -463,9 +464,10 @@ def copy_action(pk, user, copy_sub_item, name_prefix=None, copied_items=None):
         m2m_order += 1
         CaseVsStep.objects.create(
             case=obj, step=m2m_obj_, order=m2m_order, creator=user, modifier=user)
-    # 把已复制对象列表放入容器
-    copied_items.clear()
-    copied_items.append(m2m_dict)
+    # 把更新后的已复制对象字典放入容器
+    if copied_items and isinstance(copied_items, list):
+        copied_items.clear()
+        copied_items.append(m2m_dict)
     return obj
 
 
@@ -537,7 +539,8 @@ def reference(request, pk):
     except Case.DoesNotExist:
         raise Http404('Case does not exist')
     objects = obj.suite_set.filter(is_active=True).order_by('-modified_date').values(
-        'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date', 'suitevscase__order').annotate(
+        'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date',
+        'suitevscase__order').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
         obj_['url'] = '{}?next={}'.format(reverse(suite.detail, args=[obj_['pk']]), reverse(suite.list_))

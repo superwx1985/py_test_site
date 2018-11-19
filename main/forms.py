@@ -228,9 +228,14 @@ class SuiteResultForm(forms.ModelForm):
         model = SuiteResult
         fields = '__all__'
         exclude = [
-            'thread_count',
+            'is_active',
+            'creator',
+            'created_date',
+
             'timeout',
             'ui_get_ss',
+            'log_level',
+            'thread_count',
             'config',
             'variable_group',
             'element_group',
@@ -244,8 +249,4 @@ class SuiteResultForm(forms.ModelForm):
             'result_status',
             'result_message',
             'result_error',
-
-            'is_active',
-            'creator',
-            'created_date',
         ]

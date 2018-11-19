@@ -10,8 +10,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import SuiteResult, Step, Suite
 from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, ConfigForm, VariableGroupForm, ElementGroupForm
-from main.views import general
-from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list
+from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
 from py_test.vic_tools.vic_date_handle import get_timedelta_str
 
 logger = logging.getLogger('django.request')
@@ -25,12 +24,12 @@ def list_(request):
     request.session['status'] = None
 
     project_list = get_project_list()
-    is_admin = general.is_admin(request.user)
+    is_admin = check_admin(request.user)
 
     page = request.GET.get('page')
     size = request.GET.get('size', request.COOKIES.get('size'))
     search_text = request.GET.get('search_text', '')
-    order_by = request.GET.get('order_by', 'modified_date')
+    order_by = request.GET.get('order_by', 'pk')
     order_by_reverse = request.GET.get('order_by_reverse', 'True')
     all_ = request.GET.get('all_', 'False')
     search_project = request.GET.get('search_project', None)
@@ -89,7 +88,7 @@ def list_(request):
     # 排序
     if objects:
         if order_by not in objects[0]:
-            order_by = 'start_date'
+            order_by = 'pk'
         objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     paginator = Paginator(objects, size)
     try:
@@ -114,7 +113,7 @@ def list_(request):
 def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
     inside = request.GET.get('inside')
-    is_admin = general.is_admin(request.user)
+    is_admin = check_admin(request.user)
 
     try:
         obj = SuiteResult.objects.select_related('creator', 'modifier').get(pk=pk)
@@ -157,7 +156,7 @@ def delete(request, pk):
         except SuiteResult.DoesNotExist:
             err = '对象不存在'
         else:
-            is_admin = general.is_admin(request.user)
+            is_admin = check_admin(request.user)
             if is_admin or obj.creator == request.user:
                 obj.is_active = False
                 obj.modifier = request.user
@@ -178,7 +177,7 @@ def multiple_delete(request):
     if request.method == 'POST':
         try:
             pk_list = json.loads(request.POST['pk_list'])
-            is_admin = general.is_admin(request.user)
+            is_admin = check_admin(request.user)
             if is_admin:
                 SuiteResult.objects.filter(pk__in=pk_list).update(
                     is_active=False, modifier=request.user, modified_date=timezone.now())

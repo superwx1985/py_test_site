@@ -2,7 +2,7 @@ import logging
 import json
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render
-from django.contrib.auth.models import Group
+from django.contrib.auth.decorators import login_required
 
 
 logger = logging.getLogger('django.request')
@@ -18,16 +18,14 @@ def version(request):
     return render(request, 'main/other/version.html')
 
 
-# 验证是否管理员
-def is_admin(user):
-    try:
-        admin_group = Group.objects.get(name='QA_leader')
-    except Group.DoesNotExist:
-        admin_group = None
-    if admin_group in user.groups.all():
-        return True
-    else:
-        return False
+@login_required
+def delete_unused(request):
+    pass
+
+
+@login_required
+def clear_db(request):
+    pass
 
 
 def debug(request):

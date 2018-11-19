@@ -31,6 +31,7 @@ import main.views.suite_result as suite_result
 import main.views.case_result as case_result
 import main.views.step_result as step_result
 import main.views.help as help_
+import main.views.maintenance as maintenance
 import main.views.websocket as ws
 
 
@@ -136,6 +137,8 @@ urlpatterns = [
 
     path('helps/', help_.list_, name='helps'),
     path('help/<str:pk>/', help_.detail, name='help'),
+
+    path('maintenance/', maintenance.detail, name='maintenance'),
 
     path('redirect/', general.redirect, name='redirect'),
     path('version/', general.version, name='version'),

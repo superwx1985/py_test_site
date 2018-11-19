@@ -2,6 +2,7 @@ import json
 from django.db import connection
 from django.db.models import Q, CharField, Value
 from django.db.models.functions import Concat
+from django.contrib.auth.models import Group
 from main.models import Action, Project
 
 
@@ -82,3 +83,15 @@ def get_project_list():
     project_list.extend(
         list(Project.objects.annotate(pk=Concat('pk', Value(''), output_field=CharField())).values_list('pk', 'name')))
     return project_list
+
+
+# 验证是否管理员
+def check_admin(user):
+    try:
+        admin_group = Group.objects.get(name='QA_leader')
+    except Group.DoesNotExist:
+        admin_group = None
+    if admin_group in user.groups.all():
+        return True
+    else:
+        return False
