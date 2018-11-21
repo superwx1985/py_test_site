@@ -180,7 +180,7 @@ def highlight_for_a_moment(dr, elements, color='green', duration=0.5):
 
 
 # 等待文字出现
-def wait_for_text_present(dr, text, timeout, base_element, print_=True, logger=logging.getLogger('py_test')):
+def wait_for_text_present(dr, text, timeout, base_element=None, print_=True, logger=logging.getLogger('py_test')):
     dr.implicitly_wait(0.5)
     elements = list()
     start_time = time.time()
@@ -234,8 +234,9 @@ def wait_for_text_present(dr, text, timeout, base_element, print_=True, logger=l
 
 
 # 等待字符串出现，包含定位符
-def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, base_element, variable_elements=None,
-                                       print_=True, logger=logging.getLogger('py_test')):
+def wait_for_text_present_with_locator(
+        dr, by, locator, text, timeout, index_, base_element=None, variable_elements=None, print_=True,
+        logger=logging.getLogger('py_test')):
     dr.implicitly_wait(0.5)
     start_time = time.time()
     last_print_time = 0
@@ -298,7 +299,7 @@ def wait_for_text_present_with_locator(dr, by, locator, text, timeout, index_, b
 
 # 等待元素出现
 def wait_for_element_present(
-        dr, by, locator, timeout, base_element, variable_elements=None, print_=True,
+        dr, by, locator, timeout, base_element=None, variable_elements=None, print_=True,
         logger=logging.getLogger('py_test')):
     elements = list()
     dr.implicitly_wait(0.5)
@@ -331,7 +332,7 @@ def wait_for_element_present(
 
 # 等待元素可见
 def wait_for_element_visible(
-        dr, by, locator, timeout, base_element, variable_elements=None, print_=True,
+        dr, by, locator, timeout, base_element=None, variable_elements=None, print_=True,
         logger=logging.getLogger('py_test')):
     elements = list()
     visible_elements = list()
@@ -370,7 +371,7 @@ def wait_for_element_visible(
 
 
 # 等待元素可见，包含数量限制
-def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_element, variable_elements=None,
+def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_element=None, variable_elements=None,
                                        print_=True, logger=logging.getLogger('py_test')):
     start_time = time.time()
     last_print_time = 0
@@ -416,7 +417,7 @@ def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_elem
 
 # 等待元素消失
 def wait_for_element_disappear(
-        dr, by, locator, timeout, base_element, variable_elements=None, print_=True,
+        dr, by, locator, timeout, base_element=None, variable_elements=None, print_=True,
         logger=logging.getLogger('py_test')):
     visible_elements = list()
     dr.implicitly_wait(0.5)
@@ -506,7 +507,7 @@ def get_url(dr, condition_value, logger=logging.getLogger('py_test')):
 
 # 尝试点击
 def try_to_click(
-        dr, by, locator, timeout, index_, base_element, variable_elements=None, print_=True,
+        dr, by, locator, timeout, index_, base_element=None, variable_elements=None, print_=True,
         logger=logging.getLogger('py_test')):
     if variable_elements is not None:
         elements = variable_elements
@@ -532,7 +533,7 @@ def try_to_click(
 
 # 尝试输入
 def try_to_enter(
-        dr, by, locator, data, timeout, index_, base_element, variable_elements=None, print_=True,
+        dr, by, locator, data, timeout, index_, base_element=None, variable_elements=None, print_=True,
         logger=logging.getLogger('py_test')):
     if variable_elements is not None:
         elements = variable_elements
@@ -559,7 +560,7 @@ def try_to_enter(
 
 # 尝试选择
 def try_to_select(
-        dr, by, locator, data, timeout, index_, base_element, variable_elements=None, print_=True,
+        dr, by, locator, data, timeout, index_, base_element=None, variable_elements=None, print_=True,
         logger=logging.getLogger('py_test')):
     if variable_elements is not None:
         elements = variable_elements
@@ -649,8 +650,9 @@ def get_special_keys(data_, logger=logging.getLogger('py_test')):
 
 
 # 特殊动作
-def perform_special_action(dr, by, locator, data, timeout, index_, base_element, special_action, variables,
-                           global_variables, variable_elements=None, print_=True, logger=logging.getLogger('py_test')):
+def perform_special_action(
+        dr, by, locator, data, timeout, index_, special_action, base_element=None, variables=None,
+        global_variables=None, variable_elements=None, print_=True, logger=logging.getLogger('py_test')):
     if by == '':
         elements = list()
         element = None
@@ -752,7 +754,7 @@ def perform_special_action(dr, by, locator, data, timeout, index_, base_element,
 
 # 尝试滚动到元素位置
 def try_to_scroll_into_view(
-        dr, by, locator, timeout, index_, base_element, variable_elements=None, print_=True,
+        dr, by, locator, timeout, index_, base_element=None, variable_elements=None, print_=True,
         logger=logging.getLogger('py_test')):
     if variable_elements is not None:
         elements = variable_elements
@@ -814,7 +816,7 @@ def confirm_alert(dr, alert_handle, timeout, print_=True, logger=logging.getLogg
 
 # 尝试切换window或tap
 def try_to_switch_to_window(
-        dr, by, locator, data, timeout, index_, base_element, current_window_handle, print_=True,
+        dr, by, locator, data, timeout, index_, current_window_handle, base_element=None, print_=True,
         logger=logging.getLogger('py_test')):
     start_time = time.time()
     last_print_time = 0
@@ -867,7 +869,7 @@ def try_to_switch_to_window(
 
 # 尝试切换frame
 def try_to_switch_to_frame(
-        dr, by, locator, index_, timeout, base_element, print_=True,
+        dr, by, locator, index_, timeout, base_element=None, print_=True,
         logger=logging.getLogger('py_test')):
     if index_ is None:
         index_ = 0
@@ -906,7 +908,7 @@ def try_to_switch_to_frame(
 
 # 运行javascript
 def run_js(
-        dr, by, locator, data, timeout, index_, base_element, variable_elements=None, print_=True,
+        dr, by, locator, data, timeout, index_, base_element=None, variable_elements=None, print_=True,
         logger=logging.getLogger('py_test')):
     if by in (None, ''):
         js_result = dr.execute_script(data)

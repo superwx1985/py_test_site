@@ -220,7 +220,7 @@ function show_special_action_field($actionSelect) {
 		introduce.empty().append($('<div>').text('释放鼠标按键'));
 		$('div[name=ui_alert_handle]').show();
 	} else if (select_value === '6') {
-		introduce.empty().append($('<div>').text('鼠标从当前位置偏移一定距离。偏移量x,y为一对半角逗号分隔的数字（单位：像素，水平方向为x轴，左负右正，垂直方向为y轴，上正下负）。例：300,200'));
+		introduce.empty().append($('<div>').text('鼠标从当前位置偏移一定距离。偏移量x,y为一对半角逗号分隔的数字（单位：像素，水平方向为x轴，左负右正，垂直方向为y轴，上负下正）。例：300,200'));
 		$('div[name=ui_alert_handle],div[name=ui_data]').show();
 		$('div[name=ui_data] .col-1').text('偏移量');
 	} else if (select_value === '7') {
@@ -228,7 +228,7 @@ function show_special_action_field($actionSelect) {
 		$('[ui]').show();
 		$('div[name=ui_data]').hide();
 	} else if (select_value === '8') {
-		introduce.empty().append($('<div>').text('鼠标从当前位置移动到一个元素（通过定位信息指定）的左上角，然后偏移一定距离。偏移量x,y为一对半角逗号分隔的数字（单位：像素，水平方向为x轴，左负右正，垂直方向为y轴，上正下负）。例：300,200'));
+		introduce.empty().append($('<div>').text('鼠标从当前位置移动到一个元素（通过定位信息指定）的左上角，然后偏移一定距离。偏移量x,y为一对半角逗号分隔的数字（单位：像素，水平方向为x轴，左负右正，垂直方向为y轴，上负下正）。例：300,200'));
 		$('[ui]').show();
 		$('div[name=ui_data] .col-1').text('偏移量');
 	} else if (select_value === '9') {
@@ -236,7 +236,7 @@ function show_special_action_field($actionSelect) {
 		$('[ui]').show();
 		$('div[name=ui_data] .col-1').html('目标元素&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="需在之前的步骤预先保存，使用${变量名}$调用"></i>');
 	} else if (select_value === '10') {
-		introduce.empty().append($('<div>').text('把一个元素（通过定位信息指定）拖动偏移一定距离。偏移量x,y为一对半角逗号分隔的数字（单位：像素，水平方向为x轴，左负右正，垂直方向为y轴，上正下负）。例：300,200'));
+		introduce.empty().append($('<div>').text('把一个元素（通过定位信息指定）拖动偏移一定距离。偏移量x,y为一对半角逗号分隔的数字（单位：像素，水平方向为x轴，左负右正，垂直方向为y轴，上负下正）。例：300,200'));
 		$('[ui]').show();
 		$('div[name=ui_data] .col-1').text('偏移量');
 	} else if (select_value === '11') {

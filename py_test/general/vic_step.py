@@ -254,8 +254,8 @@ class VicStep:
                         elif self.action_code == 'UI_SWITCH_TO_WINDOW':
                             self.run_result, new_window_handle = ui_method.try_to_switch_to_window(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
-                                index_=self.ui_index, base_element=self.ui_base_element,
-                                current_window_handle=dr.current_window_handle, logger=self.logger)
+                                index_=self.ui_index, current_window_handle=dr.current_window_handle,
+                                base_element=self.ui_base_element, logger=self.logger)
 
                         # 关闭当前浏览器窗口或标签并切换至其他窗口或标签
                         elif self.action_code == 'UI_CLOSE_WINDOW':
@@ -265,8 +265,8 @@ class VicStep:
                             dr.close()
                             self.run_result, new_window_handle = ui_method.try_to_switch_to_window(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
-                                index_=self.ui_index, base_element=self.ui_base_element,
-                                current_window_handle=current_window_handle, logger=self.logger)
+                                index_=self.ui_index, current_window_handle=current_window_handle,
+                                base_element=self.ui_base_element, logger=self.logger)
 
                         # 重置浏览器
                         elif self.action_code == 'UI_RESET_BROWSER':
@@ -346,8 +346,8 @@ class VicStep:
                                     self.ui_locator, public_elements)
                             self.run_result, self.elements = ui_method.perform_special_action(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
-                                index_=self.ui_index, base_element=self.ui_base_element,
-                                special_action=self.ui_special_action, variables=vic_case.variables,
+                                index_=self.ui_index, special_action=self.ui_special_action,
+                                base_element=self.ui_base_element, variables=vic_case.variables,
                                 global_variables=global_variables, variable_elements=variable_elements,
                                 logger=self.logger)
 
