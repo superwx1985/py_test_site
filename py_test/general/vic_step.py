@@ -466,7 +466,8 @@ class VicStep:
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
                             if self.save_as != '':
-                                vic_case.variables.set_variable(self.save_as, js_result)
+                                msg = vic_case.variables.set_variable(self.save_as, js_result)
+                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
 
                         # 验证JavaScript结果
                         elif self.action_code == 'UI_VERIFY_JS_RETURN':
@@ -486,7 +487,8 @@ class VicStep:
                             if js_result is not True:
                                 self.run_result = ('f', self.run_result[1])
                             if self.save_as != '':
-                                vic_case.variables.set_variable(self.save_as, js_result)
+                                msg = vic_case.variables.set_variable(self.save_as, js_result)
+                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
 
                         # 保存元素变量
                         elif self.action_code == 'UI_SAVE_ELEMENT':

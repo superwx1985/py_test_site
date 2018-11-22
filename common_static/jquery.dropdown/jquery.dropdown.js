@@ -145,7 +145,7 @@
 
 			if (isSelected) {
 				if(val.url) {
-					name.push('<span class="dropdown-selected"><a target="_blank" href="' + val.url + '">' + val.name + '<i class="del" data-id="' + val.id + '"></i></a></span>');
+					name.push('<span class="dropdown-selected"><a name="' + val.id + '" href="' + val.url + '">' + val.name + '<i class="del" data-id="' + val.id + '"></i></a></span>');
 				} else {
 					name.push('<span class="dropdown-selected">' + val.name + '<i class="del" data-id="' + val.id + '"></i></span>');
 				}
@@ -337,7 +337,7 @@
 					selectedName.push(item.name);
 					_dropdown.selectId[item.id] = {"name": item.name, "other": item.other};// 在selectId中添加选中的id
 					if(item.url) {
-						_dropdown.name.push('<span class="dropdown-selected"><a target="_blank" href="' + item.url + '">' + item.name + '<i class="del" data-id="' + item.id + '"></i></a></span>');
+						_dropdown.name.push('<span class="dropdown-selected"><a name="' + item.id + '" href="' + item.url + '">' + item.name + '<i class="del" data-id="' + item.id + '"></i></a></span>');
 					} else {
 						_dropdown.name.push('<span class="dropdown-selected">' + item.name + '<i class="del" data-id="' + item.id + '"></i></span>');
 					}
@@ -379,7 +379,7 @@
 						_dropdown.selectId = {};// 清空selectId
 						_dropdown.selectId[item.id] = {"name": item.name, "other": item.other};// 在selectId中添加选中的id
 						if(item.url) {
-							_dropdown.name.push('<span class="dropdown-selected"><a target="_blank" href="' + item.url + '">' + item.name + '<i class="del" data-id="' + item.id + '"></i></a></span>');
+							_dropdown.name.push('<span class="dropdown-selected"><a name="' + item.id + '" href="' + item.url + '">' + item.name + '<i class="del" data-id="' + item.id + '"></i></a></span>');
 						} else {
 							_dropdown.name.push('<span class="dropdown-selected">' + item.name + '<i class="del" data-id="' + item.id + '"></i></span>');
 						}

@@ -514,6 +514,8 @@ def select_json(request):
     except json.decoder.JSONDecodeError:
         condition = dict()
     selected_pk = condition.get('selected_pk')
+    url_format = condition.get('url_format')
+    url_replacer = condition.get('url_replacer')
     objects = Case.objects.filter(is_active=True).values('pk', 'uuid', 'name', 'keyword', 'project__name')
 
     data = list()
@@ -526,7 +528,11 @@ def select_json(request):
             d['selected'] = True
         else:
             d['selected'] = False
-        d['url'] = '{}?next={}'.format(reverse(detail, args=[obj['pk']]), reverse(list_))
+        if url_format and url_replacer:
+            url = str.replace(url_format, url_replacer, reverse(detail, args=[obj['pk']]))
+        else:
+            url = '{}?next={}'.format(reverse(detail, args=[obj['pk']]), reverse(list_))
+        d['url'] = url
         data.append(d)
 
     return JsonResponse({'status': 1, 'message': 'OK', 'data': data})

@@ -14,8 +14,13 @@
                 $(this).tooltip('hide');
             });
             // 获取套件下拉项
-            getList("{% url 'suite_select_json' %}", window.$csrf_input.val(), update_parent_select_dropdown, '{"selected_pk": "{{ suite_id }}"}');
-        })
+            suite_select("{{ suite_id }}");
+        });
+        // 获取套件下拉项
+        function suite_select(selected_pk) {
+            if (!selected_pk) { selected_pk = $("select[name=suite_id]").val() }
+            getList("{% url 'suite_select_json' %}", window.$csrf_input.val(), update_parent_select_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'套件详情\', \'%url%?inside=1\',null, suite_select);", "url_replacer": "%url%"}');
+        }
     </script>
 {% endblock %}
 {% block tools_bar %}

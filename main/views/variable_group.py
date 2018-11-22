@@ -98,6 +98,8 @@ def list_(request):
 @login_required
 def detail(request, pk):
     next_ = request.GET.get('next', '/home/')
+    inside = request.GET.get('inside')
+    new_pk = request.GET.get('new_pk')
     reference_url = reverse(reference, args=[pk])  # 被其他对象调用
     is_admin = check_admin(request.user)
 
@@ -159,6 +161,7 @@ def detail(request, pk):
 @login_required
 def add(request):
     next_ = request.GET.get('next', '/home/')
+    inside = request.GET.get('inside')
 
     if request.method == 'POST':
         form = VariableGroupForm(data=request.POST)
@@ -193,7 +196,11 @@ def add(request):
             elif redirect:
                 return HttpResponseRedirect(next_)
             else:
-                return HttpResponseRedirect('{}?next={}'.format(reverse(detail, args=[pk]), quote(next_)))
+                # 如果是内嵌网页，则加上内嵌标志后再跳转
+                para = ''
+                if inside:
+                    para = '&inside=1&new_pk={}'.format(pk)
+                return HttpResponseRedirect('{}?next={}{}'.format(reverse(detail, args=[pk]), quote(next_), para))
         else:
             if variable_list:
                 # 暂存variable列表
@@ -293,6 +300,8 @@ def select_json(request):
     except json.decoder.JSONDecodeError:
         condition = dict()
     selected_pk = condition.get('selected_pk')
+    url_format = condition.get('url_format')
+    url_replacer = condition.get('url_replacer')
     # objects = VariableGroup.objects.filter(is_active=True).values('pk').annotate(name_=Concat(
     #     'pk', Value(' | '), 'name', Value(' | '), 'keyword', Value(' | '), 'project__name', output_field=CharField()),
     # )
@@ -308,7 +317,11 @@ def select_json(request):
             d['selected'] = True
         else:
             d['selected'] = False
-        d['url'] = '{}?next={}'.format(reverse(detail, args=[obj['pk']]), reverse(list_))
+        if url_format and url_replacer:
+            url = str.replace(url_format, url_replacer, reverse(detail, args=[obj['pk']]))
+        else:
+            url = '{}?next={}'.format(reverse(detail, args=[obj['pk']]), reverse(list_))
+        d['url'] = url
         data.append(d)
 
     return JsonResponse({'status': 1, 'message': 'OK', 'data': data})

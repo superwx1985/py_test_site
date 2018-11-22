@@ -11,7 +11,7 @@ function sortable_variable() {
 	});
 }
 
-// 更新变量列表
+// 更新列表
 function init_variable(success, data) {
 	if (success) {
 		if (data.data.length > 0) {
@@ -35,13 +35,13 @@ function init_variable(success, data) {
 		// 注册提示框
 		$('[data-toggle=tooltip]').tooltip();
 	}
+	if (!window.editable) {
+		// 禁用所有互动
+		disable_interaction();
+    }
 }
-function init_variable_readonly(success, data) {
-	init_variable(success, data);
-	// 禁用所有互动
-	disable_interaction();
-}
-// 添加变量
+
+// 添加
 function add_variable() {
 	var new_helper = $('#new_helper');
 	var name_input = $('#new_helper td[col_name] input');
@@ -72,7 +72,8 @@ function add_variable() {
 		return false;
 	}
 }
-// 删除变量
+
+// 删除
 function del_variable($tr) {
 	var name = $tr.find('td[col_name] input').val();
 	var msg = '要删除<span class="mark">' + name + '</span>吗？';
@@ -101,7 +102,8 @@ function del_variable($tr) {
 		}
 	});
 }
-// 获取当前变量名列表
+
+// 获取名称列表
 function get_variable_name_list_() {
 	var trs = $('#variable_table tbody tr:not(#new_helper)');
 	var variable_name_list = [];
@@ -110,7 +112,8 @@ function get_variable_name_list_() {
 	});
 	return variable_name_list;
 }
-// 验证变量名
+
+// 验证名称
 function check_variable_name(name, variable_name_list_) {
 	if (!name || ''===name.trim()) {
 		return '变量名不能为空'
@@ -121,6 +124,7 @@ function check_variable_name(name, variable_name_list_) {
 	}
 	return true;
 }
+
 // 生成带错误提示的输入框
 function get_invalid_input($input, check_result){
 	$input.removeClass('is-invalid');
@@ -129,7 +133,8 @@ function get_invalid_input($input, check_result){
 	$input.addClass('is-invalid');
 	$input.after(errorDiv);
 }
-// 更新变量列表序号，更新variable field内容
+
+// 更新列表序号，更新表单内容
 function update_variable_index_and_field() {
 	var trs = $('#variable_table tbody tr:not(#new_helper)');
 	var variable_list = [];
@@ -159,7 +164,8 @@ function update_variable_index_and_field() {
 	// 关闭遮罩
 	$('#mask').hide();
 }
-// 检查是否有未保存的变量
+
+// 检查是否有未保存的对象
 function check_unsaved() {
 	var name = $('#new_helper td[col_name] input').val();
 	if (name !== '') {

@@ -31,11 +31,11 @@
     <script>
         $(function () {
             // 获取配置下拉项
-            getList("{% url 'config_select_json' %}", window.$csrf_input.val(), update_config_dropdown, '{"selected_pk": "{{ form.config.value }}"}');
+            config_select("{{ obj.config.pk }}");
             // 获取变量组下拉项
-            getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_group_dropdown, '{"selected_pk": "{{ form.variable_group.value }}"}');
+            variable_group_select("{{ obj.variable_group.pk }}");
             // 获取元素组下拉项
-            getList("{% url 'element_group_select_json' %}", window.$csrf_input.val(), update_element_group_dropdown, '{"selected_pk": "{{ form.element_group.value }}"}');
+            element_group_select("{{ obj.element_group.pk }}");
             // 注册只看自己复选框
             $('#all_').on('click', function() {$('#m2m_objects_form').submit()});
             // 注册m2m新增按钮
@@ -68,6 +68,21 @@
             // 关闭遮罩
 	        $('#mask').hide();
         });
+        // 获取配置下拉项
+        function config_select(selected_pk) {
+            if (!selected_pk) { selected_pk = $("select[name=config]").val() }
+            getList("{% url 'config_select_json' %}", window.$csrf_input.val(), update_config_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'配置详情\', \'%url%?inside=1\',null, config_select);", "url_replacer": "%url%"}');
+        }
+        // 获取变量组下拉项
+        function variable_group_select(selected_pk) {
+            if (!selected_pk) { selected_pk = $("select[name=variable_group]").val() }
+            getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_group_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'变量组详情\', \'%url%?inside=1\',null, variable_group_select);", "url_replacer": "%url%"}');
+        }
+        // 获取元素组下拉项
+        function element_group_select(selected_pk) {
+            if (!selected_pk) { selected_pk = $("select[name=element_group]").val() }
+            getList("{% url 'element_group_select_json' %}", window.$csrf_input.val(), update_element_group_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'元素组详情\', \'%url%?inside=1\',null, element_group_select);", "url_replacer": "%url%"}');
+        }
         // 回调更新m2m
         function update_m2m_objects() {
             submit_m2m_all_objects_form('/suite', '{% url "case_list_json" %}', get_cookie('last_condition_json'));

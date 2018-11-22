@@ -40,7 +40,7 @@
                 show_action_field($(this));
             });
             // 获取子用例下拉项
-            getList("{% url 'case_select_json' %}", window.$csrf_input.val(), update_other_sub_case_dropdown, '{"selected_pk": "{{ form.other_sub_case.value }}"}');
+            get_case_select("{{ obj.other_sub_case.pk }}");
             // 更新api变量列表
             if (select_value === 'API_SEND_HTTP_REQUEST') {
                 var api_save_data = {};
@@ -66,6 +66,10 @@
             // 关闭遮罩
             $('#mask').hide();
         });
+        function get_case_select(selected_pk) {
+            if (!selected_pk) { selected_pk = $("select[name=other_sub_case]").val() }
+            getList("{% url 'case_select_json' %}", window.$csrf_input.val(), update_other_sub_case_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'用例详情\', \'%url%?inside=1\',null, get_case_select);", "url_replacer": "%url%"}');
+        }
     </script>
     <script src="{% static 'main/js/detail_step.js' %}"></script>
     <script src="{% static 'main/js/detail_step_api_save_as.js' %}"></script>

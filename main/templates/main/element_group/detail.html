@@ -39,11 +39,7 @@
             {% else %}
                 {% if pk %}
                     // 获取元素
-                    if (window.editable) {
-                        getList("{% url 'element_group_elements' pk %}", window.$csrf_input.val(), init_element);
-                    } else {
-                        getList("{% url 'element_group_elements' pk %}", window.$csrf_input.val(), init_element_readonly);
-                    }
+                    getList("{% url 'element_group_elements' pk %}", window.$csrf_input.val(), init_element);
                 {% else %}
                     // 初始化元素字段
                     update_element_index_and_field(true);

@@ -90,8 +90,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'py_test_site',
-        'HOST': '127.0.0.1',
-        # 'HOST': '192.192.185.140',
+        # 'HOST': '127.0.0.1',
+        'HOST': '192.192.185.140',
         'PORT': '3306',
         'USER': 'py_test_site',
         'PASSWORD': 'py_test_site',
@@ -313,4 +313,4 @@ ASGI_APPLICATION = 'py_test_site.routing.application'
 SITE_NAME = '汇智自动化测试工具'
 
 # 站点版本
-SITE_VERSION = 'V1.5.20181121.01'
+SITE_VERSION = 'V1.5.20181122.01'

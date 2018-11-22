@@ -95,12 +95,14 @@ function show_action_field($actionSelect) {
 		$('div[name=ui_special_action],div[name=ui_data]').hide();
 	} else if (select_value === 'UI_EXECUTE_JS') {
 		introduce.children('div').html('在当前页面执行JavaScript代码。如果指定了元素，可以在代码中通过<span class="mark">arguments[0][0]</span>调用。例：<span class="mark">arguments[0][0].click()</span>');
-		$('[ui],div[name=timeout]').show();
+		introduce.append($('<div>如果填入了变量名，那么将把JavaScript代码执行后的返回值保存为用例变量</div>'));
+		$('[ui],div[name=timeout],div[name=save_as]').show();
 		$('div[name=ui_special_action]').hide();
 		$('div[name=ui_data] .col-1').text('js代码');
 	} else if (select_value === 'UI_VERIFY_JS_RETURN') {
 		introduce.children('div').html('在当前页面执行JavaScript代码并验证结果是否为真。验证通过的条件是js代码执行后返回True，如果指定了元素，可以在代码中通过<span class="mark">arguments[0][0]</span>调用。例：<span class="mark">arguments[0][0].click()</span>');
-		$('[ui],div[name=timeout]').show();
+		introduce.append($('<div>如果填入了变量名，那么将把JavaScript代码执行后的返回值保存为用例变量</div>'));
+		$('[ui],div[name=timeout],div[name=save_as]').show();
 		$('div[name=ui_special_action]').hide();
 		$('div[name=ui_data] .col-1').text('js代码');
 	} else if (select_value === 'UI_SAVE_ELEMENT') {
