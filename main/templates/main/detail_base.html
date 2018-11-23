@@ -24,7 +24,7 @@
             <script>
                 $(function () {
                     window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
-                    {% if request.user == obj.creator or is_admin or not form.initial %}
+                    {% if request.user == obj.creator or is_admin or not obj %}
                         window.editable = true;
                     {% else %}
                         window.editable = false;

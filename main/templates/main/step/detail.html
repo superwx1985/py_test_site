@@ -1,7 +1,7 @@
 {% extends 'main/detail_base.html' %}
 {% load staticfiles %}
 {% block title %}
-    {% if form.initial %}
+    {% if form.initial.name %}
         {{ form.initial.name }} - 步骤 - {{ block.super }}
     {% else %}
         新步骤 - {{ block.super }}

@@ -146,6 +146,8 @@ def add(request):
     inside = request.GET.get('inside')
     action_map_json = other.get_action_map_json()
 
+    parent_project = request.GET.get('parent_project')
+
     if request.method == 'POST':
         form = StepForm(data=request.POST)
         if form.is_valid():
@@ -169,7 +171,10 @@ def add(request):
 
         return render(request, 'main/step/detail.html', locals())
     else:
-        form = StepForm()
+        if parent_project:
+            form = StepForm(initial={'project': parent_project})
+        else:
+            form = StepForm()
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None

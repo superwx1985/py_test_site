@@ -188,6 +188,8 @@ def add(request):
     copy_sub_item = True
     project_list = get_project_list()
 
+    parent_project = request.GET.get('parent_project')
+
     if request.method == 'POST':
         form = CaseForm(data=request.POST)
         try:
@@ -232,7 +234,10 @@ def add(request):
 
         return render(request, 'main/case/detail.html', locals())
     else:
-        form = CaseForm()
+        if parent_project:
+            form = CaseForm(initial={'project': parent_project})
+        else:
+            form = CaseForm()
         if request.session.get('status', None) == 'success':
             prompt = 'success'
         request.session['status'] = None

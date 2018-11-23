@@ -1,6 +1,6 @@
 <ol class="breadcrumb my-4">
     <li class="breadcrumb-item active small">
-    {% if form.initial %}
+    {% if obj %}
         <span class="font-weight-bold">{{ object_name }}</span>[<a href="#" data-toggle="popover" title="uuid" data-content="{{ obj.uuid }}">{{ obj.pk }}</a>]&nbsp;&nbsp;&nbsp;&nbsp;
         <span class="font-weight-bold">作者：</span>{{ obj.creator.last_name }}{{ obj.creator.first_name }}[{{ obj.creator.username }}]&nbsp;&nbsp;&nbsp;&nbsp;
         <span class="font-weight-bold">创建时间：</span>{{ obj.created_date }}&nbsp;&nbsp;&nbsp;&nbsp;

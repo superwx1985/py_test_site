@@ -1,6 +1,6 @@
 {% extends 'main/detail_base.html' %}
 {% block title %}
-    {% if form.initial %}
+    {% if form.initial.name %}
         {{ form.initial.name }} - 套件 - {{ block.super }}
     {% else %}
         新套件 - {{ block.super }}
@@ -39,7 +39,7 @@
             // 注册只看自己复选框
             $('#all_').on('click', function() {$('#m2m_objects_form').submit()});
             // 注册m2m新增按钮
-            $('#m2m_add_button').on('click', function() {m2m_detail_popup('用例详情', '{% url 'case_add' %}?inside=1')});
+            $('#m2m_add_button').on('click', function() {m2m_detail_popup('用例详情', '{% url 'case_add' %}?inside=1', $('select[name=project]').val())});
             // 获取待选m2m
             submit_m2m_all_objects_form('/suite', '{% url "case_list_json" %}', get_cookie('last_condition_json'));
             // 注册待选m2m排序

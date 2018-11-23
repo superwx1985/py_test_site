@@ -52,7 +52,8 @@ function update_other_sub_case_dropdown(success, data) {
 }
 
 
-function m2m_detail_popup(title, url) {
+function m2m_detail_popup(title, url, parent_project) {
+	if (parent_project) { url=url+'&parent_project='+parent_project }
 	modal_with_iframe_max('inside_detail_modal', title, url, '', update_m2m_objects)
 }
 

@@ -1,7 +1,7 @@
 {% extends 'main/detail_base.html' %}
 {% load staticfiles %}
 {% block title %}
-    {% if form.initial %}
+    {% if form.initial.name %}
         {{ form.initial.name }} - 配置 - {{ block.super }}
     {% else %}
         新配置 - {{ block.super }}
