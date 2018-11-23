@@ -17,7 +17,7 @@ data = ''
 dr = webdriver.Chrome()
 dr.set_window_position(1920-1366, 0)
 dr.set_window_size(1366, 900)
-dr.get('http://192.192.190.33:8089/mine/mine/business/module/mineCenter/index.jsp#/')
+dr.get('http://192.192.185.140/result/1273/?next=/results/')
 
 method.try_to_enter(dr, By.ID, 'j_username', 'admin', timeout, index_)
 method.try_to_enter(dr, By.ID, 'j_password', '123', timeout, index_)
@@ -64,6 +64,9 @@ print('【拖拽节点】在目标位置释放鼠标')
 method.perform_special_action(dr, '', '', '', timeout, index_, 'release')
 
 dr.execute_script('''$('#onZoom').attr('style', 'display:block');''')
+
+
+method.get_element_text(dr, By.ID, 'id_project', timeout, index_)
 
 
 print('END')

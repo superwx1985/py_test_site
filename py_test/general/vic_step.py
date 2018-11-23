@@ -5,9 +5,10 @@ import traceback
 import uuid
 import logging
 from django.forms.models import model_to_dict
-from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException, NoSuchElementException, TimeoutException, StaleElementReferenceException, InvalidSwitchToTargetException
-from py_test.general import vic_variables, vic_public_elements, vic_method
-from py_test.ui_test import method as ui_method
+from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException, NoSuchElementException,\
+    TimeoutException, StaleElementReferenceException, InvalidSwitchToTargetException
+from py_test.general import vic_variables, vic_method
+from py_test import ui_test
 from py_test.api_test import method as api_method
 from py_test.db_test import method as db_method
 from py_test.vic_tools import vic_eval, vic_date_handle
@@ -210,7 +211,7 @@ class VicStep:
                         if self.action_code == 'UI_GO_TO_URL':
                             if self.ui_data == '':
                                 raise ValueError('请提供要打开的URL地址')
-                            self.run_result = ui_method.go_to_url(dr, self.ui_data)
+                            self.run_result = ui_test.method.go_to_url(dr, self.ui_data)
 
                         # 刷新页面
                         elif self.action_code == 'UI_REFRESH':
@@ -228,21 +229,21 @@ class VicStep:
                         elif self.action_code == 'UI_SCREENSHOT':
                             image = None
                             if self.ui_by != '' and self.ui_locator != '':
-                                run_result_temp, visible_elements, _ = ui_method.wait_for_element_visible(
+                                run_result_temp, visible_elements, _ = ui_test.method.wait_for_element_visible(
                                     dr=dr, by=self.ui_by, locator=self.ui_locator, timeout=self.timeout,
                                     base_element=self.ui_base_element, logger=self.logger)
                                 if len(visible_elements) > 0:
-                                    self.run_result, image = ui_method.get_screenshot(dr, visible_elements[0])
+                                    self.run_result, image = ui_test.screenshot.get_screenshot(dr, visible_elements[0])
                                 else:
                                     self.run_result = ['f', '截图失败，原因为{}'.format(run_result_temp[1])]
                             else:
-                                self.run_result, image = ui_method.get_screenshot(dr)
+                                self.run_result, image = ui_test.screenshot.get_screenshot(dr)
                             if image:
                                 self.img_list.append(image)
 
                         # 切换frame
                         elif self.action_code == 'UI_SWITCH_TO_FRAME':
-                            self.run_result = ui_method.try_to_switch_to_frame(
+                            self.run_result = ui_test.method.try_to_switch_to_frame(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, index_=self.ui_index,
                                 timeout=self.timeout, base_element=self.ui_base_element, logger=self.logger)
 
@@ -252,7 +253,7 @@ class VicStep:
 
                         # 切换至浏览器的其他窗口或标签
                         elif self.action_code == 'UI_SWITCH_TO_WINDOW':
-                            self.run_result, new_window_handle = ui_method.try_to_switch_to_window(
+                            self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
                                 index_=self.ui_index, current_window_handle=dr.current_window_handle,
                                 base_element=self.ui_base_element, logger=self.logger)
@@ -263,7 +264,7 @@ class VicStep:
                                 raise InvalidSwitchToTargetException('当前窗口是浏览器的最后一个窗口，如果需要关闭浏览器请使用【重置浏览器】步骤')
                             current_window_handle = dr.current_window_handle
                             dr.close()
-                            self.run_result, new_window_handle = ui_method.try_to_switch_to_window(
+                            self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
                                 index_=self.ui_index, current_window_handle=current_window_handle,
                                 base_element=self.ui_base_element, logger=self.logger)
@@ -277,7 +278,7 @@ class VicStep:
                                     self.logger.error('有一个driver（浏览器）无法关闭，请手动关闭。错误信息 => {}'.format(e))
                                 del dr
                                 init_timeout = self.timeout if self.timeout > 30 else 30
-                                dr = ui_method.get_driver(
+                                dr = ui_test.driver.get_driver(
                                     self.case_result.suite_result.suite.config, 3, init_timeout, logger=self.logger)
                                 vic_case.driver_container[0] = dr
 
@@ -290,9 +291,9 @@ class VicStep:
                                 variable_elements = vic_variables.get_elements(
                                     self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
-                                self.ui_by, self.ui_locator = ui_method.get_public_elements(
+                                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
                                     self.ui_locator, public_elements)
-                            self.run_result, self.elements = ui_method.try_to_click(
+                            self.run_result, self.elements = ui_test.method.try_to_click(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, timeout=self.timeout,
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
@@ -308,9 +309,9 @@ class VicStep:
                                 variable_elements = vic_variables.get_elements(
                                     self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
-                                self.ui_by, self.ui_locator = ui_method.get_public_elements(
+                                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
                                     self.ui_locator, public_elements)
-                            self.run_result, self.elements = ui_method.try_to_enter(
+                            self.run_result, self.elements = ui_test.method.try_to_enter(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
@@ -326,9 +327,9 @@ class VicStep:
                                 variable_elements = vic_variables.get_elements(
                                     self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
-                                self.ui_by, self.ui_locator = ui_method.get_public_elements(
+                                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
                                     self.ui_locator, public_elements)
-                            self.run_result, self.elements = ui_method.try_to_select(
+                            self.run_result, self.elements = ui_test.method.try_to_select(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
@@ -342,9 +343,9 @@ class VicStep:
                                 variable_elements = vic_variables.get_elements(
                                     self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
-                                self.ui_by, self.ui_locator = ui_method.get_public_elements(
+                                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
                                     self.ui_locator, public_elements)
-                            self.run_result, self.elements = ui_method.perform_special_action(
+                            self.run_result, self.elements = ui_test.method.perform_special_action(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
                                 index_=self.ui_index, special_action=self.ui_special_action,
                                 base_element=self.ui_base_element, variables=vic_case.variables,
@@ -363,9 +364,9 @@ class VicStep:
                                 variable_elements = vic_variables.get_elements(
                                     self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
-                                self.ui_by, self.ui_locator = ui_method.get_public_elements(
+                                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
                                     self.ui_locator, public_elements)
-                            self.run_result, self.elements = ui_method.try_to_scroll_into_view(
+                            self.run_result, self.elements = ui_test.method.try_to_scroll_into_view(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, timeout=self.timeout,
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
@@ -377,7 +378,7 @@ class VicStep:
                             if self.ui_data == '':
                                 raise ValueError('无验证内容')
                             else:
-                                self.run_result, new_url = ui_method.wait_for_page_redirect(
+                                self.run_result, new_url = ui_test.method.wait_for_page_redirect(
                                     dr=dr, new_url=self.ui_data, timeout=self.timeout, logger=self.logger)
 
                         # 验证文字
@@ -392,16 +393,16 @@ class VicStep:
                                         variable_elements = vic_variables.get_elements(
                                             self.ui_locator, vic_case.variables, global_variables)
                                     elif self.ui_by == 'public element':
-                                        self.ui_by, self.ui_locator = ui_method.get_public_elements(
+                                        self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
                                             self.ui_locator, public_elements)
                                     self.run_result, self.elements, self.fail_elements \
-                                        = ui_method.wait_for_text_present_with_locator(
+                                        = ui_test.method.wait_for_text_present_with_locator(
                                             dr=dr, by=self.ui_by, locator=self.ui_locator, text=self.ui_data,
                                             timeout=self.timeout, index_=self.ui_index,
                                             base_element=self.ui_base_element, variable_elements=variable_elements,
                                             logger=self.logger)
                                 else:
-                                    self.run_result, self.elements = ui_method.wait_for_text_present(
+                                    self.run_result, self.elements = ui_test.method.wait_for_text_present(
                                         dr=dr, text=self.ui_data, timeout=self.timeout,
                                         base_element=self.ui_base_element, logger=self.logger
                                     )
@@ -417,15 +418,15 @@ class VicStep:
                                 variable_elements = vic_variables.get_elements(
                                     self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
-                                self.ui_by, self.ui_locator = ui_method.get_public_elements(
+                                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
                                     self.ui_locator, public_elements)
                             if self.ui_data == '':
-                                self.run_result, self.elements, elements_all = ui_method.wait_for_element_visible(
+                                self.run_result, self.elements, elements_all = ui_test.method.wait_for_element_visible(
                                     dr=dr, by=self.ui_by, locator=self.ui_locator, timeout=self.timeout,
                                     base_element=self.ui_base_element, variable_elements=variable_elements,
                                     logger=self.logger)
                             else:
-                                self.run_result, self.elements = ui_method.wait_for_element_visible_with_data(
+                                self.run_result, self.elements = ui_test.method.wait_for_element_visible_with_data(
                                     dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data,
                                     timeout=self.timeout, base_element=self.ui_base_element,
                                     variable_elements=variable_elements, logger=self.logger)
@@ -441,9 +442,9 @@ class VicStep:
                                 variable_elements = vic_variables.get_elements(
                                     self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
-                                self.ui_by, self.ui_locator = ui_method.get_public_elements(
+                                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
                                     self.ui_locator, public_elements)
-                            self.run_result, self.elements = ui_method.wait_for_element_disappear(
+                            self.run_result, self.elements = ui_test.method.wait_for_element_disappear(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, timeout=self.timeout,
                                 base_element=self.ui_base_element, variable_elements=variable_elements,
                                 logger=self.logger)
@@ -459,9 +460,9 @@ class VicStep:
                                 variable_elements = vic_variables.get_elements(
                                     self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
-                                self.ui_by, self.ui_locator = ui_method.get_public_elements(
+                                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
                                     self.ui_locator, public_elements)
-                            self.run_result, js_result = ui_method.run_js(
+                            self.run_result, js_result = ui_test.method.run_js(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
@@ -478,9 +479,9 @@ class VicStep:
                                 variable_elements = vic_variables.get_elements(
                                     self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
-                                self.ui_by, self.ui_locator = ui_method.get_public_elements(
+                                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
                                     self.ui_locator, public_elements)
-                            self.run_result, js_result = ui_method.run_js(
+                            self.run_result, js_result = ui_test.method.run_js(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
@@ -501,15 +502,16 @@ class VicStep:
                                 variable_elements = vic_variables.get_elements(
                                     self.ui_locator, vic_case.variables, global_variables)
                             elif self.ui_by == 'public element':
-                                self.ui_by, self.ui_locator = ui_method.get_public_elements(
+                                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
                                     self.ui_locator, public_elements)
-                            self.run_result, self.elements = ui_method.wait_for_element_present(
+                            self.run_result, self.elements = ui_test.method.wait_for_element_present(
                                 dr=dr, by=self.ui_by, locator=self.ui_locator, timeout=self.timeout,
                                 base_element=self.ui_base_element, variable_elements=variable_elements,
                                 logger=self.logger)
+
                             if self.run_result[0] == 'p':
                                 msg = vic_case.variables.set_variable(self.save_as, self.elements)
-                                self.run_result = ['p', msg]
+                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
                             else:
                                 raise NoSuchElementException('无法保存变量，{}'.format(self.run_result[1]))
 
@@ -517,11 +519,60 @@ class VicStep:
                         elif self.action_code == 'UI_SAVE_URL':
                             if self.save_as == '':
                                 raise ValueError('没有提供变量名')
-                            self.run_result, data_ = ui_method.get_url(
+                            self.run_result, data_ = ui_test.method.get_url(
                                 dr=dr, condition_value=str(self.ui_data), logger=self.logger)
+
                             if self.run_result[0] == 'p':
                                 msg = vic_case.variables.set_variable(self.save_as, data_)
-                                self.run_result = ['p', msg]
+                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
+                            else:
+                                raise WebDriverException('无法保存变量，{}'.format(self.run_result[1]))
+
+                        # 保存元素文本
+                        elif self.action_code == 'UI_SAVE_ELEMENT_TEXT':
+                            if self.save_as == '':
+                                raise ValueError('没有提供变量名')
+                            if self.ui_by == '' or self.ui_locator == '':
+                                raise ValueError('无效的定位方式或定位符')
+                            variable_elements = None
+                            if self.ui_by == 'variable':
+                                variable_elements = vic_variables.get_elements(
+                                    self.ui_locator, vic_case.variables, global_variables)
+                            elif self.ui_by == 'public element':
+                                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
+                                    self.ui_locator, public_elements)
+                            self.run_result, text = ui_test.method.get_element_text(
+                                dr=dr, by=self.ui_by, locator=self.ui_locator, timeout=self.timeout,
+                                index_=self.ui_index, base_element=self.ui_base_element,
+                                variable_elements=variable_elements, logger=self.logger)
+
+                            if self.run_result[0] == 'p':
+                                msg = vic_case.variables.set_variable(self.save_as, text)
+                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
+                            else:
+                                raise WebDriverException('无法保存变量，{}'.format(self.run_result[1]))
+
+                        # 保存元素属性值
+                        elif self.action_code == 'UI_SAVE_ELEMENT_ATTR':
+                            if self.save_as == '':
+                                raise ValueError('没有提供变量名')
+                            if self.ui_by == '' or self.ui_locator == '':
+                                raise ValueError('无效的定位方式或定位符')
+                            variable_elements = None
+                            if self.ui_by == 'variable':
+                                variable_elements = vic_variables.get_elements(
+                                    self.ui_locator, vic_case.variables, global_variables)
+                            elif self.ui_by == 'public element':
+                                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
+                                    self.ui_locator, public_elements)
+                            self.run_result, text = ui_test.method.get_element_attr(
+                                dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.data, timeout=self.timeout,
+                                index_=self.ui_index, base_element=self.ui_base_element,
+                                variable_elements=variable_elements, logger=self.logger)
+
+                            if self.run_result[0] == 'p':
+                                msg = vic_case.variables.set_variable(self.save_as, text)
+                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
                             else:
                                 raise WebDriverException('无法保存变量，{}'.format(self.run_result[1]))
 
@@ -742,7 +793,7 @@ class VicStep:
                                 # 获取当前url
                                 last_url = dr.current_url
                             except UnexpectedAlertPresentException:  # 如有弹窗则处理弹窗
-                                alert_handle_text, alert_text = ui_method.confirm_alert(
+                                alert_handle_text, alert_text = ui_test.method.confirm_alert(
                                     dr=dr, alert_handle=self.ui_alert_handle, timeout=self.timeout, logger=self.logger)
                                 self.logger.info(
                                     '【{}】\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(
@@ -757,22 +808,22 @@ class VicStep:
                             if self.ui_get_ss:
                                 highlight_elements_map = {}
                                 if len(self.elements) > 0:
-                                    highlight_elements_map = ui_method.highlight(dr, self.elements, 'green')
+                                    highlight_elements_map = ui_test.method.highlight(dr, self.elements, 'green')
                                 if len(self.fail_elements) > 0:
                                     highlight_elements_map = {**highlight_elements_map,
-                                                              **ui_method.highlight(dr, self.fail_elements, 'red')}
+                                                              **ui_test.method.highlight(dr, self.fail_elements, 'red')}
                                 try:
-                                    _, image = ui_method.get_screenshot(dr)
+                                    _, image = ui_test.screenshot.get_screenshot(dr)
                                     self.img_list.append(image)
                                 except Exception:
                                     self.logger.warning('【{}】\t无法获取UI验证截图'.format(self.execute_id), exc_info=True)
                                 if len(highlight_elements_map) > 0:
-                                    ui_method.cancel_highlight(dr, highlight_elements_map)
+                                    ui_test.method.cancel_highlight(dr, highlight_elements_map)
                             else:
                                 if len(self.elements) > 0:
-                                    ui_method.highlight_for_a_moment(dr, self.elements, 'green')
+                                    ui_test.method.highlight_for_a_moment(dr, self.elements, 'green')
                                 if len(self.fail_elements) > 0:
-                                    ui_method.highlight_for_a_moment(dr, self.fail_elements, 'red')
+                                    ui_test.method.highlight_for_a_moment(dr, self.fail_elements, 'red')
                     else:
                         self.run_result = ['s', '步骤被跳过']
                 except StaleElementReferenceException:
@@ -810,7 +861,7 @@ class VicStep:
             # 获取报错时截图
             if self.ui_get_ss and self.step_result.result_status == 3:
                 try:
-                    self.run_result, image = ui_method.get_screenshot(dr)
+                    self.run_result, image = ui_test.screenshot.get_screenshot(dr)
                     self.img_list.append(image)
                 except:
                     self.logger.warning('【{}】\t无法获取错误截图'.format(self.execute_id))

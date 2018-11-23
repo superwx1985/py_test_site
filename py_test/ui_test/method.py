@@ -1,129 +1,13 @@
-# ===========================================================================
-# ID = "id"
-# XPATH = "xpath"
-# LINK_TEXT = "link text"
-# PARTIAL_LINK_TEXT = "partial link text"
-# NAME = "name"
-# TAG_NAME = "tag name"
-# CLASS_NAME = "class name"
-# CSS_SELECTOR = "css selector"
-# ===========================================================================
-
 import time
-import uuid
-import os
-import io
-import datetime
 import json
 import logging
-from concurrent.futures import ThreadPoolExecutor, wait
 from selenium.common import exceptions
-from selenium import webdriver
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.action_chains import ActionChains
-from PIL import Image
 from py_test.vic_tools import vic_find_object, vic_eval
 from py_test.vic_tools.vic_str_handle import change_string_to_digit
 from py_test.general import vic_variables
-
-
-# 获取浏览器driver
-def get_driver_(config, timeout, logger=logging.getLogger('py_test')):
-    dr = None
-    try:
-        chrome_options = webdriver.ChromeOptions()
-        chrome_options._arguments = [
-            'test-type',
-            "start-maximized",
-            "no-default-browser-check",
-            # "disable-browser-side-navigation",
-        ]
-        if config.ui_selenium_client == 1:  # 本地
-            if config.ui_driver_type == 1:  # Chrome
-                dr = webdriver.Chrome(options=chrome_options)
-            elif config.ui_driver_type == 2:  # IE
-                dr = webdriver.Ie()
-            elif config.ui_driver_type == 3:  # FireFox
-                if config.ui_driver_ff_profile:
-                    dr = webdriver.Firefox(firefox_profile=webdriver.FirefoxProfile(config.ui_driver_ff_profile))
-                else:
-                    dr = webdriver.Firefox()
-            elif config.ui_driver_type == 4:  # PhantomJS
-                dr = webdriver.PhantomJS()
-            else:
-                raise ValueError('浏览器类型错误，请检查配置项')
-        elif config.ui_selenium_client == 2:  # 远程
-            if not config.ui_remote_ip or not config.ui_remote_port:
-                raise ValueError('缺少远程驱动配置参数，检查配置项')
-            if config.ui_driver_type == 1:  # Chrome
-                dr = webdriver.Remote(
-                    command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
-                    desired_capabilities=DesiredCapabilities.CHROME, options=chrome_options
-                )
-            elif config.ui_driver_type == 2:  # IE
-                dr = webdriver.Remote(
-                    command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
-                    desired_capabilities=DesiredCapabilities.INTERNETEXPLORER
-                )
-            elif config.ui_driver_type == 3:  # FireFox
-                dr = webdriver.Remote(
-                    command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
-                    desired_capabilities=DesiredCapabilities.FIREFOX
-                )
-            elif config.ui_driver_type == 4:  # PhantomJS
-                dr = webdriver.Remote(
-                    command_executor='http://{}:{}/wd/hub'.format(config.ui_remote_ip, config.ui_remote_port),
-                    desired_capabilities=DesiredCapabilities.PHANTOMJS
-                )
-            else:
-                raise ValueError('浏览器类型错误，请检查配置项')
-        else:
-            raise ValueError('驱动类型错误，请检查配置项')
-
-        dr.command_executor.set_timeout(timeout)
-        if config.ui_window_size == 2:
-            if not config.ui_window_width or not config.ui_window_height:
-                raise ValueError('自定义窗口但未指定大小，请检查配置项')
-            dr.set_window_size(config.ui_window_width, config.ui_window_height)
-            dr.set_window_position(0, 0)
-        else:
-            dr.maximize_window()
-        dr.command_executor.reset_timeout()
-    except Exception:
-        try:
-            if dr:
-                dr.quit()
-        except Exception as e:
-            logger.error('有一个driver（浏览器）无法关闭，请手动关闭。错误信息 => {}'.format(e))
-        raise
-    else:
-        return dr
-
-
-# 获取浏览器driver，添加重试功能
-def get_driver(config, retry=3, timeout=10, logger=logging.getLogger('py_test')):
-    for i in range(retry):
-        pool = ThreadPoolExecutor(1)
-        futures = list()
-        futures.append(pool.submit(get_driver_, config=config, timeout=timeout, logger=logger))
-        # t = threading.Thread(target=get_driver_, args=(config, timeout, logger), daemon=True)
-        future_results = wait(futures, timeout=timeout+5, return_when='FIRST_EXCEPTION')
-        if len(future_results.done) == 0:
-            logger.error('有一个driver（浏览器）初始化超时，请手动关闭。')
-            continue
-        for future_result in future_results.done:
-            try:
-                dr = future_result.result()
-            except Exception as e:
-                if i >= retry - 1:
-                    raise
-                else:
-                    logger.warning('driver初始化出错，尝试重启driver。错误信息 => {}'.format(e))
-                    continue
-            else:
-                return dr
 
 
 # 获取公共元素
@@ -330,6 +214,28 @@ def wait_for_element_present(
     return run_result, elements
 
 
+# 获取元素
+def get_element(
+        dr, by, locator, timeout, index_, base_element=None, variable_elements=None, print_=True,
+        logger=logging.getLogger('py_test')):
+    if variable_elements is not None:
+        elements = variable_elements
+    else:
+        run_result_temp, elements = wait_for_element_present(dr, by, locator, timeout, base_element=base_element,
+                                                             variable_elements=None, print_=print_, logger=logger)
+        if run_result_temp[0] == 'f':
+            raise exceptions.NoSuchElementException('无法执行动作，因为：{}'.format(run_result_temp[1]))
+    if len(elements) == 1 and index_ in (None, 0):
+        element = elements[0]
+    elif index_ is None:
+        raise ValueError('找到%r个元素，请指定一个index' % len(elements))
+    elif index_ > (len(elements) - 1):
+        raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
+    else:
+        element = elements[index_]
+    return element
+
+
 # 等待元素可见
 def wait_for_element_visible(
         dr, by, locator, timeout, base_element=None, variable_elements=None, print_=True,
@@ -368,6 +274,28 @@ def wait_for_element_visible(
     else:
         run_result = ['p', msg]
     return run_result, visible_elements, elements
+
+
+# 获取可见元素
+def get_variable_element(
+        dr, by, locator, timeout, index_, base_element=None, variable_elements=None, print_=True,
+        logger=logging.getLogger('py_test')):
+    if variable_elements is not None:
+        elements = variable_elements
+    else:
+        run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
+                                                                           print_=print_, logger=logger)
+        if run_result_temp[0] == 'f':
+            raise exceptions.NoSuchElementException('未找到指定的元素，{}'.format(run_result_temp[1]))
+    if len(elements) == 1 and index_ in (None, 0):
+        element = elements[0]
+    elif index_ is None:
+        raise ValueError('找到%r个元素，请指定一个index' % len(elements))
+    elif index_ > (len(elements) - 1):
+        raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
+    else:
+        element = elements[index_]
+    return element
 
 
 # 等待元素可见，包含数量限制
@@ -509,74 +437,38 @@ def get_url(dr, condition_value, logger=logging.getLogger('py_test')):
 def try_to_click(
         dr, by, locator, timeout, index_, base_element=None, variable_elements=None, print_=True,
         logger=logging.getLogger('py_test')):
-    if variable_elements is not None:
-        elements = variable_elements
-    else:
-        run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
-                                                                           print_=print_, logger=logger)
-        if run_result_temp[0] == 'f':
-            raise exceptions.NoSuchElementException('未找到指定的元素，{}'.format(run_result_temp[1]))
-    if len(elements) == 1 and index_ in (None, 0):
-        element = elements[0]
-    elif index_ is None:
-        raise ValueError('找到%r个元素，请指定一个index' % len(elements))
-    elif index_ > (len(elements) - 1):
-        raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
-    else:
-        element = elements[index_]
+    element = get_variable_element(
+        dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements, print_=print_,
+        logger=logger)
 
     highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     element.click()
     run_result = ['p', '点击元素【By:{}|Locator:{}】'.format(by, locator)]
-    return run_result, elements
+    return run_result, [element]
 
 
 # 尝试输入
 def try_to_enter(
         dr, by, locator, data, timeout, index_, base_element=None, variable_elements=None, print_=True,
         logger=logging.getLogger('py_test')):
-    if variable_elements is not None:
-        elements = variable_elements
-    else:
-        run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
-                                                                           print_=print_, logger=logger)
-        if run_result_temp[0] == 'f':
-            raise exceptions.NoSuchElementException('未找到指定的元素，{}'.format(run_result_temp[1]))
-    if len(elements) == 1 and index_ in (None, 0):
-        element = elements[0]
-    elif index_ is None:
-        raise ValueError('找到%r个元素，请指定一个index' % len(elements))
-    elif index_ > (len(elements) - 1):
-        raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
-    else:
-        element = elements[index_]
+    element = get_variable_element(
+        dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements, print_=print_,
+        logger=logger)
 
     highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     element.clear()
     element.send_keys(data)
     run_result = ['p', '在元素【By:{}|Locator:{}】中输入【{}】'.format(by, locator, data)]
-    return run_result, elements
+    return run_result, [element]
 
 
 # 尝试选择
 def try_to_select(
         dr, by, locator, data, timeout, index_, base_element=None, variable_elements=None, print_=True,
         logger=logging.getLogger('py_test')):
-    if variable_elements is not None:
-        elements = variable_elements
-    else:
-        run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
-                                                                           print_=print_, logger=logger)
-        if run_result_temp[0] == 'f':
-            raise exceptions.NoSuchElementException('未找到指定的元素，{}'.format(run_result_temp[1]))
-    if len(elements) == 1 and index_ in (None, 0):
-        element = elements[0]
-    elif index_ is None:
-        raise ValueError('找到%r个元素，请指定一个index' % len(elements))
-    elif index_ > (len(elements) - 1):
-        raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
-    else:
-        element = elements[index_]
+    element = get_variable_element(
+        dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements, print_=print_,
+        logger=logger)
 
     highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     select = Select(element)
@@ -627,7 +519,7 @@ def try_to_select(
     run_result = [
         'p', '在元素【By:{}|Locator:{}】中进行了选择操作，被选中的选项为【{}】'.format(
             by, locator, '|'.join(selected_text_list))]
-    return run_result, elements
+    return run_result, [element]
 
 
 # 获取特殊键组合
@@ -654,24 +546,11 @@ def perform_special_action(
         dr, by, locator, data, timeout, index_, special_action, base_element=None, variables=None,
         global_variables=None, variable_elements=None, print_=True, logger=logging.getLogger('py_test')):
     if by == '':
-        elements = list()
         element = None
     else:
-        if variable_elements is not None:
-            elements = variable_elements
-        else:
-            run_result_temp, elements = wait_for_element_present(dr, by, locator, timeout, base_element=base_element,
-                                                                 variable_elements=None, print_=print_, logger=logger)
-            if run_result_temp[0] == 'f':
-                raise exceptions.NoSuchElementException('无法执行动作，因为：{}'.format(run_result_temp[1]))
-        if len(elements) == 1 and index_ in (None, 0):
-            element = elements[0]
-        elif index_ is None:
-            raise ValueError('找到%r个元素，请指定一个index' % len(elements))
-        elif index_ > (len(elements) - 1):
-            raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
-        else:
-            element = elements[index_]
+        element = get_element(
+            dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements,
+            print_=print_, logger=logger)
 
     if special_action == 'click':
         ActionChains(dr).click(element).perform()
@@ -749,33 +628,21 @@ def perform_special_action(
         raise ValueError('无法处理的特殊操作[%s]' % special_action)
 
     run_result = ['p', '特殊动作执行完毕']
-    return run_result, elements
+    return run_result, [element]
 
 
 # 尝试滚动到元素位置
 def try_to_scroll_into_view(
         dr, by, locator, timeout, index_, base_element=None, variable_elements=None, print_=True,
         logger=logging.getLogger('py_test')):
-    if variable_elements is not None:
-        elements = variable_elements
-    else:
-        run_result_temp, elements = wait_for_element_present(dr, by, locator, timeout, base_element=base_element,
-                                                             variable_elements=None, print_=print_, logger=logger)
-        if run_result_temp[0] == 'f':
-            raise exceptions.NoSuchElementException('无法执行动作，因为：{}'.format(run_result_temp[1]))
-    if len(elements) == 1 and index_ in (None, 0):
-        element = elements[0]
-    elif index_ is None:
-        raise ValueError('找到%r个元素，请指定一个index' % len(elements))
-    elif index_ > (len(elements) - 1):
-        raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
-    else:
-        element = elements[index_]
+    element = get_element(
+        dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements, print_=print_,
+        logger=logger)
 
     highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     dr.execute_script('arguments[0].scrollIntoView()', element)
     run_result = ['p', '移动窗口到元素【By:{}|Locator:{}】的位置'.format(by, locator)]
-    return run_result, elements
+    return run_result, [element]
 
 
 # 处理浏览器弹窗
@@ -936,179 +803,32 @@ def run_js(
     return run_result, js_result
 
 
-# 根据浏览器类型调取不同的截图方法
-def get_screenshot(dr, element=None):
-    from django.core.files.uploadedfile import UploadedFile
-    from main.models import Image
-    bio = io.BytesIO()
-    # 刚打开某个页面时截图会报错，加入3次重试机制
-    for i in range(3):
-        try:
-            if element:
-                img = get_image_on_element(dr, element)
-            else:
-                if 'chrome' == dr.name:
-                    img = get_long_screenshot_img_for_chrome(dr)
-                else:
-                    img = Image.open(io.BytesIO(dr.get_screenshot_as_png()))
-        except exceptions.WebDriverException as e:
-            if 'unknown error: cannot take screenshot' in e.msg:
-                time.sleep(1)
-                continue
-            else:
-                raise
-        else:
-            img.save(bio, format='png')
-            break
+# 获取元素文本
+def get_element_text(
+        dr, by, locator, timeout, index_, base_element=None, variable_elements=None, print_=True,
+        logger=logging.getLogger('py_test')):
+    element = get_element(
+        dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements, print_=print_,
+        logger=logger)
 
-    name = datetime.datetime.now().strftime('%Y%m%d_%H%M%S.png')
-    image = Image(name=name, img=UploadedFile(bio, name=name))
-    image.save()
-    bio.close()
-    run_result = ['p', '截图成功【{}】'.format(name)]
-    return run_result, image
+    highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
+    text = element.text
+    run_result = ['p', '元素【By:{}|Locator:{}】的文本为：{}'.format(by, locator, text)]
+    return run_result, text
 
 
-# chrome截长图
-def get_long_screenshot_img_for_chrome(dr, scroll_step=100, scroll_delay=0.1, start_height=0, max_height=10000):
-    if start_height >= max_height:
-        raise ValueError("截图开始高度大于最大高度")
-    window_top = dr.execute_script('return scrollY;')
-    if start_height != window_top:
-        scroll_to_height(dr, start_height, scroll_step, scroll_delay)  # 滚动到开始高度
-    window_height = dr.execute_script('return window.innerHeight;')  # 窗口高度
-    time.sleep(scroll_delay)
-    body_height = dr.execute_script('return document.body.scrollHeight;')  # 网页高度
-    img_height = body_height - start_height  # 需要截取的高度
-    if window_height <= 0 or img_height <= 0:
-        raise ValueError("截图高度小于0")
-    if max_height < window_height:
-        max_height = window_height
-    if img_height > max_height:
-        img_height = max_height
-    count = int((img_height / window_height))
-    img1 = Image.open(io.BytesIO(dr.get_screenshot_as_png()))
-    for i in range(1, count):
-        scroll_to_height(dr, start_height + window_height * i, scroll_step, scroll_delay)
-        img2 = Image.open(io.BytesIO(dr.get_screenshot_as_png()))
-        img1 = vertical_join_image(img1, img2)
-        del img2
-    window_top = dr.execute_script('return scrollY;')  # 获取当前窗口位置
-    if window_top < body_height - window_height:
-        window_top_old = window_top
-        scroll_to_height(dr, body_height - window_height, scroll_step, scroll_delay)
-        window_top = dr.execute_script('return scrollY;')
-        img2 = Image.open(io.BytesIO(dr.get_screenshot_as_png()))
-        window_top_delta = window_top - window_top_old
-        left = 0
-        top = img2.size[1] - window_top_delta
-        right = img2.size[0]
-        bottom = img2.size[1]
-        img2 = img2.crop((left, top, right, bottom))  # defines crop points
-        img1 = vertical_join_image(img1, img2)
-        del img2
-    return img1
+# 获取元素属性
+def get_element_attr(
+        dr, by, locator, data, timeout, index_, base_element=None, variable_elements=None, print_=True,
+        logger=logging.getLogger('py_test')):
+    element = get_element(
+        dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements, print_=print_,
+        logger=logger)
 
-
-# 垂直合并图片
-def vertical_join_image(img1, img2):
-    width1 = img1.size[0]
-    height1 = img1.size[1]
-    width2 = img2.size[0]
-    height2 = img2.size[1]
-    if width1 >= width2:
-        width3 = width1
+    highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
+    attr = element.get_attribute(data)
+    if attr:
+        run_result = ['p', '元素【By:{}|Locator:{}】的【{}】属性的值为：{}'.format(by, locator, data, attr)]
     else:
-        width3 = width2
-    img3 = Image.new('RGB', (width3, height1 + height2))
-    img3.paste(img1, (0, 0, width1, height1))
-    img3.paste(img2, (0, height1, width2, height1 + height2))
-    return img3
-
-
-# 只截取某个元素
-def get_image_on_element(dr, element):
-    window_top = dr.execute_script('return scrollY;')
-    dr.execute_script("arguments[0].scrollIntoView();", element)
-    time.sleep(1)
-    window_top_new = dr.execute_script('return scrollY;')
-    scroll_height = window_top_new - window_top
-    left = element.location['x']
-    right = left + element.size['width']
-    top = element.location['y'] - scroll_height
-    bottom = top + element.size['height']
-
-    if 'chrome' == dr.name:
-        img = get_long_screenshot_img_for_chrome(dr, 100, 0.1, scroll_height, scroll_height + element.size['height'])
-    else:
-        img = Image.open(io.BytesIO(dr.get_screenshot_as_png()))
-    # 裁剪图片
-    img.crop((left, top, right, bottom))
-    return img
-
-
-# 下拉加载更多内容
-def scroll_down_for_loading(driver, wait_time=30, print_=True, logger=logging.getLogger('py_test')):
-    # driver.execute_script("arguments[0].scrollIntoView();")
-    driver.execute_script("""
-        (function () {
-            var y = scrollY;
-            var step = 100;
-            window.scroll(0, 0);
-
-            function f() {
-                if (y < document.body.scrollHeight) {
-                    y += step;
-                    window.scroll(0, y);
-                    setTimeout(f, 100);
-                } else {
-                    window.scroll(0,0);
-                    document.title += "scroll-done";
-                }
-            }
-
-            setTimeout(f, 1000);
-        })();
-    """)
-
-    start_time = time.time()
-    for i in range(wait_time):
-        if "scroll-done" in driver.title:
-            return
-        time.sleep(1)
-        if print_:
-            logger.info('经过%s秒 - 向下拖动第%s次' % (str(round(time.time() - start_time, 2)), i))
-
-
-# 滚动到顶部
-def scroll_to_height(dr, _to, _step, delay):
-    _from = dr.execute_script('return scrollY')
-    count = int((_to - _from) / _step)
-    if count >= 0:
-        for i in range(1, count + 1):
-            dr.execute_script('window.scroll(0, arguments[0]);', _from + _step * i)
-            time.sleep(delay)
-    else:
-        count = abs(count)
-        for i in range(1, count + 1):
-            dr.execute_script('window.scroll(0, arguments[0]);', _from - _step * i)
-            time.sleep(delay)
-    top = dr.execute_script('return scrollY')
-    if top != _to:
-        dr.execute_script('window.scroll(0, arguments[0]);', _to)
-        time.sleep(delay)
-    return count
-
-
-# 生成截图路径
-def get_screenshot_full_name(file_name, base_path=os.getcwd(), logger=logging.getLogger('py_test')):
-    _name_list = os.path.splitext(file_name)
-    from py_test.general.vic_method import check_name
-    _name_result = check_name(_name_list[0])
-    if _name_result[0]:
-        file_name = _name_list[0] + '.png'
-    else:
-        logger.warning(_name_result[1])
-        file_name = 'screenshot_{}.png'.format(uuid.uuid1())
-        # file_name = 'screenshot_' + datetime.datetime.now().strftime("%Y%m%d_%H%M%S_%f") + '.png'
-    return os.path.join(base_path, file_name)
+        run_result = ['f', '元素【By:{}|Locator:{}】不存在【{}】属性'.format(by, locator, data)]
+    return run_result, attr
