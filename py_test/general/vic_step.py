@@ -50,7 +50,7 @@ class VicStep:
         )
 
         try:
-            self.run_result = ('p', '执行成功')
+            self.run_result = ['p', '执行成功']
             self.elements = list()
             self.fail_elements = list()
             self.timeout = step.timeout if step.timeout else case_result.suite_result.timeout
@@ -154,7 +154,7 @@ class VicStep:
                             self.logger)
                         eval_success, eval_result, final_expression = eo.get_eval_result()
                         if eval_success:
-                            self.run_result = ('p', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result))
+                            self.run_result = ['p', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result)]
                             if eval_result is True:
                                 if_result = True
                             else:
@@ -186,10 +186,10 @@ class VicStep:
                                     if_object['else'] = True
                                 else:
                                     self.logger.warning(msg)
-                                    self.run_result = ('s', msg)
+                                    self.run_result = ['s', msg]
                         else:
                             self.logger.warning(msg)
-                            self.run_result = ('s', msg)
+                            self.run_result = ['s', msg]
                     # 分支判断 - 结束
                     elif self.action_code == 'OTHER_END_IF':
                         if vic_case.if_list:
@@ -202,7 +202,7 @@ class VicStep:
                         else:
                             msg = '【{}】\t出现多余的“END_IF”步骤，可能会导致意外的错误，请检查用例'.format(self.execute_id)
                             self.logger.warning(msg)
-                            self.run_result = ('s', msg)
+                            self.run_result = ['s', msg]
 
                     elif vic_case.step_active:
                         # ===== UI =====
@@ -234,7 +234,7 @@ class VicStep:
                                 if len(visible_elements) > 0:
                                     self.run_result, image = ui_method.get_screenshot(dr, visible_elements[0])
                                 else:
-                                    self.run_result = ('f', '截图失败，原因为{}'.format(run_result_temp[1]))
+                                    self.run_result = ['f', '截图失败，原因为{}'.format(run_result_temp[1])]
                             else:
                                 self.run_result, image = ui_method.get_screenshot(dr)
                             if image:
@@ -383,7 +383,7 @@ class VicStep:
                         # 验证文字
                         elif self.action_code == 'UI_VERIFY_TEXT':
                             if self.ui_data == '':
-                                self.run_result = ('p', '无验证内容')
+                                self.run_result = ['p', '无验证内容']
                                 self.logger.info('【{}】\t未提供验证内容，跳过验证'.format(self.execute_id))
                             else:
                                 if self.ui_by != 0 and self.ui_locator != '':
@@ -485,7 +485,7 @@ class VicStep:
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
                             if js_result is not True:
-                                self.run_result = ('f', self.run_result[1])
+                                self.run_result = ['f', self.run_result[1]]
                             if self.save_as != '':
                                 msg = vic_case.variables.set_variable(self.save_as, js_result)
                                 self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
@@ -509,7 +509,7 @@ class VicStep:
                                 logger=self.logger)
                             if self.run_result[0] == 'p':
                                 msg = vic_case.variables.set_variable(self.save_as, self.elements)
-                                self.run_result = ('p', msg)
+                                self.run_result = ['p', msg]
                             else:
                                 raise NoSuchElementException('无法保存变量，{}'.format(self.run_result[1]))
 
@@ -521,7 +521,7 @@ class VicStep:
                                 dr=dr, condition_value=str(self.ui_data), logger=self.logger)
                             if self.run_result[0] == 'p':
                                 msg = vic_case.variables.set_variable(self.save_as, data_)
-                                self.run_result = ('p', msg)
+                                self.run_result = ['p', msg]
                             else:
                                 raise WebDriverException('无法保存变量，{}'.format(self.run_result[1]))
 
@@ -572,7 +572,7 @@ class VicStep:
                                     msg = '{}\n变量保存：\n{}'.format(msg, msg_)
                                     if not success:
                                         run_result_status = 'f'
-                            self.run_result = (run_result_status, msg)
+                            self.run_result = [run_result_status, msg]
                             self.logger.debug('【{}】\t{}'.format(self.execute_id, msg))
 
                         # ===== DB =====
@@ -586,8 +586,8 @@ class VicStep:
                                 self.logger.warning('【{}】\t连接数据库或SQL执行报错\nSQL语句：\n{}'.format(
                                     self.execute_id, self.db_sql), exc_info=True)
                                 e_str = traceback.format_exc()
-                                self.run_result = ('f', '连接数据库或SQL执行报错\nSQL语句：\n{}\n{}'.format(
-                                    self.db_sql, e_str))
+                                self.run_result = ['f', '连接数据库或SQL执行报错\nSQL语句：\n{}\n{}'.format(
+                                    self.db_sql, e_str)]
                             else:
                                 pretty_result = json.dumps(
                                     sql_result, indent=1, ensure_ascii=False, cls=db_method.JsonDatetimeEncoder)
@@ -601,16 +601,16 @@ class VicStep:
                                     run_result = db_method.verify_sql_result(
                                         expect=self.db_data, sql_result=sql_result, logger=self.logger)
                                     if run_result[0] == 'p':
-                                        self.run_result = (
+                                        self.run_result = [
                                             'p', 'SQL执行完毕，结果验证通过\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
-                                                self.db_sql, row_count, pretty_result_))
+                                                self.db_sql, row_count, pretty_result_)]
                                     else:
-                                        self.run_result = (
+                                        self.run_result = [
                                             'f', 'SQL执行完毕，结果验证失败\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
-                                                self.db_sql, row_count, pretty_result_))
+                                                self.db_sql, row_count, pretty_result_)]
                                 else:
-                                    self.run_result = ('p', 'SQL执行完毕\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
-                                        self.db_sql, row_count, pretty_result_))
+                                    self.run_result = ['p', 'SQL执行完毕\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
+                                        self.db_sql, row_count, pretty_result_)]
 
                         # ===== OTHER =====
                         # 等待
@@ -633,10 +633,8 @@ class VicStep:
                                 eval_success, eval_result, final_expression = eo.get_eval_result()
                                 if eval_success:
                                     msg = vic_case.variables.set_variable(self.save_as, eval_result)
-                                    self.run_result = (
-                                        'p',
-                                        '计算表达式：{}\n结果为：{}\n用例{}'.format(
-                                            final_expression, eval_result, msg))
+                                    self.run_result = ['p', '计算表达式：{}\n结果为：{}\n用例{}'.format(
+                                        final_expression, eval_result, msg)]
 
                                 else:
                                     raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
@@ -654,10 +652,8 @@ class VicStep:
                                 eval_success, eval_result, final_expression = eo.get_eval_result()
                                 if eval_success:
                                     msg = global_variables.set_variable(self.save_as, eval_result)
-                                    self.run_result = (
-                                        'p',
-                                        '计算表达式：{}\n结果为：{}\n全局{}'.format(
-                                            final_expression, eval_result, msg))
+                                    self.run_result = ['p', '计算表达式：{}\n结果为：{}\n全局{}'.format(
+                                        final_expression, eval_result, msg)]
                                 else:
                                     raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
 
@@ -686,7 +682,7 @@ class VicStep:
                                 vic_case.variables.set_variable(self.save_as, variable)
                             else:
                                 global_variables.set_variable(self.save_as, variable)
-                            self.run_result = ('p', '转换成功')
+                            self.run_result = ['p', '转换成功']
 
                         # 验证表达式
                         elif self.action_code == 'OTHER_VERIFY_EXPRESSION':
@@ -698,9 +694,9 @@ class VicStep:
                             eval_success, eval_result, final_expression = eo.get_eval_result()
                             if eval_success:
                                 if eval_result is True:
-                                    self.run_result = ('p', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result))
+                                    self.run_result = ['p', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result)]
                                 else:
-                                    self.run_result = ('f', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result))
+                                    self.run_result = ['f', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result)]
                             else:
                                 raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
 
@@ -733,9 +729,9 @@ class VicStep:
                                 if case_result_.error_count > 0:
                                     raise RuntimeError('子用例执行时出现错误')
                                 elif case_result_.fail_count > 0:
-                                    self.run_result = ('f', '子用例执行时验证失败')
+                                    self.run_result = ['f', '子用例执行时验证失败']
                                 else:
-                                    self.run_result = ('p', '子用例执行成功')
+                                    self.run_result = ['p', '子用例执行成功']
 
                         # 无效的关键字
                         else:
@@ -778,7 +774,7 @@ class VicStep:
                                 if len(self.fail_elements) > 0:
                                     ui_method.highlight_for_a_moment(dr, self.fail_elements, 'red')
                     else:
-                        self.run_result = ('s', '步骤被跳过')
+                        self.run_result = ['s', '步骤被跳过']
                 except StaleElementReferenceException:
                     re_run = True
                     self.logger.info('【{}】\t捕捉到元素过期异常，将尝试重新获取元素'.format(self.execute_id))

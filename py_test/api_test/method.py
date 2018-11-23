@@ -102,9 +102,9 @@ def verify_http_response(expect, response, logger=logging.getLogger('py_test')):
                                                                                ensure_ascii=False)
 
     if is_pass:
-        run_result = ('p', 'PASS\n' + pass_group_str + fail_group_str)
+        run_result = ['p', 'PASS\n' + pass_group_str + fail_group_str]
     else:
-        run_result = ('f', 'FAIL\n' + pass_group_str + fail_group_str)
+        run_result = ['f', 'FAIL\n' + pass_group_str + fail_group_str]
     logger.debug(run_result[1])
 
     return run_result, response

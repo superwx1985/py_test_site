@@ -227,9 +227,9 @@ def wait_for_text_present(dr, text, timeout, base_element=None, print_=True, log
     elapsed_time = str(round(time.time() - start_time, 2))
     msg = '经过{}秒 - 找到{}个期望文本【{}】'.format(elapsed_time, len(elements), text)
     if len(elements) == 0:
-        run_result = ('f', msg)
+        run_result = ['f', msg]
     else:
-        run_result = ('p', msg)
+        run_result = ['p', msg]
     return run_result, elements
 
 
@@ -291,9 +291,9 @@ def wait_for_text_present_with_locator(
     msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中有{}个元素包含期望文本【{}】'.format(
         elapsed_time, by, locator, len(elements_temp), len(elements), text)
     if len(elements) == 0 or (len(elements) < len(elements_temp) and index_ is None):
-        run_result = ('f', msg)
+        run_result = ['f', msg]
     else:
-        run_result = ('p', msg)
+        run_result = ['p', msg]
     return run_result, elements, fail_elements
 
 
@@ -324,9 +324,9 @@ def wait_for_element_present(
     elapsed_time = str(round(time.time() - start_time, 2))
     msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个'.format(elapsed_time, by, locator, len(elements))
     if len(elements) == 0:
-        run_result = ('f', msg)
+        run_result = ['f', msg]
     else:
-        run_result = ('p', msg)
+        run_result = ['p', msg]
     return run_result, elements
 
 
@@ -364,9 +364,9 @@ def wait_for_element_visible(
     msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个'.format(
         elapsed_time, by, locator, len(elements), len(visible_elements))
     if len(elements) == 0 or len(visible_elements) == 0:
-        run_result = ('f', msg)
+        run_result = ['f', msg]
     else:
-        run_result = ('p', msg)
+        run_result = ['p', msg]
     return run_result, visible_elements, elements
 
 
@@ -407,11 +407,11 @@ def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_elem
         msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个，符合给定的数量限制'.format(
             elapsed_time, by, locator, len(elements), len(visible_elements))
 
-        run_result = ('p', msg)
+        run_result = ['p', msg]
     else:
         msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个，不符合给定的数量限制'.format(
             elapsed_time, by, locator, len(elements), len(visible_elements))
-        run_result = ('f', msg)
+        run_result = ['f', msg]
     return run_result, visible_elements
 
 
@@ -451,16 +451,16 @@ def wait_for_element_disappear(
     msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个'.format(
         by, locator, elapsed_time, len(elements), len(visible_elements))
     if len(visible_elements) != 0:
-        run_result = ('f', msg)
+        run_result = ['f', msg]
     else:
-        run_result = ('p', msg)
+        run_result = ['p', msg]
     return run_result, visible_elements
 
 
 # 跳转到url
 def go_to_url(dr, url):
     dr.get(url)
-    run_result = ('p', '成功打开URL【{}】'.format(url))
+    run_result = ['p', '成功打开URL【{}】'.format(url)]
     return run_result
 
 
@@ -482,9 +482,9 @@ def wait_for_page_redirect(dr, new_url, timeout, print_=True, logger=logging.get
             break
     elapsed_time = str(round(time.time() - start_time, 2))
     if not is_passed:
-        run_result = ('f', '经过{}秒 - 新URL不符合期望【{}】'.format(elapsed_time, new_url))
+        run_result = ['f', '经过{}秒 - 新URL不符合期望【{}】'.format(elapsed_time, new_url)]
     else:
-        run_result = ('p', '经过{}秒 - 新URL符合期望【{}】'.format(elapsed_time, new_url))
+        run_result = ['p', '经过{}秒 - 新URL符合期望【{}】'.format(elapsed_time, new_url)]
     return run_result, new_url
 
 
@@ -497,11 +497,11 @@ def get_url(dr, condition_value, logger=logging.getLogger('py_test')):
             data = ''
             if find_result.re_result:
                 data = find_result.re_result[0]
-            run_result = ('p', '找到符合条件【{}】的URL内容【{}】'.format(condition_value, data))
+            run_result = ['p', '找到符合条件【{}】的URL内容【{}】'.format(condition_value, data)]
         else:
-            run_result = ('f', '找不到符合条件【{}】的URL内容'.format(condition_value))
+            run_result = ['f', '找不到符合条件【{}】的URL内容'.format(condition_value)]
     else:
-        run_result = ('p', '获取到URL【{}】'.format(data))
+        run_result = ['p', '获取到URL【{}】'.format(data)]
     return run_result, data
 
 
@@ -527,7 +527,7 @@ def try_to_click(
 
     highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     element.click()
-    run_result = ('p', '点击元素【By:{}|Locator:{}】'.format(by, locator))
+    run_result = ['p', '点击元素【By:{}|Locator:{}】'.format(by, locator)]
     return run_result, elements
 
 
@@ -554,7 +554,7 @@ def try_to_enter(
     highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     element.clear()
     element.send_keys(data)
-    run_result = ('p', '在元素【By:{}|Locator:{}】中输入【{}】'.format(by, locator, data))
+    run_result = ['p', '在元素【By:{}|Locator:{}】中输入【{}】'.format(by, locator, data)]
     return run_result, elements
 
 
@@ -624,9 +624,9 @@ def try_to_select(
     selected_text_list = list()
     [selected_text_list.append(_option.text) for _option in select.all_selected_options]
 
-    run_result = (
+    run_result = [
         'p', '在元素【By:{}|Locator:{}】中进行了选择操作，被选中的选项为【{}】'.format(
-            by, locator, '|'.join(selected_text_list)))
+            by, locator, '|'.join(selected_text_list))]
     return run_result, elements
 
 
@@ -748,7 +748,7 @@ def perform_special_action(
     else:
         raise ValueError('无法处理的特殊操作[%s]' % special_action)
 
-    run_result = ('p', '特殊动作执行完毕')
+    run_result = ['p', '特殊动作执行完毕']
     return run_result, elements
 
 
@@ -774,7 +774,7 @@ def try_to_scroll_into_view(
 
     highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     dr.execute_script('arguments[0].scrollIntoView()', element)
-    run_result = ('p', '移动窗口到元素【By:{}|Locator:{}】的位置'.format(by, locator))
+    run_result = ['p', '移动窗口到元素【By:{}|Locator:{}】的位置'.format(by, locator)]
     return run_result, elements
 
 
@@ -863,7 +863,7 @@ def try_to_switch_to_window(
             title_str = title.text
         except exceptions.WebDriverException:
             title_str = '（无标题）'
-        run_result = ('p', '经过{}秒 - 切换到新窗口【{}】'.format(elapsed_time, title_str))
+        run_result = ['p', '经过{}秒 - 切换到新窗口【{}】'.format(elapsed_time, title_str)]
     return run_result, new_window_handle
 
 
@@ -902,7 +902,7 @@ def try_to_switch_to_frame(
     if not success_:
         raise NoSuchFrameException('经过%s秒 - 无法切换到frame' % elapsed_time)
     else:
-        run_result = ('p', '经过{}秒 - 切换到frame【By:{}|Locator:{}】'.format(elapsed_time, by, locator))
+        run_result = ['p', '经过{}秒 - 切换到frame【By:{}|Locator:{}】'.format(elapsed_time, by, locator)]
     return run_result
 
 
@@ -932,7 +932,7 @@ def run_js(
     msg = 'JavaScript执行完毕，返回值为：\n%s' % js_result
     if print_:
         logger.info(msg)
-    run_result = ('p', msg)
+    run_result = ['p', msg]
     return run_result, js_result
 
 
@@ -965,7 +965,7 @@ def get_screenshot(dr, element=None):
     image = Image(name=name, img=UploadedFile(bio, name=name))
     image.save()
     bio.close()
-    run_result = ('p', '截图成功【{}】'.format(name))
+    run_result = ['p', '截图成功【{}】'.format(name)]
     return run_result, image
 
 

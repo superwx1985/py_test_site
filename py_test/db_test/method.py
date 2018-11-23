@@ -80,7 +80,7 @@ class JsonDatetimeEncoder(json.JSONEncoder):
 def verify_sql_result(expect, sql_result, logger=logging.getLogger('py_test')):
     find_result = vic_find_object.find_with_condition(expect, sql_result, logger=logger)
     if find_result.is_matched:
-        run_result = ('p', find_result)
+        run_result = ['p', find_result]
     else:
-        run_result = ('f', find_result)
+        run_result = ['f', find_result]
     return run_result
