@@ -1,5 +1,5 @@
-import uuid
 import logging
+import uuid
 from random import random
 from urllib.parse import quote
 from py_test.general import vic_variables
@@ -60,7 +60,7 @@ def select_func(str_, variables, global_variables, logger=logging.getLogger('py_
     if '|' not in str_:
         value = vic_variables.get_str(str_, variables, global_variables)
     else:
-        new_str = str_.split(sep='|')
+        new_str = str_.split(sep='|', maxsplit=1)
         f = new_str[0]
         parameter = new_str[1]
         try:

@@ -86,7 +86,6 @@ def on_open(ws):
 
 
 if __name__ == "__main__":
-    from sys import argv
     import argparse
 
     parser = argparse.ArgumentParser(description='py_test命令行客户端')
@@ -125,7 +124,7 @@ if __name__ == "__main__":
         default=2,
     )
 
-    args = parser.parse_args(argv[1:])
+    args = parser.parse_args()
 
     test_server = args.server
     pk = args.suite_id

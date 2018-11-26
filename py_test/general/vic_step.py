@@ -8,6 +8,7 @@ from django.forms.models import model_to_dict
 from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException, NoSuchElementException,\
     TimeoutException, StaleElementReferenceException, InvalidSwitchToTargetException
 from py_test.general import vic_variables, vic_method
+from py_test.vic_tools import vic_find_object
 from py_test import ui_test
 from py_test.api_test import method as api_method
 from py_test.db_test import method as db_method
@@ -566,7 +567,7 @@ class VicStep:
                                 self.ui_by, self.ui_locator = ui_test.method.get_public_elements(
                                     self.ui_locator, public_elements)
                             self.run_result, text = ui_test.method.get_element_attr(
-                                dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.data, timeout=self.timeout,
+                                dr=dr, by=self.ui_by, locator=self.ui_locator, data=self.ui_data, timeout=self.timeout,
                                 index_=self.ui_index, base_element=self.ui_base_element,
                                 variable_elements=variable_elements, logger=self.logger)
 
@@ -735,6 +736,28 @@ class VicStep:
                                 global_variables.set_variable(self.save_as, variable)
                             self.run_result = ['p', '转换成功']
 
+                        # 使用正则表达式截取变量
+                        elif self.action_code == 'OTHER_GET_VALUE_WITH_RE':
+                            if self.other_data == '':
+                                raise ValueError('没有提供表达式')
+                            found, variable = vic_variables.get_variable(
+                                self.save_as, vic_case.variables, global_variables)
+                            if not found:
+                                raise ValueError('找不到名为【{}】的变量'.format(self.save_as))
+                            find_result = vic_find_object.find_with_condition(
+                                self.other_data, variable, logger=self.logger)
+                            if find_result.is_matched and find_result.re_result:
+                                variable = vic_find_object.get_first_str_in_re_result(find_result.re_result)
+                                if found == 'local':
+                                    vic_case.variables.set_variable(self.save_as, variable)
+                                else:
+                                    global_variables.set_variable(self.save_as, variable)
+                                msg = '变量【{}】被截取为【{}】'.format(self.save_as, variable)
+                                self.run_result = ['p', msg]
+                            else:
+                                msg = '无法匹配给定的正则表达式，所以变量【{}】的值没有改变'.format(self.save_as, variable)
+                                self.run_result = ['f', msg]
+
                         # 验证表达式
                         elif self.action_code == 'OTHER_VERIFY_EXPRESSION':
                             if self.other_data == '':
@@ -786,7 +809,7 @@ class VicStep:
 
                         # 无效的关键字
                         else:
-                            raise ValueError('未知的action')
+                            raise ValueError('未知的动作代码【{}】'.format(self.action_code))
 
                         if dr is not None:
                             try:

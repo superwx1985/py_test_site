@@ -335,17 +335,9 @@ def restore_control_character_in_objecr(object_, f):
         return restore_control_character_in_list(object_, f)
 
 
-# 按条件查找
-def find_with_condition(
-        condition, data, pre_data_object=None, default_operator_list=None, logger=logging.getLogger('py_test')):
-    """
-    在data中查找满足condition的内容，condition可包含操作符
-    pre_data_object 用于传入一个已处理好的tuple，list，dict，以免data被多次转换影响性能
-    default_operator_list 用于传入一个默认的操作符列表，如果condition不包含任何操作符，将使用默认操作符列表
-    """
+# 分解操作符
+def resolve_operator(condition, start_str='#{', end_str='}#', default_operator_list=None):
     operator_character = ''
-    start_str = '#{'
-    end_str = '}#'
     start_index = condition.find(start_str)  # 找第一个左边界
     end_index = condition.find(end_str, start_index + len(start_str))  # 找第一个左边界右边的第一个右边界
     if start_index < 0 or end_index < 0:  # 以上任意一个边界找不到则结束替换
@@ -366,6 +358,21 @@ def find_with_condition(
     if first_operator == '' and isinstance(default_operator_list, list) and default_operator_list:
         operator_list = default_operator_list
         first_operator = operator_list[0].replace('\r', '').replace('\n', '').strip().lower()
+    return operator_character, condition_value, operator_list, first_operator
+
+
+# 按条件查找
+def find_with_condition(
+        condition, data, pre_data_object=None, default_operator_list=None, logger=logging.getLogger('py_test')):
+    """
+    在data中查找满足condition的内容，condition可包含操作符
+    pre_data_object 用于传入一个已处理好的tuple，list，dict，以免data被多次转换影响性能
+    default_operator_list 用于传入一个默认的操作符列表，如果condition不包含任何操作符，将使用默认操作符列表
+    """
+
+    operator_character, condition_value, operator_list, first_operator = resolve_operator(
+        condition, default_operator_list=default_operator_list)
+
     # 处理无操作符的条件
     if first_operator == '':
         is_matched = False
@@ -557,6 +564,23 @@ def find_with_condition(
     # logger.debug('is_matched: [%s], match_count: [%s]' % (find_result.is_matched, find_result.match_count))
     # logger.debug('find_result: \n%s' % find_result)
     return find_result
+
+
+# 获取正则表达式结果中第一个有效字符串
+def get_first_str_in_re_result(re_result):
+    if re_result:
+        if isinstance(re_result, (list, tuple)):
+            for result_ in re_result:
+                if result_:
+                    if isinstance(result_, (list, tuple)):
+                        for result__ in result_:
+                            if result__:
+                                return str(result__)
+                    else:
+                        return str(result_)
+        else:
+            return str(re_result)
+    return None
 
 
 # 拆分“或”条件

@@ -3,8 +3,8 @@ import json
 import traceback
 import logging
 import uuid
-from py_test.general import vic_variables, vic_public_elements, vic_method
-from py_test.ui_test import method
+from py_test.general import vic_variables, vic_method
+from py_test import ui_test
 from selenium.common.exceptions import UnexpectedAlertPresentException
 from main.models import CaseResult, Step
 from django.forms.models import model_to_dict
@@ -94,7 +94,7 @@ class VicCase:
                 # 初始化driver
                 if dr is None and self.step_result is None and self.config.ui_selenium_client != 0:
                     init_timeout = self.timeout if self.timeout > 30 else 30
-                    dr = method.get_driver(self.config, 3, init_timeout, logger=self.logger)
+                    dr = ui_test.driver.get_driver(self.config, 3, init_timeout, logger=self.logger)
                     self.driver_container[0] = dr
 
                 # 读取本地变量
@@ -146,7 +146,7 @@ class VicCase:
                     try:
                         _ = dr.current_url
                     except UnexpectedAlertPresentException:
-                        alert_handle_text, alert_text = method.confirm_alert(
+                        alert_handle_text, alert_text = ui_test.method.confirm_alert(
                             dr=dr, alert_handle=ui_alert_handle, timeout=timeout, logger=self.logger)
                         self.logger.info('【{}】\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(
                             execute_id, alert_handle_text, alert_text))
