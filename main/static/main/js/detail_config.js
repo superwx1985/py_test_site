@@ -20,8 +20,12 @@ function show_ui_window_size_related($select) {
 	if ($select.val() == 1) {
 		$('#id_ui_window_width').attr('disabled', true);
 		$('#id_ui_window_height').attr('disabled', true);
+		$('#id_ui_window_position_x').attr('disabled', true);
+		$('#id_ui_window_position_y').attr('disabled', true);
 	} else {
 		$('#id_ui_window_width').removeAttr('disabled');
 		$('#id_ui_window_height').removeAttr('disabled');
+		$('#id_ui_window_position_x').removeAttr('disabled');
+		$('#id_ui_window_position_y').removeAttr('disabled');
 	}
 }
