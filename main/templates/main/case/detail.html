@@ -62,10 +62,11 @@
             // 如果手动修改了页码，提交时不返回首页
             $('input[name=page]').off('change').on('change', function() { window.not_go_to_first_page = 1 });
             // 关闭遮罩
-	        $('#mask').hide();
+	        // $('#mask').hide();
         });
         // 获取变量组下拉项
         function variable_group_select(selected_pk) {
+            update_mask($('#mask'), 1);
             if (!selected_pk) { selected_pk = $("select[name=variable_group]").val() }
             getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_group_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'变量组详情\', \'%url%?inside=1\',null, variable_group_select);", "url_replacer": "%url%"}');
         }

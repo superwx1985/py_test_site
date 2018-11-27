@@ -70,16 +70,19 @@
         });
         // 获取配置下拉项
         function config_select(selected_pk) {
+            update_mask($('#mask'), 1);
             if (!selected_pk) { selected_pk = $("select[name=config]").val() }
             getList("{% url 'config_select_json' %}", window.$csrf_input.val(), update_config_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'配置详情\', \'%url%?inside=1\',null, config_select);", "url_replacer": "%url%"}');
         }
         // 获取变量组下拉项
         function variable_group_select(selected_pk) {
+            update_mask($('#mask'), 1);
             if (!selected_pk) { selected_pk = $("select[name=variable_group]").val() }
             getList("{% url 'variable_group_select_json' %}", window.$csrf_input.val(), update_variable_group_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'变量组详情\', \'%url%?inside=1\',null, variable_group_select);", "url_replacer": "%url%"}');
         }
         // 获取元素组下拉项
         function element_group_select(selected_pk) {
+            update_mask($('#mask'), 1);
             if (!selected_pk) { selected_pk = $("select[name=element_group]").val() }
             getList("{% url 'element_group_select_json' %}", window.$csrf_input.val(), update_element_group_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'元素组详情\', \'%url%?inside=1\',null, element_group_select);", "url_replacer": "%url%"}');
         }

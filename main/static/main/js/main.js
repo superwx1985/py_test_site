@@ -279,3 +279,15 @@ function update_dropdown(data, $base_div, readonly) {
 		div_dropdown.data('dropdown').changeStatus('readonly')
 	}
 }
+
+// 判断遮罩是否显示
+function update_mask($mask, loading_count) {
+    if (!window.loading_count) { window.loading_count = 0 }
+    window.loading_count += loading_count;
+    console.log(window.loading_count);
+    if (window.loading_count > 0) {
+        $mask.show();
+    } else {
+        $mask.hide();
+    }
+}

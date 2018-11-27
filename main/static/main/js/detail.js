@@ -6,6 +6,7 @@ function update_variable_group_dropdown(success, data) {
 		} else {
 			update_dropdown(data, $("#variable_group_dropdown"), true);
 		}
+		update_mask($('#mask'), -1);
     } else {
 		console.log(data);
 	}
@@ -19,6 +20,7 @@ function update_element_group_dropdown(success, data) {
 		} else {
 			update_dropdown(data, $("#element_group_dropdown"), true);
 		}
+		update_mask($('#mask'), -1);
     } else {
 		console.log(data);
 	}
@@ -32,6 +34,7 @@ function update_config_dropdown(success, data) {
 		} else {
 			update_dropdown(data, $("#config_dropdown"), true);
 		}
+		update_mask($('#mask'), -1);
     } else {
 		console.log(data);
 	}
@@ -45,7 +48,7 @@ function update_other_sub_case_dropdown(success, data) {
 		} else {
 			update_dropdown(data, $("#other_sub_case_dropdown"), true);
 		}
-
+		update_mask($('#mask'), -1);
     } else {
 		console.log(data);
 	}
