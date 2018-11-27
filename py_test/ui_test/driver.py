@@ -62,7 +62,7 @@ def get_driver_(config, timeout, logger=logging.getLogger('py_test')):
             if not config.ui_window_width or not config.ui_window_height:
                 raise ValueError('自定义窗口但未指定大小，请检查配置项')
             dr.set_window_size(config.ui_window_width, config.ui_window_height)
-            dr.set_window_position(0, 0)
+            dr.set_window_position(config.ui_window_position_x or 0, config.ui_window_position_y or 0)
         else:
             dr.maximize_window()
         dr.command_executor.reset_timeout()

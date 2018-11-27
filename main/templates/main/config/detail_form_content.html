@@ -68,6 +68,17 @@
                         {% include 'main/include/form_input.html' with field=form.ui_window_height %}
                     </div>
                 </div>
+                <br>
+                <div class="form-inline">
+                    <div class="form-group" style="padding: 0 5px" form_data>
+                        <label>窗口位置 x：</label>
+                        {% include 'main/include/form_input.html' with field=form.ui_window_position_x %}
+                    </div>
+                    <div class="form-group" style="padding: 0 5px" form_data>
+                        <label>窗口位置 y：</label>
+                        {% include 'main/include/form_input.html' with field=form.ui_window_position_y %}
+                    </div>
+                </div>
             </div>
             <div id="api_config" class="container tab-pane" style="padding: 1em">
             </div>

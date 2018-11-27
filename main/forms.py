@@ -5,29 +5,6 @@ from django.utils.translation import gettext_lazy as _
 from utils.other import get_project_list
 
 
-# class StepForm0(forms.Form):
-#     name = forms.CharField(max_length=10, widget=forms.Textarea(attrs={'rows': ''}))
-#     description = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
-#     keyword = forms.CharField(max_length=100, required=False, widget=forms.Textarea(attrs={'rows': ''}))
-#     # action = forms.CharField(max_length=1000, widget=forms.Textarea(attrs={'rows': '', 'style': "display: none"}))
-#     # action = forms.models.ModelChoiceField(queryset=Action.objects.all())
-#     action = forms.ModelChoiceField(queryset=Action.objects)
-#     # action = forms.ModelMultipleChoiceField(Action.objects)
-#     timeout = forms.FloatField(min_value=0, required=False, max_value=9999)
-#     save_as = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
-#     ui_by = forms.ChoiceField(choices=Step.ui_by_list, required=False)
-#     ui_locator = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
-#     ui_index = forms.IntegerField(min_value=0, required=False)
-#     ui_base_element = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
-#     ui_data = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
-#     ui_special_action = forms.ChoiceField(choices=Step.ui_special_action_list, required=False)
-#     ui_alert_handle = forms.ChoiceField(choices=Step.ui_alert_handle_list, required=False, widget=forms.RadioSelect)
-#     api_url = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
-#     api_headers = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
-#     api_body = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
-#     api_data = forms.CharField(max_length=1000, required=False, widget=forms.Textarea(attrs={'rows': ''}))
-
-
 class LoginForm(forms.Form):
     username = forms.CharField(label='用户名', max_length=50)
     password = forms.CharField(label='密码', max_length=50, widget=forms.PasswordInput())
@@ -91,8 +68,8 @@ class OrderByForm(forms.Form):
 
 class CaseForm(forms.ModelForm):
     # 不验证某些字段
-    is_active = forms.CharField(required=False, validators=[])
-    step = forms.CharField(required=False, validators=[])
+    # is_active = forms.CharField(required=False, validators=[])
+    # step = forms.CharField(required=False, validators=[])
     # 限制project为必选
     project = forms.ModelChoiceField(queryset=Project.objects, required=True)
 
@@ -103,6 +80,8 @@ class CaseForm(forms.ModelForm):
             'is_active',
             'creator',
             'created_date',
+
+            'step',
         ]
         widgets = {
             # 'name': forms.Textarea(),
@@ -130,8 +109,6 @@ class StepForm(forms.ModelForm):
         queryset=Action.objects.select_related('creator', 'modifier', 'type'))
     # 排序子用例
     other_sub_case = forms.ModelChoiceField(queryset=Case.objects.filter(is_active=True).order_by('pk'), required=False)
-    # 不验证某些字段
-    is_active = forms.CharField(required=False, validators=[])
     # 限制project为必选
     project = forms.ModelChoiceField(queryset=Project.objects, required=True)
     # 限制timeout大于1
@@ -150,8 +127,12 @@ class StepForm(forms.ModelForm):
 
 
 class ConfigForm(forms.ModelForm):
-    # 不验证某些字段
-    is_active = forms.CharField(required=False, validators=[])
+    # 限制分辨率
+    ui_window_width = forms.IntegerField(required=False, initial=1366, min_value=1, max_value=9999)
+    ui_window_height = forms.IntegerField(required=False, initial=768, min_value=1, max_value=9999)
+    # 限制位置
+    ui_window_position_x = forms.IntegerField(required=False, initial=0, min_value=0, max_value=9999)
+    ui_window_position_y = forms.IntegerField(required=False, initial=0, min_value=0, max_value=9999)
 
     class Meta:
         model = Config
@@ -164,8 +145,6 @@ class ConfigForm(forms.ModelForm):
 
 
 class VariableGroupForm(forms.ModelForm):
-    # 不验证某些字段
-    is_active = forms.CharField(required=False, validators=[])
     # 限制project为必选
     project = forms.ModelChoiceField(queryset=Project.objects, required=True)
 
@@ -180,8 +159,6 @@ class VariableGroupForm(forms.ModelForm):
 
 
 class ElementGroupForm(forms.ModelForm):
-    # 不验证某些字段
-    is_active = forms.CharField(required=False, validators=[])
     # 限制project为必选
     project = forms.ModelChoiceField(queryset=Project.objects, required=True)
 
@@ -196,9 +173,6 @@ class ElementGroupForm(forms.ModelForm):
 
 
 class SuiteForm(forms.ModelForm):
-    # 不验证某些字段
-    is_active = forms.CharField(required=False, validators=[])
-    case = forms.CharField(required=False, validators=[])
     # 限制线程数最大值
     thread_count = forms.IntegerField(initial=1, min_value=1, max_value=8)
     # 限制config为必选
@@ -215,6 +189,8 @@ class SuiteForm(forms.ModelForm):
             'is_active',
             'creator',
             'created_date',
+
+            'case',
         ]
 
 

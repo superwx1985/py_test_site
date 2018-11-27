@@ -242,6 +242,8 @@ class Config(models.Model):
     ui_window_size = models.IntegerField(choices=ui_window_size_list, default=1)
     ui_window_width = models.IntegerField(blank=True, null=True)
     ui_window_height = models.IntegerField(blank=True, null=True)
+    ui_window_position_x = models.IntegerField(blank=True, null=True)
+    ui_window_position_y = models.IntegerField(blank=True, null=True)
     ui_driver_ff_profile = models.CharField(max_length=100, blank=True)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
