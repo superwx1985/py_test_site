@@ -443,36 +443,37 @@ def copy_action(pk, user, copy_sub_item, name_prefix=None, copied_items=None):
         obj.name = name_prefix + obj.name
         if len(obj.name) > 100:
             obj.name = obj.name[0:97] + '...'
+
+    if not copied_items:
+        copied_items = [dict()]
     if copy_sub_item and obj.variable_group:
-        obj.variable_group = variable_group.copy_action(obj.variable_group.pk, user, name_prefix)
+        # 判断是否已被复制
+        if copied_items[0] and obj.variable_group in copied_items[0]:
+            obj.variable_group = copied_items[0][obj.variable_group]
+        else:
+            new_sub_obj = variable_group.copy_action(obj.variable_group.pk, user, name_prefix)
+            copied_items[0][obj.variable_group] = new_sub_obj
+            obj.variable_group = new_sub_obj
     obj.creator = obj.modifier = user
     obj.uuid = uuid.uuid1()
     obj.clean_fields()
     obj.save()
+
     m2m_order = 0
-    m2m_dict = dict()
-    # 合并已复制对象字典
-    if copied_items and isinstance(copied_items, list):
-        copied_items_dict = copied_items[0]
-        m2m_dict = {**m2m_dict, **copied_items_dict}
     for m2m_obj in m2m_objects:
         # 判断是否需要复制子对象
         if copy_sub_item:
-            # 判断子对象是否已被复制
-            if m2m_obj in m2m_dict:
-                m2m_obj_ = m2m_dict[m2m_obj]
+            # 判断是否已被复制
+            if copied_items[0] and m2m_obj in copied_items[0]:
+                m2m_obj_ = copied_items[0][m2m_obj]
             else:
                 m2m_obj_ = step.copy_action(m2m_obj.pk, user, name_prefix)
-                m2m_dict[m2m_obj] = m2m_obj_
+                copied_items[0][m2m_obj] = m2m_obj_
         else:
             m2m_obj_ = m2m_obj
         m2m_order += 1
         CaseVsStep.objects.create(
             case=obj, step=m2m_obj_, order=m2m_order, creator=user, modifier=user)
-    # 把更新后的已复制对象字典放入容器
-    if copied_items and isinstance(copied_items, list):
-        copied_items.clear()
-        copied_items.append(m2m_dict)
     return obj
 
 

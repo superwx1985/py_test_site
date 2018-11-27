@@ -335,34 +335,41 @@ def copy_action(pk, user, copy_sub_item, name_prefix=None):
         obj.name = name_prefix + obj.name
         if len(obj.name) > 100:
             obj.name = obj.name[0:97] + '...'
+
+    copied_items = [dict()]
     if copy_sub_item:
         if obj.config:
-            obj.config = config.copy_action(obj.config.pk, user, name_prefix)
+            new_sub_obj = config.copy_action(obj.config.pk, user, name_prefix)
+            copied_items[0][obj.config] = new_sub_obj
+            obj.config = new_sub_obj
         if obj.variable_group:
-            obj.variable_group = variable_group.copy_action(obj.variable_group.pk, user, name_prefix)
+            new_sub_obj = variable_group.copy_action(obj.variable_group.pk, user, name_prefix)
+            copied_items[0][obj.variable_group] = new_sub_obj
+            obj.variable_group = new_sub_obj
         if obj.element_group:
-            obj.element_group = element_group.copy_action(obj.element_group.pk, user, name_prefix)
+            new_sub_obj = element_group.copy_action(obj.element_group.pk, user, name_prefix)
+            copied_items[0][obj.element_group] = new_sub_obj
+            obj.element_group = new_sub_obj
     obj.creator = obj.modifier = user
     obj.uuid = uuid.uuid1()
     obj.clean_fields()
     obj.save()
+
     m2m_order = 0
-    m2m_dict = dict()
-    copied_items = list()
     for m2m_obj in m2m_objects:
         # 判断是否需要复制子对象
         if copy_sub_item:
             # 判断子对象是否已被复制
-            if m2m_obj in m2m_dict:
-                m2m_obj_ = m2m_dict[m2m_obj]
+            if m2m_obj in copied_items[0]:
+                m2m_obj_ = copied_items[0][m2m_obj]
             else:
                 m2m_obj_ = case.copy_action(m2m_obj.pk, user, copy_sub_item, name_prefix, copied_items)
-                m2m_dict[m2m_obj] = m2m_obj_
+                copied_items[0][m2m_obj] = m2m_obj_
                 # 合并已复制对象字典，并放入容器
-                if copied_items and isinstance(copied_items, list):
-                    copied_items_dict = copied_items[0]
-                    m2m_dict = {**m2m_dict, **copied_items_dict}
-                    copied_items[0] = m2m_dict
+                # if copied_items and isinstance(copied_items, list):
+                #     copied_items_dict = {**copied_items_dict, **copied_items[0]}
+                #     copied_items.clear()
+                #     copied_items.append(copied_items_dict)
         else:
             m2m_obj_ = m2m_obj
         m2m_order += 1
