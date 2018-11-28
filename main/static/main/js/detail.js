@@ -271,7 +271,6 @@ function m2m_sort(order_by_text) {
 
 // 新增m2m主键到m2m字段
 function add_m2m($input, pk) {
-	console.log($input, pk);
 	var m2m_list = $.parseJSON($input.val());
 	m2m_list.push(String(pk));
 	$input.val(JSON.stringify(m2m_list))
@@ -298,18 +297,20 @@ function disable_interaction() {
 }
 
 // 复制对象的回调函数
-function callback_copy_obj(copy_url, name_prefix) {
-	copy_obj_post(copy_url, name_prefix)
+function callback_copy_obj(copy_url, name_prefix, order) {
+	copy_obj_post(copy_url, name_prefix, null, order)
 }
 
 // 复制对象及子对象的的回调函数
-function callback_copy_obj_sub_item(copy_url, name_prefix) {
-	copy_obj_post(copy_url, name_prefix, 1)
+function callback_copy_obj_sub_item(copy_url, name_prefix, order) {
+	copy_obj_post(copy_url, name_prefix, 1, order)
 }
 
 // 复制对象
-function copy_obj_post(copy_url, name_prefix, copy_sub_item) {
-	$.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name_prefix': name_prefix, 'order': '{{ order }}', 'copy_sub_item': copy_sub_item}, function(data) {
+function copy_obj_post(copy_url, name_prefix, copy_sub_item, order) {
+	$('#mask').show();
+	$.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name_prefix': name_prefix, 'copy_sub_item': copy_sub_item, 'order': order}, function(data) {
+		$('#mask').hide();
 		if (data.status === 1) {
             // 如果返回包含有效order，则添加new_pk及order至参数，用于内嵌窗口复制后更新m2m列表
             if (data.data.order > 0) {

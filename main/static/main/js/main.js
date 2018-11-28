@@ -107,7 +107,7 @@ function get_element_outside_height($e) {
 }
 
 // 复制对象弹框
-function copy_obj(copy_url) {
+function copy_obj(copy_url, order) {
     var now = new Date().Format("yyyy-MM-dd HH:mm:ss");
     var body = $('<div>').addClass('modal-body');
     var div = $('<div>准备复制对象。请输入复制后的名称前缀：</div>');
@@ -124,12 +124,12 @@ function copy_obj(copy_url) {
             copy: {
                 label: '<i class="icon-copy">&nbsp;</i>复制',
                 className: 'btn btn-warning',
-                callback: function () { callback_copy_obj(copy_url, $('#copy_obj_name').val()) }
+                callback: function () { callback_copy_obj(copy_url, $('#copy_obj_name').val(), order) }
             },
             copy_sub_item: {
                 label: '<i class="icon-copy">&nbsp;</i>同时复制子对象',
                 className: 'btn btn-warning-dark',
-                callback: function () { callback_copy_obj_sub_item(copy_url, $('#copy_obj_name').val()) }
+                callback: function () { callback_copy_obj_sub_item(copy_url, $('#copy_obj_name').val(), order) }
             }
         }
     } else {
@@ -141,7 +141,7 @@ function copy_obj(copy_url) {
             copy: {
                 label: '<i class="icon-copy">&nbsp;</i>复制',
                 className: 'btn btn-warning',
-                callback: function () { callback_copy_obj(copy_url, $('#copy_obj_name').val()) }
+                callback: function () { callback_copy_obj(copy_url, $('#copy_obj_name').val(), order) }
             }
         }
     }
@@ -285,7 +285,7 @@ function update_mask($mask, loading_count) {
     if (!window.loading_count) { window.loading_count = 0 }
     window.loading_count += loading_count;
     if (window.loading_count > 0) {
-        if (loading_count === 0 && window.errs.length > 0){
+        if (loading_count === 0 && window.errs && window.errs.length > 0){
             $.each(window.errs, function (i, v) {
                 toastr.error(v);
             });

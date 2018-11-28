@@ -23,10 +23,6 @@ logger = logging.getLogger('django.request')
 # 用例列表
 @login_required
 def list_(request):
-    if request.session.get('status', None) == 'success':
-        prompt = 'success'
-    request.session['status'] = None
-
     project_list = get_project_list()
     has_sub_object = True
     is_admin = check_admin(request.user)

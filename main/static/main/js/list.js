@@ -322,7 +322,6 @@ function update_single_column(url, csrf_token, pk, new_value, old_value, col_nam
             // console.log('success');
             // console.log("data['new_value']: " + data['new_value']);
             // console.log("textStatus: " + textStatus);
-            console.log(data)
             if (data.status === 1) {
                 callback_func(true, pk, new_value, old_value, col_name);
             } else {
@@ -355,7 +354,9 @@ function callback_copy_obj_sub_item(copy_url, name_prefix) {
 
 // 复制对象
 function copy_obj_post(copy_url, name_prefix, copy_sub_item) {
+    $('#mask').show();
     $.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name_prefix': name_prefix, 'copy_sub_item': copy_sub_item}, function(data) {
+        $('#mask').hide();
         if (data.status === 1) {
             $('#objects_form').submit();
         } else {
@@ -377,7 +378,9 @@ function callback_multiple_copy_obj_sub_item(url, name_prefix) {
 // 批量复制对象
 function multiple_copy_obj_post(url, name_prefix, copy_sub_item) {
     var json_str = JSON.stringify(window.muliple_selected_id);
+    $('#mask').show();
     $.post(url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name_prefix': name_prefix, 'copy_sub_item': copy_sub_item, 'pk_list': json_str}, function(data) {
+        $('#mask').hide();
         if (data.status === 1) {
             $('#objects_form').submit();
         } else {
