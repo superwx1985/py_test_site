@@ -75,7 +75,7 @@
                         $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url')) });
                     {% else %}
                         $('[name=return_button]').on('click', function() { parent.window.$('[name=inside_detail_modal]').modal('hide') });
-                        $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url'), {{ order|default_if_none:0 }}) });
+                        $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url'), {{ order|default:0 }}) });
                     {% endif %}
                     {#如果有顺序参数，替换m2m字段的值#}
                     {% if new_pk and order %}
