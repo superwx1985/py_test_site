@@ -10,6 +10,7 @@ from main.models import CaseResult, Step
 from django.forms.models import model_to_dict
 from .vic_step import VicStep
 from utils.system import FORCE_STOP
+from utils.other import check_recursive_call
 
 
 class VicCase:
@@ -68,17 +69,15 @@ class VicCase:
         )
 
         # driver容器，用于在运行过程中更换driver
-        if driver_container:
-            self.driver_container = driver_container
-        else:
-            self.driver_container = [None]
+        self.driver_container = driver_container or [None]
 
     def execute(self, global_variables, public_elements):
         # 记录开始执行时的时间
         self.case_result.start_date = datetime.datetime.now()
         # 保存result数据库对象
         self.case_result.save()
-
+        
+        # 从容器中获取driver
         dr = self.driver_container[0]
 
         # 强制停止
@@ -90,6 +89,12 @@ class VicCase:
             execute_id = '{}-{}'.format(self.execute_str, 0)
             try:
                 self.logger.info('【{}】\t初始化 => {}'.format(execute_id, self.name))
+
+                # 判断是否递归调用
+                recursive_id, case_list = check_recursive_call(self.case)
+                if recursive_id:
+                    raise RecursionError('用例[ID:{}]被用例[ID:{}]递归调用，执行中止。调用顺序列表：{}'.format(
+                            recursive_id, case_list[-1], case_list))
 
                 # 初始化driver
                 if dr is None and self.step_result is None and self.config.ui_selenium_client != 0:

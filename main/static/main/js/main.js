@@ -285,7 +285,14 @@ function update_mask($mask, loading_count) {
     if (!window.loading_count) { window.loading_count = 0 }
     window.loading_count += loading_count;
     if (window.loading_count > 0) {
-        $mask.show();
+        if (loading_count === 0 && window.errs.length > 0){
+            $.each(window.errs, function (i, v) {
+                toastr.error(v);
+            });
+        } else {
+            $mask.show();
+            setTimeout(function(){ update_mask($mask, 0) }, 1000)
+        }
     } else {
         $mask.hide();
     }

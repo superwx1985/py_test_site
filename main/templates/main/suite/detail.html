@@ -65,8 +65,6 @@
             $('#clear_button').off('click').on('click', function() { window.not_go_to_first_page = 0; $('input[name=search_text]').val(''); $('select[name=search_project]').val(''); $('#search_button').click() });
             // 如果手动修改了页码，提交时不返回首页
             $('input[name=page]').off('change').on('change', function() { window.not_go_to_first_page = 1 });
-            // 关闭遮罩
-	        $('#mask').hide();
         });
         // 获取配置下拉项
         function config_select(selected_pk) {

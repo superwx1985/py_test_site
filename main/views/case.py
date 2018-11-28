@@ -12,7 +12,8 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Case, Step, CaseVsStep, Action
 from main.forms import OrderByForm, PaginatorForm, CaseForm
-from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
+from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin,\
+    check_recursive_call
 from urllib.parse import quote
 from main.views import step, suite, variable_group
 
@@ -435,9 +436,14 @@ def list_temp(request):
 
 
 # 复制操作
-def copy_action(pk, user, copy_sub_item, name_prefix=None, copied_items=None):
+def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=None, call_items=None):
     obj = Case.objects.get(pk=pk)
-    m2m_objects = obj.step.filter(is_active=True).order_by('casevsstep__order')
+    if copy_sub_item:
+        recursive_id, case_list = check_recursive_call(obj)
+        if recursive_id:
+            raise RecursionError('用例[ID:{}]被用例[ID:{}]递归调用，执行中止。调用顺序列表：{}'.format(
+                recursive_id, case_list[-1], case_list))
+    m2m_objects = obj.step.filter(is_active=True).order_by('casevsstep__order') or []
     obj.pk = None
     if name_prefix:
         obj.name = name_prefix + obj.name
@@ -446,6 +452,9 @@ def copy_action(pk, user, copy_sub_item, name_prefix=None, copied_items=None):
 
     if not copied_items:
         copied_items = [dict()]
+    if not call_items:
+        call_items = [list()]
+    call_items[0].append(obj)
     if copy_sub_item and obj.variable_group:
         # 判断是否已被复制
         if copied_items[0] and obj.variable_group in copied_items[0]:
@@ -467,7 +476,7 @@ def copy_action(pk, user, copy_sub_item, name_prefix=None, copied_items=None):
             if copied_items[0] and m2m_obj in copied_items[0]:
                 m2m_obj_ = copied_items[0][m2m_obj]
             else:
-                m2m_obj_ = step.copy_action(m2m_obj.pk, user, name_prefix)
+                m2m_obj_ = step.copy_action(m2m_obj.pk, user, name_prefix, copy_sub_item, copied_items, call_items)
                 copied_items[0][m2m_obj] = m2m_obj_
         else:
             m2m_obj_ = m2m_obj
@@ -485,7 +494,7 @@ def copy_(request, pk):
     order = change_to_positive_integer(order, 0)
     copy_sub_item = request.POST.get('copy_sub_item')
     try:
-        obj = copy_action(pk, request.user, copy_sub_item, name_prefix)
+        obj = copy_action(pk, request.user, name_prefix, copy_sub_item)
         return JsonResponse({
             'status': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
@@ -503,7 +512,7 @@ def multiple_copy(request):
             name_prefix = request.POST.get('name_prefix', '')
             copy_sub_item = request.POST.get('copy_sub_item')
             for pk in pk_list:
-                _ = copy_action(pk, request.user, copy_sub_item, name_prefix)
+                _ = copy_action(pk, request.user, name_prefix, copy_sub_item)
         except Exception as e:
             return JsonResponse({'status': 2, 'message': str(e), 'data': None})
         return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})

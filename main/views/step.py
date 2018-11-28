@@ -350,13 +350,28 @@ def list_temp(request):
 
 
 # 复制操作
-def copy_action(pk, user, name_prefix=None):
-    obj = Step.objects.get(pk=pk)
+def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=None, call_items=None):
+    obj = Step.objects.select_related('action').get(pk=pk)
     obj.pk = None
     if name_prefix:
         obj.name = name_prefix + obj.name
         if len(obj.name) > 100:
             obj.name = obj.name[0:97] + '...'
+
+    if not copied_items:
+        copied_items = [dict()]
+    if not call_items:
+        call_items = [list()]
+    call_items[0].append(obj)
+    if copy_sub_item and obj.action.code == 'OTHER_CALL_SUB_CASE' and obj.other_sub_case:
+        # 判断是否已被复制
+        if copied_items[0] and obj.other_sub_case in copied_items[0]:
+            obj.other_sub_case = copied_items[0][obj.other_sub_case]
+        else:
+            new_sub_obj = case.copy_action(
+                obj.other_sub_case.pk, user, name_prefix, copy_sub_item, copied_items, call_items)
+            copied_items[0][obj.other_sub_case] = new_sub_obj
+            obj.other_sub_case = new_sub_obj
     obj.creator = obj.modifier = user
     obj.uuid = uuid.uuid1()
     obj.clean_fields()
@@ -410,3 +425,4 @@ def reference(request, pk):
         obj_['type'] = '用例'
         obj_['order'] = obj_['casevsstep__order']
     return render(request, 'main/include/detail_reference.html', locals())
+

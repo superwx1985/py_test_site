@@ -9,6 +9,8 @@ function update_variable_group_dropdown(success, data) {
 		update_mask($('#mask'), -1);
     } else {
 		console.log(data);
+		if (!window.errs) { window.errs = [] }
+		window.errs.push(data);
 	}
 }
 
@@ -23,6 +25,8 @@ function update_element_group_dropdown(success, data) {
 		update_mask($('#mask'), -1);
     } else {
 		console.log(data);
+		if (!window.errs) { window.errs = [] }
+		window.errs.push(data);
 	}
 }
 
@@ -37,6 +41,8 @@ function update_config_dropdown(success, data) {
 		update_mask($('#mask'), -1);
     } else {
 		console.log(data);
+		if (!window.errs) { window.errs = [] }
+		window.errs.push(data);
 	}
 }
 
@@ -51,6 +57,8 @@ function update_other_sub_case_dropdown(success, data) {
 		update_mask($('#mask'), -1);
     } else {
 		console.log(data);
+		if (!window.errs) { window.errs = [] }
+		window.errs.push(data);
 	}
 }
 

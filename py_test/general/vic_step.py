@@ -779,7 +779,7 @@ class VicStep:
                             if self.other_sub_case is None:
                                 raise ValueError('子用例为空或不存在')
                             elif self.other_sub_case.pk in vic_case.parent_case_pk_list:
-                                raise ValueError('子用例[ID:{}]【{}】被递归调用'.format(
+                                raise RecursionError('子用例[ID:{}]【{}】被递归调用'.format(
                                     self.other_sub_case.pk, self.other_sub_case.name))
                             else:
                                 from .vic_case import VicCase

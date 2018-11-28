@@ -3,7 +3,7 @@ from django.db import connection
 from django.db.models import Q, CharField, Value
 from django.db.models.functions import Concat
 from django.contrib.auth.models import Group
-from main.models import Action, Project
+from main.models import Action, Project, Case, Step
 
 
 class Cookie:
@@ -95,3 +95,25 @@ def check_admin(user):
         return True
     else:
         return False
+
+
+# 判断是否存在递归调用
+def check_recursive_call(obj, case_list=None):
+    if not case_list:
+        case_list = list()
+
+    if isinstance(obj, Step) and obj.action.code == 'OTHER_CALL_SUB_CASE' and obj.other_sub_case:
+        obj = obj.other_sub_case
+
+    if isinstance(obj, Case):
+        if obj.pk in case_list:
+            return obj.pk, case_list
+        case_list.append(obj.pk)
+        print(obj)
+        for obj_ in obj.step.all() or []:
+            recursive_id, case_list = check_recursive_call(obj_, case_list)
+            if recursive_id:
+                return recursive_id, case_list
+        case_list.pop()
+
+    return None, case_list
