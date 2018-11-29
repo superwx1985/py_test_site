@@ -99,6 +99,10 @@ def list_(request):
 
 @login_required
 def detail(request, pk):
+    if request.session.get('status', None) == 'success':
+        prompt = 'success'
+    request.session['status'] = None
+
     next_ = request.GET.get('next', '/home/')
     inside = request.GET.get('inside')
     new_pk = request.GET.get('new_pk')
