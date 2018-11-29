@@ -163,10 +163,10 @@ class ProjectAdmin(admin.ModelAdmin):
 
 class TokenAdmin(admin.ModelAdmin):
     list_display = (
-        'pk', 'name', 'keyword', 'value', 'user', 'is_active')
+        'pk', 'name', 'keyword', 'value', 'expire_date', 'user', 'is_active')
     list_display_links = ('pk', 'name',)
     list_filter = ('is_active', 'user')
-    list_editable = ('value', 'user', 'is_active')
+    list_editable = ('value', 'expire_date', 'user', 'is_active')
     search_fields = ('pk', 'name', 'keyword', 'value')
 
 

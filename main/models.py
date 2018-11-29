@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 import uuid
 from py_test.vic_tools.vic_date_handle import get_timedelta_str
 
@@ -593,7 +594,8 @@ class Token(models.Model):
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
     is_active = models.BooleanField(default=True)
-    value = models.CharField(max_length=100)
+    value = models.CharField(verbose_name='token值', max_length=100)
+    expire_date = models.DateTimeField(verbose_name='有效期', blank=True, null=True, default=timezone.now)
     user = models.ForeignKey(User, verbose_name='对应用户', on_delete=models.SET_NULL, blank=True, null=True)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID

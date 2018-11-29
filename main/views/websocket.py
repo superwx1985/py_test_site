@@ -5,6 +5,7 @@ from main.models import Suite, Token
 from py_test.general.execute_suite import execute_suite
 from django.urls import reverse
 from django.template.loader import render_to_string
+from django.utils import timezone
 from utils.system import FORCE_STOP
 
 
@@ -15,7 +16,7 @@ class SuiteConsumer(WebsocketConsumer):
         if self.get_user():
             self.send(text_data=json.dumps({'type': 'ready'}))
         else:
-            self.send(text_data=json.dumps({'type': 'error', 'data': '无效用户'}), close=True)
+            self.send(text_data=json.dumps({'type': 'error', 'data': '用户鉴权失败'}), close=True)
 
     def sender(self, msg, level):
         try:
@@ -82,7 +83,7 @@ class SuiteRemoteConsumer(SuiteConsumer):
     def get_user(self):
         token = self.qs_dict.get('token')[0]
         try:
-            user = Token.objects.get(value=token).user
+            user = Token.objects.get(value=token, expire_date__gt=timezone.now()).user
         except Token.DoesNotExist:
             return None
         if user.is_authenticated:
