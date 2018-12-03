@@ -1,9 +1,19 @@
 from py_test.general import vic_method
-from py_test.vic_tools import vic_find_object
-import argparse
-import sys
+import time
+from socket import timeout
 
-a = None
+err = 3
 
-for x in a or []:
-    print(x)
+try:
+    if err == 1:
+        raise ValueError(1)
+    elif err == 2:
+        raise IOError(2)
+    else:
+        raise KeyError(3)
+except (ValueError, IOError) as e:
+    print(1, type(e))
+except IOError as e:
+    print(2, type(e))
+except KeyError as e:
+    print(3, type(e))

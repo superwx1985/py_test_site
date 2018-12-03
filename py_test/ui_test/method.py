@@ -38,14 +38,13 @@ def highlight(dr, elements, color='green'):
 # 元素取消高亮
 def cancel_highlight(dr, elements_map):
     for element, original_style in elements_map.items():
-        from selenium.common.exceptions import StaleElementReferenceException
         try:
             dr.execute_script(
                 '''var element = arguments[0];
                 var original_style = arguments[1];
                 element.setAttribute("style", original_style + ";");''',
                 element, original_style)
-        except StaleElementReferenceException:
+        except exceptions.StaleElementReferenceException:
             pass  # 如果元素此时已被刷新，则忽略本操作
 
 
@@ -652,7 +651,6 @@ def confirm_alert(dr, alert_handle, timeout, print_=True, logger=logging.getLogg
     done = False
     alert_handle_text = ''
     alert_text = ''
-    from selenium.common.exceptions import NoAlertPresentException
     while (time.time() - start_time) <= timeout:
         try:
             alert_ = dr.switch_to.alert
@@ -668,7 +666,7 @@ def confirm_alert(dr, alert_handle, timeout, print_=True, logger=logging.getLogg
                 alert_handle_text = '确定'
             done = True
             break
-        except NoAlertPresentException:
+        except exceptions.NoAlertPresentException:
             pass
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
@@ -677,7 +675,7 @@ def confirm_alert(dr, alert_handle, timeout, print_=True, logger=logging.getLogg
             last_print_time = now_time
     elapsed_time = str(round(time.time() - start_time, 2))
     if not done:
-        raise NoAlertPresentException('经过%s秒 - 找不到任何弹窗' % elapsed_time)
+        raise exceptions.NoAlertPresentException('经过%s秒 - 找不到任何弹窗' % elapsed_time)
     return alert_handle_text, alert_text
 
 
@@ -691,7 +689,6 @@ def try_to_switch_to_window(
     new_window_handle = None
     if index_ is None:
         index_ = 0
-    from selenium.common.exceptions import NoSuchWindowException
     while (time.time() - start_time) <= timeout:
         for window_handle in dr.window_handles:
             if window_handle != current_window_handle:
@@ -723,7 +720,7 @@ def try_to_switch_to_window(
             last_print_time = now_time
     elapsed_time = str(round(time.time() - start_time, 2))
     if not success_:
-        raise NoSuchWindowException('经过%s秒 - 无法切换到新窗口' % elapsed_time)
+        raise exceptions.NoSuchWindowException('经过%s秒 - 无法切换到新窗口' % elapsed_time)
     else:
         try:
             title = dr.find_element_by_tag_name('title')
@@ -743,7 +740,6 @@ def try_to_switch_to_frame(
     start_time = time.time()
     last_print_time = 0
     success_ = False
-    from selenium.common.exceptions import NoSuchFrameException
     while (time.time() - start_time) <= timeout:
         if by != '' and locator != '':
             run_result_temp, elements = wait_for_element_present(
@@ -758,7 +754,7 @@ def try_to_switch_to_frame(
                 dr.switch_to.frame(index_)
                 success_ = True
                 break
-            except NoSuchFrameException:
+            except exceptions.NoSuchFrameException:
                 pass
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
@@ -767,7 +763,7 @@ def try_to_switch_to_frame(
             last_print_time = now_time
     elapsed_time = str(round(time.time() - start_time, 2))
     if not success_:
-        raise NoSuchFrameException('经过%s秒 - 无法切换到frame' % elapsed_time)
+        raise exceptions.NoSuchFrameException('经过%s秒 - 无法切换到frame' % elapsed_time)
     else:
         run_result = ['p', '经过{}秒 - 切换到frame【By:{}|Locator:{}】'.format(elapsed_time, by, locator)]
     return run_result

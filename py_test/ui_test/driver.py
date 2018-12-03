@@ -1,11 +1,12 @@
 import logging
-from concurrent.futures import ThreadPoolExecutor, wait
+# from concurrent.futures import ThreadPoolExecutor, wait
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.remote.remote_connection import RemoteConnection
 
 
 # 获取浏览器driver
-def get_driver_(config, timeout, logger=logging.getLogger('py_test')):
+def get_driver_(config, logger=logging.getLogger('py_test')):
     dr = None
     try:
         chrome_options = webdriver.ChromeOptions()
@@ -57,7 +58,6 @@ def get_driver_(config, timeout, logger=logging.getLogger('py_test')):
         else:
             raise ValueError('驱动类型错误，请检查配置项')
 
-        dr.command_executor.set_timeout(timeout)
         if config.ui_window_size == 2:
             if not config.ui_window_width or not config.ui_window_height:
                 raise ValueError('自定义窗口但未指定大小，请检查配置项')
@@ -65,13 +65,12 @@ def get_driver_(config, timeout, logger=logging.getLogger('py_test')):
             dr.set_window_position(config.ui_window_position_x or 0, config.ui_window_position_y or 0)
         else:
             dr.maximize_window()
-        dr.command_executor.reset_timeout()
     except Exception:
         try:
             if dr:
                 dr.quit()
         except Exception as e:
-            logger.error('有一个driver（浏览器）无法关闭，请手动关闭。错误信息 => {}'.format(e))
+            logger.error('有一个浏览器驱动无法关闭，请手动关闭。错误信息 => {}'.format(e))
         raise
     else:
         return dr
@@ -79,23 +78,34 @@ def get_driver_(config, timeout, logger=logging.getLogger('py_test')):
 
 # 获取浏览器driver，添加重试功能
 def get_driver(config, retry=3, timeout=10, logger=logging.getLogger('py_test')):
+    RemoteConnection.set_timeout(timeout)
     for i in range(retry):
-        pool = ThreadPoolExecutor(1)
-        futures = list()
-        futures.append(pool.submit(get_driver_, config=config, timeout=timeout, logger=logger))
-        # t = threading.Thread(target=get_driver_, args=(config, timeout, logger), daemon=True)
-        future_results = wait(futures, timeout=timeout+5, return_when='FIRST_EXCEPTION')
-        if len(future_results.done) == 0:
-            logger.error('有一个driver（浏览器）初始化超时，请手动关闭。')
-            continue
-        for future_result in future_results.done:
-            try:
-                dr = future_result.result()
-            except Exception as e:
-                if i >= retry - 1:
-                    raise
-                else:
-                    logger.warning('driver初始化出错，尝试重启driver。错误信息 => {}'.format(e))
-                    continue
+        # pool = ThreadPoolExecutor(1)
+        # futures = list()
+        # futures.append(pool.submit(get_driver_, config=config, timeout=timeout, logger=logger))
+        # # t = threading.Thread(target=get_driver_, args=(config, logger), daemon=True)
+        # future_results = wait(futures, timeout=timeout+5, return_when='FIRST_EXCEPTION')
+        # if len(future_results.done) == 0:
+        #     logger.error('有一个浏览器驱动初始化超时，请手动关闭。')
+        #     continue
+        # for future_result in future_results.done:
+        #     try:
+        #         dr = future_result.result()
+        #     except Exception as e:
+        #         if i >= retry - 1:
+        #             raise
+        #         else:
+        #             logger.warning('driver初始化出错，尝试重启driver。错误信息 => {}'.format(e))
+        #             continue
+        #     else:
+        #         return dr
+        try:
+            dr = get_driver_(config, logger)
+        except Exception as e:
+            if i >= retry - 1:
+                raise
             else:
-                return dr
+                logger.warning('driver初始化出错，尝试重启driver。错误信息 => {}'.format(e))
+                continue
+        else:
+            return dr

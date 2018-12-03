@@ -49,6 +49,9 @@ class VicCase:
             variable_group_dict['variables'] = v_list
             variable_group_json = json.dumps(variable_group_dict)
 
+        # 驱动停止响应标志
+        self.socket_no_response = False
+
         # 初始化result数据库对象
         self.case_result = CaseResult(
             name=case.name,
@@ -157,7 +160,9 @@ class VicCase:
                             execute_id, alert_handle_text, alert_text))
 
                 # 执行步骤
-                step_result_ = step.execute(self, global_variables, public_elements)
+                step_ = step.execute(self, global_variables, public_elements)
+                step_result_ = step_.step_result
+                self.socket_no_response = step_.socket_no_response
 
                 # 更新driver
                 dr = self.driver_container[0]
@@ -186,9 +191,11 @@ class VicCase:
         # 如果不是子用例，且浏览器未关闭，且logging level大于等于10，则关闭浏览器
         if self.step_result is None and dr is not None and self.logger.level >= 10:
             try:
+                if self.socket_no_response:
+                    raise ValueError('浏览器驱动响应超时')
                 dr.quit()
             except Exception as e:
-                self.logger.error('有一个driver（浏览器）无法关闭，请手动关闭。错误信息 => {}'.format(e))
+                self.logger.error('有一个浏览器驱动无法关闭，请手动关闭。错误信息 => {}'.format(e))
             del dr
 
         if self.case_result.error_count > 0 or self.case_result.result_error != '':

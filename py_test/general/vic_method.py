@@ -48,7 +48,7 @@ def replace_parameter_in_str(
 
 
 # 整合参数方便调用
-def replace_special_value(str_, variables, global_variables, logger=logging.getLogger('py_test')):
+def replace_special_value(str_, variables=None, global_variables=None, logger=logging.getLogger('py_test')):
     str_ = replace_parameter_in_str(
         str_=str_, start_str='${', end_str='}$', f=select_func, variables=variables, global_variables=global_variables,
         logger=logger)
@@ -147,14 +147,14 @@ def get_random_func(str_):
 def get_time_func(str_):
     str_list = str_.split(sep=',')
     if len(str_list) == 1:
-        value = vic_date_handle.str_to_time(str_)
+        time_ = vic_date_handle.str_to_time(str_)
     # 参数3和4必须同时出现，只有参数3时忽略参数3
     elif len(str_list) < 4:
-        value = vic_date_handle.str_to_time(str_list[0], str_list[1])
+        time_ = vic_date_handle.str_to_time(str_list[0], str_list[1])
     else:
         time_ = vic_date_handle.str_to_time(str_list[0], str_list[1])
-        value = vic_date_handle.time_add(time_, str_list[2], str_list[3])
-    return value
+        time_ = vic_date_handle.time_add(time_, str_list[2], str_list[3])
+    return time_
 
 
 # 逗号分割的参数1代表要转换的时间，参数2代表输入时间格式，参数3代表时间位移单位，参数4代表时间位移量，参数5代表输出时间格式

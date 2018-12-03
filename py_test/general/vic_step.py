@@ -4,9 +4,9 @@ import json
 import traceback
 import uuid
 import logging
+from socket import timeout as socket_timeout_error
 from django.forms.models import model_to_dict
-from selenium.common.exceptions import WebDriverException, UnexpectedAlertPresentException, NoSuchElementException,\
-    TimeoutException, StaleElementReferenceException, InvalidSwitchToTargetException
+from selenium.common import exceptions
 from py_test.general import vic_variables, vic_method
 from py_test.vic_tools import vic_find_object
 from py_test import ui_test
@@ -36,6 +36,9 @@ class VicStep:
         # 截图列表
         self.img_list = list()
 
+        # 驱动停止响应标志
+        self.socket_no_response = False
+
         # 初始化result数据库对象
         self.step_result = StepResult(
             name=step.name,
@@ -47,6 +50,10 @@ class VicStep:
             step=step,
             step_order=step_order,
             creator=user,
+
+            result_message='',
+            result_error='',
+            ui_last_url='',
 
             snapshot=json.dumps(model_to_dict(step)) if step else None,
         )
@@ -133,13 +140,13 @@ class VicStep:
             # ===== UI 初始化检查 =====
             if self.action_type_code == 'UI':
                 if dr is None:
-                    raise WebDriverException('浏览器未初始化，请检查是否配置有误或浏览器被意外关闭')
+                    raise exceptions.WebDriverException('浏览器未初始化，请检查是否配置有误或浏览器被意外关闭')
                 # 设置selenium超时时间
                 dr.implicitly_wait(self.timeout)
                 dr.set_page_load_timeout(self.timeout)
                 dr.set_script_timeout(self.timeout)
-                # 设置driver超时时间
-                dr.command_executor.set_timeout(self.timeout + 30)
+                # 设置Remote Connection超时时间
+                dr.command_executor._conn.timeout = int(self.timeout + 10)
 
             # 如果步骤执行过程中页面元素被改变导致出现StaleElementReferenceException，将自动再次执行步骤，直到超时
             start_time = time.time()
@@ -238,7 +245,10 @@ class VicStep:
                                 else:
                                     self.run_result = ['f', '截图失败，原因为{}'.format(run_result_temp[1])]
                             else:
-                                self.run_result, image = ui_test.screenshot.get_screenshot(dr)
+                                try:
+                                    self.run_result, image = ui_test.screenshot.get_screenshot(dr)
+                                except Exception as e:
+                                    self.run_result = ['f', '截图失败，原因为{}'.format(getattr(e, 'msg', str(e)))]
                             if image:
                                 self.img_list.append(image)
 
@@ -262,7 +272,7 @@ class VicStep:
                         # 关闭当前浏览器窗口或标签并切换至其他窗口或标签
                         elif self.action_code == 'UI_CLOSE_WINDOW':
                             if len(dr.window_handles) < 2:
-                                raise InvalidSwitchToTargetException('当前窗口是浏览器的最后一个窗口，如果需要关闭浏览器请使用【重置浏览器】步骤')
+                                raise exceptions.InvalidSwitchToTargetException('当前窗口是浏览器的最后一个窗口，如果需要关闭浏览器请使用【重置浏览器】步骤')
                             current_window_handle = dr.current_window_handle
                             dr.close()
                             self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(
@@ -276,7 +286,7 @@ class VicStep:
                                 try:
                                     dr.quit()
                                 except Exception as e:
-                                    self.logger.error('有一个driver（浏览器）无法关闭，请手动关闭。错误信息 => {}'.format(e))
+                                    self.logger.error('有一个浏览器驱动无法关闭，请手动关闭。错误信息 => {}'.format(e))
                                 del dr
                                 init_timeout = self.timeout if self.timeout > 30 else 30
                                 dr = ui_test.driver.get_driver(
@@ -514,7 +524,7 @@ class VicStep:
                                 msg = vic_case.variables.set_variable(self.save_as, self.elements)
                                 self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
                             else:
-                                raise NoSuchElementException('无法保存变量，{}'.format(self.run_result[1]))
+                                raise exceptions.NoSuchElementException('无法保存变量，{}'.format(self.run_result[1]))
 
                         # 保存url变量
                         elif self.action_code == 'UI_SAVE_URL':
@@ -527,7 +537,7 @@ class VicStep:
                                 msg = vic_case.variables.set_variable(self.save_as, data_)
                                 self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
                             else:
-                                raise WebDriverException('无法保存变量，{}'.format(self.run_result[1]))
+                                raise exceptions.WebDriverException('无法保存变量，{}'.format(self.run_result[1]))
 
                         # 保存元素文本
                         elif self.action_code == 'UI_SAVE_ELEMENT_TEXT':
@@ -551,7 +561,7 @@ class VicStep:
                                 msg = vic_case.variables.set_variable(self.save_as, text)
                                 self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
                             else:
-                                raise WebDriverException('无法保存变量，{}'.format(self.run_result[1]))
+                                raise exceptions.NoSuchElementException('无法保存变量，{}'.format(self.run_result[1]))
 
                         # 保存元素属性值
                         elif self.action_code == 'UI_SAVE_ELEMENT_ATTR':
@@ -575,7 +585,7 @@ class VicStep:
                                 msg = vic_case.variables.set_variable(self.save_as, text)
                                 self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
                             else:
-                                raise WebDriverException('无法保存变量，{}'.format(self.run_result[1]))
+                                raise exceptions.NoSuchAttributeException('无法保存变量，{}'.format(self.run_result[1]))
 
                         # ===== API =====
                         elif self.action_code == 'API_SEND_HTTP_REQUEST':
@@ -667,10 +677,10 @@ class VicStep:
                         # ===== OTHER =====
                         # 等待
                         elif self.action_code == 'OTHER_SLEEP':
-                            if self.timeout == '':
-                                time.sleep(5)
-                            else:
-                                time.sleep(self.timeout)
+                            timeout = int(self.timeout or 3)
+                            for i in range(timeout):
+                                time.sleep(1)
+                                self.logger.info('已等待【{}】秒'.format(i + 1))
 
                         # 保存用例变量
                         elif self.action_code == 'OTHER_SAVE_CASE_VARIABLE':
@@ -809,13 +819,13 @@ class VicStep:
 
                         # 无效的关键字
                         else:
-                            raise ValueError('未知的动作代码【{}】'.format(self.action_code))
+                            raise exceptions.UnknownMethodException('未知的动作代码【{}】'.format(self.action_code))
 
                         if dr is not None:
                             try:
                                 # 获取当前url
                                 last_url = dr.current_url
-                            except UnexpectedAlertPresentException:  # 如有弹窗则处理弹窗
+                            except exceptions.UnexpectedAlertPresentException:  # 如有弹窗则处理弹窗
                                 alert_handle_text, alert_text = ui_test.method.confirm_alert(
                                     dr=dr, alert_handle=self.ui_alert_handle, timeout=self.timeout, logger=self.logger)
                                 self.logger.info(
@@ -849,9 +859,13 @@ class VicStep:
                                     ui_test.method.highlight_for_a_moment(dr, self.fail_elements, 'red')
                     else:
                         self.run_result = ['s', '步骤被跳过']
-                except StaleElementReferenceException:
-                    re_run = True
-                    self.logger.info('【{}】\t捕捉到元素过期异常，将尝试重新获取元素'.format(self.execute_id))
+                except (exceptions.StaleElementReferenceException, exceptions.WebDriverException) as e:
+                    if isinstance(e, exceptions.StaleElementReferenceException) or\
+                            'element is not attached to the page document' in e.msg:
+                        re_run = True
+                        self.logger.warning('【{}】\t元素已过期，可能是由于页面异步刷新导致，将尝试重新获取元素'.format(self.execute_id))
+                    else:
+                        raise
 
             if self.run_result[0] == 's':
                 self.step_result.result_status = 0
@@ -861,10 +875,21 @@ class VicStep:
                 self.step_result.result_status = 2
             self.step_result.result_message = self.run_result[1]
 
-        except TimeoutException:
+        except socket_timeout_error:
+            self.socket_no_response = True
+            self.logger.error('【{}】\t浏览器驱动响应超时'.format(self.execute_id), exc_info=True)
+            self.step_result.result_status = 3
+            self.step_result.result_message = '浏览器驱动响应超时，请检查网络连接或驱动位于的浏览器窗口是否被关闭'
+            self.step_result.result_error = traceback.format_exc()
+        except exceptions.TimeoutException:
             self.logger.error('【{}】\t超时'.format(self.execute_id), exc_info=True)
             self.step_result.result_status = 3
             self.step_result.result_message = '执行超时，请增大超时值'
+            self.step_result.result_error = traceback.format_exc()
+        except exceptions.InvalidSelectorException:
+            self.logger.error('【{}】\t定位符【{}】无效'.format(self.execute_id, self.ui_locator), exc_info=True)
+            self.step_result.result_status = 3
+            self.step_result.result_message = '定位符【{}】无效'.format(self.ui_locator)
             self.step_result.result_error = traceback.format_exc()
         except Exception as e:
             self.logger.error('【{}】\t出错'.format(self.execute_id), exc_info=True)
@@ -873,6 +898,10 @@ class VicStep:
             self.step_result.result_error = traceback.format_exc()
 
         if self.action_type_code == 'UI' and dr is not None:
+            if self.socket_no_response:
+                self.step_result.ui_last_url = '由于浏览器驱动响应超时，URL获取失败'
+                self.logger.warning('【{}】\t由于浏览器驱动响应超时，无法获取报错时的URL和截图'.format(self.execute_id))
+
             # 获取当前URL
             try:
                 last_url = dr.current_url
@@ -896,4 +925,4 @@ class VicStep:
         self.step_result.end_date = datetime.datetime.now()
         self.step_result.save()
 
-        return self.step_result
+        return self
