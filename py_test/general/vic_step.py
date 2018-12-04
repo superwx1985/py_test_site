@@ -255,8 +255,8 @@ class VicStep:
                         # 切换frame
                         elif self.action_code == 'UI_SWITCH_TO_FRAME':
                             self.run_result = ui_test.method.try_to_switch_to_frame(
-                                dr=dr, by=self.ui_by, locator=self.ui_locator, index_=self.ui_index,
-                                timeout=self.timeout, base_element=self.ui_base_element, logger=self.logger)
+                                dr=dr, by=self.ui_by, locator=self.ui_locator, timeout=self.timeout,
+                                index_=self.ui_index, base_element=self.ui_base_element, logger=self.logger)
 
                         # 退出frame
                         elif self.action_code == 'UI_SWITCH_TO_DEFAULT_CONTENT':

@@ -1,19 +1,12 @@
-from py_test.general import vic_method
-import time
-from socket import timeout
+from py_test.ui_test import method
+from selenium.webdriver.common.by import By
 
-err = 3
+dr = None
 
-try:
-    if err == 1:
-        raise ValueError(1)
-    elif err == 2:
-        raise IOError(2)
-    else:
-        raise KeyError(3)
-except (ValueError, IOError) as e:
-    print(1, type(e))
-except IOError as e:
-    print(2, type(e))
-except KeyError as e:
-    print(3, type(e))
+
+print('start', dr.current_url)
+method.try_to_click(dr, By.XPATH, '//div[@id="tablist"]//span[text()="案件已办公文"]', 20, None)
+method.try_to_switch_to_frame(dr, By.ID, 'archiveKindCode--caseHandleArchive_iframe', 20, None)
+print('switch', dr.current_url)
+method.wait_for_element_visible(dr, By.XPATH, '//tr[td[@title="案件受理登记表"] and td[@title="已结束"]]', 20)
+print('end', dr.current_url)

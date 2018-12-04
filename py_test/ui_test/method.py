@@ -523,19 +523,21 @@ def try_to_select(
 
 # 获取特殊键组合
 def get_special_keys(data_, logger=logging.getLogger('py_test')):
-    data_ = data_.replace('\\+', '#{$plus}#')
+    data_ = data_.replace('\\+', '#{#plus#}#')
     data_list = data_.split('+')
     keys = list()
     from selenium.webdriver.common.keys import Keys
     for key_str in data_list:
-        key_str = key_str.replace('#{$plus}#', '+')
+        key_str = key_str.replace('#{#plus#}#', '+').replace('\\$', '#{#dollar#}#')
         if key_str.find('$') == 0 and len(key_str) > 1:
+            key_str = key_str.replace('#{#dollar#}#', '$')
             try:
                 key_str = getattr(Keys, key_str.replace('$', '', 1).upper())
             except AttributeError:
                 logger.warning('【{}】不是一个合法的特殊键，不进行转换'.format(key_str))
             keys.append(key_str)
         else:
+            key_str = key_str.replace('#{#dollar#}#', '$')
             keys.append(key_str)
     return keys
 
@@ -733,7 +735,7 @@ def try_to_switch_to_window(
 
 # 尝试切换frame
 def try_to_switch_to_frame(
-        dr, by, locator, index_, timeout, base_element=None, print_=True,
+        dr, by, locator, timeout, index_, base_element=None, print_=True,
         logger=logging.getLogger('py_test')):
     if index_ is None:
         index_ = 0
