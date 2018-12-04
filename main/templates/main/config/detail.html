@@ -52,6 +52,6 @@
         {% csrf_token %}
         {% include 'main/config/detail_form_content.html' %}
         {% include 'main/include/detail_redirect.html' %}
-        {% include 'main/include/submit_button_group.html' %}
+        {% include 'main/include/submit_button_group.html' with copy_url='config_copy' %}
     </form>
 {% endblock %}

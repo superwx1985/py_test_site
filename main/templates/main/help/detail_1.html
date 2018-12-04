@@ -130,40 +130,66 @@
                                 <span class="mark">${t|06/09/2018,%d/%m/%Y}$</span>，返回<span class="text-info">2018-09-06 00:00:00</span>
                             </p>
                             <p class="font-weight-bold">参数3及参数4</p>
-                            <p>参数3代表时间位移单位，参数4代表时间位移量。注意：参数3和参数4需要成对出现，若只提供3个参数，程序不会对参数3作处理。</p>
-                            <p>例：<span class="mark">${t|2007-7-12 13:00:04,,day,-1}$</span>，返回<span class="text-info">2017-11-16 17:01:37</span></p>
-                            <p class="font-weight-bold">参数5</p>
-                            <p>代表将要生成的时间格式，时间格式为python的datetime对象strftime方法支持的格式，也可以使用快捷格式（见下表）。注意：时间格式不能包含逗号。</p>
+                            <p>参数3代表时间位移单位，参数4代表时间位移量。注意：参数3和参数4需要成对出现，若只提供3个参数，程序不会对参数3作处理。时间位移单位见下表：</p>
                             <table class="table table-bordered table-sm">
                                 <thead class="thead-light">
-                                    <tr><th>快捷格式</th><th>实际格式</th><th>例</th></tr>
+                                    <tr><th>位移单位</th><th>参数（区分大小写）</th>
                                 </thead>
                                 <tbody>
-                                    <tr><td>default或不填</td><td>%Y-%m-%d %H:%M:%S</td><td class="text-info">2018-09-26 09:28:15</td></tr>
-                                    <tr><td>date</td><td>%Y-%m-%d</td><td class="text-info">2018-09-26</td></tr>
-                                    <tr><td>full</td><td>%Y-%m-%d %H:%M:%S.%f</td><td class="text-info">2018-09-26 09:28:15.956083</td></tr>
-                                    <tr><td>without_separator或ws</td><td>%Y%m%d%H%M%S</td><td class="text-info">20180926092815</td></tr>
-                                    <tr><td>date_without_separator或dws</td><td>%Y%m%d</td><td class="text-info">20180926</td></tr>
-                                    <tr><td>full_without_separator或fws</td><td>%Y%m%d%H%M%S%f</td><td class="text-info">20180926092815956083</td></tr>
-                                    <tr><td>year</td><td>%Y</td><td class="text-info">2018</td></tr>
-                                    <tr><td>month</td><td>%m</td><td class="text-info">09</td></tr>
-                                    <tr><td>day</td><td>%d</td><td class="text-info">26</td></tr>
-                                    <tr><td>hour</td><td>%H</td><td class="text-info">09</td></tr>
-                                    <tr><td>minute</td><td>%M</td><td class="text-info">28</td></tr>
-                                    <tr><td>second</td><td>%S</td><td class="text-info">15</td></tr>
-                                    <tr><td>microsecond或ms</td><td>%f</td><td class="text-info">956083</td></tr>
-                                    <tr><td>week</td><td>%W</td><td class="text-info">39</td></tr>
-                                    <tr><td>week_day或wd</td><td>%w</td><td class="text-info">3</td></tr>
-                                    <tr><td>year_day或yd</td><td>%j</td><td class="text-info">269</td></tr>
+                                    <tr><td>年（365天，不计闰年）</td><td><span class="mark">year</span>或<span class="mark">Y</span></td></tr>
+                                    <tr><td>月（30天，不区分大小月）</td><td><span class="mark">month</span>或<span class="mark">m</span></td></tr>
+                                    <tr><td>日</td><td><span class="mark">day</span>或<span class="mark">d</span></td></tr>
+                                    <tr><td>时</td><td><span class="mark">hour</span>或<span class="mark">H</span></td></tr>
+                                    <tr><td>分</td><td><span class="mark">minute</span>或<span class="mark">M</span></td></tr>
+                                    <tr><td>秒</td><td><span class="mark">second</span>或<span class="mark">S</span></td></tr>
+                                    <tr><td>微秒</td><td><span class="mark">microsecond</span>或<span class="mark">f</span></td></tr>
+                                    <tr><td>周（7天）</td><td><span class="mark">week</span>或<span class="mark">w</span></td></tr>
                                 </tbody>
                             </table>
                             <p>例：
                                 <br>
-                                <span class="mark">${t|1985-10-1,,,,%Y.%m.%d}$</span>，返回<span class="text-info">1985.10.01</span>
+                                <span class="mark">${t|now,,week,-1}$</span>，返回现在的一周前的时间
+                                <br>
+                                <span class="mark">${t|2007-7-12 13:00:04,,day,-1}$</span>，返回<span class="text-info">2007-07-11 13:00:04</span>
+                                <br>
+                                <span class="mark">${t|2007-7-12 13:00:04,,m,-1}$</span>，返回<span class="text-info">2007-06-12 13:00:04</span>
+                                <br>
+                                <span class="mark">${t|2007-7-12 13:00:04,,M,-1}$</span>，返回<span class="text-info">2007-07-12 12:59:04</span>
+                            </p>
+                            <p class="font-weight-bold">参数5</p>
+                            <p>代表将要生成的时间格式，时间格式为python的datetime对象strftime方法支持的格式，也可以使用快捷格式（见下表）。注意：时间格式不能包含逗号。</p>
+                            <table class="table table-bordered table-sm">
+                                <thead class="thead-light">
+                                    <tr><th>含义</th><th>快捷格式（区分大小写）</th><th>实际格式</th><th>例</th></tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td>标准格式（年月日时分秒）</td><td>（不填）</td><td>%Y-%m-%d %H:%M:%S</td><td class="text-info">2000-01-01 13:00:04</td></tr>
+                                    <tr><td>只取日期部分（年月日）</td><td><span class="mark">date</span></td><td>%Y-%m-%d</td><td class="text-info">2000-01-01</td></tr>
+                                    <tr><td>标准格式加上微秒部分</td><td><span class="mark">full</span></td><td>%Y-%m-%d %H:%M:%S.%f</td><td class="text-info">2000-01-01 13:00:04.914000</td></tr>
+                                    <tr><td>标准格式去掉分隔符（without separator）</td><td><span class="mark">ws</span></td><td>%Y%m%d%H%M%S</td><td class="text-info">20000101130004</td></tr>
+                                    <tr><td>日期部分去掉分隔符</td><td><span class="mark">dws</span></td><td>%Y%m%d</td><td class="text-info">20000101</td></tr>
+                                    <tr><td>标准格式加上微秒部分再去掉分隔符</td><td><span class="mark">fws</span></td><td>%Y%m%d%H%M%S%f</td><td class="text-info">20000101130004914000</td></tr>
+                                    <tr><td>年</td><td><span class="mark">year</span>或<span class="mark">Y</span></td><td>%Y</td><td class="text-info">2000</td></tr>
+                                    <tr><td>月</td><td><span class="mark">month</span>或<span class="mark">m</span></td><td>%m</td><td class="text-info">01</td></tr>
+                                    <tr><td>日</td><td><span class="mark">day</span>或<span class="mark">d</span></td><td>%d</td><td class="text-info">01</td></tr>
+                                    <tr><td>时</td><td><span class="mark">hour</span>或<span class="mark">H</span></td><td>%H</td><td class="text-info">13</td></tr>
+                                    <tr><td>分</td><td><span class="mark">minute</span>或<span class="mark">M</span></td><td>%M</td><td class="text-info">00</td></tr>
+                                    <tr><td>秒</td><td><span class="mark">second</span>或<span class="mark">S</span></td><td>%S</td><td class="text-info">04</td></tr>
+                                    <tr><td>微妙</td><td><span class="mark">microsecond</span>或<span class="mark">f</span><td>%f</td><td class="text-info">914000</td></tr>
+                                    <tr><td>周（一年内的第几周，星期天为每周第一天，每年第一个星期天之前算作第0周）</td><td><span class="mark">week</span></td><td>%U</td><td class="text-info">00</td></tr>
+                                    <tr><td>周日（一周内的第几日，星期天为0，星期六为6）</td><td><span class="mark">wd</span></td><td>%w</td><td class="text-info">6</td></tr>
+                                    <tr><td>年日（一年内的第几日，从1开始，会自动计算闰年）</td><td><span class="mark">yd</span></td><td>%j</td><td class="text-info">001</td></tr>
+                                </tbody>
+                            </table>
+                            <p>例：
+                                <br>
+                                <span class="mark">${t|2000-10-1,,,,date}$</span>，返回<span class="text-info">2000-10-01</span>
+                                <br>
+                                <span class="mark">${t|2000-10-1,,,,%Y.%m.%d}$</span>，返回<span class="text-info">2000.10.01</span>
                                 <br>
                                 <span class="mark">${t|20180906 093151.918061,%Y%m%d %H%M%S.%f,,,%Y-%m-%d %H:%M:%S.%f}$</span>，返回<span class="text-info">2018-09-06 09:31:51.918061</span>
                                 <br>
-                                <span class="mark">${t|2017.08.11,,second,3,ws}$</span>，返回<span class="text-info">20170811000003</span>
+                                <span class="mark">${t|2000-08-11 09:23:40,,second,3,S}$</span>，返回<span class="text-info">43</span>
                             </p>
                         </div>
                     </div>
