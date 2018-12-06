@@ -533,6 +533,7 @@ class StepResult(models.Model):
     case_result = models.ForeignKey('main.CaseResult', on_delete=models.CASCADE)
     step = models.ForeignKey('main.Step', on_delete=models.SET_NULL, null=True, blank=True)
     step_order = models.IntegerField(blank=True, null=True)
+    loop_id = models.CharField(blank=True, max_length=100)
 
     creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.SET_NULL, blank=True, null=True)
     start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
@@ -566,6 +567,9 @@ class StepResult(models.Model):
             return 'N/A'
         else:
             return get_timedelta_str(self.elapsed_time, 1)
+
+    class Meta:
+        ordering = ['end_date']
 
 
 class Image(models.Model):

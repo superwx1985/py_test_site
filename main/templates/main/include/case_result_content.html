@@ -48,7 +48,7 @@
                 <tr pk="{{ step_result.pk }}" step_result_url="{% url 'step_result' step_result.pk %}">
                     <td class="middle">{% include 'main/include/status_icon.html' with status=step_result.result_status %}</td>
                     <td class="middle">{{ forloop.counter }}</td>
-                    <td><a name="step_result" step_result_pk={{ step_result.pk }} href="javascript:">{{ step_result.name }}</a></td>
+                    <td><span>{{ step_result.loop_id }}</span><a name="step_result" step_result_pk={{ step_result.pk }} href="javascript:">{{ step_result.name }}</a></td>
                     <td class="middle">{{ step_result.action }}</td>
                     <td class="middle">{{ step_result.elapsed_time_str }}</td>
                 </tr>

@@ -47,7 +47,7 @@ class ActionAdmin(admin.ModelAdmin):
         'order')
     list_display_links = ('pk', 'name',)
     list_filter = ('is_active', 'creator', 'type', 'created_date',)
-    list_editable = ('is_active',)
+    list_editable = ('is_active', 'order',)
     search_fields = ('pk', 'name', 'keyword',)
 
 

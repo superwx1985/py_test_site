@@ -37,8 +37,16 @@ class VicCase:
         self.steps = list()
         self.timeout = self.suite_result.timeout
 
+        # 分支列表
         self.if_list = list()
+        # 步骤激活标志
         self.step_active = True
+
+        # 循环列表
+        self.loop_list = list()
+        # 循环迭代次数
+        self.loop_active = False
+
         self.config = self.suite_result.suite.config
 
         # 获取变量组json
@@ -117,7 +125,7 @@ class VicCase:
 
                 # 读取测试步骤数据
                 steps = Step.objects.filter(case=self.case, is_active=True).order_by(
-                    'casevsstep__order').select_related('action')
+                    'casevsstep__order').select_related('action', 'action__type')
                 step_order = 0
                 for step in steps:
                     step_order += 1
@@ -134,16 +142,41 @@ class VicCase:
                 self.case_result.result_error = traceback.format_exc()
 
             ui_alert_handle = 'accept'  # 初始化弹窗处理方式
-            step_order = 0
 
-            for step in self.steps:
+            step_index = 0
+            while step_index < len(self.steps):
                 # 强制停止
                 force_stop = FORCE_STOP.get(self.execute_uuid)
                 if force_stop and force_stop == self.user.pk:
                     break
 
-                step_order += 1
-                execute_id = '{}-{}'.format(self.execute_str, step_order)
+                step = self.steps[step_index]
+                step_index += 1
+                execute_id = '{}-{}'.format(self.execute_str, step_index)
+
+                # 如果处于循环体
+                if self.loop_list:
+                    loop_id = ''
+                    is_first = True
+                    for loop_ in self.loop_list:
+                        loop_id = '{}({})'.format(loop_id, loop_[1])
+                        if loop_[1] > 1:
+                            is_first = False
+                    execute_id = '{}-{}{}'.format(self.execute_str, step_index, loop_id)
+                    step.execute_id = execute_id
+                    step.loop_id = loop_id
+                    # 如果不是首次迭代
+                    if not is_first:
+                        step.img_list = list()
+                        step.socket_no_response = False
+                        step.run_result = ['p', '执行成功']
+                        step.elements = list()
+                        step.fail_elements = list()
+                        # 获取新步骤结果
+                        step.step_result.pk = None
+                        step.step_result.uuid = uuid.uuid1()
+                        step.step_result.save()
+
                 self.logger.info('【{}】\t执行步骤 => ID:{} | {} | {}'.format(
                     execute_id, step.id, step.name, step.step.action))
 
@@ -184,9 +217,17 @@ class VicCase:
                     self.logger.error('【{}】\t执行出错，错误信息 => {}'.format(execute_id, step_result_.result_message))
                     break
 
+                # 处理循环标志
+                if self.loop_active:
+                    step_index = self.loop_list[-1][0] + 1
+                    self.loop_active = False
+
         if self.if_list:
-            self.logger.warning('【{}】\t有{}个条件分支没有被关闭，可能会导致意外的错误，请添加结束标志以关闭分支'.format(
+            self.logger.warning('【{}】\t有{}个条件分支块缺少关闭步骤，可能会导致意外的错误，请添加关闭步骤'.format(
                 self.execute_str, len(self.if_list)))
+        if self.loop_list:
+            self.logger.warning('【{}】\t有{}个循环块缺少关闭步骤，可能会导致意外的错误，请添加关闭步骤'.format(
+                self.execute_str, len(self.loop_list)))
 
         # 如果不是子用例，且浏览器未关闭，且logging level大于等于10，则关闭浏览器
         if self.step_result is None and dr is not None and self.logger.level >= 10:

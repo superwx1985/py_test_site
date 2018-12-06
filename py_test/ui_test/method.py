@@ -830,3 +830,14 @@ def get_element_attr(
     else:
         run_result = ['f', '元素【By:{}|Locator:{}】不存在【{}】属性'.format(by, locator, data)]
     return run_result, attr
+
+
+# 解析表达式
+def analysis_expression(eval_expression, variable_dict, logger=logging.getLogger('py_test')):
+    eo = vic_eval.EvalObject(eval_expression, variable_dict, logger)
+    eval_success, eval_result, final_expression = eo.get_eval_result()
+    if eval_success:
+        run_result = ['p', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result)]
+    else:
+        raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
+    return run_result, eval_success, eval_result, final_expression

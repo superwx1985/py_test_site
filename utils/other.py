@@ -109,7 +109,7 @@ def check_recursive_call(obj, case_list=None):
         if obj.pk in case_list:
             return obj.pk, case_list
         case_list.append(obj.pk)
-        for obj_ in obj.step.all() or []:
+        for obj_ in obj.step.filter(is_active=True).select_related('action') or []:
             recursive_id, case_list = check_recursive_call(obj_, case_list)
             if recursive_id:
                 return recursive_id, case_list
