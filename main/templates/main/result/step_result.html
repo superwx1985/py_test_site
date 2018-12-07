@@ -48,12 +48,12 @@
                     <br>
                     {% if obj.result_status == 0 %}
                         <pre class="text-secondary">{{ obj.result_message }}</pre>
+                    {% elif obj.result_status == 1 %}
+                        <pre class="text-info">{{ obj.result_message }}</pre>
                     {% elif obj.result_status == 2 %}
                         <pre class="text-warning">{{ obj.result_message }}</pre>
-                    {% elif obj.result_status == 3 %}
-                        <pre class="text-danger">{{ obj.result_message }}</pre>
                     {% else %}
-                        <pre class="text-info">{{ obj.result_message }}</pre>
+                        <pre class="text-danger">{{ obj.result_message }}</pre>
                     {% endif %}
                 </div>
             </div>

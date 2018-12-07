@@ -113,8 +113,6 @@ class VicStep:
         self.step_result.start_date = datetime.datetime.now()
         # 记录循环迭代次数
         self.step_result.loop_id = self.loop_id
-        # 暂存
-        self.step_result.save()
 
         # 获取driver
         dr = vic_case.driver_container[0]
@@ -174,8 +172,10 @@ class VicStep:
                                 self.logger
                             )
                             if eval_result is True:
+                                run_result[1] = '{}\n表达式为真，进入分支'.format(run_result[1])
                                 _result = True
                             else:
+                                run_result[1] = '{}\n表达式为假，跳过分支'.format(run_result[1])
                                 _result = False
                             self.run_result = run_result
 
@@ -220,43 +220,45 @@ class VicStep:
                                 msg = '【{}】\t出现多余的“END_IF”步骤，可能会导致意外的错误，请检查用例'.format(self.execute_id)
                                 self.logger.warning(msg)
                                 self.run_result = ['s', msg]
-                        # 循环判断 - 开始
-                        elif self.action_code == 'OTHER_START_LOOP':
-                            vic_case.loop_list.append([self.step_result.step_order - 1, 1])
 
-                        # 循环判断 - 结束
-                        elif self.action_code == 'OTHER_END_LOOP':
-                            if vic_case.loop_list:
-                                loop_count = vic_case.loop_list[-1][1]
-                                if loop_count > 9:
-                                    run_result = ['p', '循环次数超限，强制跳出循环']
-                                    eval_result = False
+                        if vic_case.step_active:
+                            # 循环判断 - 开始
+                            if self.action_code == 'OTHER_START_LOOP':
+                                vic_case.loop_list.append([self.step_result.step_order - 1, 1])
+
+                            # 循环判断 - 结束
+                            elif self.action_code == 'OTHER_END_LOOP':
+                                if vic_case.loop_list:
+                                    loop_count = vic_case.loop_list[-1][1]
+                                    if loop_count > 9:
+                                        run_result = ['p', '循环次数超限，强制跳出循环']
+                                        eval_result = False
+                                    else:
+                                        # 解析表达式
+                                        if other_data == '':
+                                            raise ValueError('未提供表达式')
+                                        run_result, _, eval_result, _ = ui_test.method.analysis_expression(
+                                            other_data,
+                                            vic_variables.get_variable_dict(vic_case.variables, global_variables),
+                                            self.logger
+                                        )
+
+                                    if eval_result is True:
+                                        run_result[1] = '{}\n第【{}】次循环结束，表达式为真，进入下一次循环'.format(
+                                            run_result[1], loop_count)
+                                        vic_case.loop_list[-1][1] += 1
+                                        vic_case.loop_active = True
+                                    else:
+                                        # 停止循环
+                                        run_result[1] = '{}\n第【{}】次循环结束，跳出循环'.format(run_result[1], loop_count)
+                                        vic_case.loop_list.pop()
+                                    self.run_result = run_result
                                 else:
-                                    # 解析表达式
-                                    if other_data == '':
-                                        raise ValueError('未提供表达式')
-                                    run_result, _, eval_result, _ = ui_test.method.analysis_expression(
-                                        other_data,
-                                        vic_variables.get_variable_dict(vic_case.variables, global_variables),
-                                        self.logger
-                                    )
+                                    msg = '【{}】\t出现多余的“END_LOOP”步骤，可能会导致意外的错误，请检查用例'.format(self.execute_id)
+                                    self.logger.warning(msg)
+                                    self.run_result = ['s', msg]
 
-                                if eval_result is True:
-                                    run_result[1] = '{}\n第【{}】次循环结束，表达式为真，进入下一次循环'.format(
-                                        run_result[1], loop_count)
-                                    vic_case.loop_list[-1][1] += 1
-                                    vic_case.loop_active = True
-                                else:
-                                    # 停止循环
-                                    run_result[1] = '{}\n第【{}】次循环结束，跳出循环'.format(run_result[1], loop_count)
-                                    vic_case.loop_list.pop()
-                                self.run_result = run_result
-                            else:
-                                msg = '【{}】\t出现多余的“END_LOOP”步骤，可能会导致意外的错误，请检查用例'.format(self.execute_id)
-                                self.logger.warning(msg)
-                                self.run_result = ['s', msg]
-
-                    if vic_case.step_active:
+                    if vic_case.step_active or self.action_code in ('OTHER_IF', 'OTHER_ELSE', 'OTHER_END_IF'):
                         if self.action_code in (
                                 'OTHER_IF', 'OTHER_ELSE', 'OTHER_END_IF', 'OTHER_START_LOOP', 'OTHER_END_LOOP'):
                             pass

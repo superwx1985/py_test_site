@@ -61,7 +61,7 @@ class VicCase:
         self.socket_no_response = False
 
         # 初始化result数据库对象
-        self.case_result = CaseResult(
+        self.case_result = CaseResult.objects.create(
             name=case.name,
             description=case.description,
             keyword=case.keyword,
@@ -85,8 +85,6 @@ class VicCase:
     def execute(self, global_variables, public_elements):
         # 记录开始执行时的时间
         self.case_result.start_date = datetime.datetime.now()
-        # 保存result数据库对象
-        self.case_result.save()
         
         # 从容器中获取driver
         dr = self.driver_container[0]
@@ -141,86 +139,90 @@ class VicCase:
                 self.case_result.result_message = '初始化出错：{}'.format(getattr(e, 'msg', str(e)))
                 self.case_result.result_error = traceback.format_exc()
 
-            ui_alert_handle = 'accept'  # 初始化弹窗处理方式
+            # 执行步骤
+            try:
+                ui_alert_handle = 'accept'  # 初始化弹窗处理方式
+                step_index = 0
+                while step_index < len(self.steps):
+                    # 强制停止
+                    force_stop = FORCE_STOP.get(self.execute_uuid)
+                    if force_stop and force_stop == self.user.pk:
+                        break
 
-            step_index = 0
-            while step_index < len(self.steps):
-                # 强制停止
-                force_stop = FORCE_STOP.get(self.execute_uuid)
-                if force_stop and force_stop == self.user.pk:
-                    break
+                    step = self.steps[step_index]
+                    step_index += 1
+                    execute_id = '{}-{}'.format(self.execute_str, step_index)
 
-                step = self.steps[step_index]
-                step_index += 1
-                execute_id = '{}-{}'.format(self.execute_str, step_index)
+                    # 如果处于循环体
+                    if self.loop_list:
+                        loop_id = ''
+                        is_first = True
+                        for loop_ in self.loop_list:
+                            loop_id = '{}({})'.format(loop_id, loop_[1])
+                            if loop_[1] > 1:
+                                is_first = False
+                        execute_id = '{}-{}{}'.format(self.execute_str, step_index, loop_id)
+                        step.execute_id = execute_id
+                        step.loop_id = loop_id
+                        # 如果不是首次迭代
+                        if not is_first:
+                            step.img_list = list()
+                            step.socket_no_response = False
+                            step.run_result = ['p', '执行成功']
+                            step.elements = list()
+                            step.fail_elements = list()
+                            # 获取新步骤结果
+                            step.step_result.pk = None
+                            step.step_result.uuid = uuid.uuid1()
 
-                # 如果处于循环体
-                if self.loop_list:
-                    loop_id = ''
-                    is_first = True
-                    for loop_ in self.loop_list:
-                        loop_id = '{}({})'.format(loop_id, loop_[1])
-                        if loop_[1] > 1:
-                            is_first = False
-                    execute_id = '{}-{}{}'.format(self.execute_str, step_index, loop_id)
-                    step.execute_id = execute_id
-                    step.loop_id = loop_id
-                    # 如果不是首次迭代
-                    if not is_first:
-                        step.img_list = list()
-                        step.socket_no_response = False
-                        step.run_result = ['p', '执行成功']
-                        step.elements = list()
-                        step.fail_elements = list()
-                        # 获取新步骤结果
-                        step.step_result.pk = None
-                        step.step_result.uuid = uuid.uuid1()
-                        step.step_result.save()
+                    self.logger.info('【{}】\t执行步骤 => ID:{} | {} | {}'.format(
+                        execute_id, step.id, step.name, step.step.action))
 
-                self.logger.info('【{}】\t执行步骤 => ID:{} | {} | {}'.format(
-                    execute_id, step.id, step.name, step.step.action))
+                    timeout = step.timeout if not step.timeout else self.suite_result.suite.timeout
 
-                timeout = step.timeout if not step.timeout else self.suite_result.suite.timeout
+                    # 如有弹窗则处理弹窗
+                    if dr is not None:
+                        try:
+                            _ = dr.current_url
+                        except UnexpectedAlertPresentException:
+                            alert_handle_text, alert_text = ui_test.method.confirm_alert(
+                                dr=dr, alert_handle=ui_alert_handle, timeout=timeout, logger=self.logger)
+                            self.logger.info('【{}】\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(
+                                execute_id, alert_handle_text, alert_text))
 
-                # 如有弹窗则处理弹窗
-                if dr is not None:
-                    try:
-                        _ = dr.current_url
-                    except UnexpectedAlertPresentException:
-                        alert_handle_text, alert_text = ui_test.method.confirm_alert(
-                            dr=dr, alert_handle=ui_alert_handle, timeout=timeout, logger=self.logger)
-                        self.logger.info('【{}】\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(
-                            execute_id, alert_handle_text, alert_text))
+                    # 执行步骤
+                    step_ = step.execute(self, global_variables, public_elements)
+                    step_result_ = step_.step_result
+                    self.socket_no_response = step_.socket_no_response
 
-                # 执行步骤
-                step_ = step.execute(self, global_variables, public_elements)
-                step_result_ = step_.step_result
-                self.socket_no_response = step_.socket_no_response
+                    # 更新driver
+                    dr = self.driver_container[0]
 
-                # 更新driver
-                dr = self.driver_container[0]
+                    # 获取最后一次弹窗处理方式
+                    ui_alert_handle = step.ui_alert_handle
 
-                # 获取最后一次弹窗处理方式
-                ui_alert_handle = step.ui_alert_handle
+                    self.case_result.execute_count += 1
+                    if step_result_.result_status == 0:
+                        self.logger.info('【{}】\t跳过'.format(execute_id))
+                    elif step_result_.result_status == 1:
+                        self.case_result.pass_count += 1
+                        self.logger.info('【{}】\t执行成功'.format(execute_id))
+                    elif step_result_.result_status == 2:
+                        self.case_result.fail_count += 1
+                        self.logger.warning('【{}】\t验证失败'.format(execute_id))
+                    elif step_result_.result_status == 3:
+                        self.case_result.error_count += 1
+                        self.logger.error('【{}】\t执行出错，错误信息 => {}'.format(execute_id, step_result_.result_message))
+                        break
 
-                self.case_result.execute_count += 1
-                if step_result_.result_status == 0:
-                    self.logger.info('【{}】\t跳过'.format(execute_id))
-                elif step_result_.result_status == 1:
-                    self.case_result.pass_count += 1
-                    self.logger.info('【{}】\t执行成功'.format(execute_id))
-                elif step_result_.result_status == 2:
-                    self.case_result.fail_count += 1
-                    self.logger.warning('【{}】\t验证失败'.format(execute_id))
-                elif step_result_.result_status == 3:
-                    self.case_result.error_count += 1
-                    self.logger.error('【{}】\t执行出错，错误信息 => {}'.format(execute_id, step_result_.result_message))
-                    break
-
-                # 处理循环标志
-                if self.loop_active:
-                    step_index = self.loop_list[-1][0] + 1
-                    self.loop_active = False
+                    # 处理循环标志
+                    if self.loop_active:
+                        step_index = self.loop_list[-1][0] + 1
+                        self.loop_active = False
+            except Exception as e:
+                self.logger.error('【{}】\t执行出错'.format(execute_id), exc_info=True)
+                self.case_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
+                self.case_result.result_error = traceback.format_exc()
 
         if self.if_list:
             self.logger.warning('【{}】\t有{}个条件分支块缺少关闭步骤，可能会导致意外的错误，请添加关闭步骤'.format(

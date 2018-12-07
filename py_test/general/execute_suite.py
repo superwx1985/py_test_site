@@ -54,7 +54,6 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
     )
 
     try:
-
         # 获取配置
         if suite.config and suite.config.is_active:
             suite_result.config = json.dumps(model_to_dict(suite.config)) if suite.config else None

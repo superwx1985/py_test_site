@@ -134,12 +134,14 @@
         <div class="col">
             {% if obj.result_status == 0 %}
                 <div class="text-secondary">{{ obj.result_message|default:'跳过' }}</div>
+            {% elif obj.result_status == 1 %}
+                <div class="text-success">{{ obj.result_message|default:'通过' }}</div>
             {% elif obj.result_status == 2 %}
                 <div class="text-warning">{{ obj.result_message|default:'失败' }}</div>
             {% elif obj.result_status == 3 %}
                 <div class="text-danger">{{ obj.result_message|default:'出错' }}</div>
             {% else %}
-                <div class="text-success">{{ obj.result_message|default:'通过' }}</div>
+                <div class="text-danger">{{ obj.result_message|default:'N/A' }}</div>
             {% endif %}
             {% if obj.result_error %}
                 <div class="row">
