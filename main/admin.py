@@ -142,7 +142,7 @@ class SuiteResultAdmin(admin.ModelAdmin):
         'pk', 'name', 'project', 'keyword', 'creator', 'created_date', 'modifier', 'modified_date',
         'start_date', 'end_date', 'execute_count', 'pass_count', 'fail_count', 'error_count', 'is_active')
     list_display_links = ('pk', 'name',)
-    list_filter = ('is_active', 'creator', 'project', 'created_date')
+    list_filter = ('is_active', 'creator', 'project', 'created_date',)
     list_editable = ('is_active',)
     search_fields = ('pk', 'name', 'keyword')
 
@@ -158,6 +158,7 @@ class ProjectAdmin(admin.ModelAdmin):
     list_display = (
         'pk', 'name', 'keyword', 'order')
     list_display_links = ('pk', 'name',)
+    list_editable = ('order',)
     search_fields = ('pk', 'name', 'keyword',)
 
 
@@ -166,7 +167,7 @@ class TokenAdmin(admin.ModelAdmin):
         'pk', 'name', 'keyword', 'value', 'expire_date', 'user', 'is_active')
     list_display_links = ('pk', 'name',)
     list_filter = ('is_active', 'user')
-    list_editable = ('value', 'expire_date', 'user', 'is_active')
+    list_editable = ('value', 'expire_date', 'user', 'is_active',)
     search_fields = ('pk', 'name', 'keyword', 'value')
 
 

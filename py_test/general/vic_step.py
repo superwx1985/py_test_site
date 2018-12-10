@@ -113,6 +113,8 @@ class VicStep:
         self.step_result.start_date = datetime.datetime.now()
         # 记录循环迭代次数
         self.step_result.loop_id = self.loop_id
+        # 暂存，防止子用例设置调用步骤时报错
+        self.step_result.save()
 
         # 获取driver
         dr = vic_case.driver_container[0]

@@ -569,7 +569,7 @@ class StepResult(models.Model):
             return get_timedelta_str(self.elapsed_time, 1)
 
     class Meta:
-        ordering = ['end_date']
+        ordering = ['pk']
 
 
 class Image(models.Model):

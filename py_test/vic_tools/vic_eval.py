@@ -21,7 +21,7 @@ class EvalObject:
         self.__valid_operator_list = ['round',
                                       'not', 'and',
                                       'or', 'in', '==', '!=', '<=', '>=', '**', '//', '<<', '>>',
-                                      '<', '>', '(', ')', '+', '-', '*', '/', '%', '&', '|', '^', '~']
+                                      '<', '>', '(', ')', '+', '-', '*', '/', '%', '&', '|', '^', '~', ',']
         if variable_dict is None:
             variable_dict = dict()
         if isinstance(variable_dict, dict):
