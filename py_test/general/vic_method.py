@@ -176,7 +176,7 @@ def get_timestamp_str_func(str_):
     if len(str_list) < 5:
         value = '{:.0f}'.format(timestamp)
     else:
-        decimals = str_list[4] if str_list[4] else '0'
+        decimals = str_list[4] or '0'
         try:
             decimals = str(int(decimals))
             s = '%.' + decimals + 'f'

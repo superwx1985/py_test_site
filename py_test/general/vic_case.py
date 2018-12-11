@@ -209,7 +209,7 @@ class VicCase:
                         self.logger.info('【{}】\t执行成功'.format(execute_id))
                     elif step_result_.result_status == 2:
                         self.case_result.fail_count += 1
-                        self.logger.warning('【{}】\t验证失败'.format(execute_id))
+                        self.logger.warning('【{}】\t执行失败'.format(execute_id))
                     elif step_result_.result_status == 3:
                         self.case_result.error_count += 1
                         self.logger.error('【{}】\t执行出错，错误信息 => {}'.format(execute_id, step_result_.result_message))

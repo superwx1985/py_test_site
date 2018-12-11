@@ -172,50 +172,104 @@ class VicStep:
                     if re_run_count == 0:
                         # 分支判断 - 如果
                         if self.action_code == 'OTHER_IF':
-                            # 解析表达式
-                            if other_data == '':
-                                raise ValueError('未提供表达式')
-                            run_result, _, eval_result, _ = ui_test.method.analysis_expression(
-                                other_data,
-                                vic_variables.get_variable_dict(vic_case.variables, global_variables),
-                                self.logger
-                            )
-                            if eval_result is True:
-                                run_result[1] = '{}\n表达式为真，进入分支'.format(run_result[1])
-                                _result = True
+                            _step_active = vic_case.step_active
+                            # 如果当前步骤处于激活状态
+                            if _step_active:
+                                # 解析表达式
+                                if other_data == '':
+                                    raise ValueError('未提供表达式')
+                                run_result, _, eval_result, _ = ui_test.method.analysis_expression(
+                                    other_data,
+                                    vic_variables.get_variable_dict(vic_case.variables, global_variables),
+                                    self.logger
+                                )
+                                if eval_result is True:
+                                    run_result[1] = '{}\n表达式为真，进入分支'.format(run_result[1])
+                                    _result = True
+                                else:
+                                    run_result[1] = '{}\n表达式为假，跳过分支'.format(run_result[1])
+                                    _result = False
+                                self.run_result = run_result
+                                # 匹配成功则开始执行后续步骤
+                                vic_case.step_active = _result
                             else:
-                                run_result[1] = '{}\n表达式为假，跳过分支'.format(run_result[1])
-                                _result = False
-                            self.run_result = run_result
+                                _result = None
+                                self.run_result = ['s', '步骤被跳过']
 
                             # 创建分支对象
-                            if_object = {'result': _result, 'active': vic_case.step_active}
+                            if_object = {'result': _result, 'active': _step_active}
                             # 添加到分支判断列表
                             vic_case.if_list.append(if_object)
-                            # 判断后续步骤是否需要跳过
-                            if vic_case.step_active:
-                                if not _result:
-                                    vic_case.step_active = False
+
+                        # 分支判断 - 否则如果
+                        elif self.action_code == 'OTHER_ELSE_IF':
+                            if vic_case.if_list:
+                                # 获取最后一个分支对象
+                                if_object = vic_case.if_list[-1]
+                                # 判断当前分支是否被激活
+                                if if_object['active']:
+                                    # 判断之前有没出现else
+                                    if 'else' in if_object:
+                                        msg = '“ELSE_IF”不应出现在ELSE之后，请检查用例'
+                                        self.logger.warning('【{}】\t{}'.format(self.execute_id, msg))
+                                        self.run_result = ['f', msg]
+                                        vic_case.step_active = False
+                                    # 如之前的分支已匹配成功
+                                    elif if_object['result']:
+                                        self.run_result = ['s', '已有符合条件的分支被执行，本分支将被跳过']
+                                        vic_case.step_active = False
+                                    else:
+                                        # 解析表达式
+                                        if other_data == '':
+                                            raise ValueError('未提供表达式')
+                                        run_result, _, eval_result, _ = ui_test.method.analysis_expression(
+                                            other_data,
+                                            vic_variables.get_variable_dict(vic_case.variables, global_variables),
+                                            self.logger
+                                        )
+                                        if eval_result is True:
+                                            run_result[1] = '{}\n表达式为真，进入分支'.format(run_result[1])
+                                            if_object['result'] = _result = True
+                                        else:
+                                            run_result[1] = '{}\n表达式为假，跳过分支'.format(run_result[1])
+                                            _result = False
+                                        self.run_result = run_result
+
+                                        # 匹配成功则开始执行后续步骤
+                                        vic_case.step_active = _result
+                                else:
+                                    self.run_result = ['s', '步骤被跳过']
+                            else:
+                                msg = '出现多余的“ELSE_IF”步骤，可能会导致意外的错误，请检查用例'
+                                self.logger.warning('【{}】\t{}'.format(self.execute_id, msg))
+                                self.run_result = ['f', msg]
                         # 分支判断 - 否则
                         elif self.action_code == 'OTHER_ELSE':
-                            msg = '【{}】\t出现多余的“ELSE”步骤，可能会导致意外的错误，请检查用例'.format(self.execute_id)
+                            msg = '出现多余的“ELSE”步骤，可能会导致意外的错误，请检查用例'
                             if vic_case.if_list:
                                 # 获取最后一个分支对象
                                 if_object = vic_case.if_list[-1]
                                 # 判断当前分支是否被激活
                                 if if_object['active']:
                                     # 判断是否分支中的第一个else
-                                    if 'else' not in if_object:
+                                    if 'else' in if_object:
+                                        self.logger.warning('【{}】\t{}'.format(self.execute_id, msg))
+                                        self.run_result = ['f', msg]
+                                        vic_case.step_active = False
+                                    else:
                                         # 反转激活标志
-                                        vic_case.step_active = not vic_case.step_active
+                                        if if_object['result']:
+                                            self.run_result = ['s', '已有符合条件的分支被执行，else分支将被跳过']
+                                        else:
+                                            self.run_result = ['p', '没有找到符合条件的分支，else分支将被执行']
+                                        vic_case.step_active = not if_object['result']
                                         # 在分支对象中添加else标记
                                         if_object['else'] = True
-                                    else:
-                                        self.logger.warning(msg)
-                                        self.run_result = ['s', msg]
+                                else:
+                                    self.run_result = ['s', '步骤被跳过']
                             else:
-                                self.logger.warning(msg)
-                                self.run_result = ['s', msg]
+                                self.logger.warning('【{}】\t{}'.format(self.execute_id, msg))
+                                self.run_result = ['f', msg]
                         # 分支判断 - 结束
                         elif self.action_code == 'OTHER_END_IF':
                             if vic_case.if_list:
@@ -225,10 +279,12 @@ class VicStep:
                                 if if_object['active']:
                                     # 后续步骤重置为激活状态
                                     vic_case.step_active = True
+                                else:
+                                    self.run_result = ['s', '步骤被跳过']
                             else:
-                                msg = '【{}】\t出现多余的“END_IF”步骤，可能会导致意外的错误，请检查用例'.format(self.execute_id)
-                                self.logger.warning(msg)
-                                self.run_result = ['s', msg]
+                                msg = '出现多余的“END_IF”步骤，可能会导致意外的错误，请检查用例'
+                                self.logger.warning('【{}】\t{}'.format(self.execute_id, msg))
+                                self.run_result = ['f', msg]
 
                         if vic_case.step_active:
                             # 循环判断 - 开始
@@ -240,7 +296,9 @@ class VicStep:
                                 if vic_case.loop_list:
                                     loop_count = vic_case.loop_list[-1][1]
                                     if loop_count > 9:
-                                        run_result = ['p', '循环次数超限，强制跳出循环']
+                                        msg = '循环次数超限，强制跳出循环'
+                                        self.logger.warning('【{}】\t{}'.format(self.execute_id, msg))
+                                        run_result = ['f', msg]
                                         eval_result = False
                                     else:
                                         # 解析表达式
@@ -263,13 +321,15 @@ class VicStep:
                                         vic_case.loop_list.pop()
                                     self.run_result = run_result
                                 else:
-                                    msg = '【{}】\t出现多余的“END_LOOP”步骤，可能会导致意外的错误，请检查用例'.format(self.execute_id)
-                                    self.logger.warning(msg)
-                                    self.run_result = ['s', msg]
+                                    msg = '出现多余的“END_LOOP”步骤，可能会导致意外的错误，请检查用例'
+                                    self.logger.warning('【{}】\t{}'.format(self.execute_id, msg))
+                                    self.run_result = ['f', msg]
 
-                    if vic_case.step_active or self.action_code in ('OTHER_IF', 'OTHER_ELSE', 'OTHER_END_IF'):
+                    if vic_case.step_active or self.action_code in (
+                            'OTHER_IF', 'OTHER_ELSE', 'OTHER_ELSE_IF', 'OTHER_END_IF'):
                         if self.action_code in (
-                                'OTHER_IF', 'OTHER_ELSE', 'OTHER_END_IF', 'OTHER_START_LOOP', 'OTHER_END_LOOP'):
+                                'OTHER_IF', 'OTHER_ELSE', 'OTHER_ELSE_IF', 'OTHER_END_IF', 'OTHER_START_LOOP',
+                                'OTHER_END_LOOP'):
                             pass
                         # ===== UI =====
                         # 打开URL
