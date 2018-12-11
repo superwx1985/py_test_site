@@ -143,16 +143,23 @@ class VicStep:
             db_sql = str(vic_method.replace_special_value(self.db_sql, vic_case.variables, global_variables, self.logger))
             db_data = str(vic_method.replace_special_value(self.db_data, vic_case.variables, global_variables, self.logger))
 
-            # ===== UI 初始化检查 =====
+            # selenium驱动初始化检查
             if self.action_type_code == 'UI':
                 if dr is None:
                     raise exceptions.WebDriverException('浏览器未初始化，请检查是否配置有误或浏览器被意外关闭')
+
+            # 设置selenium驱动超时
+            if dr:
                 # 设置selenium超时时间
                 dr.implicitly_wait(self.timeout)
                 dr.set_page_load_timeout(self.timeout)
                 dr.set_script_timeout(self.timeout)
                 # 设置Remote Connection超时时间
-                dr.command_executor._conn.timeout = int(self.timeout + 10)
+                try:
+                    _conn = getattr(dr.command_executor, '_conn')
+                    _conn.timeout = int(self.timeout + 5)
+                except AttributeError:
+                    dr.command_executor.set_timeout(int(self.timeout + 5))
 
             # 如果步骤执行过程中页面元素被改变导致出现StaleElementReferenceException，将自动再次执行步骤
             start_time = time.time()

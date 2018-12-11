@@ -235,7 +235,14 @@ class VicCase:
         if self.step_result is None and dr is not None and self.logger.level >= 10:
             try:
                 if self.socket_no_response:
-                    raise ValueError('浏览器驱动响应超时')
+                    # 设置Remote Connection超时时间
+                    try:
+                        _conn = getattr(dr.command_executor, '_conn')
+                        _conn.timeout = 5
+                    except AttributeError:
+                        dr.command_executor.set_timeout(5)
+                # 先通过close方法判断驱动是否可控，然后再关闭
+                dr.close()
                 dr.quit()
             except Exception as e:
                 self.logger.error('有一个浏览器驱动无法关闭，请手动关闭。错误信息 => {}'.format(e))
