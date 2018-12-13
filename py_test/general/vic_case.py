@@ -243,7 +243,7 @@ class VicCase:
                             if self.force_stop:
                                 break
                             time.sleep(1)
-                            self.logger.info('【{}】\t已暂停【{}】秒'.format(execute_id, i + 1))
+                            self.logger.info('【{}】\t已暂停【{}】秒'.format(execute_id, i+1))
                         time.sleep(self.ui_step_interval - _ui_step_interval)
 
             except Exception as e:
@@ -269,8 +269,10 @@ class VicCase:
                     except AttributeError:
                         dr.command_executor.set_timeout(5)
                 # 先通过close方法判断驱动是否可控，然后再关闭
+                self.logger.info('【{}】\t正在关闭浏览器驱动...'.format(execute_id))
                 dr.close()
                 dr.quit()
+                self.logger.info('【{}】\t已关闭'.format(execute_id))
             except Exception as e:
                 self.logger.error('【{}】\t有一个浏览器驱动无法关闭，请手动关闭。错误信息 => {}'.format(execute_id, e))
             del dr

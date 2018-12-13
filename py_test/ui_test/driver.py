@@ -105,7 +105,7 @@ def get_driver(config, retry=3, timeout=10, logger=logging.getLogger('py_test'))
             if i >= retry - 1:
                 raise
             else:
-                logger.warning('driver初始化出错，尝试重启driver。错误信息 => {}'.format(e))
+                logger.warning('浏览器驱动初始化出错，尝试进行第{}次初始化。错误信息 => {}'.format(e, i+2))
                 continue
         else:
             return dr
