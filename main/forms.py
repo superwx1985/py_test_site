@@ -181,6 +181,8 @@ class SuiteForm(forms.ModelForm):
     project = forms.ModelChoiceField(queryset=Project.objects, required=True)
     # 限制timeout大于1
     timeout = forms.FloatField(min_value=1)
+    # 限制ui_step_interval大于1
+    ui_step_interval = forms.FloatField(min_value=0)
 
     class Meta:
         model = Suite

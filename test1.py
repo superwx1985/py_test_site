@@ -1,3 +1,7 @@
-d = '' or '0'
+a = 0.99
+b = int(a)
 
-print(d)
+print(a-b)
+
+import time
+time.sleep(0)

@@ -37,6 +37,7 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
         description=suite.description,
         keyword=suite.keyword,
         timeout=suite.timeout,
+        ui_step_interval=suite.ui_step_interval,
         ui_get_ss=suite.ui_get_ss,
         log_level=suite.log_level,
         thread_count=suite.thread_count,
@@ -121,7 +122,8 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
 
             future_results = wait(futures)
             for future_result in future_results.done:
-                case_result = future_result.result()
+                case_ = future_result.result()
+                case_result = case_.case_result
                 suite_result.execute_count += 1
                 if case_result.result_status == 1:
                     suite_result.pass_count += 1

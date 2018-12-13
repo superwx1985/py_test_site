@@ -223,8 +223,8 @@ class Config(models.Model):
     is_active = models.BooleanField(default=True)
     ui_selenium_client_list = (
         (0, '不启用'),
-        (1, 'Selenium - 本地'),
-        (2, 'Selenium - 远程'),
+        (1, 'Selenium - 服务器本地浏览器'),
+        (2, 'Selenium - 远程浏览器'),
     )
     ui_selenium_client = models.IntegerField(choices=ui_selenium_client_list, default=0)
     ui_remote_ip = models.CharField(max_length=100, blank=True)
@@ -365,6 +365,7 @@ class Suite(models.Model):
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
     timeout = models.FloatField(default=10)
+    ui_step_interval = models.FloatField(default=0)
     ui_get_ss = models.BooleanField(default=True)
     log_level_list = (
         (1, 'DEV'),
@@ -432,6 +433,7 @@ class SuiteResult(models.Model):
     is_active = models.BooleanField(default=True)
 
     timeout = models.FloatField(default=10)
+    ui_step_interval = models.FloatField(default=0)
     ui_get_ss = models.BooleanField(default=True)
     log_level = models.IntegerField(default=20)
     thread_count = models.IntegerField(default=1)

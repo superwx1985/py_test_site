@@ -3,6 +3,7 @@ import json
 import traceback
 import logging
 import uuid
+import time
 from py_test.general import vic_variables, vic_method
 from py_test import ui_test
 from selenium.common.exceptions import UnexpectedAlertPresentException
@@ -36,6 +37,7 @@ class VicCase:
         self.name = case.name
         self.steps = list()
         self.timeout = self.suite_result.timeout
+        self.ui_step_interval = self.suite_result.ui_step_interval
 
         # 分支列表
         self.if_list = list()
@@ -46,6 +48,9 @@ class VicCase:
         self.loop_list = list()
         # 循环迭代次数
         self.loop_active = False
+
+        # 强制停止标志
+        self.force_stop = False
 
         self.config = self.suite_result.suite.config
 
@@ -82,18 +87,25 @@ class VicCase:
         # driver容器，用于在运行过程中更换driver
         self.driver_container = driver_container or [None]
 
+    # 判断强制停止标志
+    def check_force_stop(self, force_stop_dict):
+        force_stop = force_stop_dict.get(self.execute_uuid)
+        if force_stop and force_stop == self.user.pk:
+            self.force_stop = True
+
     def execute(self, global_variables, public_elements):
         # 记录开始执行时的时间
         self.case_result.start_date = datetime.datetime.now()
+
+        execute_id = self.execute_str
         
         # 从容器中获取driver
         dr = self.driver_container[0]
 
-        # 强制停止
-        force_stop = FORCE_STOP.get(self.execute_uuid)
-        if force_stop and force_stop == self.user.pk:
-            pass
-        else:
+        # 判断强制停止标志
+        self.check_force_stop(FORCE_STOP)
+
+        if not self.force_stop:
             # 用例初始化
             execute_id = '{}-{}'.format(self.execute_str, 0)
             try:
@@ -144,9 +156,9 @@ class VicCase:
                 ui_alert_handle = 'accept'  # 初始化弹窗处理方式
                 step_index = 0
                 while step_index < len(self.steps):
-                    # 强制停止
-                    force_stop = FORCE_STOP.get(self.execute_uuid)
-                    if force_stop and force_stop == self.user.pk:
+
+                    self.check_force_stop(FORCE_STOP)
+                    if self.force_stop:
                         break
 
                     step = self.steps[step_index]
@@ -161,7 +173,7 @@ class VicCase:
                             loop_id = '{}({})'.format(loop_id, loop_[1])
                             if loop_[1] > 1:
                                 is_first = False
-                        execute_id = '{}-{}{}'.format(self.execute_str, step_index, loop_id)
+                        execute_id = '{}{}'.format(execute_id, loop_id)
                         step.execute_id = execute_id
                         step.loop_id = loop_id
                         # 如果不是首次迭代
@@ -219,6 +231,21 @@ class VicCase:
                     if self.loop_active:
                         step_index = self.loop_list[-1][0] + 1
                         self.loop_active = False
+
+                    self.check_force_stop(FORCE_STOP)
+                    if self.force_stop:
+                        break
+                    # 通过添加步骤间等待时间控制UI测试执行速度
+                    if step_.action_type_code == 'UI' and self.ui_step_interval:
+                        _ui_step_interval = int(self.ui_step_interval)
+                        for i in range(_ui_step_interval):
+                            self.check_force_stop(FORCE_STOP)
+                            if self.force_stop:
+                                break
+                            time.sleep(1)
+                            self.logger.info('【{}】\t已暂停【{}】秒'.format(execute_id, i + 1))
+                        time.sleep(self.ui_step_interval - _ui_step_interval)
+
             except Exception as e:
                 self.logger.error('【{}】\t执行出错'.format(execute_id), exc_info=True)
                 self.case_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
@@ -226,10 +253,10 @@ class VicCase:
 
         if self.if_list:
             self.logger.warning('【{}】\t有{}个条件分支块缺少关闭步骤，可能会导致意外的错误，请添加关闭步骤'.format(
-                self.execute_str, len(self.if_list)))
+                execute_id, len(self.if_list)))
         if self.loop_list:
             self.logger.warning('【{}】\t有{}个循环块缺少关闭步骤，可能会导致意外的错误，请添加关闭步骤'.format(
-                self.execute_str, len(self.loop_list)))
+                execute_id, len(self.loop_list)))
 
         # 如果不是子用例，且浏览器未关闭，且logging level大于等于10，则关闭浏览器
         if self.step_result is None and dr is not None and self.logger.level >= 10:
@@ -245,10 +272,10 @@ class VicCase:
                 dr.close()
                 dr.quit()
             except Exception as e:
-                self.logger.error('有一个浏览器驱动无法关闭，请手动关闭。错误信息 => {}'.format(e))
+                self.logger.error('【{}】\t有一个浏览器驱动无法关闭，请手动关闭。错误信息 => {}'.format(execute_id, e))
             del dr
 
-        if self.case_result.error_count > 0 or self.case_result.result_error != '':
+        if self.case_result.error_count > 0 or self.case_result.result_error:
             self.case_result.result_status = 3
         elif self.case_result.fail_count > 0:
             self.case_result.result_status = 2
@@ -264,4 +291,4 @@ class VicCase:
 
         self.parent_case_pk_list.pop()
 
-        return self.case_result
+        return self

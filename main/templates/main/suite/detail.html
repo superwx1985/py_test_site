@@ -207,6 +207,12 @@
             </div>
         </div>
         <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">执行间隔时间&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤间的暂停时间（单位：秒）"></i></div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.ui_step_interval %}
+            </div>
+        </div>
+        <div class="row align-items-center">
             <div class="col-1 text-center font-weight-bold">自动截图&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试的验证步骤时是否自动截图"></i></div>
             <div class="col" form_data>
                 {{ form.ui_get_ss }}

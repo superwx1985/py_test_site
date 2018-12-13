@@ -922,14 +922,17 @@ class VicStep:
                                     websocket_sender=self.websocket_sender,
                                     driver_container=vic_case.driver_container
                                 )
-                                case_result_ = sub_case.execute(global_variables, public_elements)
+                                sub_case_ = sub_case.execute(global_variables, public_elements)
+                                case_result_ = sub_case_.case_result
                                 # 更新driver
                                 dr = vic_case.driver_container[0]
                                 self.step_result.has_sub_case = True
-                                if case_result_.error_count > 0:
+                                if case_result_.error_count > 0 or case_result_.result_error:
                                     raise RuntimeError('子用例执行时出现错误')
                                 elif case_result_.fail_count > 0:
                                     self.run_result = ['f', '子用例执行时验证失败']
+                                elif case_result_.execute_count == 0:
+                                    self.run_result = ['s', '子用例未执行']
                                 else:
                                     self.run_result = ['p', '子用例执行成功']
 
