@@ -350,6 +350,8 @@
 			_dropdown.$choseList.prepend(_dropdown.name.join(''));
 			_dropdown.$el.find('.dropdown-display').attr('title', selectedName.join(','));
 			_config.choice.call(_dropdown, event);
+			// 触发内部select的change事件
+            $select.trigger('change');
 		},
 		// 单选点击操作
 		singleChoose: function singleChoose(event) {
@@ -393,6 +395,8 @@
 
 			_dropdown.$choseList.html(_dropdown.name.join(''));
 			_config.choice.call(_dropdown, event);
+			// 触发内部select的change事件
+            $select.trigger('change');
 		},
 		// 删除
 		del: function del(event) {
@@ -400,6 +404,7 @@
 			var $target = $(event.target);
 			var id = $target.data('id');
 			var _config = _dropdown.config;
+			var $select = _dropdown.$select;
 			// 2017-03-23 15:58:50 测试
 			// 10000条数据测试删除，耗时 ~3ms
 			$.each(_dropdown.name, function (key, value) {
@@ -424,15 +429,17 @@
 			_dropdown.$el.find('[value="' + id + '"]').prop('selected', false).removeAttr('selected');
 			$target.closest('.dropdown-selected').remove();
 			_config.choice.call(_dropdown, event);
+			// 触发内部select的change事件
+            $select.trigger('change');
 			return false;
 		},
 		clearAll: function clearAll() {
+			// 单选时清除select的value
+			if (this.isSingleSelect) { this.$select.val(''); }
 			this.$choseList.find('.del').each(function (index, el) {
 				$(el).trigger('click');
 			});
 			this.$el.find('.dropdown-display').removeAttr('title');
-			// 单选时清除select的value
-			if (this.isSingleSelect) { this.$select.val(''); }
 			return false;
 		}
 	};

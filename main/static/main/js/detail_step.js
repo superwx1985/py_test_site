@@ -1,7 +1,7 @@
 // 展示Action相关内容
 function show_action_field($actionSelect) {
-	reset_action_field();
-	window.select_value = window.action_map[$actionSelect.find('option:selected').val()];
+    reset_action_field();
+	window.select_value = window.action_map[$actionSelect.val()];
 	var introduce = $('#introduce');
 	if (select_value === 'UI_GO_TO_URL') {
 		introduce.children('div').text('打开一个页面，请填入页面URL');

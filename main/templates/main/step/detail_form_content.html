@@ -24,9 +24,18 @@
 </div>
 <div class="row align-items-center" base>
     <div class="col-1 text-center font-weight-bold">动作</div>
-    <div class="col" form_data>
-        {% include 'main/include/form_input.html' with field=form.action %}
-    </div>
+    {% if snapshot %}
+        <div class="col" form_data>
+            {% include 'main/include/form_input.html' with field=form.action %}
+        </div>
+    {% else %}
+        <div class="col" form_data>
+            <div id="action_dropdown" name="action"></div>
+            {% for error in form.action.errors %}
+                <div class="invalid-feedback" style="display: block">{{ error }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
 </div>
 <div class="row align-items-center" ui name="ui_special_action">
     <div class="col-1 text-center font-weight-bold">特殊动作</div>

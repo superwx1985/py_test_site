@@ -28,11 +28,7 @@
                     show_special_action_field($(this));
                 });
                 // 触发展示action相关内容
-                show_action_field($('#id_action'));
-                // 注册action变更
-                $('#id_action').off('change').change(function () {
-                    show_action_field($(this));
-                });
+                show_action_field($('select[name="action"]'));
                 // 更新api变量列表
                 var api_save_data = {};
                 var api_save_data_success = false;

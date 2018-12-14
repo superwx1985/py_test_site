@@ -33,14 +33,13 @@
             $('#id_ui_special_action').off('change').change(function () {
                 show_special_action_field($(this));
             });
-            // 触发展示action相关内容
-            show_action_field($('#id_action'));
-            // 注册action变更
-            $('#id_action').off('change').change(function () {
-                show_action_field($(this));
-            });
+            // 隐藏action相关内容
+            window.select_value = null;
+            reset_action_field();
             // 获取子用例下拉项
-            get_case_select("{{ obj.other_sub_case.pk }}");
+            action_select("{{ obj.action.pk }}");
+            // 获取子用例下拉项
+            sub_case_select("{{ obj.other_sub_case.pk }}");
             // 更新api变量列表
             if (select_value === 'API_SEND_HTTP_REQUEST') {
                 var api_save_data = {};
@@ -52,7 +51,7 @@
                 init_step_api_save_as(api_save_data_success, api_save_data);
             }
             // 更新step_ui_data_select
-            if (window.select_value === 'UI_SELECT') {
+            if (select_value === 'UI_SELECT') {
                 var step_ui_data_select = {};
                 var step_ui_data_select_success = false;
                 try {
@@ -64,10 +63,15 @@
                 } catch (e) {console.log(e)}
             }
         });
-        function get_case_select(selected_pk) {
+        function action_select(selected_pk) {
+            update_mask($('#mask'), 1);
+            if (!selected_pk) { selected_pk = $("select[name=action]").val() }
+            getList("{% url 'action_select_json' %}", window.$csrf_input.val(), update_action_dropdown, '{"selected_pk": "'+selected_pk+'"}');
+        }
+        function sub_case_select(selected_pk) {
             update_mask($('#mask'), 1);
             if (!selected_pk) { selected_pk = $("select[name=other_sub_case]").val() }
-            getList("{% url 'case_select_json' %}", window.$csrf_input.val(), update_other_sub_case_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'用例详情\', \'%url%?inside=1\',null, get_case_select);", "url_replacer": "%url%"}');
+            getList("{% url 'case_select_json' %}", window.$csrf_input.val(), update_other_sub_case_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'用例详情\', \'%url%?inside=1\',null, sub_case_select);", "url_replacer": "%url%"}');
         }
     </script>
     <script src="{% static 'main/js/detail_step.js' %}"></script>

@@ -33,6 +33,7 @@ import main.views.step_result as step_result
 import main.views.help as help_
 import main.views.maintenance as maintenance
 import main.views.websocket as ws
+import main.views.action as action
 
 
 urlpatterns = [
@@ -45,6 +46,8 @@ urlpatterns = [
     path('user/', user.detail, name='user'),
 
     path('home/', suite_result.list_, name='home'),
+
+    path('action/select_json/', action.select_json, name='action_select_json'),
 
     path('cases/', case.list_, name='cases'),
     path('cases/multiple_delete/', case.multiple_delete, name='cases_multiple_delete'),

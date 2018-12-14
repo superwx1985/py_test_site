@@ -62,6 +62,28 @@ function update_other_sub_case_dropdown(success, data) {
 	}
 }
 
+// 更新动作下拉项
+function update_action_dropdown(success, data) {
+	if (success) {
+		if (window.editable) {
+			update_dropdown(data, $("#action_dropdown"));
+		} else {
+			update_dropdown(data, $("#action_dropdown"), true);
+		}
+		// 触发展示action相关内容
+		show_action_field($('select[name="action"]'));
+		// 注册action变更
+		$('select[name="action"]').off('change').change(function () {
+			show_action_field($(this));
+		});
+		update_mask($('#mask'), -1);
+    } else {
+		console.log(data);
+		if (!window.errs) { window.errs = [] }
+		window.errs.push(data);
+	}
+}
+
 
 function m2m_detail_popup(title, url, parent_project) {
 	if (parent_project) { url=url+'&parent_project='+parent_project }
