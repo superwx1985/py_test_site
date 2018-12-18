@@ -89,7 +89,7 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
             suite_result.element_group = json.dumps(element_group_dict)
 
         # 限制进程数
-        thread_count = suite.thread_count if suite.thread_count <= 10 else 10
+        thread_count = suite.thread_count if suite.thread_count <= 8 else 8
 
         # 获取用例组
         cases = Case.objects.filter(suite=suite, is_active=True).order_by('suitevscase__order')
