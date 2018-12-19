@@ -15,6 +15,7 @@ from py_test.db_test import method as db_method
 from py_test.vic_tools import vic_eval, vic_date_handle
 from main.models import StepResult, Step
 from utils.system import FORCE_STOP
+from py_test_site.settings import LOOP_ITERATIONS_LIMIT
 
 
 class VicStep:
@@ -37,6 +38,11 @@ class VicStep:
         self.loop_id = ''
         # 截图列表
         self.img_list = list()
+
+        self.vic_case = None
+
+        # 步骤级别强制停止信号
+        self.step_force_stop = False
 
         # 驱动停止响应标志
         self.socket_no_response = False
@@ -108,6 +114,20 @@ class VicStep:
             self.step_result.result_error = traceback.format_exc()
             raise
 
+    # 强制停止标志
+    @property
+    def force_stop(self):
+        if self.step_force_stop:
+            return True
+        if self.vic_case and self.vic_case.force_stop:
+            return True
+        fs = FORCE_STOP.get(self.execute_uuid)
+        if fs and fs == self.user.pk:
+            self.step_force_stop = True
+            return True
+        else:
+            return False
+
     def execute(self, vic_case, global_variables, public_elements):
         # 记录开始执行时的时间
         self.step_result.start_date = datetime.datetime.now()
@@ -115,6 +135,8 @@ class VicStep:
         self.step_result.loop_id = self.loop_id
         # 暂存，防止子用例设置调用步骤时报错
         self.step_result.save()
+        # 设置调用本步骤的vic_case，用于即时获取停止标志
+        self.vic_case = vic_case
 
         # 获取driver
         dr = vic_case.driver_container[0]
@@ -165,7 +187,7 @@ class VicStep:
             start_time = time.time()
             re_run = True
             re_run_count = 0
-            while re_run:
+            while re_run and not self.force_stop:
                 re_run = False
                 try:
                     # 非重跑时才进行逻辑判断
@@ -295,7 +317,7 @@ class VicStep:
                             elif self.action_code == 'OTHER_END_LOOP':
                                 if vic_case.loop_list:
                                     loop_count = vic_case.loop_list[-1][1]
-                                    if loop_count > 9:
+                                    if loop_count > LOOP_ITERATIONS_LIMIT-1:
                                         msg = '循环次数超限，强制跳出循环'
                                         self.logger.warning('【{}】\t{}'.format(self.execute_id, msg))
                                         run_result = ['f', msg]
@@ -796,8 +818,10 @@ class VicStep:
                         elif self.action_code == 'OTHER_SLEEP':
                             timeout = int(self.timeout or 3)
                             for i in range(timeout):
+                                if self.force_stop:
+                                    break
                                 time.sleep(1)
-                                self.logger.info('已等待【{}】秒'.format(i + 1))
+                                self.logger.info('【{}】\t已等待【{}】秒'.format(self.execute_id, i + 1))
 
                         # 保存用例变量
                         elif self.action_code == 'OTHER_SAVE_CASE_VARIABLE':
@@ -980,8 +1004,7 @@ class VicStep:
                         self.run_result = ['s', '步骤被跳过']
                 # 如果遇到元素过期，将尝试重跑该步骤，直到超时
                 except (exceptions.StaleElementReferenceException, exceptions.WebDriverException) as e:
-                    force_stop = FORCE_STOP.get(vic_case.execute_uuid)
-                    if (force_stop and force_stop == self.user.pk) or (time.time() - start_time) > self.timeout:
+                    if self.force_stop or (time.time() - start_time) > self.timeout:
                         raise
                     msg_ = 'element is not attached to the page document'
                     if isinstance(e, exceptions.StaleElementReferenceException) or msg_ in e.msg:

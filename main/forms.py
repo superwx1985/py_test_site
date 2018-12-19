@@ -2,8 +2,7 @@ from django import forms
 from main.models import *
 from django.contrib.auth import password_validation
 from django.utils.translation import gettext_lazy as _
-from utils.other import get_project_list
-
+from py_test_site.settings import SUITE_MAX_CONCURRENT_EXECUTE_COUNT
 
 class LoginForm(forms.Form):
     username = forms.CharField(label='用户名', max_length=50)
@@ -174,7 +173,7 @@ class ElementGroupForm(forms.ModelForm):
 
 class SuiteForm(forms.ModelForm):
     # 限制线程数最大值
-    thread_count = forms.IntegerField(initial=1, min_value=1, max_value=8)
+    thread_count = forms.IntegerField(initial=1, min_value=1, max_value=int(SUITE_MAX_CONCURRENT_EXECUTE_COUNT))
     # 限制config为必选
     config = forms.ModelChoiceField(queryset=Config.objects, required=True)
     # 限制project为必选
@@ -182,7 +181,7 @@ class SuiteForm(forms.ModelForm):
     # 限制timeout大于1
     timeout = forms.FloatField(min_value=1)
     # 限制ui_step_interval大于1
-    ui_step_interval = forms.FloatField(min_value=0)
+    ui_step_interval = forms.FloatField(initial=0, min_value=0)
 
     class Meta:
         model = Suite
@@ -211,6 +210,7 @@ class SuiteResultForm(forms.ModelForm):
             'created_date',
 
             'timeout',
+            'ui_step_interval',
             'ui_get_ss',
             'log_level',
             'thread_count',

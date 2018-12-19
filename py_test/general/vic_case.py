@@ -39,6 +39,9 @@ class VicCase:
         self.timeout = self.suite_result.timeout
         self.ui_step_interval = self.suite_result.ui_step_interval
 
+        # 用例级别强制停止信号
+        self.case_force_stop = False
+
         # 分支列表
         self.if_list = list()
         # 步骤激活标志
@@ -48,9 +51,6 @@ class VicCase:
         self.loop_list = list()
         # 循环迭代次数
         self.loop_active = False
-
-        # 强制停止标志
-        self.force_stop = False
 
         self.config = self.suite_result.suite.config
 
@@ -87,11 +87,17 @@ class VicCase:
         # driver容器，用于在运行过程中更换driver
         self.driver_container = driver_container or [None]
 
-    # 判断强制停止标志
-    def check_force_stop(self, force_stop_dict):
-        force_stop = force_stop_dict.get(self.execute_uuid)
-        if force_stop and force_stop == self.user.pk:
-            self.force_stop = True
+    # 强制停止标志
+    @property
+    def force_stop(self):
+        if self.case_force_stop:
+            return True
+        fs = FORCE_STOP.get(self.execute_uuid)
+        if fs and fs == self.user.pk:
+            self.case_force_stop = True
+            return True
+        else:
+            return False
 
     def execute(self, global_variables, public_elements):
         # 记录开始执行时的时间
@@ -101,9 +107,6 @@ class VicCase:
         
         # 从容器中获取driver
         dr = self.driver_container[0]
-
-        # 判断强制停止标志
-        self.check_force_stop(FORCE_STOP)
 
         if not self.force_stop:
             # 用例初始化
@@ -157,7 +160,6 @@ class VicCase:
                 step_index = 0
                 while step_index < len(self.steps):
 
-                    self.check_force_stop(FORCE_STOP)
                     if self.force_stop:
                         break
 
@@ -232,14 +234,12 @@ class VicCase:
                         step_index = self.loop_list[-1][0] + 1
                         self.loop_active = False
 
-                    self.check_force_stop(FORCE_STOP)
                     if self.force_stop:
                         break
                     # 通过添加步骤间等待时间控制UI测试执行速度
                     if step_.action_type_code == 'UI' and self.ui_step_interval:
                         _ui_step_interval = int(self.ui_step_interval)
                         for i in range(_ui_step_interval):
-                            self.check_force_stop(FORCE_STOP)
                             if self.force_stop:
                                 break
                             time.sleep(1)

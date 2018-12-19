@@ -1,3 +1,4 @@
+import time
 import datetime
 import json
 import traceback
@@ -6,10 +7,57 @@ import uuid
 # import pytz
 from py_test.general import vic_variables, vic_public_elements, vic_log, vic_method
 from .vic_case import VicCase
-from concurrent.futures import ThreadPoolExecutor, wait
+from concurrent.futures import wait, CancelledError, TimeoutError as f_TimeoutError
 from main.models import Case, SuiteResult, Step
 from django.forms.models import model_to_dict
 from utils.system import FORCE_STOP
+from utils.thread_pool import VicThreadPoolExecutor, SUITE_EXECUTE_POOL
+from py_test_site.settings import SUITE_MAX_CONCURRENT_EXECUTE_COUNT
+
+
+def add_vic_case_into_pool(
+        vic_case, global_variables, public_elements, logger=logging.getLogger('py_test'), check_interval=30,
+        timeout=None):
+
+    task = SUITE_EXECUTE_POOL.submit(vic_case.execute, global_variables, public_elements)
+    logger.debug('【{}】\t用例【{}】进入队列'.format(vic_case.execute_str, vic_case.name))
+
+    start_time = time.time()
+    vic_case_ = vic_case
+    while True:
+        try:
+            vic_case_ = task.result(timeout=check_interval)
+        except CancelledError:
+            elapsed_time = time.time() - start_time
+            logger.warning('【{}】\t用例【{}】已在队列{:.1f}秒，已被取消'.format(
+                vic_case.execute_str, vic_case.name, elapsed_time))
+            break
+        except f_TimeoutError:
+            elapsed_time = time.time() - start_time
+            if task.running():
+                logger.debug('【{}】\t用例【{}】已在队列{:.1f}秒，执行中...'.format(
+                        vic_case.execute_str, vic_case.name, elapsed_time))
+            else:
+                if timeout and elapsed_time > timeout:
+                    logger.warning('【{}】\t用例【{}】已在队列{:.1f}秒，尝试取消'.format(
+                        vic_case.execute_str, vic_case.name, elapsed_time))
+                    _success = task.cancel()
+                    vic_case.case_result.result_status = 3
+                    vic_case.case_result.result_error = '线程等待超时，可能由于服务器线程池队列已满，用例被取消执行'
+                    vic_case.case_result.end_date = datetime.datetime.now()
+                    vic_case.case_result.save()
+                    if not _success:
+                        logger.warning('【{}】\t用例【{}】取消失败，发送强制停止信号'.format(
+                            vic_case.execute_str, vic_case.name))
+                        vic_case.case_force_stop = True
+                        break
+                else:
+                    logger.info('【{}】\t用例【{}】已在队列{:.1f}秒，排队中...'.format(
+                        vic_case.execute_str, vic_case.name, elapsed_time))
+        else:
+            break
+
+    return vic_case_
 
 
 def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None):
@@ -89,7 +137,9 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
             suite_result.element_group = json.dumps(element_group_dict)
 
         # 限制进程数
-        thread_count = suite.thread_count if suite.thread_count <= 8 else 8
+        s_count = SUITE_MAX_CONCURRENT_EXECUTE_COUNT
+        thread_count = suite.thread_count if suite.thread_count <= s_count else s_count
+        logger.warning('套件线程数超过了服务器允许的最大值【{}】，已被修改为【{}】'.format(s_count, s_count))
 
         # 获取用例组
         cases = Case.objects.filter(suite=suite, is_active=True).order_by('suitevscase__order')
@@ -107,30 +157,31 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
                 vic_cases.append(
                     VicCase(
                         case=case, suite_result=suite_result, case_order=case_order, user=user, execute_str=case_order,
-                        execute_uuid=execute_uuid, websocket_sender=websocket_sender)
+                        execute_uuid=execute_uuid, websocket_sender=websocket_sender),
                 )
                 logger.info('【{}】\tID:{} | {}'.format(case_order, case.pk, case.name))
 
             logger.info('========================================')
+
             futures = list()
-            pool = ThreadPoolExecutor(thread_count)
 
-            case_order = 0
-            for case in vic_cases:
-                case_order += 1
-                futures.append(pool.submit(case.execute, global_variables, public_elements))
+            with VicThreadPoolExecutor(thread_count) as pool:  # 保证线程池被关闭
 
-            future_results = wait(futures)
-            for future_result in future_results.done:
-                case_ = future_result.result()
-                case_result = case_.case_result
-                suite_result.execute_count += 1
-                if case_result.result_status == 1:
-                    suite_result.pass_count += 1
-                elif case_result.result_status == 2:
-                    suite_result.fail_count += 1
-                elif case_result.result_status == 3:
-                    suite_result.error_count += 1
+                for vic_case in vic_cases:
+                    futures.append(pool.submit(
+                        add_vic_case_into_pool, vic_case, global_variables, public_elements, logger))
+                future_results = wait(futures)
+
+                for future_result in future_results.done:
+                    case_ = future_result.result()
+                    case_result = case_.case_result
+                    suite_result.execute_count += 1
+                    if case_result.result_status == 1:
+                        suite_result.pass_count += 1
+                    elif case_result.result_status == 2:
+                        suite_result.fail_count += 1
+                    elif case_result.result_status == 3:
+                        suite_result.error_count += 1
 
         skip_count = suite_result.execute_count - suite_result.pass_count - suite_result.fail_count - suite_result.error_count
 
@@ -170,6 +221,7 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
     # 清除停止信号
     if FORCE_STOP.get(execute_uuid):
         del FORCE_STOP[execute_uuid]
+    print(FORCE_STOP)
 
     # 关闭日志文件句柄
     for h in logger.handlers:

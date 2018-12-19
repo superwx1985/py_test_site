@@ -228,7 +228,7 @@
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">测试线程数&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="可同时运行的用例数量。设置更高的值可以加快测试速度，但会打乱用例执行顺序，导致一些意外情况。"></i></div>
+            <div class="col-1 text-center font-weight-bold">测试线程数&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="并发运行的用例数量，可加快测试速度，但会打乱用例执行顺序，导致一些意外情况。此设置还受限于服务器设置的最大线程数，所有用户将共享测试线程池"></i></div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.thread_count %}
             </div>
