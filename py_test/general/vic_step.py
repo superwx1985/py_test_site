@@ -19,22 +19,23 @@ from py_test_site.settings import LOOP_ITERATIONS_LIMIT
 
 
 class VicStep:
-    def __init__(
-            self, step, case_result, step_order, user, execute_str, execute_uuid=uuid.uuid1(), websocket_sender=None):
-        self.logger = logging.getLogger('py_test.{}'.format(execute_uuid))
+    def __init__(self, step, vic_case, step_order):
+            # self, step, case_result, step_order, user, execute_str, execute_uuid=uuid.uuid1(), websocket_sender=None):
+
+        self.logger = vic_case.logger
 
         self.step = step
-        self.case_result = case_result
-        self.user = user
-        self.execute_uuid = execute_uuid
-        self.websocket_sender = websocket_sender
+        self.vic_case = vic_case
+
+        self.user = vic_case.user
+        self.execute_uuid = vic_case.execute_uuid
 
         self.id = step.pk
         self.name = step.name
         self.action_type_code = step.action.type.code
         self.action_code = step.action.code
 
-        self.execute_id = '{}-{}'.format(execute_str, step_order)
+        self.execute_id = '{}-{}'.format(vic_case.execute_str, step_order)
         self.loop_id = ''
         # 截图列表
         self.img_list = list()
@@ -58,10 +59,10 @@ class VicStep:
             keyword=step.keyword,
             action=step.action.full_name,
 
-            case_result=case_result,
+            case_result=vic_case.case_result,
             step=step,
             step_order=step_order,
-            creator=user,
+            creator=vic_case.user,
 
             result_message='',
             result_error='',
@@ -71,8 +72,8 @@ class VicStep:
         )
 
         try:
-            self.timeout = step.timeout if step.timeout else case_result.suite_result.timeout
-            self.ui_get_ss = case_result.suite_result.ui_get_ss
+            self.timeout = step.timeout if step.timeout else vic_case.timeout
+            self.ui_get_ss = vic_case.suite_result.ui_get_ss
             self.save_as = step.save_as
 
             ui_by_dict = {i[0]: i[1] for i in Step.ui_by_list}
@@ -429,7 +430,7 @@ class VicStep:
                                 del dr
                                 init_timeout = self.timeout if self.timeout > 30 else 30
                                 dr = ui_test.driver.get_driver(
-                                    self.case_result.suite_result.suite.config, 3, init_timeout, logger=self.logger)
+                                    self.vic_case.config, 3, init_timeout, logger=self.logger)
                                 vic_case.driver_container[0] = dr
 
                         # 单击
@@ -935,7 +936,7 @@ class VicStep:
                                 from .vic_case import VicCase
                                 sub_case = VicCase(
                                     case=self.other_sub_case,
-                                    suite_result=self.case_result.suite_result,
+                                    suite_result=self.vic_case.suite_result,
                                     case_order=None,
                                     user=self.user,
                                     execute_str=self.execute_id,
@@ -943,7 +944,7 @@ class VicStep:
                                     step_result=self.step_result,
                                     parent_case_pk_list=vic_case.parent_case_pk_list,
                                     execute_uuid=self.execute_uuid,
-                                    websocket_sender=self.websocket_sender,
+                                    websocket_sender=self.vic_case.websocket_sender,
                                     driver_container=vic_case.driver_container
                                 )
                                 sub_case_ = sub_case.execute(global_variables, public_elements)

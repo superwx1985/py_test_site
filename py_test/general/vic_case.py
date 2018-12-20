@@ -142,12 +142,7 @@ class VicCase:
                 step_order = 0
                 for step in steps:
                     step_order += 1
-                    self.steps.append(
-                        VicStep(
-                            step=step, case_result=self.case_result, step_order=step_order, user=self.user,
-                            execute_str=self.execute_str, execute_uuid=self.execute_uuid,
-                            websocket_sender=self.websocket_sender)
-                    )
+                    self.steps.append(VicStep(step=step, vic_case=self, step_order=step_order))
 
             except Exception as e:
                 self.logger.error('【{}】\t初始化出错'.format(execute_id), exc_info=True)
