@@ -11,7 +11,7 @@ from concurrent.futures import wait, CancelledError, TimeoutError as f_TimeoutEr
 from main.models import Case, SuiteResult, Step
 from django.forms.models import model_to_dict
 from utils.system import FORCE_STOP
-from utils.thread_pool import VicThreadPoolExecutor, SUITE_EXECUTE_POOL
+from utils.thread_pool import VicThreadPoolExecutor, RUNNING_SUITES, get_pool, safety_shutdown_pool
 from py_test_site.settings import SUITE_MAX_CONCURRENT_EXECUTE_COUNT
 
 
@@ -19,7 +19,7 @@ def add_vic_case_into_pool(
         vic_case, global_variables, public_elements, logger=logging.getLogger('py_test'), check_interval=30,
         timeout=None):
 
-    task = SUITE_EXECUTE_POOL.submit(vic_case.execute, global_variables, public_elements)
+    task = get_pool().submit(vic_case.execute, global_variables, public_elements)
     logger.debug('【{}】\t用例【{}】进入队列'.format(vic_case.execute_str, vic_case.name))
 
     start_time = time.time()
@@ -65,6 +65,8 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
 
     logger = logging.getLogger('py_test.{}'.format(execute_uuid))
     logger.setLevel(suite.log_level)
+
+    RUNNING_SUITES[execute_uuid] = True
 
     # 设置线程日志level
     vic_log.THREAD_LEVEL = suite.log_level
@@ -221,11 +223,13 @@ def execute_suite(suite, user, execute_uuid=uuid.uuid1(), websocket_sender=None)
     # 清除停止信号
     if FORCE_STOP.get(execute_uuid):
         del FORCE_STOP[execute_uuid]
-    print(FORCE_STOP)
 
     # 关闭日志文件句柄
     for h in logger.handlers:
         h.close()
+
+    RUNNING_SUITES.pop(execute_uuid)
+    safety_shutdown_pool()
 
     return suite_result
 

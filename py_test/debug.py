@@ -14,8 +14,9 @@
 
 import time
 
-a = time.time()
+d = {1: 1, 2: 2}
 
-time.sleep(1)
+print(d)
+d.pop(3)
 
-print('{:.2f}'.format(time.time()-a))
+print(d)
