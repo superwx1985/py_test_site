@@ -188,7 +188,7 @@ class VicSuite:
             self.suite_result.save()
         finally:
             RUNNING_SUITES.pop(self.execute_uuid)
-            safety_shutdown_pool()
+            safety_shutdown_pool(self.logger)
 
             # 清除停止信号
             if FORCE_STOP.get(self.execute_uuid):
@@ -213,7 +213,7 @@ class VicSuite:
         return self
 
     def add_vic_case_into_pool(self, vic_case, check_interval=10, timeout=None):
-        task = get_pool().submit(vic_case.execute)
+        task = get_pool(self.logger).submit(vic_case.execute)
         self.logger.debug('【{}】\t用例【{}】进入队列'.format(vic_case.execute_str, vic_case.name))
 
         start_time = time.time()

@@ -29,24 +29,6 @@
                 });
                 // 触发展示action相关内容
                 show_action_field($('select[name="action"]'));
-                // 更新api变量列表
-                var api_save_data = {};
-                var api_save_data_success = false;
-                try {
-                    api_save_data = {"data": $.parseJSON($('input[name=api_save]').val())};
-                    api_save_data_success = true;
-                } catch (e) {console.log(e)}
-                init_step_api_save_as(api_save_data_success, api_save_data);
-                // 更新step_ui_data_select
-                var step_ui_data_select = {};
-                var step_ui_data_select_success = false;
-                try {
-                    step_ui_data_select = {"data": $.parseJSON($('textarea[name=ui_data]').val())};
-                    step_ui_data_select_success = true;
-                } catch (e) {console.log(e)}
-                try {
-                    init_step_ui_data_select(step_ui_data_select_success, step_ui_data_select);
-                } catch (e) {console.log(e)}
                 // 禁用所有互动
                 disable_interaction();
             });

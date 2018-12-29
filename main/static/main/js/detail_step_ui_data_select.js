@@ -1,5 +1,12 @@
 // 初始化
-function init_step_ui_data_select(success, data) {
+function init_step_ui_data_select() {
+	var data = {};
+	var success = false;
+	try {
+		data = {"data": $.parseJSON($('textarea[name=ui_data]').val())};
+		success = true;
+	} catch (e) { console.log(e) }
+
 	if (success) {
 		if (data.data.length > 0) {
 			$.each(data.data, function (i, v) {

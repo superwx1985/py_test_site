@@ -1,3 +1,4 @@
+import logging
 import threading
 import weakref
 from concurrent.futures import ThreadPoolExecutor
@@ -46,18 +47,20 @@ RUNNING_SUITES = dict()
 lock = threading.Lock()
 
 
-def get_pool():
+def get_pool(logger=logging.getLogger('py_test.{}')):
     lock.acquire()
     global SUITE_EXECUTE_POOL
     if not SUITE_EXECUTE_POOL or (not RUNNING_SUITES and SUITE_EXECUTE_POOL.work_queue_empty_shutdown()):
         SUITE_EXECUTE_POOL = VicThreadPoolExecutor(SUITE_MAX_CONCURRENT_EXECUTE_COUNT or 1)
+        logger.debug('新建线程池')
     lock.release()
     return SUITE_EXECUTE_POOL
 
 
-def safety_shutdown_pool():
+def safety_shutdown_pool(logger=logging.getLogger('py_test.{}')):
     lock.acquire()
     global SUITE_EXECUTE_POOL
     if SUITE_EXECUTE_POOL and not RUNNING_SUITES and SUITE_EXECUTE_POOL.work_queue_empty_shutdown():
         SUITE_EXECUTE_POOL = None
+        logger.debug('关闭线程池')
     lock.release()

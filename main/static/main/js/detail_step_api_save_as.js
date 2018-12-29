@@ -11,7 +11,14 @@ function sortable_api_save_as() {
 	});
 }
 // 初始化
-function init_step_api_save_as(success, data) {
+function init_step_api_save_as() {
+	var data = {};
+	var success = false;
+	try {
+		data = {"data": $.parseJSON($('input[name=api_save]').val())};
+		success = true;
+	} catch (e) { console.log(e) }
+
 	if (success) {
 		if (data.data.length > 0) {
 			$.each(data.data, function (i, v) {

@@ -55,6 +55,7 @@ function show_action_field($actionSelect) {
 		introduce.append($('<div>').text('全选只能在多选下拉列表生效。'));
 		$('[ui],div[name=timeout],div[name=ui_data_select]').show();
 		$('div[name=ui_special_action],div[name=ui_data]').hide();
+		init_step_ui_data_select();
 		// 注册添加按钮
 		$('#ui_data_select_table #new_helper td[col_move]').on('click', function () {
 			add_step_ui_data_select();
@@ -199,6 +200,7 @@ function show_action_field($actionSelect) {
 	} else if (select_value === 'API_SEND_HTTP_REQUEST') {
 		introduce.children('div').text('发送HTTP请求。如果提供了待验证内容，将对执行结果进行验证。如果填写了保存响应内容，将把匹配的内容保存为变量');
 		$('div[api],div[name=save_as]').show();
+		init_step_api_save_as();
 		// 注册添加按钮
 		$('#api_save_as_table #new_helper td[col_move]').on('click', function () {
 			add_step_api_save_as();
