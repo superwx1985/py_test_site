@@ -260,7 +260,7 @@ Date.prototype.Format = function (fmt) {
 };
 
 // 更新下拉项
-function update_dropdown(data, $base_div, readonly) {
+function update_dropdown(data, $base_div, readonly, choice_callback) {
 	$base_div.empty();
 	var name = $base_div.attr('name');
 	var div_dropdown = $('<div j_dropdown style="width: 100%"><select style="display: none;" placeholder="请选择" name="' + name + '"></select></div>');
@@ -273,6 +273,7 @@ function update_dropdown(data, $base_div, readonly) {
 		choice: function() {
 			// console.log(this.selectId);
 			// window._selectId = JSON.stringify(this.selectId);
+            if (choice_callback) { choice_callback() }
 		}
 	});
 	if (readonly) {

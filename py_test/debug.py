@@ -6,16 +6,10 @@
 # print(a)
 
 
-# from py_test.vic_tools.vic_eval import EvalObject
-#
-# eo = EvalObject('["a", "b", "c", "d", "e"][$[x]$]', variable_dict={'x': 1})
-#
-# print(eo.get_eval_result())
+from py_test.vic_tools.vic_eval import EvalObject
 
-import time
+eo = EvalObject('admin', variable_dict={'x': 1})
 
-a = time.time()
+print(eo.get_eval_result())
 
-time.sleep(1)
 
-print('{:.2f}'.format(time.time()-a))

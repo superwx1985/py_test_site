@@ -2,7 +2,7 @@ from channels.generic.websocket import WebsocketConsumer
 import json
 from urllib.parse import parse_qs
 from main.models import Suite, Token
-from py_test.general.execute_suite import execute_suite
+from py_test.general.vic_suite import VicSuite
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -44,8 +44,9 @@ class SuiteConsumer(WebsocketConsumer):
                     except Suite.DoesNotExist:
                         self.send(text_data=json.dumps({'type': 'error', 'data': '找不到对应的测试套件'}), close=True)
                     else:
-                        suite_result = execute_suite(suite_, user, execute_uuid, self.sender)
-                        data_dict = self.get_result_data(suite_result)
+                        vic_suite = VicSuite(suite_, user, execute_uuid, self.sender)
+                        vic_suite.execute()
+                        data_dict = self.get_result_data(vic_suite.suite_result)
                         self.send(text_data=json.dumps({'type': 'end', 'data': data_dict}), close=True)
             elif command == 'stop':
                 FORCE_STOP[execute_uuid] = user.pk

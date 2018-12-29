@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        <title>自测页面</title>
+        {% include 'main/include/general_css.html' %}
+        {% include 'main/include/general_script.html' %}
+        <style>
+
+        </style>
+        <script>
+            $(function () {
+
+            })
+        </script>
+    </head>
+    <body>
+        <ul>
+            <li><a id="a_test1" href="{% url 'test1' %}" target="_blank">test1</a></li>
+            <li><a id="a_test2" href="{% url 'test2' %}" target="_blank">test2</a></li>
+            <li><a id="a_test3" href="{% url 'test3' %}" target="_blank">test3</a></li>
+            <li><a id="a_debug1" href="{% url 'debug1' %}" target="_blank">debug1</a></li>
+            <li><a id="a_debug2" href="{% url 'debug2' %}" target="_blank">debug2</a></li>
+            <li><a id="a_debug3" href="{% url 'debug3' %}" target="_blank">debug3</a></li>
+        </ul>
+        <br>
+    </body>
+</html>

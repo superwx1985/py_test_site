@@ -120,11 +120,12 @@ class EvalObject:
     # 替换表达式中的变量
     def get_final_expression(self):
         final_expression = self.__eval_expression
+        locals_dict = dict()
         for k, v in self.__variable_dict.items():
             if not isinstance(k, str):
                 raise ValueError('Variables\' key should be str class')
             # 加上左右边界，但不能重复添加
-            k = self.__left_separator + k.replace(self.__left_separator, '').replace(
+            k_ = self.__left_separator + k.replace(self.__left_separator, '').replace(
                 self.__right_separator,  '') + self.__right_separator
             if not final_expression.find(k) == -1:
                 if isinstance(v, (int, float)):
@@ -138,9 +139,11 @@ class EvalObject:
                         v = "datetime.datetime.strptime('{}', '%Y-%m-%d %H:%M:%S.%f')".format(v)
                     except ValueError:
                         v = "datetime.datetime.strptime('{}', '%Y-%m-%d %H:%M:%S')".format(v)
+                elif isinstance(v, (tuple, list, dict)):
+                    v = k
                 else:
                     raise ValueError('Variables\' value should be str, int, float, bool or datatime class')
-                final_expression = final_expression.replace(k, v)
+                final_expression = final_expression.replace(k_, v)
         return final_expression
 
     def get_eval_result(self):
@@ -165,7 +168,10 @@ class EvalObject:
             else:
                 self.logger.debug('Final expression:{}'.format(final_expression))
                 try:
-                    eval_result = eval(final_expression)
+                    if self.__variable_dict:
+                        eval_result = eval(final_expression, None, self.__variable_dict)
+                    else:
+                        eval_result = eval(final_expression)
                     success = True
                 except Exception as e:
                     eval_result = e

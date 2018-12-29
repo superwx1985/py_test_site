@@ -148,6 +148,7 @@ urlpatterns = [
     path('debug/', general.debug, name='debug'),
     path('test1/', general.test1, name='test1'),
     path('test2/', general.test2, name='test2'),
+    path('test3/', general.test3, name='test3'),
     path('debug1/', general.debug1, name='debug1'),
     path('debug2/', general.debug2, name='debug2'),
     path('debug3/', general.debug3, name='debug3'),

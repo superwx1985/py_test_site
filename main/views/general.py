@@ -29,15 +29,19 @@ def clear_db(request):
 
 
 def debug(request):
-    return render(request, 'main/debug.html')
+    return render(request, 'main/other/debug.html')
 
 
 def test1(request):
-    return render(request, 'main/test1.html')
+    return render(request, 'main/other/test1.html')
 
 
 def test2(request):
-    return render(request, 'main/test2.html')
+    return render(request, 'main/other/test2.html')
+
+
+def test3(request):
+    return render(request, 'main/other/test3.html')
 
 
 def debug1(_):

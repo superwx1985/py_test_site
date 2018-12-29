@@ -14,10 +14,10 @@ class Variables:
             raise ValueError('The variable name [' + name + '] is invalid, it should not have "${" or "}$"')
 
     # 设置变量
-    def set_variable(self, name, value, msg_len=None):
+    def set_variable(self, name, value, msg_len=500):
         self.check_name(name)
-        if msg_len and str(msg_len).isdigit() and len(str(value)) > msg_len:
-            value_ = '{}【变量值过长，后续部分不再显示】'.format(str(value)[:msg_len])
+        if len(str(value)) > msg_len:
+            value_ = '{}...（变量值过长，后续部分不再显示，但不影响实际取值）'.format(str(value)[:msg_len])
         else:
             value_ = value
         if name in self.variable_dict:
@@ -75,7 +75,7 @@ def get_elements(name, variables=None, global_variables=None):
     elif isinstance(variable_, list) and isinstance(variable_[0], WebElement):
         elements = variable_
     else:
-        raise exceptions.NoSuchElementException('变量【{}】不是一个元素'.format(name))
+        raise exceptions.NoSuchElementException('变量【{}】不包含元素对象'.format(name))
     return elements
 
 

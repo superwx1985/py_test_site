@@ -7,31 +7,23 @@ from py_test.vic_tools import vic_find_object
 
 
 # 发送http请求
-def send_http_request(
-        url, method='GET', headers=None, body=None, decode='', timeout=30, logger=logging.getLogger('py_test')):
-    method = method.upper()
-    if headers:
-        try:
-            headers = json.loads(headers)
-        except ValueError as e:
-            logger.error('header格式不正确，请使用正确的json格式', exc_info=True)
-            raise ValueError('header格式不正确，请使用正确的json格式。错误信息：{}'.format(getattr(e, 'msg', str(e))))
-    else:
-        headers = None
-    h = httplib2.Http(timeout=timeout)
+def send_http_request(vic_step):
+    h = httplib2.Http(timeout=vic_step.timeout)
     response_start_time = datetime.datetime.now()
     try:
-        response, content = h.request(uri=url, method=method, headers=headers, body=body)
+        response, content = h.request(
+            uri=vic_step.api_url, method=vic_step.api_method.upper(), headers=vic_step.api_headers,
+            body=vic_step.api_body)
         response_end_time = datetime.datetime.now()
-    except socket.timeout:
+    except socket.timeout as e:
         response_end_time = datetime.datetime.now()
-        response = None
-        response_body = ''
+        response = e
+        response_body = getattr(e, 'msg', str(e))
     else:
-        response_body = None
-        if content is not None:
+        response_body = ''
+        if content:
             try:
-                decode = decode if decode else 'utf-8'
+                decode = vic_step.api_decode if vic_step.api_decode else 'utf-8'
                 response_body = content.decode(decode)  # 处理中文乱码
             except UnicodeDecodeError:
                 response_body = str(content)
@@ -112,6 +104,10 @@ def verify_http_response(expect, response, logger=logging.getLogger('py_test')):
 
 # 获取响应内容，保存为变量
 def save_http_response(response, content, save_as_group, variables, logger=logging.getLogger('py_test')):
+    try:
+        save_as_group = json.loads(save_as_group)
+    except json.decoder.JSONDecodeError as e:
+        raise ValueError('待保存内容无法解析。错误信息：{}'.format(getattr(e, 'msg', str(e))))
     success = True
     msg = ''
     for save_as in save_as_group:
@@ -135,6 +131,7 @@ def save_http_response(response, content, save_as_group, variables, logger=loggi
                             error_msg = '响应头中没有找到满足表达式【{}】的内容'.format(expression)
                             logger.warning(error_msg)
                             value = ''
+                            success = False
                 else:
                     value = response_json
             else:
@@ -146,11 +143,12 @@ def save_http_response(response, content, save_as_group, variables, logger=loggi
                         error_msg = '响应体中没有找到满足表达式【{}】的内容'.format(expression)
                         logger.warning(error_msg)
                         value = ''
+                        success = False
                 else:
                     value = content
-        msg_ = variables.set_variable(name, value, 1000)
+        msg_ = variables.set_variable(name, value)
         msg_ = '用例' + msg_
         if error_msg:
-            msg_ = '{}（{}）'.format(msg_, error_msg)
+            msg_ = '{}，所以{}'.format(error_msg, msg_)
         msg = msg + msg_ + '\n'
     return success, msg

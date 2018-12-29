@@ -21,19 +21,19 @@ function show_action_field($actionSelect) {
 		$('[ui],div[name=timeout]').show();
 		$('div[name=ui_data],div[name=ui_special_action]').hide();
 	} else if (select_value === 'UI_SWITCH_TO_FRAME') {
-		introduce.children('div').text('切换至页面内嵌的frame或iframe。如果提供了定位信息，则切换至定位到的元素绑定的frame，否则切换至索引值对应的frame');
+		introduce.children('div').text('进入页面内嵌框架（frame或iframe）。如果提供了定位信息，则切换至定位到的元素绑定的框架，否则切换至索引值（当前页面的第一个框架索引为0，第二个框架索引为1，以此类推）对应的框架');
 		$('[ui],div[name=timeout]').show();
 		$('div[name=ui_data],div[name=ui_special_action]').hide();
 	} else if (select_value === 'UI_SWITCH_TO_DEFAULT_CONTENT') {
-		introduce.children('div').text('回到frame的上一级页面，如进入了多层frame，请使用多次该动作');
+		introduce.children('div').text('回到框架的上一级页面，如进入了多层框架，请使用多次该动作');
 		$('div[name=ui_alert_handle],div[name=timeout]').show();
 	} else if (select_value === 'UI_SWITCH_TO_WINDOW') {
-		introduce.children('div').text('切换至浏览器的其他窗口或标签。如果提供了定位信息，则切换到包含该元素的窗口，如果提供了窗口标题，则切换到标题（head中title元素的值）中包含该文字的窗口，否则切换至任意一个非当前窗口');
+		introduce.children('div').text('切换至浏览器的其他窗口或标签。如果提供了窗口标题，则切换到标题（head中title元素的值）中包含该文字的窗口；如果提供了定位信息，则切换到包含该元素的窗口；否则切换至任意一个非当前窗口');
 		$('[ui],div[name=timeout]').show();
 		$('div[name=ui_special_action]').hide();
 		$('div[name=ui_data] .col-1').text('窗口标题');
 	} else if (select_value === 'UI_CLOSE_WINDOW') {
-		introduce.children('div').text('关闭当前浏览器窗口或标签并切换至其他窗口或标签。如果提供了定位信息，则切换到包含该元素的窗口，如果提供了窗口标题，则切换到标题中包含该文字的窗口，否则切换至任意一个非当前窗口');
+		introduce.children('div').text('关闭当前浏览器窗口或标签并切换至其他窗口或标签。如果提供了窗口标题，则切换到标题（head中title元素的值）中包含该文字的窗口；如果提供了定位信息，则切换到包含该元素的窗口；否则切换至任意一个非当前窗口');
 		$('[ui],div[name=timeout]').show();
 		$('div[name=ui_special_action]').hide();
 		$('div[name=ui_data] .col-1').text('窗口标题');
@@ -188,11 +188,17 @@ function show_action_field($actionSelect) {
 		introduce.append($('<div>注意：无法在表达式中使用特殊变量。<span class="text-danger">错误示例</span>：<span class="mark">${int|3}$==3</span>；<span class="text-success">正确示例</span>：在赋值给x时使用特殊变量<span class="mark">${int|3}$</span>，然后在表达式中使用<span class="mark">$[x]$==3</span></div>'));
 		$('div[name=other_data]').show();
 	} else if (select_value === 'DB_EXECUTE_SQL') {
-		introduce.children('div').text('执行SQL，如果提供了待验证内容，将对执行结果进行验证。');
-		$('div[db]').show();
+		introduce.children('div').text('执行SQL，如果是select操作，可把结果集保存为变量');
+		introduce.append($('<div>结果集会被保存为一个列表，其中的每一条记录被保存为一个字典，字段名作为字段的键，字段值为字典中的值</div>'));
+		introduce.append($('<div>例：如果把结果集保存为变量db_result，那么在后续步骤中可以通过表达式$[db_result]$[0]["ID"]调用结果集中第一条结果的ID字段的值</div>'));
+		$('div[db],div[name=save_as]').show();
+		$('div[name="db_data"]').hide();
+	} else if (select_value === 'DB_VERIFY_SQL_RESULT') {
+		introduce.children('div').text('执行SQL，并将对执行结果进行验证，可把验证结果保存为变量');
+		$('div[db],div[name=save_as]').show();
 	} else if (select_value === 'API_SEND_HTTP_REQUEST') {
-		introduce.children('div').text('发送HTTP请求，如果提供了待验证内容，将对执行结果进行验证。');
-		$('div[api]').show();
+		introduce.children('div').text('发送HTTP请求。如果提供了待验证内容，将对执行结果进行验证。如果填写了保存响应内容，将把匹配的内容保存为变量');
+		$('div[api],div[name=save_as]').show();
 		// 注册添加按钮
 		$('#api_save_as_table #new_helper td[col_move]').on('click', function () {
 			add_step_api_save_as();

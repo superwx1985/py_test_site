@@ -6,12 +6,33 @@ import datetime
 import logging
 from selenium.common import exceptions
 from PIL import Image
+from django.core.files.uploadedfile import UploadedFile
+from py_test.ui_test import method
+
+
+def get_screenshot(vic_step):
+    element = None
+    img = None
+    run_result = None
+    if vic_step.ui_by and vic_step.ui_locator:
+        _ui_data = vic_step.ui_data  # 把ui_data置空，防止查找元素时被当做数量限制表达式
+        vic_step.ui_data = None
+        run_result_temp, visible_elements, _ = method.wait_for_element_visible(vic_step)
+        vic_step.ui_data = _ui_data
+        if len(visible_elements) > 0:
+            element = visible_elements[0]
+        else:
+            run_result = ['f', '截图失败，指定的截取元素未找到，{}'.format(run_result_temp[1])]
+    if not run_result:
+        try:
+            run_result, img = _get_screenshot(vic_step.dr, element)
+        except Exception as e:
+            run_result = ['f', '截图失败，原因为{}'.format(getattr(e, 'msg', str(e)))]
+    return run_result, img
 
 
 # 根据浏览器类型调取不同的截图方法
-def get_screenshot(dr, element=None):
-    from django.core.files.uploadedfile import UploadedFile
-    from main.models import Image
+def _get_screenshot(dr, element=None):
     bio = io.BytesIO()
     # 刚打开某个页面时截图会报错，加入3次重试机制
     for i in range(3):
@@ -34,7 +55,8 @@ def get_screenshot(dr, element=None):
             break
 
     name = datetime.datetime.now().strftime('%Y%m%d_%H%M%S.png')
-    image = Image(name=name, img=UploadedFile(bio, name=name))
+    from main.models import Image as db_Image
+    image = db_Image(name=name, img=UploadedFile(bio, name=name))
     image.save()
     bio.close()
     run_result = ['p', '截图成功【{}】'.format(name)]

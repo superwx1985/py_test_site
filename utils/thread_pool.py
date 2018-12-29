@@ -33,5 +33,31 @@ class VicThreadPoolExecutor(ThreadPoolExecutor):
             self._threads.add(t)
             _threads_queues[t] = self._work_queue
 
+    def work_queue_empty_shutdown(self):
+        if self._work_queue.empty():
+            self.shutdown()
+            return True
+        else:
+            return False
 
-SUITE_EXECUTE_POOL = VicThreadPoolExecutor(SUITE_MAX_CONCURRENT_EXECUTE_COUNT or 1)
+
+SUITE_EXECUTE_POOL = None
+RUNNING_SUITES = dict()
+lock = threading.Lock()
+
+
+def get_pool():
+    lock.acquire()
+    global SUITE_EXECUTE_POOL
+    if not SUITE_EXECUTE_POOL or (not RUNNING_SUITES and SUITE_EXECUTE_POOL.work_queue_empty_shutdown()):
+        SUITE_EXECUTE_POOL = VicThreadPoolExecutor(SUITE_MAX_CONCURRENT_EXECUTE_COUNT or 1)
+    lock.release()
+    return SUITE_EXECUTE_POOL
+
+
+def safety_shutdown_pool():
+    lock.acquire()
+    global SUITE_EXECUTE_POOL
+    if SUITE_EXECUTE_POOL and not RUNNING_SUITES and SUITE_EXECUTE_POOL.work_queue_empty_shutdown():
+        SUITE_EXECUTE_POOL = None
+    lock.release()
