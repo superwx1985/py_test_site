@@ -18,7 +18,7 @@ if not os.path.exists(LOG_DIR):
 SECRET_KEY = '-8=0r94)m^&x^v7)886@@&iq$2aa*#8@d)dji+x)o(5l1a4dui'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -90,8 +90,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'py_test_site',
-        # 'HOST': '127.0.0.1',
-        'HOST': '192.192.185.140',
+        'HOST': '127.0.0.1',
+        # 'HOST': '192.192.185.140',
         'PORT': '3306',
         'USER': 'py_test_site',
         'PASSWORD': 'py_test_site',
