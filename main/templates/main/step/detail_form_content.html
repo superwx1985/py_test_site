@@ -182,7 +182,7 @@
         {% include 'main/include/form_textarea.html' with field=form.db_sql rows='2' %}
     </div>
 </div>
-<div class="row align-items-center" db>
+<div class="row align-items-center" db name="db_data">
     <div class="col-1 text-center font-weight-bold">待验证内容</div>
     <div class="col" form_data>
         {% include 'main/include/form_textarea.html' with field=form.db_data rows='2' %}
@@ -219,7 +219,7 @@
     </div>
 </div>
 <div class="row align-items-center" common name="save_as">
-    <div class="col-1 text-center font-weight-bold">变量名&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="填入要保存的变量名称，不能包含 ${  }$"></i></div>
+    <div class="col-1 text-center font-weight-bold">保存为&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="填入要保存为的变量名称，不能包含 ${  }$"></i></div>
     <div class="col mx-auto" form_data>
         {% include 'main/include/form_input.html' with field=form.save_as %}
     </div>

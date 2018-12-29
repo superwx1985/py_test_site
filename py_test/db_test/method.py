@@ -18,42 +18,41 @@ def makedict(cursor):
 
 
 # 获取查询结果
-def get_sql_result(
-        db_type, db_host, db_port, db_name, db_user, db_password, db_lang, sql, timeout=10):
+def get_sql_result(vic_step):
     select_result = list()
-    if db_type == 1:
-        if db_lang:
-            os.environ['NLS_LANG'] = db_lang
-        database_connect_string = '{}:{}/{}'.format(db_host, db_port, db_name)
-        with cx_Oracle.connect(db_user, db_password, database_connect_string) as conn:
-            timer = threading.Timer(timeout, conn.cancel)
+    if vic_step.db_type == 1:
+        if vic_step.db_lang:
+            os.environ['NLS_LANG'] = vic_step.db_lang
+        database_connect_string = '{}:{}/{}'.format(vic_step.db_host, vic_step.db_port, vic_step.db_name)
+        with cx_Oracle.connect(vic_step.db_user, vic_step.db_password, database_connect_string) as conn:
+            timer = threading.Timer(vic_step.timeout, conn.cancel)
             cursor = conn.cursor()
             # 启动定时器，到达超时值后执行conn.cancel
             timer.start()
-            raw_result = cursor.execute(sql)
+            raw_result = cursor.execute(vic_step.db_sql)
             # 如果是查询操作，cursor.description不为空
             if cursor.description:
                 cursor.rowfactory = makedict(cursor)
                 select_result = raw_result.fetchall()
-                sql_result = '查询到{}行数据'.format(cursor.rowcount)
+                sql_result = '查询到{}条数据'.format(cursor.rowcount)
             else:
                 sql_result = '影响行数{}'.format(cursor.rowcount)
             # 关闭定时器
             timer.cancel()
             cursor.close()
-    elif db_type == 2:
-        if db_lang:
-            charset = db_lang
+    elif vic_step.db_type == 2:
+        if vic_step.db_lang:
+            charset = vic_step.db_lang
         else:
             charset = ''
-        if isinstance(db_port, str) and db_port.isdigit():
-            port = int(db_port)
+        if isinstance(vic_step.db_port, str) and vic_step.db_port.isdigit():
+            port = int(vic_step.db_port)
         else:
             port = 3306
-        with pymysql.connect(host=db_host, user=db_user, password=db_password, database=db_name, port=port,
-                             cursorclass=pymysql.cursors.DictCursor, charset=charset,
-                             connect_timeout=timeout) as cursor:
-            cursor.execute(sql)
+        with pymysql.connect(host=vic_step.db_host, user=vic_step.db_user, password=vic_step.db_password,
+                             database=vic_step.db_name, port=port, cursorclass=pymysql.cursors.DictCursor,
+                             charset=charset, connect_timeout=vic_step.timeout) as cursor:
+            cursor.execute(vic_step.db_sql)
             # 如果是查询操作，cursor.description不为空
             if cursor.description:
                 select_result = cursor.fetchall()
@@ -77,10 +76,39 @@ class JsonDatetimeEncoder(json.JSONEncoder):
 
 
 # 验证查询结果
-def verify_sql_result(expect, sql_result, logger=logging.getLogger('py_test')):
-    find_result = vic_find_object.find_with_condition(expect, sql_result, logger=logger)
+def verify_db_test_result(expect, result, logger=logging.getLogger('py_test')):
+    find_result = vic_find_object.find_with_condition(expect, result, logger=logger)
     if find_result.is_matched:
         run_result = ['p', find_result]
     else:
         run_result = ['f', find_result]
     return run_result
+
+
+if __name__ == "__main__":
+    import logging
+
+    class VicStep:
+        def __init__(self):
+            self.db_type = 1
+            self.db_lang = 'simplified chinese_china.UTF8'
+            self.db_host = '192.192.189.193'
+            self.db_port = 1521
+            self.db_name = 'tdr'
+            self.db_user = 'dw'
+            self.db_password = 'dw'
+            self.timeout = 50
+            self.db_sql = 'select CI_ADDRESS from TB_B_C_CI WHERE ROWNUM <= 1'
+
+            # logger = logging.getLogger()
+            # handler = logging.StreamHandler()
+            # logger.addHandler(handler)
+            # logger.setLevel(10)
+            # self.logger = logger
+
+
+    vs = VicStep()
+    a, b = get_sql_result(vs)
+
+    print(a)
+    print(type(b), b)

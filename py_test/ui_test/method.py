@@ -11,7 +11,9 @@ from py_test.general import vic_variables
 
 
 # 获取公共元素
-def get_public_elements(name, public_elements):
+def get_public_elements(vic_step):
+    name = vic_step.ui_locator
+    public_elements = vic_step.public_elements
     try:
         element_info = public_elements.get_element_info(name)
     except KeyError:
@@ -63,16 +65,16 @@ def highlight_for_a_moment(dr, elements, color='green', duration=0.5):
 
 
 # 等待文字出现
-def wait_for_text_present(dr, text, timeout, base_element=None, print_=True, logger=logging.getLogger('py_test')):
+def _wait_for_text_present(dr, text, timeout, ui_base_element=None, print_=True, logger=logging.getLogger('py_test')):
     dr.implicitly_wait(0.5)
     elements = list()
     start_time = time.time()
     last_print_time = 0
     while (time.time() - start_time) <= timeout:
-        if isinstance(base_element, WebElement):
-            find_result = vic_find_object.find_with_condition(text, base_element.text, logger=logger)
+        if isinstance(ui_base_element, WebElement):
+            find_result = vic_find_object.find_with_condition(text, ui_base_element.text, logger=logger)
             if find_result.is_matched:
-                elements_temp = base_element.find_elements_by_xpath('.//*[contains(text(),"' + text + '")]')
+                elements_temp = ui_base_element.find_elements_by_xpath('.//*[contains(text(),"' + text + '")]')
                 for element in elements_temp:
                     if element.is_displayed():
                         elements.append(element)
@@ -86,9 +88,9 @@ def wait_for_text_present(dr, text, timeout, base_element=None, print_=True, log
             }
             return false;
             '''
-            js_result = dr.execute_script(js_str, base_element, text)
+            js_result = dr.execute_script(js_str, ui_base_element, text)
             if js_result:
-                elements.append(base_element)
+                elements.append(ui_base_element)
         else:
             _body = dr.find_element_by_tag_name('body')
             find_result = vic_find_object.find_with_condition(text, _body.text, logger=logger)
@@ -97,7 +99,7 @@ def wait_for_text_present(dr, text, timeout, base_element=None, print_=True, log
                 for element in elements_temp:
                     if element.is_displayed():
                         elements.append(element)
-                if 0 == len(elements):  # 如果文本不在元素的第一个子节点，用text()可能会找不到
+                if not elements:  # 如果文本不在元素的第一个子节点，用text()可能会找不到
                     elements.append(_body)
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
@@ -116,256 +118,263 @@ def wait_for_text_present(dr, text, timeout, base_element=None, print_=True, log
     return run_result, elements
 
 
-# 等待字符串出现，包含定位符
-def wait_for_text_present_with_locator(
-        dr, by, locator, text, timeout, index_, base_element=None, variable_elements=None, print_=True,
-        logger=logging.getLogger('py_test')):
-    dr.implicitly_wait(0.5)
+# 等待文字出现
+def wait_for_text_present(vic_step, print_=True):
     start_time = time.time()
     last_print_time = 0
     elements = list()
     fail_elements = list()
-    elements_temp = list()
-    while (time.time() - start_time) <= timeout:
-        elements = list()
-        fail_elements = list()
-        run_result_temp, elements_temp, elements_all = wait_for_element_visible(
-            dr, by, locator, 1, base_element, variable_elements, print_=False, logger=logger)
-        if len(elements_temp) == 0:
-            now_time = time.time()
-            if print_ and now_time - last_print_time >= 1:
-                elapsed_time = str(round(now_time - start_time, 2))
-                logger.info('经过%s秒 - 未找到期望元素' % elapsed_time)
-                last_print_time = now_time
-                continue
+    index_ = vic_step.ui_index
+    text = vic_step.ui_data
+    run_result = ['f', 'N/A']
+    _success = False
+    msg = '没找到期望文字【{}】'.format(text)
+    vic_step.dr.implicitly_wait(0.5)
+    while (time.time() - start_time) <= vic_step.timeout:
+        elements.clear()
+        fail_elements.clear()
+        if not vic_step.ui_by and not vic_step.ui_locator:
+            _body = vic_step.dr.find_element_by_tag_name('body')
+            find_result = vic_find_object.find_with_condition(text, _body.text, logger=vic_step.logger)
+            if find_result.is_matched:
+                elements_temp = vic_step.dr.find_elements_by_xpath('//body//*[contains(text(),"' + text + '")]')
+                for element in elements_temp:
+                    if element.is_displayed():
+                        elements.append(element)
+                if not elements:  # 如果文本不在元素的第一个子节点，用text()可能会找不到
+                    elements.append(_body)
+                msg = '在页面找到期望文字【{}】'.format(text)
+                _success = True
         else:
-            if index_ is None:
-                for element_temp in elements_temp:
-                    element_text = dr.execute_script(
-                        'return arguments[0].textContent||arguments[0].innerText||arguments[0].value',
-                        element_temp)
-                    find_result = vic_find_object.find_with_condition(text, element_text, logger=logger)
-                    if find_result.is_matched:
-                        elements.append(element_temp)
-                    else:
-                        fail_elements.append(element_temp)
-            elif index_ > (len(elements_temp) - 1):
-                raise exceptions.ElementNotSelectableException(
-                    str(len(elements_temp)) + ' elements found, the provided index (' + str(
-                        index_) + ') is out of range (0 ~ ' + str(len(elements) - 1) + ')')
+            _ui_data = vic_step.ui_data  # 把ui_data置空，防止查找元素时被当做数量限制表达式
+            vic_step.ui_data = None
+            run_result_temp, elements_temp, elements_all = wait_for_element_visible(vic_step, timeout=1, print_=False)
+            vic_step.ui_data = _ui_data
+            if run_result_temp[0] == 'f':
+                msg = '未找到期望元素【By:{}|Locator:{}】或元素不可见'.format(vic_step.ui_by, vic_step.ui_locator)
             else:
-                element_text = dr.execute_script(
-                    'return arguments[0].textContent||arguments[0].innerText||arguments[0].value',
-                    elements_temp[index_])
-                find_result = vic_find_object.find_with_condition(text, element_text, logger=logger)
-                if find_result.is_matched:
-                    elements.append(elements_temp[index_])
+                if index_ is None:
+                    for element_temp in elements_temp:
+                        element_text = vic_step.dr.execute_script(
+                            'return arguments[0].textContent||arguments[0].innerText||arguments[0].value',
+                            element_temp)
+                        find_result = vic_find_object.find_with_condition(text, element_text, logger=vic_step.logger)
+                        if find_result.is_matched:
+                            elements.append(element_temp)
+                        else:
+                            fail_elements.append(element_temp)
+                elif index_ > (len(elements_temp) - 1):
+                    raise ValueError('找到{}个元素，但指定的index【{}】超出可用范围（0到{}）'.format(
+                        len(elements), index_, len(elements) - 1))
                 else:
-                    fail_elements.append(elements_temp[index_])
-            now_time = time.time()
-            if print_ and now_time - last_print_time >= 1:
-                elapsed_time = str(round(now_time - start_time, 2))
-                logger.info('经过%s秒 - 找到期望元素%r个，其中有%r个元素包含期望文本' % (elapsed_time, len(elements_temp), len(elements)))
-                last_print_time = now_time
-        if len(elements) > 0 and (len(elements) == len(elements_temp) or index_ is not None):
+                    element_text = vic_step.dr.execute_script(
+                        'return arguments[0].textContent||arguments[0].innerText||arguments[0].value',
+                        elements_temp[index_])
+                    find_result = vic_find_object.find_with_condition(text, element_text, logger=vic_step.logger)
+                    if find_result.is_matched:
+                        elements.append(elements_temp[index_])
+                    else:
+                        fail_elements.append(elements_temp[index_])
+                msg = '找到期望元素【By:{}|Locator:{}】{}个，其中有{}个元素包含期望文字【{}】'.format(
+                    vic_step.ui_by, vic_step.ui_locator, len(elements_temp), len(elements), text)
+            if elements and not fail_elements:
+                _success = True
+
+        now_time = time.time()
+        if print_ and now_time - last_print_time >= 1:
+            elapsed_time = str(round(now_time - start_time, 2))
+            msg = '经过{}秒 - {}'.format(elapsed_time, msg)
+            vic_step.logger.info(msg)
+            last_print_time = now_time
+
+        if _success:
+            run_result = ['p', msg]
             break
-    dr.implicitly_wait(timeout)
-    elapsed_time = str(round(time.time() - start_time, 2))
-    msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中有{}个元素包含期望文本【{}】'.format(
-        elapsed_time, by, locator, len(elements_temp), len(elements), text)
-    if len(elements) == 0 or (len(elements) < len(elements_temp) and index_ is None):
-        run_result = ['f', msg]
-    else:
-        run_result = ['p', msg]
+        else:
+            run_result = ['f', msg]
+
+    vic_step.dr.implicitly_wait(vic_step.timeout)
     return run_result, elements, fail_elements
 
 
 # 等待元素出现
-def wait_for_element_present(
-        dr, by, locator, timeout, base_element=None, variable_elements=None, print_=True,
-        logger=logging.getLogger('py_test')):
+def wait_for_element_present(vic_step, timeout=None, print_=True):
     elements = list()
-    dr.implicitly_wait(0.5)
+    if not timeout:
+        timeout = vic_step.timeout
+
+    vic_step.dr.implicitly_wait(0.5)
     start_time = time.time()
     last_print_time = 0
     while (time.time() - start_time) <= timeout:
-        if variable_elements is not None:
-            elements = variable_elements
+        if vic_step.variable_elements:
+            elements = vic_step.variable_elements
         else:
-            if isinstance(base_element, WebElement):
-                elements = base_element.find_elements(by, locator)
+            if isinstance(vic_step.ui_base_element, WebElement):
+                elements = vic_step.ui_base_element.find_elements(vic_step.ui_by, vic_step.ui_locator)
             else:
-                elements = dr.find_elements(by, locator)
+                elements = vic_step.dr.find_elements(vic_step.ui_by, vic_step.ui_locator)
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 找到期望元素%r个' % (elapsed_time, len(elements)))
+            vic_step.logger.info('经过{}秒 - 找到期望元素{}个'.format(elapsed_time, len(elements)))
             last_print_time = now_time
-        if len(elements) > 0:
+        if elements:
             break
-    dr.implicitly_wait(timeout)
+    vic_step.dr.implicitly_wait(timeout)
     elapsed_time = str(round(time.time() - start_time, 2))
-    msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个'.format(elapsed_time, by, locator, len(elements))
-    if len(elements) == 0:
-        run_result = ['f', msg]
-    else:
+    msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个'.format(elapsed_time, vic_step.ui_by, vic_step.ui_locator, len(elements))
+    if elements:
         run_result = ['p', msg]
+    else:
+        run_result = ['f', msg]
     return run_result, elements
 
 
 # 获取元素
-def get_element(
-        dr, by, locator, timeout, index_, base_element=None, variable_elements=None, print_=True,
-        logger=logging.getLogger('py_test')):
-    if variable_elements is not None:
-        elements = variable_elements
-    else:
-        run_result_temp, elements = wait_for_element_present(dr, by, locator, timeout, base_element=base_element,
-                                                             variable_elements=None, print_=print_, logger=logger)
-        if run_result_temp[0] == 'f':
-            raise exceptions.NoSuchElementException('无法执行动作，因为：{}'.format(run_result_temp[1]))
-    if len(elements) == 1 and index_ in (None, 0):
-        element = elements[0]
-    elif index_ is None:
-        raise ValueError('找到%r个元素，请指定一个index' % len(elements))
-    elif index_ > (len(elements) - 1):
-        raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
-    else:
-        element = elements[index_]
-    return element
-
-
-# 等待元素可见
-def wait_for_element_visible(
-        dr, by, locator, timeout, base_element=None, variable_elements=None, print_=True,
-        logger=logging.getLogger('py_test')):
-    elements = list()
-    visible_elements = list()
-    dr.implicitly_wait(0.5)
-    start_time = time.time()
+def get_element(vic_step, timeout=None, print_=True, necessary=True):
+    if not timeout:
+        timeout = vic_step.timeout
+    result_msg = '未找到'
+    el_msg = '符合条件的元素'
+    element = None
     last_print_time = 0
+    start_time = time.time()
     while (time.time() - start_time) <= timeout:
-        visible_elements = list()
-        if variable_elements is not None:
-            elements = variable_elements
-        else:
-            if isinstance(base_element, WebElement):
-                elements = base_element.find_elements(by, locator)
+        run_result_temp, elements = wait_for_element_present(vic_step, timeout=1, print_=print_)
+        if run_result_temp[0] == 'p':
+            result_msg = '找到'
+            if vic_step.ui_index:
+                if vic_step.ui_index > (len(elements) - 1):
+                    el_msg = '{}个元素，但指定的index【{}】超出可用范围（0到{}）'.format(
+                        len(elements), vic_step.ui_index, len(elements) - 1)
+                else:
+                    element = elements[vic_step.ui_index]
+                    el_msg = '元素【By:{}|Locator:{}|Index:{}】'.format(
+                        vic_step.ui_by, vic_step.ui_locator, vic_step.ui_index)
             else:
-                elements = dr.find_elements(by, locator)
-        if len(elements) > 0:
-            for element in elements:
-                if element.is_displayed():
-                    visible_elements.append(element)
+                if len(elements) > 1:
+                    el_msg = '{}个元素，请指定一个index'.format(len(elements))
+                else:
+                    element = elements[0]
+                    el_msg = '元素【By:{}|Locator:{}】'.format(vic_step.ui_by, vic_step.ui_locator)
+        else:
+            result_msg = '未找到'
+            el_msg = '符合条件的元素'
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
+            vic_step.logger.info('经过{}秒 - {}{}'.format(elapsed_time, result_msg, el_msg))
             last_print_time = now_time
-        if len(visible_elements) > 0:
+        if element:
             break
-    dr.implicitly_wait(timeout)
-    elapsed_time = str(round(time.time() - start_time, 2))
-    msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个'.format(
-        elapsed_time, by, locator, len(elements), len(visible_elements))
-    if len(elements) == 0 or len(visible_elements) == 0:
-        run_result = ['f', msg]
-    else:
-        run_result = ['p', msg]
+    if necessary and not element:
+        raise exceptions.NoSuchElementException('{}{}'.format(result_msg, el_msg))
+    return element, result_msg, el_msg
+
+
+# 等待元素可见
+def wait_for_element_visible(vic_step, timeout=None, print_=True):
+    elements = list()
+    visible_elements = list()
+    if not timeout:
+        timeout = vic_step.timeout
+    run_result = ['f', 'N/A']
+    _success = False
+    vic_step.dr.implicitly_wait(0.5)
+    last_print_time = 0
+    start_time = time.time()
+    while (time.time() - start_time) <= timeout:
+        visible_elements.clear()
+        if vic_step.variable_elements:
+            elements = vic_step.variable_elements
+        else:
+            if isinstance(vic_step.ui_base_element, WebElement):
+                elements = vic_step.ui_base_element.find_elements(vic_step.ui_by, vic_step.ui_locator)
+            else:
+                elements = vic_step.dr.find_elements(vic_step.ui_by, vic_step.ui_locator)
+        if elements:
+            for element in elements:
+                if element.is_displayed():
+                    visible_elements.append(element)
+
+        msg = '找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个'.format(
+            vic_step.ui_by, vic_step.ui_locator, len(elements), len(visible_elements))
+        if visible_elements:
+            if vic_step.ui_data:
+                eo = vic_eval.EvalObject(vic_step.ui_data, {'x': len(visible_elements)}, vic_step.logger)
+                eval_success, eval_result, final_expression = eo.get_eval_result()
+                compare_result = eval_result
+                if compare_result is True:
+                    msg = '{}，符合给定的数量限制'.format(msg)
+                    _success = True
+                else:
+                    msg = '{}，不符合给定的数量限制'.format(msg)
+            else:
+                _success = True
+
+        now_time = time.time()
+        if print_ and now_time - last_print_time >= 1:
+            elapsed_time = str(round(now_time - start_time, 2))
+            msg = '经过{}秒 - {}'.format(elapsed_time, msg)
+            vic_step.logger.info(msg)
+            last_print_time = now_time
+
+        if _success:
+            run_result = ['p', msg]
+            break
+        else:
+            run_result = ['f', msg]
+
+    vic_step.dr.implicitly_wait(timeout)
     return run_result, visible_elements, elements
 
 
 # 获取可见元素
-def get_variable_element(
-        dr, by, locator, timeout, index_, base_element=None, variable_elements=None, print_=True,
-        logger=logging.getLogger('py_test')):
-    if variable_elements is not None:
-        elements = variable_elements
-    else:
-        run_result_temp, elements, elements_all = wait_for_element_visible(dr, by, locator, timeout, base_element,
-                                                                           print_=print_, logger=logger)
-        if run_result_temp[0] == 'f':
-            raise exceptions.NoSuchElementException('未找到指定的元素，{}'.format(run_result_temp[1]))
-    if len(elements) == 1 and index_ in (None, 0):
+def get_variable_element(vic_step, timeout=None, print_=True):
+    if not timeout:
+        timeout = vic_step.timeout
+    _ui_data = vic_step.ui_data  # 把ui_data置空，防止查找元素时被当做数量限制表达式
+    vic_step.ui_data = None
+    run_result_temp, elements, _ = wait_for_element_visible(vic_step, timeout=timeout, print_=print_)
+    vic_step.ui_data = _ui_data
+    if run_result_temp[0] == 'f':
+        raise exceptions.NoSuchElementException('未找到指定的元素，{}'.format(run_result_temp[1]))
+    elif len(elements) == 1 and vic_step.ui_index in (None, 0):
         element = elements[0]
-    elif index_ is None:
-        raise ValueError('找到%r个元素，请指定一个index' % len(elements))
-    elif index_ > (len(elements) - 1):
-        raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
+    elif vic_step.ui_index is None:
+        raise ValueError('找到{}个元素，请指定一个index'.format(len(elements)))
+    elif vic_step.ui_index > (len(elements) - 1):
+        raise ValueError('找到{}个元素，但指定的index【{}】超出可用范围（0到{}）'.format(
+            len(elements), vic_step.ui_index, len(elements) - 1))
     else:
-        element = elements[index_]
+        element = elements[vic_step.ui_index]
     return element
 
 
-# 等待元素可见，包含数量限制
-def wait_for_element_visible_with_data(dr, by, locator, data, timeout, base_element=None, variable_elements=None,
-                                       print_=True, logger=logging.getLogger('py_test')):
-    start_time = time.time()
-    last_print_time = 0
-    compare_result = False
-    visible_elements = list()
-    elements = list()
-    while (time.time() - start_time) <= timeout:
-        run_result_temp, visible_elements, elements = wait_for_element_visible(
-            dr, by, locator, 1, base_element, variable_elements, print_=False, logger=logger)
-        if len(visible_elements) == 0:
-            now_time = time.time()
-            if print_ and now_time - last_print_time >= 1:
-                elapsed_time = str(round(now_time - start_time, 2))
-                logger.info('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
-                last_print_time = now_time
-                continue
-        eo = vic_eval.EvalObject(data, {'x': len(visible_elements)}, logger)
-        eval_success, eval_result, final_expression = eo.get_eval_result()
-        compare_result = eval_result
-        now_time = time.time()
-        if print_ and now_time - last_print_time >= 1:
-            elapsed_time = str(round(now_time - start_time, 2))
-            if compare_result is True:
-                msg = '经过%s秒 - 找到期望元素%r个，其中可见元素%r个，符合给定的数量限制' % (elapsed_time, len(elements), len(visible_elements))
-            else:
-                msg = '经过%s秒 - 找到期望元素%r个，其中可见元素%r个，不符合给定的数量限制' % (elapsed_time, len(elements), len(visible_elements))
-            logger.info(msg)
-            last_print_time = now_time
-        if compare_result is True:
-            break
-    elapsed_time = str(round(time.time() - start_time, 2))
-    if compare_result is True:
-        msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个，符合给定的数量限制'.format(
-            elapsed_time, by, locator, len(elements), len(visible_elements))
-
-        run_result = ['p', msg]
-    else:
-        msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个，不符合给定的数量限制'.format(
-            elapsed_time, by, locator, len(elements), len(visible_elements))
-        run_result = ['f', msg]
-    return run_result, visible_elements
-
-
 # 等待元素消失
-def wait_for_element_disappear(
-        dr, by, locator, timeout, base_element=None, variable_elements=None, print_=True,
-        logger=logging.getLogger('py_test')):
+def wait_for_element_disappear(vic_step, print_=True):
     visible_elements = list()
-    dr.implicitly_wait(0.5)
-    start_time = time.time()
-    last_print_time = 0
     elements = list()
-    while (time.time() - start_time) <= timeout:
+    vic_step.dr.implicitly_wait(0.5)
+    last_print_time = 0
+    start_time = time.time()
+    while (time.time() - start_time) <= vic_step.timeout:
         visible_elements = list()
-        if variable_elements is not None:
-            elements = variable_elements
+        if vic_step.variable_elements:
+            elements = vic_step.variable_elements
         else:
-            if isinstance(base_element, WebElement):
-                elements = base_element.find_elements(by, locator)
+            if isinstance(vic_step.ui_base_element, WebElement):
+                elements = vic_step.ui_base_element.find_elements(vic_step.ui_by, vic_step.ui_locator)
             else:
-                elements = dr.find_elements(by, locator)
+                elements = vic_step.dr.find_elements(vic_step.ui_by, vic_step.ui_locator)
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 找到期望元素%r个，其中可见元素%r个' % (elapsed_time, len(elements), len(visible_elements)))
+            vic_step.logger.info('经过{}秒 - 找到期望元素{}个，其中可见元素{}个'.format(
+                elapsed_time, len(elements), len(visible_elements)))
             last_print_time = now_time
-        if len(elements) == 0:
+        if not elements:
             break
         else:
             for element in elements:
@@ -373,109 +382,99 @@ def wait_for_element_disappear(
                     visible_elements.append(element)
             if len(visible_elements) == 0:
                 break
-    dr.implicitly_wait(timeout)
+        vic_step.dr.implicitly_wait(vic_step.timeout)
     elapsed_time = str(round(time.time() - start_time, 2))
     msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个'.format(
-        by, locator, elapsed_time, len(elements), len(visible_elements))
-    if len(visible_elements) != 0:
-        run_result = ['f', msg]
-    else:
+        vic_step.ui_by, vic_step.ui_locator, elapsed_time, len(elements), len(visible_elements))
+    if not visible_elements:
         run_result = ['p', msg]
+    else:
+        run_result = ['f', msg]
     return run_result, visible_elements
 
 
 # 跳转到url
-def go_to_url(dr, url):
-    dr.get(url)
+def go_to_url(vic_step):
+    url = vic_step.ui_data
+    vic_step.dr.get(url)
     run_result = ['p', '成功打开URL【{}】'.format(url)]
     return run_result
 
 
 # 等待页面跳转
-def wait_for_page_redirect(dr, new_url, timeout, print_=True, logger=logging.getLogger('py_test')):
+def wait_for_page_redirect(vic_step, print_=True):
     is_passed = False
     start_time = time.time()
     last_print_time = 0
-    while (time.time() - start_time) <= timeout:
-        current_url = dr.current_url
+    while (time.time() - start_time) <= vic_step.timeout:
+        current_url = vic_step.dr.current_url
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 验证新URL是否符合期望' % elapsed_time)
+            vic_step.logger.info('经过%s秒 - 验证新URL是否符合期望' % elapsed_time)
             last_print_time = now_time
-        find_result = vic_find_object.find_with_condition(new_url, current_url, logger=logger)
+        find_result = vic_find_object.find_with_condition(vic_step.ui_data, current_url, logger=vic_step.logger)
         if find_result.is_matched:
             is_passed = True
             break
     elapsed_time = str(round(time.time() - start_time, 2))
     if not is_passed:
-        run_result = ['f', '经过{}秒 - 新URL不符合期望【{}】'.format(elapsed_time, new_url)]
+        run_result = ['f', '经过{}秒 - 新URL不符合期望【{}】'.format(elapsed_time, vic_step.ui_data)]
     else:
-        run_result = ['p', '经过{}秒 - 新URL符合期望【{}】'.format(elapsed_time, new_url)]
-    return run_result, new_url
+        run_result = ['p', '经过{}秒 - 新URL符合期望【{}】'.format(elapsed_time, vic_step.ui_data)]
+    return run_result
 
 
 # 获取URL
-def get_url(dr, condition_value, logger=logging.getLogger('py_test')):
-    data = dr.current_url
+def get_url(vic_step):
+    url = vic_step.dr.current_url
+    condition_value = vic_step.ui_data
+
     if condition_value:
-        find_result = vic_find_object.find_with_condition(condition_value, data, logger=logger)
+        find_result = vic_find_object.find_with_condition(condition_value, url, logger=vic_step.logger)
         if find_result.is_matched:
-            data = ''
             if find_result.re_result:
-                data = find_result.re_result[0]
-            run_result = ['p', '找到符合条件【{}】的URL内容【{}】'.format(condition_value, data)]
+                url = find_result.re_result[0]
+            run_result = ['p', '找到符合条件【{}】的URL内容【{}】'.format(condition_value, url)]
         else:
             run_result = ['f', '找不到符合条件【{}】的URL内容'.format(condition_value)]
     else:
-        run_result = ['p', '获取到URL【{}】'.format(data)]
-    return run_result, data
+        run_result = ['p', '获取到URL【{}】'.format(url)]
+    return run_result, url
 
 
 # 尝试点击
-def try_to_click(
-        dr, by, locator, timeout, index_, base_element=None, variable_elements=None, print_=True,
-        logger=logging.getLogger('py_test')):
-    element = get_variable_element(
-        dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements, print_=print_,
-        logger=logger)
+def try_to_click(vic_step, print_=True):
+    element = get_variable_element(vic_step, print_=print_)
 
-    highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
+    highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     element.click()
-    run_result = ['p', '点击元素【By:{}|Locator:{}】'.format(by, locator)]
-    return run_result, [element]
+    run_result = ['p', '点击元素【By:{}|Locator:{}】'.format(vic_step.ui_by, vic_step.ui_locator)]
+    return run_result, element
 
 
 # 尝试输入
-def try_to_enter(
-        dr, by, locator, data, timeout, index_, base_element=None, variable_elements=None, print_=True,
-        logger=logging.getLogger('py_test')):
-    element = get_variable_element(
-        dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements, print_=print_,
-        logger=logger)
+def try_to_enter(vic_step, print_=True):
+    element = get_variable_element(vic_step, print_=print_)
 
-    highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
+    highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     element.clear()
-    element.send_keys(data)
-    run_result = ['p', '在元素【By:{}|Locator:{}】中输入【{}】'.format(by, locator, data)]
-    return run_result, [element]
+    element.send_keys(vic_step.ui_data)
+    run_result = ['p', '在元素【By:{}|Locator:{}】中输入【{}】'.format(vic_step.ui_by, vic_step.ui_locator, vic_step.ui_data)]
+    return run_result, element
 
 
 # 尝试选择
-def try_to_select(
-        dr, by, locator, data, timeout, index_, base_element=None, variable_elements=None, print_=True,
-        logger=logging.getLogger('py_test')):
-    element = get_variable_element(
-        dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements, print_=print_,
-        logger=logger)
+def try_to_select(vic_step, print_=True):
+    element = get_variable_element(vic_step, print_=print_)
 
-    highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
+    highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     select = Select(element)
     # 如果data为空则全不选
-    if not data:
+    if not vic_step.ui_data:
         select.deselect_all()
     # 如果data为字符串all
-    elif data.upper() == 'all':
+    elif vic_step.ui_data.upper() == 'all':
         # 如果select是多选
         if select.is_multiple:
             for i in range(len(select.options)):
@@ -485,7 +484,7 @@ def try_to_select(
     # 尝试把data转为json对象
     else:
         try:
-            option_list = json.loads(data)
+            option_list = json.loads(vic_step.ui_data)
         except json.JSONDecodeError:
             raise ValueError('无法解析的选项表达式！请检查表达式，注意是否符合json字符串规范。')
         if not select.is_multiple and len(option_list) > 1:
@@ -517,8 +516,9 @@ def try_to_select(
 
     run_result = [
         'p', '在元素【By:{}|Locator:{}】中进行了选择操作，被选中的选项为【{}】'.format(
-            by, locator, '|'.join(selected_text_list))]
-    return run_result, [element]
+            vic_step.ui_by, vic_step.ui_locator, '|'.join(selected_text_list))
+    ]
+    return run_result, element
 
 
 # 获取特殊键组合
@@ -543,107 +543,101 @@ def get_special_keys(data_, logger=logging.getLogger('py_test')):
 
 
 # 特殊动作
-def perform_special_action(
-        dr, by, locator, data, timeout, index_, special_action, base_element=None, variables=None,
-        global_variables=None, variable_elements=None, print_=True, logger=logging.getLogger('py_test')):
-    if by == '':
+def perform_special_action(vic_step, print_=True):
+    if not vic_step.ui_by or not vic_step.ui_locator:
         element = None
     else:
-        element = get_element(
-            dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements,
-            print_=print_, logger=logger)
+        element = get_variable_element(vic_step, print_=print_)
 
-    if special_action == 'click':
+    dr = vic_step.dr
+    sp = vic_step.ui_special_action
+
+    if sp == 'click':
         ActionChains(dr).click(element).perform()
 
-    elif special_action == 'click_and_hold':
+    elif sp == 'click_and_hold':
         ActionChains(dr).click_and_hold(element).perform()
 
-    elif special_action == 'context_click':
+    elif sp == 'context_click':
         ActionChains(dr).context_click(element).perform()
 
-    elif special_action == 'double_click':
+    elif sp == 'double_click':
         ActionChains(dr).double_click(element).perform()
 
-    elif special_action == 'release':
+    elif sp == 'release':
         ActionChains(dr).release(element).perform()
 
-    elif special_action == 'move_by_offset':
-        data = data.split(',')
+    elif sp == 'move_by_offset':
+        data = vic_step.ui_data.split(',')
         if len(data) < 2:
             raise ValueError('必须指定一组偏移坐标')
         xoffset = change_string_to_digit(data[0].strip())
         yoffset = change_string_to_digit(data[1].strip())
         ActionChains(dr).move_by_offset(xoffset, yoffset).perform()
 
-    elif special_action == 'move_to_element':
+    elif sp == 'move_to_element':
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个元素')
         ActionChains(dr).move_to_element(element).perform()
 
-    elif special_action == 'move_to_element_with_offset':
+    elif sp == 'move_to_element_with_offset':
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个元素')
-        data = data.split(',')
+        data = vic_step.ui_data.split(',')
         if len(data) < 2:
             raise ValueError('必须指定一组偏移坐标')
         xoffset = change_string_to_digit(data[0].strip())
         yoffset = change_string_to_digit(data[1].strip())
         ActionChains(dr).move_to_element_with_offset(element, xoffset, yoffset).perform()
 
-    elif special_action == 'drag_and_drop':
+    elif sp == 'drag_and_drop':
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个元素')
-        target_element = vic_variables.get_elements(data, variables, global_variables)[0]
+        target_element = vic_variables.get_elements(vic_step.ui_data, vic_step.variables, vic_step.global_variables)[0]
         if not isinstance(target_element, WebElement):
             raise ValueError('必须指定一个目标元素')
         ActionChains(dr).drag_and_drop(element, target_element).perform()
 
-    elif special_action == 'drag_and_drop_by_offset':
+    elif sp == 'drag_and_drop_by_offset':
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个元素')
-        data = data.split(',')
+        data = vic_step.ui_data.split(',')
         if len(data) < 2:
             raise ValueError('必须指定一组目标坐标')
         xoffset = change_string_to_digit(data[0].strip())
         yoffset = change_string_to_digit(data[1].strip())
         ActionChains(dr).drag_and_drop_by_offset(element, xoffset, yoffset).perform()
 
-    elif special_action == 'key_down':
+    elif sp == 'key_down':
         ActionChains(dr).key_down(element).perform()
 
-    elif special_action == 'key_up':
+    elif sp == 'key_up':
         ActionChains(dr).key_up(element).perform()
 
-    elif special_action == 'send_keys':
-        keys = get_special_keys(data, logger=logger)
+    elif sp == 'send_keys':
+        keys = get_special_keys(vic_step.ui_data, logger=vic_step.logger)
         ActionChains(dr).send_keys(keys).perform()
 
-    elif special_action == 'send_keys_to_element':
+    elif sp == 'send_keys_to_element':
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个被操作元素')
-        keys = get_special_keys(data, logger=logger)
+        keys = get_special_keys(vic_step.ui_data, logger=vic_step.logger)
         ActionChains(dr).send_keys_to_element(element, keys).perform()
 
     else:
-        raise ValueError('无法处理的特殊操作[%s]' % special_action)
+        raise ValueError('无法处理的特殊操作[{}]'.format(sp))
 
     run_result = ['p', '特殊动作执行完毕']
-    return run_result, [element]
+    return run_result, element
 
 
 # 尝试滚动到元素位置
-def try_to_scroll_into_view(
-        dr, by, locator, timeout, index_, base_element=None, variable_elements=None, print_=True,
-        logger=logging.getLogger('py_test')):
-    element = get_element(
-        dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements, print_=print_,
-        logger=logger)
-
-    highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
-    dr.execute_script('arguments[0].scrollIntoView()', element)
-    run_result = ['p', '移动窗口到元素【By:{}|Locator:{}】的位置'.format(by, locator)]
-    return run_result, [element]
+def try_to_scroll_into_view(vic_step, print_=True):
+    element, _, _ = get_element(vic_step, print_=print_)
+    highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
+    vic_step.dr.execute_script('arguments[0].scrollIntoView()', element)
+    run_result = ['p', '移动窗口到元素【By:{}|Locator:{}】的位置'.format(vic_step.ui_by, vic_step.ui_locator)]
+    return run_result, element
 
 
 # 处理浏览器弹窗
@@ -682,158 +676,147 @@ def confirm_alert(dr, alert_handle, timeout, print_=True, logger=logging.getLogg
 
 
 # 尝试切换window或tap
-def try_to_switch_to_window(
-        dr, by, locator, data, timeout, index_, current_window_handle, base_element=None, print_=True,
-        logger=logging.getLogger('py_test')):
-    start_time = time.time()
+def try_to_switch_to_window(vic_step, current_window_handle, print_=True):
     last_print_time = 0
-    success_ = False
+    _success = False
     new_window_handle = None
-    if index_ is None:
-        index_ = 0
-    while (time.time() - start_time) <= timeout:
-        for window_handle in dr.window_handles:
+    start_time = time.time()
+    while (time.time() - start_time) <= vic_step.timeout:
+        for window_handle in vic_step.dr.window_handles:
             if window_handle != current_window_handle:
-                dr.switch_to.window(window_handle)
-                # 如果定位信息不全，但提供了data，则把data视为窗口标题
-                if (by == '' or locator == '') and data != '':
-                    by = 'xpath'
-                    locator = '/html/head/title[contains(text(), "{}")]'.format(data)
-                if by != '' and locator != '':
-                    run_result_temp, elements = wait_for_element_present(
-                        dr, by, locator, 1, base_element=base_element, variable_elements=None, print_=False,
-                        logger=logger)
-                    if index_ > (len(elements) - 1):
-                        continue
-                    else:
-                        new_window_handle = window_handle
-                        success_ = True
-                        break
-                else:
+                vic_step.dr.switch_to.window(window_handle)
+                # 如果定位信息不全，且没有ui_data，则直接切换到这个窗口
+                if (not vic_step.ui_by or not vic_step.ui_locator) and not vic_step.ui_data:
                     new_window_handle = window_handle
-                    success_ = True
+                    _success = True
                     break
+                # 如果定位信息不全，但提供了ui_data，则把ui_data视为窗口标题
+                elif vic_step.ui_data:
+                    vic_step.ui_by = 'xpath'
+                    vic_step.ui_locator = '/html/head/title[contains(text(), "{}")]'.format(vic_step.ui_data)
+                    vic_step.variable_elements = None
+                    vic_step.ui_base_element = None
+
+                run_result_temp, elements = wait_for_element_present(vic_step, timeout=1, print_=False)
+
+                if elements and ((not vic_step.ui_index and len(elements) == 1)
+                                 or (vic_step.ui_index and vic_step.ui_index <= len(elements)-1)):
+                    new_window_handle = window_handle
+                    _success = True
+                    break
+
         now_time = time.time()
-        if success_:
-            break
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 尝试切换到新窗口' % elapsed_time)
+            vic_step.logger.info('经过%s秒 - 尝试切换到新窗口' % elapsed_time)
             last_print_time = now_time
+        if _success:
+            break
     elapsed_time = str(round(time.time() - start_time, 2))
-    if not success_:
-        raise exceptions.NoSuchWindowException('经过%s秒 - 无法切换到新窗口' % elapsed_time)
+    if not _success:
+        raise exceptions.NoSuchWindowException('经过%s秒 - 无法切换到新窗口或没找到指定的窗口' % elapsed_time)
     else:
         try:
-            title = dr.find_element_by_tag_name('title')
-            title_str = title.text
+            title = vic_step.dr.find_element_by_tag_name('title')
+            title_str = title.get_attribute('innerText')  # selenium获取不可见元素的文本不能直接用text
         except exceptions.WebDriverException:
             title_str = '（无标题）'
         run_result = ['p', '经过{}秒 - 切换到新窗口【{}】'.format(elapsed_time, title_str)]
     return run_result, new_window_handle
 
 
-# 尝试切换frame
-def try_to_switch_to_frame(
-        dr, by, locator, timeout, index_, base_element=None, print_=True,
-        logger=logging.getLogger('py_test')):
-    if index_ is None:
-        index_ = 0
+# 尝试切换到框架
+def try_to_switch_to_frame(vic_step, print_=True):
     start_time = time.time()
     last_print_time = 0
     success_ = False
-    while (time.time() - start_time) <= timeout:
-        if by != '' and locator != '':
-            run_result_temp, elements = wait_for_element_present(
-                dr, by, locator, 1, base_element=base_element, variable_elements=None, print_=False, logger=logger)
-            if run_result_temp[0] == 'p':
-                frame = elements[index_]
-                dr.switch_to.frame(frame)
+    msg = '未能切换到符合条件的框架'
+    while (time.time() - start_time) <= vic_step.timeout:
+        if vic_step.ui_by and vic_step.ui_locator:
+            frame, result_msg, el_msg = get_element(vic_step, timeout=1, print_=False, necessary=False)
+            if frame:
+                vic_step.dr.switch_to.frame(frame)
                 success_ = True
-                break
+                msg = '已切换到{}对应的框架'.format(el_msg)
+            else:
+                msg = '未能切换到指定元素对应的框架，因为：{}{}'.format(result_msg, el_msg)
         else:
+            index_ = vic_step.ui_index if vic_step.ui_index else 0
             try:
-                dr.switch_to.frame(index_)
+                vic_step.dr.switch_to.frame(index_)
                 success_ = True
-                break
+                msg = '已切换到索引为{}的框架'.format(index_)
             except exceptions.NoSuchFrameException:
-                pass
+                msg = '未能切换到索引为{}的框架'.format(index_)
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 尝试切换到frame' % elapsed_time)
+            msg = '经过{}秒 - {}'.format(elapsed_time, msg)
+            vic_step.logger.info(msg)
             last_print_time = now_time
-    elapsed_time = str(round(time.time() - start_time, 2))
-    if not success_:
-        raise exceptions.NoSuchFrameException('经过%s秒 - 无法切换到frame' % elapsed_time)
+        if success_:
+            break
+    if success_:
+        run_result = ['p', msg]
     else:
-        run_result = ['p', '经过{}秒 - 切换到frame【By:{}|Locator:{}】'.format(elapsed_time, by, locator)]
+        raise exceptions.NoSuchFrameException(msg)
     return run_result
 
 
 # 运行javascript
-def run_js(
-        dr, by, locator, data, timeout, index_, base_element=None, variable_elements=None, print_=True,
-        logger=logging.getLogger('py_test')):
-    if by in (None, ''):
-        js_result = dr.execute_script(data)
+def run_js(vic_step, print_=True):
+    if vic_step.ui_by in (None, ''):
+        js_result = vic_step.dr.execute_script(vic_step.ui_data)
     else:
-        if variable_elements is not None:
-            elements = variable_elements
+        if vic_step.variable_elements:
+            elements = vic_step.variable_elements
         else:
-            run_result_temp, elements = wait_for_element_present(
-                dr, by, locator, timeout, base_element=base_element, variable_elements=None, print_=print_,
-                logger=logger)
+            run_result_temp, elements = wait_for_element_present(vic_step, print_=print_)
             if run_result_temp[0] == 'f':
                 raise exceptions.NoSuchElementException(run_result_temp[1])
-        if index_ is None:
-            js_result = dr.execute_script(data, elements)
-        elif index_ > (len(elements) - 1):
-            raise ValueError('找到%r个元素，但指定的index超出可用范围（0到%r）' % (len(elements), len(elements) - 1))
+        if vic_step.ui_index is None:
+            js_result = vic_step.dr.execute_script(vic_step.ui_data, elements)
+        elif vic_step.ui_index > (len(elements) - 1):
+            raise ValueError('找到{}个元素，但指定的index【{}】超出可用范围（0到{}）'.format(
+                len(elements), vic_step.ui_index, len(elements) - 1))
         else:
-            js_result = dr.execute_script(data, elements[index_])
+            js_result = vic_step.dr.execute_script(vic_step.ui_data, elements[vic_step.ui_index])
     if isinstance(js_result, WebElement):
         js_result = [js_result]
-    msg = 'JavaScript执行完毕，返回值为：\n%s' % js_result
+    msg = 'JavaScript执行完毕，返回值为：\n{}'.format(js_result)
     if print_:
-        logger.info(msg)
+        vic_step.logger.info(msg)
     run_result = ['p', msg]
     return run_result, js_result
 
 
 # 获取元素文本
-def get_element_text(
-        dr, by, locator, timeout, index_, base_element=None, variable_elements=None, print_=True,
-        logger=logging.getLogger('py_test')):
-    element = get_element(
-        dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements, print_=print_,
-        logger=logger)
-
-    highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
+def get_element_text(vic_step, print_=True):
+    element, _, _ = get_element(vic_step, print_=print_)
+    highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     text = element.text
-    run_result = ['p', '元素【By:{}|Locator:{}】的文本为：{}'.format(by, locator, text)]
+    run_result = ['p', '元素【By:{}|Locator:{}】的文本为：{}'.format(vic_step.ui_by, vic_step.ui_locator, text)]
     return run_result, text
 
 
 # 获取元素属性
-def get_element_attr(
-        dr, by, locator, data, timeout, index_, base_element=None, variable_elements=None, print_=True,
-        logger=logging.getLogger('py_test')):
-    element = get_element(
-        dr, by, locator, timeout, index_, base_element=base_element, variable_elements=variable_elements, print_=print_,
-        logger=logger)
-
-    highlight_for_a_moment(dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
-    attr = element.get_attribute(data)
+def get_element_attr(vic_step, print_=True):
+    element, _, _ = get_element(vic_step, print_=print_)
+    highlight_for_a_moment(vic_step.dr, [element], 'outline: 2px dotted yellow; border: 1px solid yellow;')
+    attr = element.get_attribute(vic_step.ui_data)
     if attr:
-        run_result = ['p', '元素【By:{}|Locator:{}】的【{}】属性的值为：{}'.format(by, locator, data, attr)]
+        run_result = ['p', '元素【By:{}|Locator:{}】的【{}】属性的值为：{}'.format(
+            vic_step.ui_by, vic_step.ui_locator, vic_step.ui_data, attr)]
     else:
-        run_result = ['f', '元素【By:{}|Locator:{}】不存在【{}】属性'.format(by, locator, data)]
+        run_result = ['f', '元素【By:{}|Locator:{}】不存在【{}】属性'.format(vic_step.ui_by, vic_step.ui_locator, vic_step.ui_data)]
     return run_result, attr
 
 
 # 解析表达式
-def analysis_expression(eval_expression, variable_dict, logger=logging.getLogger('py_test')):
+def analysis_expression(vic_step):
+    eval_expression = vic_step.other_data
+    variable_dict = vic_variables.get_variable_dict(vic_step.variables, vic_step.global_variables)
+    logger = vic_step.logger
     eo = vic_eval.EvalObject(eval_expression, variable_dict, logger)
     eval_success, eval_result, final_expression = eo.get_eval_result()
     if eval_success:

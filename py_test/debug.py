@@ -8,15 +8,7 @@
 
 # from py_test.vic_tools.vic_eval import EvalObject
 #
-# eo = EvalObject('["a", "b", "c", "d", "e"][$[x]$]', variable_dict={'x': 1})
+# eo = EvalObject('admin', variable_dict={'x': 1})
 #
 # print(eo.get_eval_result())
 
-import time
-
-d = {1: 1, 2: 2}
-
-print(d)
-d.pop(3)
-
-print(d)

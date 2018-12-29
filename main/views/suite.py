@@ -13,8 +13,6 @@ from django.contrib.auth.decorators import login_required
 from main.models import Suite, Case, SuiteVsCase
 from main.forms import OrderByForm, PaginatorForm, SuiteForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
-from py_test.general.execute_suite import execute_suite
-from django.template.loader import render_to_string
 from urllib.parse import quote
 from main.views import case, config, variable_group, element_group
 
@@ -425,18 +423,3 @@ def cases(_, pk):
         obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
     return JsonResponse({'status': 1, 'message': 'OK', 'data': list(objects)})
 
-
-# 执行套件
-@login_required
-def execute_(request, pk):
-    try:
-        suite_ = Suite.objects.get(pk=pk, is_active=True)
-        suite_result = execute_suite(suite_, request.user)
-        sub_objects = suite_result.caseresult_set.filter(step_result=None).order_by('case_order')
-        suite_result_content = render_to_string('main/include/suite_result_content.html', locals())
-        data_dict = dict()
-        data_dict['suite_result_content'] = suite_result_content
-        data_dict['suite_result_url'] = reverse('result', args=[suite_result.pk])
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': data_dict})
-    except Suite.DoesNotExist:
-        return JsonResponse({'status': 2, 'message': 'Suite does not exist', 'data': None})

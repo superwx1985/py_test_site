@@ -400,11 +400,3 @@ function update_sort_icon() {
     }
 }
 
-// 更新父对象下拉项
-function update_parent_select_dropdown(success, data) {
-	if (success) {
-        update_dropdown(data, $("#parent_select_dropdown"));
-    } else {
-		console.log(data);
-	}
-}

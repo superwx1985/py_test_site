@@ -1,10 +1,6 @@
 import logging
 
 
-# 日志级别
-THREAD_LEVEL = logging.INFO
-
-
 # 日志格式
 format_standard = logging.Formatter('%(asctime)s [%(threadName)s:%(thread)d] [%(name)s] [%(module)s:%(funcName)s:%(lineno)d] [%(levelname)s] - %(message)s')
 format_detail = logging.Formatter('%(asctime)s [%(threadName)s:%(thread)d] [%(name)s] [%(pathname)s:%(funcName)s:%(lineno)d] [%(levelname)s] - %(message)s')
