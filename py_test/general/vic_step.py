@@ -36,6 +36,7 @@ class VicStep:
         self.public_elements = vic_case.public_elements
         self.config = vic_case.config
 
+        self.step_order = step_order
         self.execute_id = '{}-{}'.format(vic_case.execute_str, step_order)
         self.loop_id = ''
         self.img_list = list()  # 截图列表

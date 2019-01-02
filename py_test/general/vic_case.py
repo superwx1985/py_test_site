@@ -178,18 +178,13 @@ class VicCase:
                             if loop_[1] > 1:
                                 is_first = False
                         execute_id = '{}{}'.format(execute_id, loop_id)
+                        # 如果不是首次迭代，获取新的vic step对象
+                        if not is_first:
+                            _step = step.step
+                            _step_order = step.step_order
+                            step = VicStep(step=_step, vic_case=self, step_order=_step_order)
                         step.execute_id = execute_id
                         step.loop_id = loop_id
-                        # 如果不是首次迭代
-                        if not is_first:
-                            step.img_list = list()
-                            step.socket_no_response = False
-                            step.run_result = ['p', '执行成功']
-                            step.elements = list()
-                            step.fail_elements = list()
-                            # 获取新步骤结果
-                            step.step_result.pk = None
-                            step.step_result.uuid = uuid.uuid1()
 
                     self.logger.info('【{}】\t执行步骤 => ID:{} | {} | {}'.format(
                         execute_id, step.id, step.name, step.step.action))
