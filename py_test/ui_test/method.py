@@ -65,60 +65,6 @@ def highlight_for_a_moment(dr, elements, color='green', duration=0.5):
 
 
 # 等待文字出现
-def _wait_for_text_present(dr, text, timeout, ui_base_element=None, print_=True, logger=logging.getLogger('py_test')):
-    dr.implicitly_wait(0.5)
-    elements = list()
-    start_time = time.time()
-    last_print_time = 0
-    while (time.time() - start_time) <= timeout:
-        if isinstance(ui_base_element, WebElement):
-            find_result = vic_find_object.find_with_condition(text, ui_base_element.text, logger=logger)
-            if find_result.is_matched:
-                elements_temp = ui_base_element.find_elements_by_xpath('.//*[contains(text(),"' + text + '")]')
-                for element in elements_temp:
-                    if element.is_displayed():
-                        elements.append(element)
-            js_str = '''
-            var nodeList = arguments[0].childNodes
-            var text = arguments[1]
-            for(var i=0; i<nodeList.length; i++){
-                if (nodeList[i].nodeValue!=null && nodeList[i].nodeValue.indexOf(text)>0){
-                    return true;
-                }
-            }
-            return false;
-            '''
-            js_result = dr.execute_script(js_str, ui_base_element, text)
-            if js_result:
-                elements.append(ui_base_element)
-        else:
-            _body = dr.find_element_by_tag_name('body')
-            find_result = vic_find_object.find_with_condition(text, _body.text, logger=logger)
-            if find_result.is_matched:
-                elements_temp = dr.find_elements_by_xpath('//body//*[contains(text(),"' + text + '")]')
-                for element in elements_temp:
-                    if element.is_displayed():
-                        elements.append(element)
-                if not elements:  # 如果文本不在元素的第一个子节点，用text()可能会找不到
-                    elements.append(_body)
-        now_time = time.time()
-        if print_ and now_time - last_print_time >= 1:
-            elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 找到%s个期望文本' % (elapsed_time, len(elements)))
-            last_print_time = now_time
-        if len(elements) > 0:
-            break
-    dr.implicitly_wait(timeout)
-    elapsed_time = str(round(time.time() - start_time, 2))
-    msg = '经过{}秒 - 找到{}个期望文本【{}】'.format(elapsed_time, len(elements), text)
-    if len(elements) == 0:
-        run_result = ['f', msg]
-    else:
-        run_result = ['p', msg]
-    return run_result, elements
-
-
-# 等待文字出现
 def wait_for_text_present(vic_step, print_=True):
     start_time = time.time()
     last_print_time = 0

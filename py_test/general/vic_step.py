@@ -154,9 +154,10 @@ class VicStep:
                 if dr is None:
                     raise exceptions.WebDriverException('浏览器未初始化，请检查是否配置有误或浏览器被意外关闭')
                 self.ui_locator = str(vic_method.replace_special_value(self.ui_locator, var, gvar, logger))
-                _ui_base_element = str(vic_method.replace_special_value(self.ui_base_element, var, gvar, logger))
-                self.ui_base_element = (
-                    vic_variables.get_elements(_ui_base_element, var, gvar)[0] if _ui_base_element != '' else None)
+                if isinstance(self.ui_base_element, str):
+                    _ui_base_element = str(vic_method.replace_special_value(self.ui_base_element, var, gvar, logger))
+                    self.ui_base_element = (
+                        vic_variables.get_elements(_ui_base_element, var, gvar)[0] if _ui_base_element else None)
                 self.ui_data = str(vic_method.replace_special_value(self.ui_data, var, gvar, logger))
                 if self.ui_by == 'variable':
                     self.variable_elements = vic_variables.get_elements(self.ui_locator, var, gvar)
@@ -394,7 +395,7 @@ class VicStep:
                             current_window_handle = dr.current_window_handle
                             dr.close()
                             self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(
-                                self,current_window_handle)
+                                self, current_window_handle)
 
                         # 重置浏览器
                         elif ac == 'UI_RESET_BROWSER':
@@ -762,7 +763,7 @@ class VicStep:
                                 eval_success, eval_result, final_expression = eo.get_eval_result()
                                 if eval_success:
                                     msg = var.set_variable(self.save_as, eval_result)
-                                    self.run_result = ['p', '计算表达式：{}\n结果为：{}\n用例{}'.format(
+                                    self.run_result = ['p', '计算表达式：{}\n结果为：{}\n{}'.format(
                                         final_expression, eval_result, msg)]
                                 else:
                                     raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
@@ -786,29 +787,38 @@ class VicStep:
 
                         # 转换变量类型
                         elif ac == 'OTHER_CHANGE_VARIABLE_TYPE':
-                            if self.other_data not in ('str', 'int', 'float', 'time', 'datetime'):
+                            if self.other_data not in ('str', 'int', 'float', 'bool', 'time', 'datetime'):
                                 raise ValueError('无效的转换类型【{}】'.format(self.other_data))
                             found, variable = vic_variables.get_variable(self.save_as, var, gvar)
                             if not found:
                                 raise ValueError('找不到名为【{}】的变量'.format(self.save_as))
                             try:
+                                _msg = '变量类型转换为'
                                 if self.other_data == 'str':
                                     variable = str(variable)
+                                    _msg = '{}字符串'.format(_msg)
                                 elif self.other_data == 'int':
                                     variable = int(variable)
+                                    _msg = '{}整型'.format(_msg)
                                 elif self.other_data == 'float':
                                     variable = float(variable)
+                                    _msg = '{}浮点型'.format(_msg)
                                 elif self.other_data == 'bool':
                                     variable = bool(variable)
+                                    _msg = '{}布尔型'.format(_msg)
                                 elif self.other_data in ('time', 'datetime'):
                                     variable = vic_date_handle.str_to_time(str(variable))
+                                    _msg = '{}日期型'.format(_msg)
                             except (ValueError, TypeError) as e:
                                 raise ValueError('变量类型转换失败，错误信息：{}'.format(e))
-                            if found == 'local':
-                                var.set_variable(self.save_as, variable)
                             else:
-                                gvar.set_variable(self.save_as, variable)
-                            self.run_result = ['p', '转换成功']
+                                if found == 'local':
+                                    msg = var.set_variable(self.save_as, variable)
+                                else:
+                                    msg = gvar.set_variable(self.save_as, variable)
+                                    msg = '全局{}'.format(msg)
+                                msg = '{}，{}'.format(_msg, msg)
+                                self.run_result = ['p', msg]
 
                         # 使用正则表达式截取变量
                         elif ac == 'OTHER_GET_VALUE_WITH_RE':
@@ -820,11 +830,12 @@ class VicStep:
                             find_result = vic_find_object.find_with_condition(self.other_data, variable, logger=logger)
                             if find_result.is_matched and find_result.re_result:
                                 variable = vic_find_object.get_first_str_in_re_result(find_result.re_result)
+                                msg = '变量【{}】被截取为【{}】'.format(self.save_as, variable)
                                 if found == 'local':
                                     var.set_variable(self.save_as, variable)
                                 else:
                                     gvar.set_variable(self.save_as, variable)
-                                msg = '变量【{}】被截取为【{}】'.format(self.save_as, variable)
+                                    msg = '全局{}'.format(msg)
                                 self.run_result = ['p', msg]
                             else:
                                 msg = '无法匹配给定的正则表达式，所以变量【{}】的值没有改变'.format(self.save_as, variable)
@@ -845,6 +856,14 @@ class VicStep:
                                     self.run_result = ['f', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result)]
                             else:
                                 raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
+
+                            if self.save_as:
+                                if self.run_result[0] == 'p':
+                                    verify_result = True
+                                else:
+                                    verify_result = False
+                                msg = var.set_variable(self.save_as, verify_result)
+                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
 
                         # 调用子用例
                         elif ac == 'OTHER_CALL_SUB_CASE':

@@ -125,10 +125,9 @@ TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
-# USE_L10N = True
+USE_L10N = False
 
 # Django Admin 时间格式化
-USE_L10N = False
 DATETIME_FORMAT = 'Y-m-d H:i:s'
 DATE_FORMAT = 'Y-m-d'
 
@@ -211,7 +210,7 @@ LOGGING = {
             'when': 'D',                # 时间间隔单位
             'interval': 1,              # 时间间隔值
             'backupCount': 30,          # 保留日志数量
-            'formatter': 'detail',    # 使用哪种formatters日志格式
+            'formatter': 'detail',      # 使用哪种formatters日志格式
         },
         # 服务器错误日志文件
         # 'server_error': {
@@ -313,10 +312,10 @@ ASGI_APPLICATION = 'py_test_site.routing.application'
 SITE_NAME = '汇智自动化测试工具'
 
 # 站点版本
-SITE_VERSION = 'V1.10.20181229.02'
+SITE_VERSION = 'V1.10.20190102.01'
 
 # 最大并行测试线程数
 SUITE_MAX_CONCURRENT_EXECUTE_COUNT = 8
 
 # 步骤循环次数限制
-LOOP_ITERATIONS_LIMIT = 1000
+LOOP_ITERATIONS_LIMIT = 100
