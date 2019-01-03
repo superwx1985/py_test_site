@@ -222,7 +222,7 @@ class VicStep:
                                 vc.step_active = _result
                             else:
                                 _result = None
-                                self.run_result = ['s', '步骤被跳过']
+                                self.run_result = ['s', '跳过步骤']
 
                             # 创建分支对象
                             if_object = {'result': _result, 'active': _step_active}
@@ -262,7 +262,7 @@ class VicStep:
                                         # 匹配成功则开始执行后续步骤
                                         vc.step_active = _result
                                 else:
-                                    self.run_result = ['s', '步骤被跳过']
+                                    self.run_result = ['s', '跳过步骤']
                             else:
                                 msg = '出现多余的“ELSE_IF”步骤，可能会导致意外的错误，请检查用例'
                                 logger.warning('【{}】\t{}'.format(eid, msg))
@@ -290,7 +290,7 @@ class VicStep:
                                         # 在分支对象中添加else标记
                                         if_object['else'] = True
                                 else:
-                                    self.run_result = ['s', '步骤被跳过']
+                                    self.run_result = ['s', '跳过步骤']
                             else:
                                 logger.warning('【{}】\t{}'.format(eid, msg))
                                 self.run_result = ['f', msg]
@@ -304,7 +304,7 @@ class VicStep:
                                     # 后续步骤重置为激活状态
                                     vc.step_active = True
                                 else:
-                                    self.run_result = ['s', '步骤被跳过']
+                                    self.run_result = ['s', '跳过步骤']
                             else:
                                 msg = '出现多余的“END_IF”步骤，可能会导致意外的错误，请检查用例'
                                 logger.warning('【{}】\t{}'.format(eid, msg))
@@ -908,7 +908,7 @@ class VicStep:
                                 last_url = dr.current_url  # 通过获取当前url测试是否有弹窗需要处理
                             except exceptions.UnexpectedAlertPresentException:  # 如有弹窗则处理弹窗
                                 alert_handle_text, alert_text = ui_test.method.confirm_alert(
-                                    dr=dr, alert_handle=self.ui_alert_handle, timeout=timeout, logger=logger)
+                                    alert_handle=self.ui_alert_handle, vic_step=self)
                                 logger.info(
                                     '【{}】\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(
                                         eid, alert_handle_text, alert_text))
@@ -945,7 +945,7 @@ class VicStep:
                                 if len(self.fail_elements) > 0:
                                     ui_test.method.highlight_for_a_moment(dr, self.fail_elements, 'red')
                     else:
-                        self.run_result = ['s', '步骤被跳过']
+                        self.run_result = ['s', '跳过步骤']
                 # 如果遇到元素过期，将尝试重跑该步骤，直到超时
                 except (exceptions.StaleElementReferenceException, exceptions.WebDriverException) as e:
                     if self.force_stop or (time.time() - start_time) > timeout:

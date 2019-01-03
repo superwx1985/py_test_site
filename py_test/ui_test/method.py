@@ -76,7 +76,7 @@ def wait_for_text_present(vic_step, print_=True):
     _success = False
     msg = '没找到期望文字【{}】'.format(text)
     vic_step.dr.implicitly_wait(0.5)
-    while (time.time() - start_time) <= vic_step.timeout:
+    while (time.time() - start_time) <= vic_step.timeout and not vic_step.force_stop:
         elements.clear()
         fail_elements.clear()
         if not vic_step.ui_by and not vic_step.ui_locator:
@@ -110,7 +110,7 @@ def wait_for_text_present(vic_step, print_=True):
                         else:
                             fail_elements.append(element_temp)
                 elif index_ > (len(elements_temp) - 1):
-                    raise ValueError('找到{}个元素，但指定的index【{}】超出可用范围（0到{}）'.format(
+                    raise ValueError('找到{}个元素，但指定的索引【{}】超出可用范围（0到{}）'.format(
                         len(elements), index_, len(elements) - 1))
                 else:
                     element_text = vic_step.dr.execute_script(
@@ -148,11 +148,11 @@ def wait_for_element_present(vic_step, timeout=None, print_=True):
     elements = list()
     if not timeout:
         timeout = vic_step.timeout
-
+    run_result = ['f', 'N/A']
     vic_step.dr.implicitly_wait(0.5)
-    start_time = time.time()
     last_print_time = 0
-    while (time.time() - start_time) <= timeout:
+    start_time = time.time()
+    while (time.time() - start_time) <= timeout and not vic_step.force_stop:
         if vic_step.variable_elements:
             elements = vic_step.variable_elements
         else:
@@ -160,63 +160,50 @@ def wait_for_element_present(vic_step, timeout=None, print_=True):
                 elements = vic_step.ui_base_element.find_elements(vic_step.ui_by, vic_step.ui_locator)
             else:
                 elements = vic_step.dr.find_elements(vic_step.ui_by, vic_step.ui_locator)
+
+        msg = '找到期望元素【By:{}|Locator:{}】{}个'.format(vic_step.ui_by, vic_step.ui_locator, len(elements))
+
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            vic_step.logger.info('经过{}秒 - 找到期望元素{}个'.format(elapsed_time, len(elements)))
+            msg = '经过{}秒 - {}'.format(elapsed_time, msg)
+            vic_step.logger.info(msg)
             last_print_time = now_time
+
         if elements:
+            run_result = ['p', msg]
             break
+        else:
+            run_result = ['f', msg]
+
     vic_step.dr.implicitly_wait(timeout)
-    elapsed_time = str(round(time.time() - start_time, 2))
-    msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个'.format(elapsed_time, vic_step.ui_by, vic_step.ui_locator, len(elements))
-    if elements:
-        run_result = ['p', msg]
-    else:
-        run_result = ['f', msg]
     return run_result, elements
 
 
 # 获取元素
 def get_element(vic_step, timeout=None, print_=True, necessary=True):
+    element = None
+    el_msg = ''
+    err_msg = ''
     if not timeout:
         timeout = vic_step.timeout
-    result_msg = '未找到'
-    el_msg = '符合条件的元素'
-    element = None
-    last_print_time = 0
-    start_time = time.time()
-    while (time.time() - start_time) <= timeout:
-        run_result_temp, elements = wait_for_element_present(vic_step, timeout=1, print_=print_)
-        if run_result_temp[0] == 'p':
-            result_msg = '找到'
-            if vic_step.ui_index:
-                if vic_step.ui_index > (len(elements) - 1):
-                    el_msg = '{}个元素，但指定的index【{}】超出可用范围（0到{}）'.format(
-                        len(elements), vic_step.ui_index, len(elements) - 1)
-                else:
-                    element = elements[vic_step.ui_index]
-                    el_msg = '元素【By:{}|Locator:{}|Index:{}】'.format(
-                        vic_step.ui_by, vic_step.ui_locator, vic_step.ui_index)
-            else:
-                if len(elements) > 1:
-                    el_msg = '{}个元素，请指定一个index'.format(len(elements))
-                else:
-                    element = elements[0]
-                    el_msg = '元素【By:{}|Locator:{}】'.format(vic_step.ui_by, vic_step.ui_locator)
-        else:
-            result_msg = '未找到'
-            el_msg = '符合条件的元素'
-        now_time = time.time()
-        if print_ and now_time - last_print_time >= 1:
-            elapsed_time = str(round(now_time - start_time, 2))
-            vic_step.logger.info('经过{}秒 - {}{}'.format(elapsed_time, result_msg, el_msg))
-            last_print_time = now_time
-        if element:
-            break
-    if necessary and not element:
-        raise exceptions.NoSuchElementException('{}{}'.format(result_msg, el_msg))
-    return element, result_msg, el_msg
+    run_result_temp, elements = wait_for_element_present(vic_step, timeout=timeout, print_=print_)
+    if run_result_temp[0] == 'f':
+        err_msg = '未找到元素，因为{}'.format(run_result_temp[1])
+    elif len(elements) == 1 and vic_step.ui_index in (None, 0):
+        el_msg = '【By:{}|Locator:{}】'.format(vic_step.ui_by, vic_step.ui_locator)
+        element = elements[0]
+    elif vic_step.ui_index is None:
+        err_msg = '找到{}个元素，请指定索引获取唯一元素'.format(len(elements))
+    elif vic_step.ui_index > (len(elements) - 1):
+        err_msg = '找到{}个元素，但指定的索引【{}】超出可用范围（0到{}）'.format(
+            len(elements), vic_step.ui_index, len(elements)-1)
+    else:
+        el_msg = '【By:{}|Locator:{}|Index:{}】'.format(vic_step.ui_by, vic_step.ui_locator, vic_step.ui_index)
+        element = elements[vic_step.ui_index]
+    if not element and necessary:
+        raise exceptions.NoSuchElementException(err_msg)
+    return element, el_msg, err_msg
 
 
 # 等待元素可见
@@ -230,7 +217,7 @@ def wait_for_element_visible(vic_step, timeout=None, print_=True):
     vic_step.dr.implicitly_wait(0.5)
     last_print_time = 0
     start_time = time.time()
-    while (time.time() - start_time) <= timeout:
+    while (time.time() - start_time) <= timeout and not vic_step.force_stop:
         visible_elements.clear()
         if vic_step.variable_elements:
             elements = vic_step.variable_elements
@@ -277,7 +264,10 @@ def wait_for_element_visible(vic_step, timeout=None, print_=True):
 
 
 # 获取可见元素
-def get_variable_element(vic_step, timeout=None, print_=True):
+def get_variable_element(vic_step, timeout=None, print_=True, necessary=True):
+    element = None
+    el_msg = ''
+    err_msg = ''
     if not timeout:
         timeout = vic_step.timeout
     _ui_data = vic_step.ui_data  # 把ui_data置空，防止查找元素时被当做数量限制表达式
@@ -285,27 +275,32 @@ def get_variable_element(vic_step, timeout=None, print_=True):
     run_result_temp, elements, _ = wait_for_element_visible(vic_step, timeout=timeout, print_=print_)
     vic_step.ui_data = _ui_data
     if run_result_temp[0] == 'f':
-        raise exceptions.NoSuchElementException('未找到指定的元素，{}'.format(run_result_temp[1]))
+        err_msg = '未找到元素，因为{}'.format(run_result_temp[1])
     elif len(elements) == 1 and vic_step.ui_index in (None, 0):
+        el_msg = '【By:{}|Locator:{}】'.format(vic_step.ui_by, vic_step.ui_locator)
         element = elements[0]
     elif vic_step.ui_index is None:
-        raise ValueError('找到{}个元素，请指定一个index'.format(len(elements)))
+        err_msg = '找到{}个元素，请指定索引获取唯一元素'.format(len(elements))
     elif vic_step.ui_index > (len(elements) - 1):
-        raise ValueError('找到{}个元素，但指定的index【{}】超出可用范围（0到{}）'.format(
-            len(elements), vic_step.ui_index, len(elements) - 1))
+        err_msg = '找到{}个元素，但指定的索引【{}】超出可用范围（0到{}）'.format(
+            len(elements), vic_step.ui_index, len(elements) - 1)
     else:
+        el_msg = '【By:{}|Locator:{}|Index:{}】'.format(vic_step.ui_by, vic_step.ui_locator, vic_step.ui_index)
         element = elements[vic_step.ui_index]
-    return element
+    if not element and necessary:
+        raise exceptions.NoSuchElementException(err_msg)
+    return element, el_msg, err_msg
 
 
 # 等待元素消失
 def wait_for_element_disappear(vic_step, print_=True):
     visible_elements = list()
-    elements = list()
+    run_result = ['f', 'N/A']
+    _success = False
     vic_step.dr.implicitly_wait(0.5)
     last_print_time = 0
     start_time = time.time()
-    while (time.time() - start_time) <= vic_step.timeout:
+    while (time.time() - start_time) <= vic_step.timeout and not vic_step.force_stop:
         visible_elements = list()
         if vic_step.variable_elements:
             elements = vic_step.variable_elements
@@ -314,28 +309,33 @@ def wait_for_element_disappear(vic_step, print_=True):
                 elements = vic_step.ui_base_element.find_elements(vic_step.ui_by, vic_step.ui_locator)
             else:
                 elements = vic_step.dr.find_elements(vic_step.ui_by, vic_step.ui_locator)
-        now_time = time.time()
-        if print_ and now_time - last_print_time >= 1:
-            elapsed_time = str(round(now_time - start_time, 2))
-            vic_step.logger.info('经过{}秒 - 找到期望元素{}个，其中可见元素{}个'.format(
-                elapsed_time, len(elements), len(visible_elements)))
-            last_print_time = now_time
+
         if not elements:
-            break
+            _success = True
         else:
             for element in elements:
                 if element.is_displayed():
                     visible_elements.append(element)
-            if len(visible_elements) == 0:
-                break
-        vic_step.dr.implicitly_wait(vic_step.timeout)
-    elapsed_time = str(round(time.time() - start_time, 2))
-    msg = '经过{}秒 - 找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个'.format(
-        vic_step.ui_by, vic_step.ui_locator, elapsed_time, len(elements), len(visible_elements))
-    if not visible_elements:
-        run_result = ['p', msg]
-    else:
-        run_result = ['f', msg]
+            if not visible_elements:
+                _success = True
+
+        msg = '找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个'.format(
+            vic_step.ui_by, vic_step.ui_locator, len(elements), len(visible_elements))
+
+        now_time = time.time()
+        if print_ and now_time - last_print_time >= 1:
+            elapsed_time = str(round(now_time - start_time, 2))
+            msg = '经过{}秒 - {}'.format(elapsed_time, msg)
+            vic_step.logger.info(msg)
+            last_print_time = now_time
+
+        if _success:
+            run_result = ['p', msg]
+            break
+        else:
+            run_result = ['f', msg]
+
+    vic_step.dr.implicitly_wait(vic_step.timeout)
     return run_result, visible_elements
 
 
@@ -352,7 +352,7 @@ def wait_for_page_redirect(vic_step, print_=True):
     is_passed = False
     start_time = time.time()
     last_print_time = 0
-    while (time.time() - start_time) <= vic_step.timeout:
+    while (time.time() - start_time) <= vic_step.timeout and not vic_step.force_stop:
         current_url = vic_step.dr.current_url
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
@@ -391,29 +391,26 @@ def get_url(vic_step):
 
 # 尝试点击
 def try_to_click(vic_step, print_=True):
-    element = get_variable_element(vic_step, print_=print_)
-
+    element, el_msg, _ = get_variable_element(vic_step, print_=print_)
     highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     element.click()
-    run_result = ['p', '点击元素【By:{}|Locator:{}】'.format(vic_step.ui_by, vic_step.ui_locator)]
+    run_result = ['p', '点击元素{}'.format(el_msg)]
     return run_result, element
 
 
 # 尝试输入
 def try_to_enter(vic_step, print_=True):
-    element = get_variable_element(vic_step, print_=print_)
-
+    element, el_msg, _ = get_variable_element(vic_step, print_=print_)
     highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     element.clear()
     element.send_keys(vic_step.ui_data)
-    run_result = ['p', '在元素【By:{}|Locator:{}】中输入【{}】'.format(vic_step.ui_by, vic_step.ui_locator, vic_step.ui_data)]
+    run_result = ['p', '在元素{}中输入【{}】'.format(el_msg, vic_step.ui_data)]
     return run_result, element
 
 
 # 尝试选择
 def try_to_select(vic_step, print_=True):
-    element = get_variable_element(vic_step, print_=print_)
-
+    element, el_msg, _ = get_variable_element(vic_step, print_=print_)
     highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     select = Select(element)
     # 如果data为空则全不选
@@ -460,10 +457,7 @@ def try_to_select(vic_step, print_=True):
     selected_text_list = list()
     [selected_text_list.append(_option.text) for _option in select.all_selected_options]
 
-    run_result = [
-        'p', '在元素【By:{}|Locator:{}】中进行了选择操作，被选中的选项为【{}】'.format(
-            vic_step.ui_by, vic_step.ui_locator, '|'.join(selected_text_list))
-    ]
+    run_result = ['p', '在元素{}中进行了选择操作，被选中的选项为【{}】'.format(el_msg, '|'.join(selected_text_list))]
     return run_result, element
 
 
@@ -493,7 +487,7 @@ def perform_special_action(vic_step, print_=True):
     if not vic_step.ui_by or not vic_step.ui_locator:
         element = None
     else:
-        element = get_variable_element(vic_step, print_=print_)
+        element, _, _ = get_variable_element(vic_step, print_=print_)
 
     dr = vic_step.dr
     sp = vic_step.ui_special_action
@@ -579,21 +573,28 @@ def perform_special_action(vic_step, print_=True):
 
 # 尝试滚动到元素位置
 def try_to_scroll_into_view(vic_step, print_=True):
-    element, _, _ = get_element(vic_step, print_=print_)
+    element, el_msg, _ = get_element(vic_step, print_=print_)
     highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     vic_step.dr.execute_script('arguments[0].scrollIntoView()', element)
-    run_result = ['p', '移动窗口到元素【By:{}|Locator:{}】的位置'.format(vic_step.ui_by, vic_step.ui_locator)]
+    run_result = ['p', '移动窗口到元素{}的位置'.format(el_msg)]
     return run_result, element
 
 
 # 处理浏览器弹窗
-def confirm_alert(dr, alert_handle, timeout, print_=True, logger=logging.getLogger('py_test')):
-    start_time = time.time()
+def confirm_alert(alert_handle, vic_step=None, vic_case=None, print_=True):
     last_print_time = 0
     done = False
     alert_handle_text = ''
     alert_text = ''
-    while (time.time() - start_time) <= timeout:
+    if vic_case:
+        dr = vic_case.driver_container[0]
+        obj = vic_case
+    else:
+        dr = vic_step.dr
+        obj = vic_step
+
+    start_time = time.time()
+    while (time.time() - start_time) <= obj.timeout and not obj.force_stop:
         try:
             alert_ = dr.switch_to.alert
             alert_text = alert_.text
@@ -613,7 +614,7 @@ def confirm_alert(dr, alert_handle, timeout, print_=True, logger=logging.getLogg
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            logger.info('经过%s秒 - 尝试以【%s】方式关闭弹窗' % (elapsed_time, alert_handle))
+            obj.logger.info('经过%s秒 - 尝试以【%s】方式关闭弹窗' % (elapsed_time, alert_handle))
             last_print_time = now_time
     elapsed_time = str(round(time.time() - start_time, 2))
     if not done:
@@ -627,7 +628,7 @@ def try_to_switch_to_window(vic_step, current_window_handle, print_=True):
     _success = False
     new_window_handle = None
     start_time = time.time()
-    while (time.time() - start_time) <= vic_step.timeout:
+    while (time.time() - start_time) <= vic_step.timeout and not vic_step.force_stop:
         for window_handle in vic_step.dr.window_handles:
             if window_handle != current_window_handle:
                 vic_step.dr.switch_to.window(window_handle)
@@ -677,15 +678,15 @@ def try_to_switch_to_frame(vic_step, print_=True):
     last_print_time = 0
     success_ = False
     msg = '未能切换到符合条件的框架'
-    while (time.time() - start_time) <= vic_step.timeout:
+    while (time.time() - start_time) <= vic_step.timeout and not vic_step.force_stop:
         if vic_step.ui_by and vic_step.ui_locator:
-            frame, result_msg, el_msg = get_element(vic_step, timeout=1, print_=False, necessary=False)
+            frame, el_msg, err_msg = get_element(vic_step, timeout=1, print_=False, necessary=False)
             if frame:
                 vic_step.dr.switch_to.frame(frame)
                 success_ = True
-                msg = '已切换到{}对应的框架'.format(el_msg)
+                msg = '切换到元素{}对应的框架'.format(el_msg)
             else:
-                msg = '未能切换到指定元素对应的框架，因为：{}{}'.format(result_msg, el_msg)
+                msg = '未能切换到元素对应的框架，因为{}'.format(err_msg)
         else:
             index_ = vic_step.ui_index if vic_step.ui_index else 0
             try:
@@ -723,7 +724,7 @@ def run_js(vic_step, print_=True):
         if vic_step.ui_index is None:
             js_result = vic_step.dr.execute_script(vic_step.ui_data, elements)
         elif vic_step.ui_index > (len(elements) - 1):
-            raise ValueError('找到{}个元素，但指定的index【{}】超出可用范围（0到{}）'.format(
+            raise ValueError('找到{}个元素，但指定的索引【{}】超出可用范围（0到{}）'.format(
                 len(elements), vic_step.ui_index, len(elements) - 1))
         else:
             js_result = vic_step.dr.execute_script(vic_step.ui_data, elements[vic_step.ui_index])
@@ -738,23 +739,22 @@ def run_js(vic_step, print_=True):
 
 # 获取元素文本
 def get_element_text(vic_step, print_=True):
-    element, _, _ = get_element(vic_step, print_=print_)
+    element, el_msg, _ = get_element(vic_step, print_=print_)
     highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     text = element.text
-    run_result = ['p', '元素【By:{}|Locator:{}】的文本为：{}'.format(vic_step.ui_by, vic_step.ui_locator, text)]
+    run_result = ['p', '元素{}的文本为：{}'.format(el_msg, text)]
     return run_result, text
 
 
 # 获取元素属性
 def get_element_attr(vic_step, print_=True):
-    element, _, _ = get_element(vic_step, print_=print_)
+    element, el_msg, _ = get_element(vic_step, print_=print_)
     highlight_for_a_moment(vic_step.dr, [element], 'outline: 2px dotted yellow; border: 1px solid yellow;')
     attr = element.get_attribute(vic_step.ui_data)
     if attr:
-        run_result = ['p', '元素【By:{}|Locator:{}】的【{}】属性的值为：{}'.format(
-            vic_step.ui_by, vic_step.ui_locator, vic_step.ui_data, attr)]
+        run_result = ['p', '元素{}的【{}】属性的值为：{}'.format(el_msg, vic_step.ui_data, attr)]
     else:
-        run_result = ['f', '元素【By:{}|Locator:{}】不存在【{}】属性'.format(vic_step.ui_by, vic_step.ui_locator, vic_step.ui_data)]
+        run_result = ['f', '元素{}不存在【{}】属性'.format(el_msg, vic_step.ui_data)]
     return run_result, attr
 
 

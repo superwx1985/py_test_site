@@ -197,7 +197,7 @@ class VicCase:
                             _ = dr.current_url
                         except UnexpectedAlertPresentException:
                             alert_handle_text, alert_text = ui_test.method.confirm_alert(
-                                dr=dr, alert_handle=ui_alert_handle, timeout=timeout, logger=self.logger)
+                                alert_handle=ui_alert_handle, vic_case=self)
                             self.logger.info('【{}】\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(
                                 execute_id, alert_handle_text, alert_text))
 

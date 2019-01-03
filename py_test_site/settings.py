@@ -210,9 +210,9 @@ LOGGING = {
             'when': 'D',                # 时间间隔单位
             'interval': 1,              # 时间间隔值
             'backupCount': 30,          # 保留日志数量
-            'formatter': 'detail',      # 使用哪种formatters日志格式
+            'formatter': 'standard',      # 使用哪种formatters日志格式
         },
-        # 服务器错误日志文件
+        # # 服务器错误日志文件
         # 'server_error': {
         #     'level': 'ERROR',
         #     'class': 'logging.handlers.RotatingFileHandler',
@@ -221,13 +221,13 @@ LOGGING = {
         #     'backupCount': 10,
         #     'formatter': 'detail',
         # },
-        # 邮件通知
+        # # 邮件通知
         # 'mail_admins': {
         #     'level': 'ERROR',
         #     'class': 'django.utils.log.AdminEmailHandler',
         #     'include_html': True,
         # },
-        # 请求日志文件
+        # # 请求日志文件
         # 'server_request': {
         #     'level': 'DEBUG',
         #     'class': 'logging.handlers.RotatingFileHandler',
@@ -236,12 +236,12 @@ LOGGING = {
         #     'backupCount': 3,
         #     'formatter': 'standard',
         # },
-        # sql日志文件
+        # # sql日志文件
         # 'server_sql': {
         #     'level': 'DEBUG',
         #     'class': 'logging.handlers.RotatingFileHandler',
         #     'filename': os.path.join(LOG_DIR, 'server_sql.log'),
-        #     'maxBytes': 1024*1024*10,
+        #     'maxBytes': 1024*1024*100,
         #     'backupCount': 3,
         #     'formatter': 'standard',
         # },
@@ -277,7 +277,7 @@ LOGGING = {
         #     'handlers': ['server_request'],
         #     'level': log_level,
         # },
-        # # sql日志
+        # sql日志
         # 'django.db.backends': {
         #     'handlers': ['server_sql'],
         #     'level': log_level,
@@ -312,7 +312,7 @@ ASGI_APPLICATION = 'py_test_site.routing.application'
 SITE_NAME = '汇智自动化测试工具'
 
 # 站点版本
-SITE_VERSION = 'V1.10.20190102.02'
+SITE_VERSION = 'V1.10.20190103.01'
 
 # 最大并行测试线程数
 SUITE_MAX_CONCURRENT_EXECUTE_COUNT = 8
