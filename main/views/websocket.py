@@ -50,7 +50,7 @@ class SuiteConsumer(WebsocketConsumer):
                         self.send(text_data=json.dumps({'type': 'end', 'data': data_dict}), close=True)
             elif command == 'stop':
                 FORCE_STOP[execute_uuid] = user.pk
-                self.send(text_data=json.dumps({'type': 'message', 'message': '已接收到强制停止指令，将在当前步骤完成后停止。'}), close=True)
+                self.send(text_data=json.dumps({'type': 'message', 'message': '已接收到强制停止指令，测试中止...'}), close=True)
         else:
             self.send(text_data=json.dumps({'type': 'error', 'data': 'token无效'}), close=True)
 
