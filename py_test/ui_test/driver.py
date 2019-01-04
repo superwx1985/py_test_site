@@ -1,4 +1,5 @@
 import logging
+import threading
 # from concurrent.futures import ThreadPoolExecutor, wait
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
@@ -76,17 +77,23 @@ def get_driver_(config, logger=logging.getLogger('py_test')):
         return dr
 
 
+lock = threading.Lock()
+
+
 # 获取浏览器driver，添加重试功能
 def get_driver(config, retry=3, timeout=10, logger=logging.getLogger('py_test')):
-    RemoteConnection.set_timeout(timeout)
+    lock.acquire()  # 防止多线程测试时RemoteConnection的timeout被同时修改
+    RemoteConnection.set_timeout(timeout)  # 设置RemoteConnection的初始timeout值
     for i in range(retry):
         try:
             dr = get_driver_(config, logger)
         except Exception as e:
             if i >= retry - 1:
+                lock.acquire()
                 raise
             else:
                 logger.warning('浏览器驱动初始化出错，尝试进行第{}次初始化。错误信息 => {}'.format(e, i+2))
                 continue
         else:
+            lock.release()
             return dr

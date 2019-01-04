@@ -213,9 +213,15 @@
     {% endif %}
 </div>
 <div class="row align-items-center" common name="timeout">
-    <div class="col-1 text-center font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该步骤的超时值，如留空将使用测试套件设置的全局超时值（单位：秒）"></i></div>
+    <div class="col-1 text-center font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该步骤的超时值（单位：秒）。留空将使用套件或用例的值"></i></div>
     <div class="col" form_data>
         {% include 'main/include/form_input.html' with field=form.timeout %}
+    </div>
+</div>
+<div class="row align-items-center" ui name="ui_step_interval">
+    <div class="col-1 text-center font-weight-bold">UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。留空将使用套件或用例的值"></i></div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.ui_step_interval %}
     </div>
 </div>
 <div class="row align-items-center" common name="save_as">

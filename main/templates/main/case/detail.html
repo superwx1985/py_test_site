@@ -195,6 +195,18 @@
                 {% include 'main/include/form_input.html' with field=form.project %}
             </div>
         </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该用例内每一步骤的默认超时值（单位：秒）。如果步骤单独设置了超时值，将使用步骤的值"></i></div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.timeout %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。如果步骤单独设置了间隔时间，将使用步骤的值"></i></div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.ui_step_interval %}
+            </div>
+        </div>
 
         <input type="text" name="step" id="id_step" hidden>
         {% include 'main/include/detail_redirect.html' %}

@@ -40,8 +40,12 @@ class VicCase:
 
         self.name = case.name
         self.steps = list()
-        self.timeout = self.vic_suite.timeout
-        self.ui_step_interval = self.vic_suite.ui_step_interval
+
+        # timeout为0时也要取
+        self.timeout = case.timeout if case.timeout is not None else vic_suite.timeout
+        # ui_step_interval为0时也要取
+        self.ui_step_interval = case.ui_step_interval if case.ui_step_interval is not None \
+            else vic_suite.ui_step_interval
 
         # 用例级别强制停止信号
         self.case_force_stop = False
@@ -74,6 +78,9 @@ class VicCase:
             name=case.name,
             description=case.description,
             keyword=case.keyword,
+
+            timeout=case.timeout,
+            ui_step_interval=case.ui_step_interval,
             variable_group=variable_group_json,
 
             suite_result=vic_suite.suite_result,
@@ -189,8 +196,6 @@ class VicCase:
                     self.logger.info('【{}】\t执行步骤 => ID:{} | {} | {}'.format(
                         execute_id, step.id, step.name, step.step.action))
 
-                    timeout = step.timeout if step.timeout else self.timeout
-
                     # 如有弹窗则处理弹窗
                     if dr is not None:
                         try:
@@ -202,7 +207,6 @@ class VicCase:
                                 execute_id, alert_handle_text, alert_text))
 
                     # 执行步骤
-                    # step_ = step.execute(self, global_variables, public_elements)
                     step_ = step.execute()
                     step_result_ = step_.step_result
                     self.socket_no_response = step_.socket_no_response
@@ -234,15 +238,6 @@ class VicCase:
 
                     if self.force_stop:
                         break
-                    # 通过添加步骤间等待时间控制UI测试执行速度
-                    if step_.action_type_code == 'UI' and self.ui_step_interval:
-                        _ui_step_interval = int(self.ui_step_interval)
-                        for i in range(_ui_step_interval):
-                            if self.force_stop:
-                                break
-                            time.sleep(1)
-                            self.logger.info('【{}】\t已暂停【{}】秒'.format(execute_id, i+1))
-                        time.sleep(self.ui_step_interval - _ui_step_interval)
 
             except Exception as e:
                 self.logger.error('【{}】\t执行出错'.format(execute_id), exc_info=True)

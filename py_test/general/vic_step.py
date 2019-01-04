@@ -31,6 +31,16 @@ class VicStep:
         self.name = step.name
         self.action_type_code = step.action.type.code
         self.action_code = step.action.code
+
+        # timeout为0时也要取
+        self.timeout = step.timeout if step.timeout is not None else vic_case.timeout
+        # ui_step_interval为0时也要取
+        self.ui_step_interval = step.ui_step_interval if step.ui_step_interval is not None \
+            else vic_case.ui_step_interval
+
+        self.save_as = step.save_as
+
+        self.ui_get_ss = vic_case.vic_suite.ui_get_ss
         self.variables = vic_case.variables
         self.global_variables = vic_case.global_variables
         self.public_elements = vic_case.public_elements
@@ -68,10 +78,6 @@ class VicStep:
         )
 
         try:
-            self.timeout = step.timeout if step.timeout else vic_case.timeout
-            self.ui_get_ss = vic_case.vic_suite.ui_get_ss
-            self.save_as = step.save_as
-
             ui_by_dict = {i[0]: i[1] for i in Step.ui_by_list}
             self.ui_by = ui_by_dict[step.ui_by]
             self.ui_locator = step.ui_locator
@@ -944,6 +950,16 @@ class VicStep:
                                     ui_test.method.highlight_for_a_moment(dr, self.elements, 'green')
                                 if len(self.fail_elements) > 0:
                                     ui_test.method.highlight_for_a_moment(dr, self.fail_elements, 'red')
+
+                        # 通过添加步骤间等待时间控制UI测试执行速度
+                        if atc == 'UI' and self.ui_step_interval:
+                            _ui_step_interval = int(self.ui_step_interval)  # 取整
+                            for i in range(_ui_step_interval):
+                                if self.force_stop:
+                                    break
+                                time.sleep(1)
+                                self.logger.info('【{}】\t已暂停【{}】秒'.format(eid, i + 1))
+                            time.sleep(self.ui_step_interval - _ui_step_interval)  # 补上小数部分
                     else:
                         self.run_result = ['s', '跳过步骤']
                 # 如果遇到元素过期，将尝试重跑该步骤，直到超时

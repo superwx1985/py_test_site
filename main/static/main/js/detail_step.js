@@ -6,16 +6,16 @@ function show_action_field($actionSelect) {
 	if (select_value === 'UI_GO_TO_URL') {
 		introduce.children('div').text('打开一个页面，请填入页面URL');
 		$('div[name=ui_data] .col-1').text('URL');
-		$('div[name=ui_alert_handle],div[name=ui_data],div[name=timeout]').show();
+		$('div[name=ui_alert_handle],div[name=ui_data],div[name=timeout],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_REFRESH') {
 		introduce.children('div').text('触发浏览器刷新页面操作');
-		$('div[name=ui_alert_handle],div[name=timeout]').show();
+		$('div[name=ui_alert_handle],div[name=timeout],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_FORWARD') {
 		introduce.children('div').text('触发浏览器前进操作');
-		$('div[name=ui_alert_handle],div[name=timeout]').show();
+		$('div[name=ui_alert_handle],div[name=timeout],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_BACK') {
 		introduce.children('div').text('触发浏览器后退操作');
-		$('div[name=ui_alert_handle],div[name=timeout]').show();
+		$('div[name=ui_alert_handle],div[name=timeout],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_SCREENSHOT') {
 		introduce.children('div').text('获取当前页面截图，如果提供了定位信息则只截取定位到的元素');
 		$('[ui],div[name=timeout]').show();
@@ -26,7 +26,7 @@ function show_action_field($actionSelect) {
 		$('div[name=ui_data],div[name=ui_special_action]').hide();
 	} else if (select_value === 'UI_SWITCH_TO_DEFAULT_CONTENT') {
 		introduce.children('div').text('回到框架的上一级页面，如进入了多层框架，请使用多次该动作');
-		$('div[name=ui_alert_handle],div[name=timeout]').show();
+		$('div[name=ui_alert_handle],div[name=timeout],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_SWITCH_TO_WINDOW') {
 		introduce.children('div').text('切换至浏览器的其他窗口或标签。如果提供了窗口标题，则切换到标题（head中title元素的值）中包含该文字的窗口；如果提供了定位信息，则切换到包含该元素的窗口；否则切换至任意一个非当前窗口');
 		$('[ui],div[name=timeout]').show();
@@ -39,7 +39,7 @@ function show_action_field($actionSelect) {
 		$('div[name=ui_data] .col-1').text('窗口标题');
 	} else if (select_value === 'UI_RESET_BROWSER') {
 		introduce.children('div').text('关闭浏览器，清空所有缓存，再重新打开浏览器');
-		$('div[name=ui_alert_handle],div[name=timeout]').show();
+		$('div[name=ui_alert_handle],div[name=timeout],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_CLICK') {
 		introduce.children('div').text('在指定的元素上触发单击，如果找不到元素或元素当前不可见会报错。如果填写了“保存为”，找到的元素将被保存为变量');
 		$('[ui],div[name=timeout],div[name=save_as]').show();
@@ -71,7 +71,7 @@ function show_action_field($actionSelect) {
 		// $('div[name=ui_data] .col-1').text('选项表达式');
 	} else if (select_value === 'UI_SPECIAL_ACTION') {
 		introduce.children('div').text('执行一些特殊的互动操作。如果填写了“保存为”，找到的元素将被保存为变量。请选择具体的特殊动作...');
-		$('div[name=ui_special_action],div[name=timeout],div[name=save_as]').show();
+		$('div[name=ui_special_action],div[name=timeout],div[name=save_as],div[name=ui_step_interval]').show();
 		show_special_action_field($('#id_ui_special_action'));
 	} else if (select_value === 'UI_SCROLL_INTO_VIEW') {
 		introduce.children('div').text('移到浏览器窗口的可视区域到指定的元素的位置，如果找不到元素会报错。如果填写了“保存为”，找到的元素将被保存为变量');
@@ -80,7 +80,7 @@ function show_action_field($actionSelect) {
 	} else if (select_value === 'UI_VERIFY_URL') {
 		introduce.children('div').text('验证当前页面的URL是否匹配，待验证内容可以为字符串或表达式。如果填写了“保存为”，验证结果将被保存为变量');
 		$('div[name=ui_data] .col-1').text('待验证内容');
-		$('div[name=ui_alert_handle],div[name=ui_data],div[name=timeout],div[name=save_as]').show();
+		$('div[name=ui_alert_handle],div[name=ui_data],div[name=timeout],div[name=save_as],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_VERIFY_TEXT') {
 		introduce.children('div').text('验证页面是否包含文字（如果待验证内容是输入框内的值，或者是表达式，请指定元素）。如果指定了元素，则验证该元素是否包含文字。如果填写了“保存为”，验证结果将被保存为变量');
 		$('[ui],div[name=timeout],div[name=save_as]').show();
@@ -113,7 +113,7 @@ function show_action_field($actionSelect) {
 		$('div[name=ui_special_action],div[name=ui_data]').hide();
 	} else if (select_value === 'UI_SAVE_URL') {
 		introduce.children('div').html('把URL或URL的一部分保存为变量。可以使用正则表达式指定要匹配的部分。例：<span class="mark">#{re}#id=(\\d+)&</span>将匹配<span class="text-info">http://www.test.com/user/?id=12345&pk=45678</span>中的<span class="text-info">12345</span>');
-		$('div[name=ui_alert_handle],div[name=timeout],div[name=save_as],div[name=ui_data]').show();
+		$('div[name=ui_alert_handle],div[name=timeout],div[name=save_as],div[name=ui_data],div[name=ui_step_interval]').show();
 		$('div[name=ui_data] .col-1').text('正则表达式');
 	} else if (select_value === 'UI_SAVE_ELEMENT_TEXT') {
 		introduce.children('div').html('把元素文本保存为变量');

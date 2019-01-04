@@ -19,6 +19,8 @@ class Case(models.Model):
         User, verbose_name='修改人', related_name='case_modifier', on_delete=models.SET_NULL, blank=True, null=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
+    timeout = models.FloatField(blank=True, null=True)
+    ui_step_interval = models.FloatField(blank=True, null=True)
     variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.SET_NULL, blank=True, null=True)
     step = models.ManyToManyField('Step', through='CaseVsStep', through_fields=('case', 'step'))
 
@@ -46,6 +48,8 @@ class Step(models.Model):
     is_active = models.BooleanField(default=True)
     action = models.ForeignKey('main.Action', on_delete=models.SET_NULL, blank=True, null=True)
     timeout = models.FloatField(blank=True, null=True)
+    ui_step_interval = models.FloatField(blank=True, null=True)
+
     save_as = models.CharField(blank=True, max_length=100)
     ui_by_list = (
         (0, ''),
@@ -432,11 +436,11 @@ class SuiteResult(models.Model):
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
 
-    timeout = models.FloatField(default=10)
-    ui_step_interval = models.FloatField(default=0)
-    ui_get_ss = models.BooleanField(default=True)
-    log_level = models.IntegerField(default=20)
-    thread_count = models.IntegerField(default=1)
+    timeout = models.FloatField(blank=True, null=True)
+    ui_step_interval = models.FloatField(blank=True, null=True)
+    ui_get_ss = models.NullBooleanField(blank=True, null=True)
+    log_level = models.IntegerField(blank=True, null=True)
+    thread_count = models.IntegerField(blank=True, null=True)
     config = models.TextField(blank=True, null=True)
     variable_group = models.TextField(blank=True, null=True)
     element_group = models.TextField(blank=True, null=True)
@@ -484,6 +488,8 @@ class CaseResult(models.Model):
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
 
+    timeout = models.FloatField(blank=True, null=True)
+    ui_step_interval = models.FloatField(blank=True, null=True)
     variable_group = models.TextField(blank=True, null=True)
 
     suite_result = models.ForeignKey('main.SuiteResult', on_delete=models.CASCADE)

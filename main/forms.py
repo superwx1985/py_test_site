@@ -4,6 +4,7 @@ from django.contrib.auth import password_validation
 from django.utils.translation import gettext_lazy as _
 from py_test_site.settings import SUITE_MAX_CONCURRENT_EXECUTE_COUNT
 
+
 class LoginForm(forms.Form):
     username = forms.CharField(label='用户名', max_length=50)
     password = forms.CharField(label='密码', max_length=50, widget=forms.PasswordInput())
@@ -71,6 +72,10 @@ class CaseForm(forms.ModelForm):
     # step = forms.CharField(required=False, validators=[])
     # 限制project为必选
     project = forms.ModelChoiceField(queryset=Project.objects, required=True)
+    # 限制timeout大于1
+    timeout = forms.FloatField(min_value=1, required=False)
+    # 限制ui_step_interval大于0
+    ui_step_interval = forms.FloatField(min_value=0, required=False)
 
     class Meta:
         model = Case
@@ -79,7 +84,6 @@ class CaseForm(forms.ModelForm):
             'is_active',
             'creator',
             'created_date',
-
             'step',
         ]
         widgets = {
@@ -112,6 +116,8 @@ class StepForm(forms.ModelForm):
     project = forms.ModelChoiceField(queryset=Project.objects, required=True)
     # 限制timeout大于1
     timeout = forms.FloatField(min_value=1, required=False)
+    # 限制ui_step_interval大于0
+    ui_step_interval = forms.FloatField(min_value=0, required=False)
     # 限制ui_index大于0
     ui_index = forms.IntegerField(min_value=0, required=False)
 
@@ -180,7 +186,7 @@ class SuiteForm(forms.ModelForm):
     project = forms.ModelChoiceField(queryset=Project.objects, required=True)
     # 限制timeout大于1
     timeout = forms.FloatField(min_value=1)
-    # 限制ui_step_interval大于1
+    # 限制ui_step_interval大于0
     ui_step_interval = forms.FloatField(initial=0, min_value=0)
 
     class Meta:
