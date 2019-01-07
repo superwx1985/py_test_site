@@ -71,7 +71,7 @@ def get_driver_(config, logger=logging.getLogger('py_test')):
             if dr:
                 dr.quit()
         except Exception as e:
-            logger.error('有一个浏览器驱动无法关闭，请手动关闭。错误信息 => {}'.format(e))
+            logger.error('有一个浏览器无法关闭，请手动关闭。错误信息 => {}'.format(e))
         raise
     else:
         return dr
@@ -92,7 +92,7 @@ def get_driver(config, retry=3, timeout=10, logger=logging.getLogger('py_test'))
                 lock.acquire()
                 raise
             else:
-                logger.warning('浏览器驱动初始化出错，尝试进行第{}次初始化。错误信息 => {}'.format(e, i+2))
+                logger.warning('浏览器初始化出错，尝试进行第{}次初始化。错误信息 => {}'.format(i+2, e))
                 continue
         else:
             lock.release()

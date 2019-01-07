@@ -58,7 +58,7 @@ function show_action_field($actionSelect) {
 		$('div[name=ui_special_action],div[name=ui_data]').hide();
 		init_step_ui_data_select();
 		// 注册添加按钮
-		$('#ui_data_select_table #new_helper td[col_move]').on('click', function () {
+		$('#ui_data_select_table #new_helper td[col_move]').off('click').on('click', function () {
 			add_step_ui_data_select();
 		});
 		// 注册new helper的删除按钮事件
@@ -68,7 +68,6 @@ function show_action_field($actionSelect) {
 		});
 		// 注册全选复选框事件
 		$('[name=ui_data_select_all]').off('click').on('click', function () { check_step_ui_data_select_all_checkbox() });
-		// $('div[name=ui_data] .col-1').text('选项表达式');
 	} else if (select_value === 'UI_SPECIAL_ACTION') {
 		introduce.children('div').text('执行一些特殊的互动操作。如果填写了“保存为”，找到的元素将被保存为变量。请选择具体的特殊动作...');
 		$('div[name=ui_special_action],div[name=timeout],div[name=save_as],div[name=ui_step_interval]').show();
@@ -121,12 +120,13 @@ function show_action_field($actionSelect) {
 		$('div[name=ui_special_action],div[name=ui_data]').hide();
 	} else if (select_value === 'UI_SAVE_ELEMENT_ATTR') {
 		introduce.children('div').html('把元素属性的值保存为变量');
+		$('div[name=ui_data] .col-1').text('属性名');
 		$('[ui],div[name=timeout],div[name=save_as]').show();
 		$('div[name=ui_special_action]').hide();
-		$('div[name=ui_data] .col-1').text('属性名');
 	} else if (select_value === 'OTHER_SLEEP') {
 		introduce.children('div').text('等待若干秒');
-		$('div[name=timeout]').show();
+		$('div[name=other_data] .col-1').html('等待时间&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="" data-original-title="单位：秒"></i>');
+		$('div[name=other_data]').show();
 	} else if (select_value === 'OTHER_SAVE_CASE_VARIABLE') {
 		introduce.children('div').text('把数值，字符串或表达式的值保存为用例级别的局部变量。在子用例中保存的局部变量可以被调用它的上级用例访问。例：依次运行2个用例，A和B；A调用子用例C，C运行时定义了局部变量bar=1，那么A访问bar得到1；若B也调用C，C运行时定义了局部变量bar=2，那么B访问bar得到2，A访问bar还是1');
 		introduce.append($('<div>如果想在表达式中使用字符串，请添加英文双引号。例：<span class="mark">"123"</span>不会转换为整型<span class="text-info">123</span>，而是被保存为字符串<span class="text-info">"123"</span></div>'));
@@ -210,7 +210,7 @@ function show_action_field($actionSelect) {
 		$('div[api],div[name=save_as]').show();
 		init_step_api_save_as();
 		// 注册添加按钮
-		$('#api_save_as_table #new_helper td[col_move]').on('click', function () {
+		$('#api_save_as_table #new_helper td[col_move]').off('click').on('click', function () {
 			add_step_api_save_as();
 		});
 		// 注册new helper的删除按钮事件
@@ -222,6 +222,7 @@ function show_action_field($actionSelect) {
 		// 启用排序功能
 		sortable_api_save_as();
 	} else if ($.inArray(select_value, ["test"]) >= 0) {
+		console.error('未知的动作【' +select_value + '】')
 	}
 	// 注册提示框
 	$('[data-toggle=tooltip]').tooltip();
@@ -232,12 +233,13 @@ function reset_action_field() {
     $('[temp]').remove();
 	$('#introduce').empty().append($('<div>').text('请选择动作'));
 	$('div[name=ui_data] .col-1').html('数据');
-	$('[common]').hide();
-	$('[ui]').hide();
-	$('[ui_hide]').hide();
-	$('[api]').hide();
-	$('[db]').hide();
-	$('[other]').hide();
+	$('[common],[ui],[ui_hidden],[api],[db],[other]').hide();
+	// $('[common]').hide();
+	// $('[ui]').hide();
+	// $('[ui_hidden]').hide();
+	// $('[api]').hide();
+	// $('[db]').hide();
+	// $('[other]').hide();
 	$('[name=detail_content]').css('padding-bottom', '100px');
 	$('div[name=other_data] .col-1').html('表达式');
 	$('div[name=other_data] textarea').attr('name', 'other_data').show();
@@ -388,4 +390,9 @@ function check_unsaved() {
 		}
 	}
 	return false;
+}
+
+// 清空未显示的字段
+function clear_hidden_field() {
+
 }

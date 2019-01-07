@@ -58,7 +58,7 @@ class StepAdmin(admin.ModelAdmin):
     list_display_links = ('pk', 'name',)
     list_filter = ('is_active', 'creator', 'project', 'created_date',)
     list_editable = ('is_active',)
-    search_fields = ('pk', 'name', 'keyword',)
+    search_fields = ('pk', 'name', 'keyword', 'action__name',)
 
 
 class ActionTypeAdmin(admin.ModelAdmin):

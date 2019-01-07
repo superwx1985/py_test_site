@@ -39,6 +39,7 @@ function init_step_ui_data_select() {
 		$('[data-toggle=tooltip]').tooltip();
 	}
 }
+
 // 添加
 function add_step_ui_data_select() {
 	var new_helper = $('#ui_data_select_table #new_helper');
@@ -71,8 +72,8 @@ function add_step_ui_data_select() {
 		get_invalid_input(name_input, check_result);
 		return false;
 	}
-
 }
+
 // 删除
 function del_step_ui_data_select($tr) {
 	var name = $tr.find('td[col_index] span').text();
@@ -157,6 +158,7 @@ function check_unsaved_step_ui_data_select() {
 		return false;
 	}
 }
+
 // 检查全选复选框
 function check_step_ui_data_select_all_checkbox() {
 	if ($('[name=ui_data_select_all]').prop("checked")) {
@@ -166,6 +168,7 @@ function check_step_ui_data_select_all_checkbox() {
 		$('#ui_data_select_table').show();
 	}
 }
+
 // 检查select_by状态
 function check_step_ui_data_select_select_by_select($tr) {
 	if ($tr.find('td[col_select_by] select').val() === 'index') {

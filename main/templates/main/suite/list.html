@@ -48,13 +48,14 @@
                             var execute_name_div = $('<div id="execute_name_div" class="text-left"></div>');
                             execute_name_div.append($('<span>').addClass('font-weight-bold lead').text('套件名称：')).append($('<span>').addClass('text-info lead').text(name));
                             $modal_body_div.append(execute_name_div);
-                            var execute_log_outer_div = $('<div class="jumbotron" style="padding: 10px 0 10px 10px"></div>');
-                            var execute_log_div = $('<div id="execute_log_div" class="text-left small" style="height: 250px; overflow-y: auto;"></div>');
-                            $modal_body_div.append(execute_log_outer_div.append(execute_log_div));
                             var execute_result_div = $('<div id="execute_result_div"></div>');
                             $modal_body_div.append(execute_result_div);
+                            var execute_button_div = $('<div id="execute_button_div" style="padding: 0 0 10px 0"></div>');
                             var execute_button = $('<button id="force-stop" class="btn btn-danger">强制停止</button>');
-                            $modal_body_div.append(execute_button);
+                            $modal_body_div.append(execute_button_div.append(execute_button));
+                            var execute_log_outer_div = $('<div class="jumbotron" style="padding: 10px 0 10px 10px"></div>');
+                            var execute_log_div = $('<div id="execute_log_div" class="text-left small" style="height: 400px; overflow-y: auto;"></div>');
+                            $modal_body_div.append(execute_log_outer_div.append(execute_log_div));
                             var my_modal = show_my_modal('execute_modal', 'modal-max', '', 'overflow-y: auto;', '<i class="icon-spinner icon-spin"></i>&nbsp;执行中...', $modal_body_div, {backdrop:'static'}, function() {$('#objects_form').submit()});
 
                             var ws_scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
@@ -104,7 +105,7 @@
                                     var data_ = JSON.parse(data.data)['data'];
                                     var content_div = $('<div>').html(data_.suite_result_content);
                                     execute_result_div.append(content_div);
-                                    execute_button.text('查看详情').removeClass('btn-danger').addClass('btn-primary');
+                                    execute_button.text('结果详情').removeClass('btn-danger').addClass('btn-primary');
                                     execute_button.off('click').on('click', function () {
                                         modal_with_iframe_max('inside_detail_modal', '结果详情', data_.suite_result_url + '?inside=1')
                                     });

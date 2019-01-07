@@ -3,6 +3,7 @@ import time
 import json
 import traceback
 import socket
+import math
 from socket import timeout as socket_timeout_error
 from django.forms.models import model_to_dict
 from selenium.common import exceptions
@@ -131,6 +132,26 @@ class VicStep:
         else:
             return False
 
+    # 更新测试数据
+    def update_test_data(self, *args):
+        var = self.variables
+        gvar = self.global_variables
+        logger = self.logger
+        for arg in args:
+            attr = getattr(self, arg)
+            if arg == 'ui_base_element':
+                if isinstance(attr, str):
+                    _attr = str(vic_method.replace_special_value(attr, var, gvar, logger))
+                    setattr(self, arg, vic_variables.get_elements(_attr, var, gvar)[0] if _attr else None)
+            else:
+                setattr(self, arg, str(vic_method.replace_special_value(attr, var, gvar, logger)))
+
+        if 'ui_locator' in args:
+            if self.ui_by == 'variable':
+                self.variable_elements = vic_variables.get_elements(self.ui_locator, var, gvar)
+            elif self.ui_by == 'public element':
+                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(self)
+
     def execute(self):
         # 记录开始执行时的时间
         self.step_result.start_date = datetime.datetime.now()
@@ -154,37 +175,9 @@ class VicStep:
         timeout = self.timeout
 
         try:
-            # 根据当前变量组替换数据
-            self.other_data = str(vic_method.replace_special_value(self.other_data, var, gvar, logger))
-            if atc == 'UI':
-                # selenium驱动初始化检查
-                if dr is None:
-                    raise exceptions.WebDriverException('浏览器未初始化，请检查是否配置有误或浏览器被意外关闭')
-                self.ui_locator = str(vic_method.replace_special_value(self.ui_locator, var, gvar, logger))
-                if isinstance(self.ui_base_element, str):
-                    _ui_base_element = str(vic_method.replace_special_value(self.ui_base_element, var, gvar, logger))
-                    self.ui_base_element = (
-                        vic_variables.get_elements(_ui_base_element, var, gvar)[0] if _ui_base_element else None)
-                self.ui_data = str(vic_method.replace_special_value(self.ui_data, var, gvar, logger))
-                if self.ui_by == 'variable':
-                    self.variable_elements = vic_variables.get_elements(self.ui_locator, var, gvar)
-                elif self.ui_by == 'public element':
-                    self.ui_by, self.ui_locator = ui_test.method.get_public_elements(self)
-            elif atc == 'API':
-                self.api_url = str(vic_method.replace_special_value(self.api_url, var, gvar, logger))
-                self.api_headers = str(vic_method.replace_special_value(self.api_headers, var, gvar, logger))
-                self.api_body = str(vic_method.replace_special_value(self.api_body, var, gvar, logger))
-                self.api_decode = str(vic_method.replace_special_value(self.api_decode, var, gvar, logger))
-                self.api_data = str(vic_method.replace_special_value(self.api_data, var, gvar, logger))
-            elif atc == 'DB':
-                self.db_host = str(vic_method.replace_special_value(self.db_host, var, gvar, logger))
-                self.db_port = str(vic_method.replace_special_value(self.db_port, var, gvar, logger))
-                self.db_name = str(vic_method.replace_special_value(self.db_name, var, gvar, logger))
-                self.db_user = str(vic_method.replace_special_value(self.db_user, var, gvar, logger))
-                self.db_password = str(vic_method.replace_special_value(self.db_password, var, gvar, logger))
-                self.db_lang = str(vic_method.replace_special_value(self.db_lang, var, gvar, logger))
-                self.db_sql = str(vic_method.replace_special_value(self.db_sql, var, gvar, logger))
-                self.db_data = str(vic_method.replace_special_value(self.db_data, var, gvar, logger))
+            # selenium驱动初始化检查
+            if atc == 'UI' and dr is None:
+                raise exceptions.WebDriverException('浏览器未初始化，请检查是否配置有误或浏览器被意外关闭')
 
             # 设置selenium驱动超时
             if dr:
@@ -210,6 +203,7 @@ class VicStep:
                     if re_run_count == 0:
                         # 分支判断 - 如果
                         if ac == 'OTHER_IF':
+                            self.update_test_data('other_data')
                             _step_active = vc.step_active
                             # 如果当前步骤处于激活状态
                             if _step_active:
@@ -234,9 +228,9 @@ class VicStep:
                             if_object = {'result': _result, 'active': _step_active}
                             # 添加到分支判断列表
                             vc.if_list.append(if_object)
-
                         # 分支判断 - 否则如果
                         elif ac == 'OTHER_ELSE_IF':
+                            self.update_test_data('other_data')
                             if vc.if_list:
                                 # 获取最后一个分支对象
                                 if_object = vc.if_list[-1]
@@ -323,6 +317,7 @@ class VicStep:
 
                             # 循环判断 - 结束
                             elif ac == 'OTHER_END_LOOP':
+                                self.update_test_data('other_data')
                                 if vc.loop_list:
                                     loop_count = vc.loop_list[-1][1]
                                     if loop_count > LOOP_ITERATIONS_LIMIT-1:
@@ -351,6 +346,7 @@ class VicStep:
                                     logger.warning('【{}】\t{}'.format(eid, msg))
                                     self.run_result = ['f', msg]
 
+                    # 如果步骤为分支判断，那么保留步骤结果文字
                     if vc.step_active or ac in (
                             'OTHER_IF', 'OTHER_ELSE', 'OTHER_ELSE_IF', 'OTHER_END_IF'):
                         if ac in (
@@ -360,6 +356,8 @@ class VicStep:
                         # ===== UI =====
                         # 打开URL
                         elif ac == 'UI_GO_TO_URL':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_data')
                             if not self.ui_data:
                                 raise ValueError('请提供要打开的URL地址')
                             self.run_result = ui_test.method.go_to_url(self)
@@ -378,12 +376,16 @@ class VicStep:
 
                         # 截图
                         elif ac == 'UI_SCREENSHOT':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                             self.run_result, img = ui_test.screenshot.get_screenshot(self)
                             if img:
                                 self.img_list.append(img)
 
                         # 切换frame
                         elif ac == 'UI_SWITCH_TO_FRAME':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element')
                             self.run_result = ui_test.method.try_to_switch_to_frame(self)
 
                         # 退出frame
@@ -392,13 +394,18 @@ class VicStep:
 
                         # 切换至浏览器的其他窗口或标签
                         elif ac == 'UI_SWITCH_TO_WINDOW':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                             self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(
                                 self, dr.current_window_handle)
 
                         # 关闭当前浏览器窗口或标签并切换至其他窗口或标签
                         elif ac == 'UI_CLOSE_WINDOW':
                             if len(dr.window_handles) == 1:
-                                raise exceptions.InvalidSwitchToTargetException('当前窗口是浏览器的最后一个窗口，如果需要关闭浏览器请使用【重置浏览器】步骤')
+                                raise exceptions.InvalidSwitchToTargetException(
+                                    '当前窗口是浏览器的最后一个窗口，如果需要关闭浏览器请使用【重置浏览器】步骤')
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                             current_window_handle = dr.current_window_handle
                             dr.close()
                             self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(
@@ -410,15 +417,17 @@ class VicStep:
                                 try:
                                     dr.quit()
                                 except Exception as e:
-                                    logger.error('有一个浏览器驱动无法关闭，请手动关闭。错误信息 => {}'.format(e))
+                                    logger.error('有一个浏览器无法关闭，请手动关闭。错误信息 => {}'.format(e))
                                 del dr
                                 init_timeout = timeout if timeout > 30 else 30
-                                self.logger.info('【{}】\t启动浏览器驱动...'.format(eid))
+                                self.logger.info('【{}】\t启动浏览器...'.format(eid))
                                 dr = ui_test.driver.get_driver(self.config, 3, init_timeout, logger=logger)
                                 vc.driver_container[0] = dr
 
                         # 单击
                         elif ac == 'UI_CLICK':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element')
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
@@ -429,6 +438,8 @@ class VicStep:
 
                         # 输入
                         elif ac == 'UI_ENTER':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
@@ -439,6 +450,8 @@ class VicStep:
 
                         # 选择下拉项
                         elif ac == 'UI_SELECT':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
@@ -449,13 +462,20 @@ class VicStep:
 
                         # 特殊动作
                         elif ac == 'UI_SPECIAL_ACTION':
-                            self.run_result, element = ui_test.method.perform_special_action(self)
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element')
+                                _update_test_data = True
+                            else:
+                                _update_test_data = False
+                            self.run_result, element = ui_test.method.perform_special_action(self, _update_test_data)
                             self.elements = [element]
                             if self.save_as:
                                 var.set_variable(self.save_as, self.elements)
 
                         # 移动到元素位置
                         elif ac == 'UI_SCROLL_INTO_VIEW':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element')
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
@@ -466,6 +486,8 @@ class VicStep:
 
                         # 验证URL
                         elif ac == 'UI_VERIFY_URL':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_data')
                             if self.ui_data == '':
                                 raise ValueError('无验证内容')
                             else:
@@ -480,6 +502,8 @@ class VicStep:
 
                         # 验证文字
                         elif ac == 'UI_VERIFY_TEXT':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                             if not self.ui_data:
                                 raise ValueError('请提供要验证的文字')
                             self.run_result, self.elements, self.fail_elements = ui_test.method.wait_for_text_present(
@@ -494,6 +518,8 @@ class VicStep:
 
                         # 验证元素可见
                         elif ac == 'UI_VERIFY_ELEMENT_SHOW':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
@@ -509,6 +535,8 @@ class VicStep:
 
                         # 验证元素隐藏
                         elif ac == 'UI_VERIFY_ELEMENT_HIDE':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element')
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
@@ -524,6 +552,8 @@ class VicStep:
 
                         # 运行JavaScript
                         elif ac == 'UI_EXECUTE_JS':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                             if not self.ui_data:
                                 raise ValueError('未提供javascript代码')
 
@@ -534,6 +564,8 @@ class VicStep:
 
                         # 验证JavaScript结果
                         elif ac == 'UI_VERIFY_JS_RETURN':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                             if not self.ui_data:
                                 raise ValueError('未提供javascript代码')
 
@@ -549,6 +581,8 @@ class VicStep:
 
                         # 保存元素变量
                         elif ac == 'UI_SAVE_ELEMENT':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                             if not self.save_as:
                                 raise ValueError('没有提供变量名')
                             if not self.ui_by or not self.ui_locator:
@@ -564,6 +598,8 @@ class VicStep:
 
                         # 保存url变量
                         elif ac == 'UI_SAVE_URL':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_data')
                             if not self.save_as:
                                 raise ValueError('没有提供变量名')
 
@@ -577,6 +613,8 @@ class VicStep:
 
                         # 保存元素文本
                         elif ac == 'UI_SAVE_ELEMENT_TEXT':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element')
                             if not self.save_as:
                                 raise ValueError('没有提供变量名')
                             if not self.ui_by or not self.ui_locator:
@@ -592,6 +630,8 @@ class VicStep:
 
                         # 保存元素属性值
                         elif ac == 'UI_SAVE_ELEMENT_ATTR':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                             if not self.save_as:
                                 raise ValueError('没有提供变量名')
                             if not self.ui_by or not self.ui_locator:
@@ -607,6 +647,8 @@ class VicStep:
 
                         # ===== API =====
                         elif ac == 'API_SEND_HTTP_REQUEST':
+                            self.update_test_data(
+                                'api_url', 'api_headers', 'api_headers', 'api_body', 'api_decode', 'api_data')
                             if not self.api_url:
                                 raise ValueError('请提供请求地址')
                             if self.api_headers:
@@ -681,6 +723,8 @@ class VicStep:
 
                         # ===== DB =====
                         elif ac == 'DB_EXECUTE_SQL':
+                            self.update_test_data(
+                                'db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'db_lang', 'db_sql')
                             try:
                                 sql_result, select_result = db_method.get_sql_result(self)
                             except:
@@ -708,6 +752,9 @@ class VicStep:
                                 self.run_result = [run_result_status, msg]
 
                         elif ac == 'DB_VERIFY_SQL_RESULT':
+                            self.update_test_data(
+                                'db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'db_lang', 'db_sql',
+                                'db_data')
                             if not self.db_data:
                                 raise ValueError('未提供验证内容，如无需验证，请使用【执行SQL】动作')
                             try:
@@ -751,15 +798,26 @@ class VicStep:
                         # ===== OTHER =====
                         # 等待
                         elif ac == 'OTHER_SLEEP':
-                            timeout = int(timeout or 3)
-                            for i in range(timeout):
+                            if re_run_count == 0:
+                                self.update_test_data('other_data')
+                            if not self.other_data:
+                                raise ValueError('未提供等待时间')
+                            try:
+                                _timeout = math.modf(float(self.other_data))
+                            except ValueError:
+                                raise ValueError('【{}】无法转换为数字'.format(self.other_data))
+
+                            for i in range(int(_timeout[1])):
                                 if self.force_stop:
                                     break
                                 time.sleep(1)
                                 logger.info('【{}】\t已等待【{}】秒'.format(eid, i + 1))
+                            time.sleep(_timeout[0])  # 补上小数部分
 
                         # 保存用例变量
                         elif ac == 'OTHER_SAVE_CASE_VARIABLE':
+                            if re_run_count == 0:
+                                self.update_test_data('other_data')
                             if not self.save_as:
                                 raise ValueError('没有提供变量名')
                             elif not self.other_data:
@@ -777,6 +835,8 @@ class VicStep:
 
                         # 保存全局变量
                         elif ac == 'OTHER_SAVE_GLOBAL_VARIABLE':
+                            if re_run_count == 0:
+                                self.update_test_data('other_data')
                             if not self.save_as:
                                 raise ValueError('没有提供变量名')
                             elif not self.other_data:
@@ -829,6 +889,8 @@ class VicStep:
 
                         # 使用正则表达式截取变量
                         elif ac == 'OTHER_GET_VALUE_WITH_RE':
+                            if re_run_count == 0:
+                                self.update_test_data('other_data')
                             if self.other_data == '':
                                 raise ValueError('没有提供表达式')
                             found, variable = vic_variables.get_variable(self.save_as, var, gvar)
@@ -850,6 +912,8 @@ class VicStep:
 
                         # 验证表达式
                         elif ac == 'OTHER_VERIFY_EXPRESSION':
+                            if re_run_count == 0:
+                                self.update_test_data('other_data')
                             if self.other_data == '':
                                 raise ValueError('未提供表达式')
                             eo = vic_eval.EvalObject(
@@ -953,13 +1017,13 @@ class VicStep:
 
                         # 通过添加步骤间等待时间控制UI测试执行速度
                         if atc == 'UI' and self.ui_step_interval:
-                            _ui_step_interval = int(self.ui_step_interval)  # 取整
-                            for i in range(_ui_step_interval):
+                            _timeout = math.modf(float(self.ui_step_interval))
+                            for i in range(int(_timeout[1])):
                                 if self.force_stop:
                                     break
                                 time.sleep(1)
-                                self.logger.info('【{}】\t已暂停【{}】秒'.format(eid, i + 1))
-                            time.sleep(self.ui_step_interval - _ui_step_interval)  # 补上小数部分
+                                logger.info('【{}】\t已暂停【{}】秒'.format(eid, i + 1))
+                            time.sleep(_timeout[0])  # 补上小数部分
                     else:
                         self.run_result = ['s', '跳过步骤']
                 # 如果遇到元素过期，将尝试重跑该步骤，直到超时
@@ -984,9 +1048,9 @@ class VicStep:
 
         except socket_timeout_error:
             self.socket_no_response = True
-            logger.error('【{}】\t浏览器驱动响应超时'.format(eid), exc_info=True)
+            logger.error('【{}】\t浏览器响应超时'.format(eid), exc_info=True)
             self.step_result.result_status = 3
-            self.step_result.result_message = '浏览器驱动响应超时，请检查网络连接或驱动位于的浏览器窗口是否被关闭'
+            self.step_result.result_message = '浏览器响应超时，请检查网络连接或驱动位于的浏览器窗口是否被关闭'
             self.step_result.result_error = traceback.format_exc()
         except exceptions.TimeoutException:
             logger.error('【{}】\t超时'.format(eid), exc_info=True)
@@ -1006,8 +1070,8 @@ class VicStep:
 
         if atc == 'UI' and dr is not None:
             if self.socket_no_response:
-                self.step_result.ui_last_url = '由于浏览器驱动响应超时，URL获取失败'
-                logger.warning('【{}】\t由于浏览器驱动响应超时，无法获取报错时的URL和截图'.format(eid))
+                self.step_result.ui_last_url = '由于浏览器响应超时，URL获取失败'
+                logger.warning('【{}】\t由于浏览器响应超时，无法获取报错时的URL和截图'.format(eid))
 
             # 获取当前URL
             try:

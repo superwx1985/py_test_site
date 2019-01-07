@@ -136,7 +136,7 @@ class VicCase:
                 # 初始化driver
                 if dr is None and self.step_result is None and self.config.ui_selenium_client != 0:
                     init_timeout = self.timeout if self.timeout > 30 else 30
-                    self.logger.info('【{}】\t启动浏览器驱动...'.format(execute_id))
+                    self.logger.info('【{}】\t启动浏览器...'.format(execute_id))
                     dr = ui_test.driver.get_driver(self.config, 3, init_timeout, logger=self.logger)
                     self.driver_container[0] = dr
 
@@ -266,12 +266,12 @@ class VicCase:
                         except AttributeError:
                             dr.command_executor.set_timeout(5)
                     # 先通过close方法判断驱动是否可控，然后再关闭
-                    self.logger.info('【{}】\t关闭浏览器驱动...'.format(execute_id))
+                    self.logger.info('【{}】\t关闭浏览器...'.format(execute_id))
                     dr.close()
                     dr.quit()
                     self.logger.info('【{}】\t已关闭'.format(execute_id))
                 except Exception as e:
-                    self.logger.error('【{}】\t有一个浏览器驱动无法关闭，请手动关闭。错误信息 => {}'.format(execute_id, e))
+                    self.logger.error('【{}】\t有一个浏览器无法关闭，请手动关闭。错误信息 => {}'.format(execute_id, e))
             del dr
 
         if self.case_result.error_count > 0 or self.case_result.result_error:

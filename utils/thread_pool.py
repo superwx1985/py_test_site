@@ -48,8 +48,14 @@ lock = threading.Lock()
 
 
 def get_pool(logger=logging.getLogger('py_test.{}')):
-    lock.acquire()
     global SUITE_EXECUTE_POOL
+    if lock.locked():
+        msg = '线程被锁定'
+    else:
+        msg = '线程未被锁定'
+    logger.debug('{}，正在运行的套件为：\n{}\n公用线程池：{}\n当前线程总数：{}'.format(
+        msg, RUNNING_SUITES, SUITE_EXECUTE_POOL, threading.active_count()))
+    lock.acquire()
     if not SUITE_EXECUTE_POOL or (not RUNNING_SUITES and SUITE_EXECUTE_POOL.work_queue_empty_shutdown()):
         SUITE_EXECUTE_POOL = VicThreadPoolExecutor(SUITE_MAX_CONCURRENT_EXECUTE_COUNT or 1)
         logger.debug('新建线程池')
@@ -58,9 +64,12 @@ def get_pool(logger=logging.getLogger('py_test.{}')):
 
 
 def safety_shutdown_pool(logger=logging.getLogger('py_test.{}')):
-    lock.acquire()
     global SUITE_EXECUTE_POOL
+    lock.acquire()
     if SUITE_EXECUTE_POOL and not RUNNING_SUITES and SUITE_EXECUTE_POOL.work_queue_empty_shutdown():
+        # del SUITE_EXECUTE_POOL
         SUITE_EXECUTE_POOL = None
         logger.debug('关闭线程池')
+    logger.debug('正在运行的套件为：\n{}\n公用线程池：{}\n当前线程总数：{}'.format(
+        RUNNING_SUITES, SUITE_EXECUTE_POOL, threading.active_count()))
     lock.release()

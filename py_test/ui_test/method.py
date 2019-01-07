@@ -483,7 +483,7 @@ def get_special_keys(data_, logger=logging.getLogger('py_test')):
 
 
 # 特殊动作
-def perform_special_action(vic_step, print_=True):
+def perform_special_action(vic_step, update_test_data=False, print_=True):
     if not vic_step.ui_by or not vic_step.ui_locator:
         element = None
     else:
@@ -508,6 +508,8 @@ def perform_special_action(vic_step, print_=True):
         ActionChains(dr).release(element).perform()
 
     elif sp == 'move_by_offset':
+        if update_test_data:
+            vic_step.update_test_data('ui_data')
         data = vic_step.ui_data.split(',')
         if len(data) < 2:
             raise ValueError('必须指定一组偏移坐标')
@@ -521,6 +523,8 @@ def perform_special_action(vic_step, print_=True):
         ActionChains(dr).move_to_element(element).perform()
 
     elif sp == 'move_to_element_with_offset':
+        if update_test_data:
+            vic_step.update_test_data('ui_data')
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个元素')
         data = vic_step.ui_data.split(',')
@@ -531,6 +535,8 @@ def perform_special_action(vic_step, print_=True):
         ActionChains(dr).move_to_element_with_offset(element, xoffset, yoffset).perform()
 
     elif sp == 'drag_and_drop':
+        if update_test_data:
+            vic_step.update_test_data('ui_data')
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个元素')
         target_element = vic_variables.get_elements(vic_step.ui_data, vic_step.variables, vic_step.global_variables)[0]
@@ -539,6 +545,8 @@ def perform_special_action(vic_step, print_=True):
         ActionChains(dr).drag_and_drop(element, target_element).perform()
 
     elif sp == 'drag_and_drop_by_offset':
+        if update_test_data:
+            vic_step.update_test_data('ui_data')
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个元素')
         data = vic_step.ui_data.split(',')
@@ -555,10 +563,14 @@ def perform_special_action(vic_step, print_=True):
         ActionChains(dr).key_up(element).perform()
 
     elif sp == 'send_keys':
+        if update_test_data:
+            vic_step.update_test_data('ui_data')
         keys = get_special_keys(vic_step.ui_data, logger=vic_step.logger)
         ActionChains(dr).send_keys(keys).perform()
 
     elif sp == 'send_keys_to_element':
+        if update_test_data:
+            vic_step.update_test_data('ui_data')
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个被操作元素')
         keys = get_special_keys(vic_step.ui_data, logger=vic_step.logger)

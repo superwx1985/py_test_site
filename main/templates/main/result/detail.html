@@ -73,13 +73,13 @@
         {% include 'main/include/submit_button_group.html' %}
     </form>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">全局超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置本次测试每一步的默认超时值。如果步骤单独设置了超时值，将使用步骤的超时值（单位：秒）"></i></div>
+        <div class="col-1 text-center font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该套件内每一步骤的默认超时值（单位：秒）。如果用例或步骤单独设置了超时值，将使用用例或步骤的值"></i></div>
         <div class="col" form_data>
             <span class="text-info">{{ obj.timeout }}</span>
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">执行间隔时间&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤间的暂停时间（单位：秒）"></i></div>
+        <div class="col-1 text-center font-weight-bold">UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。如果用例或步骤单独设置了间隔时间，将使用用例或步骤的值"></i></div>
         <div class="col" form_data>
             <span class="text-info">{{ obj.ui_step_interval }}</span>
         </div>
