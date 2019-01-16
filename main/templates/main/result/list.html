@@ -19,7 +19,7 @@
         // 获取套件下拉项
         function suite_select(selected_pk) {
             if (!selected_pk) { selected_pk = $("select[name=suite_id]").val() }
-            getList("{% url 'suite_select_json' %}", window.$csrf_input.val(), update_parent_select_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'套件详情\', \'%url%?inside=1\',null, suite_select);", "url_replacer": "%url%"}');
+            getList("{% url 'suites_select_json' %}", window.$csrf_input.val(), update_parent_select_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'套件详情\', \'%url%?inside=1\',null, suite_select);", "url_replacer": "%url%"}');
         }
         // 更新父对象下拉项
         function update_parent_select_dropdown(success, data) {
@@ -62,7 +62,7 @@
                     <th order_by_text="m2m_count">用例数</th>
                     <th order_by_text="start_date">测试时间</th>
                     <th order_by_text="elapsed_time">测试耗时</th>
-                    <th order_by_text="result_status_str">结果</th>
+                    <th order_by_text="result_state_str">结果</th>
                     <th order_by_text="real_name">测试人</th>
                     <th order_by_text="modified_date">修改时间</th>
                     <th>操作</th>
@@ -79,14 +79,14 @@
                         <td col_name='m2m_count' class="middle">{{ obj.m2m_count }}</td>
                         <td col_name='start_date' class="middle">{{ obj.start_date|default_if_none:'N/A' }}</td>
                         <td col_name='elapsed_time_str' class="middle">{{ obj.elapsed_time_str }}</td>
-                        {% if obj.result_status == 0 %}
-                            <td class="middle"><span class="badge badge-pill badge-secondary">{{ obj.result_status_str }}</span></td>
-                        {% elif obj.result_status == 1 %}
-                            <td class="middle"><span class="badge badge-pill badge-success">{{ obj.result_status_str }}</span></td>
-                        {% elif obj.result_status == 2 %}
-                            <td class="middle"><span class="badge badge-pill badge-warning">{{ obj.result_status_str }}</span></td>
+                        {% if obj.result_state == 0 %}
+                            <td class="middle"><span class="badge badge-pill badge-secondary">{{ obj.result_state_str }}</span></td>
+                        {% elif obj.result_state == 1 %}
+                            <td class="middle"><span class="badge badge-pill badge-success">{{ obj.result_state_str }}</span></td>
+                        {% elif obj.result_state == 2 %}
+                            <td class="middle"><span class="badge badge-pill badge-warning">{{ obj.result_state_str }}</span></td>
                         {% else %}
-                            <td class="middle"><span class="badge badge-pill badge-danger">{{ obj.result_status_str }}</span></td>
+                            <td class="middle"><span class="badge badge-pill badge-danger">{{ obj.result_state_str }}</span></td>
                         {% endif %}
                         <td col_name='real_name' class="middle">{{ obj.real_name }}</td>
                         <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>

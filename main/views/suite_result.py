@@ -8,7 +8,7 @@ from django.db.models import Q, CharField, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from main.models import SuiteResult, Step, Suite
+from main.models import SuiteResult, Step, Suite, result_state_list
 from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, ConfigForm, VariableGroupForm, ElementGroupForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
 from py_test.vic_tools.vic_date_handle import get_timedelta_str
@@ -19,9 +19,9 @@ logger = logging.getLogger('django.request')
 # 用例列表
 @login_required
 def list_(request):
-    if request.session.get('status', None) == 'success':
+    if request.session.get('state', None) == 'success':
         prompt = 'success'
-    request.session['status'] = None
+    request.session['state'] = None
 
     project_list = get_project_list()
     is_admin = check_admin(request.user)
@@ -63,16 +63,16 @@ def list_(request):
 
     objects = SuiteResult.objects.filter(q).values(
         'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date', 'suite__pk',
-        'start_date', 'end_date', 'result_status').annotate(
+        'start_date', 'end_date', 'result_state').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
-    result_status_list = SuiteResult.result_status_list
-    d = {l[0]: l[1] for l in result_status_list}
+
+    d = {l[0]: l[1] for l in result_state_list}
     m2m_objects = SuiteResult.objects.filter(is_active=True, caseresult__case_order__isnull=False).values('pk').annotate(
         m2m_count=Count('caseresult'))
     m2m_count = {o['pk']: o['m2m_count'] for o in m2m_objects}
     for o in objects:
         # 获取状态文字
-        o['result_status_str'] = d.get(o['result_status'], 'N/A')
+        o['result_state_str'] = d.get(o['result_state'], 'N/A')
         # 获取耗时
         # 为了减少查询数据库，没有使用models里的方法
         if o['end_date'] is None or o['start_date'] is None:
@@ -119,7 +119,7 @@ def detail(request, pk):
         obj = SuiteResult.objects.select_related('creator', 'modifier').get(pk=pk)
     except SuiteResult.DoesNotExist:
         raise Http404('SuiteResult does not exist')
-    sub_objects = obj.caseresult_set.filter(step_result=None).order_by('case_order')
+    sub_objects = obj.caseresult_set.filter(step_result=None)
 
     if request.method == 'POST' and (is_admin or request.user == obj.creator):
         import copy
@@ -130,7 +130,7 @@ def detail(request, pk):
             form_.modifier = request.user
             form_.save()
             form.save_m2m()
-            request.session['status'] = 'success'
+            request.session['state'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect:
                 return HttpResponseRedirect(next_)
@@ -141,9 +141,9 @@ def detail(request, pk):
     else:
         _project = obj.project.pk if obj.project is not None else None
         form = SuiteResultForm(instance=obj)
-        if request.session.get('status', None) == 'success':
+        if request.session.get('state', None) == 'success':
             prompt = 'success'
-        request.session['status'] = None
+        request.session['state'] = None
         return render(request, 'main/result/detail.html', locals())
 
 
@@ -167,9 +167,9 @@ def delete(request, pk):
         err = '无效请求'
 
     if err:
-        return JsonResponse({'status': 2, 'message': err, 'data': pk})
+        return JsonResponse({'state': 2, 'message': err, 'data': pk})
     else:
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk})
 
 
 @login_required
@@ -185,10 +185,10 @@ def multiple_delete(request):
                 SuiteResult.objects.filter(pk__in=pk_list, creator=request.user).update(
                     is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 @login_required
@@ -207,10 +207,10 @@ def quick_update(request, pk):
             else:
                 raise ValueError('非法的字段名称')
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': new_value})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': new_value})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': None})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
 # 配置快照

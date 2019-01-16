@@ -333,7 +333,7 @@ function copy_obj_post(copy_url, name_prefix, copy_sub_item, order) {
 	$('#mask').show();
 	$.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name_prefix': name_prefix, 'copy_sub_item': copy_sub_item, 'order': order}, function(data) {
 		$('#mask').hide();
-		if (data.status === 1) {
+		if (data.state === 1) {
             // 如果返回包含有效order，则添加new_pk及order至参数，用于内嵌窗口复制后更新m2m列表
             if (data.data.order > 0) {
 				window.open(data.data.new_url + window.location.search + '&new_pk=' + data.data.new_pk + '&order=' + data.data.order, '_self');

@@ -14,7 +14,6 @@ from py_test.api_test import method as api_method
 from py_test.db_test import method as db_method
 from py_test.vic_tools import vic_eval, vic_date_handle
 from main.models import StepResult, Step
-from utils.system import FORCE_STOP
 from py_test_site.settings import LOOP_ITERATIONS_LIMIT
 
 
@@ -51,7 +50,7 @@ class VicStep:
         self.execute_id = '{}-{}'.format(vic_case.execute_str, step_order)
         self.loop_id = ''
         self.img_list = list()  # 截图列表
-        self.step_force_stop = False  # 步骤级别强制停止信号
+        self.force_stop_ = False  # 强制停止信号
         self.dr = None
         self.socket_no_response = False  # 驱动停止响应标志
         self.variable_elements = None
@@ -113,7 +112,7 @@ class VicStep:
             self.db_data = step.db_data
         except Exception as e:
             self.logger.info('【{}】\t步骤读取出错'.format(self.execute_id), exc_info=True)
-            self.step_result.result_status = 3
+            self.step_result.result_state = 3
             self.step_result.result_message = '步骤读取出错：{}'.format(getattr(e, 'msg', str(e)))
             self.step_result.result_error = traceback.format_exc()
             raise
@@ -121,13 +120,9 @@ class VicStep:
     # 强制停止标志
     @property
     def force_stop(self):
-        if self.step_force_stop:
+        if self.force_stop_:
             return True
-        if self.vic_case.force_stop:
-            return True
-        fs = FORCE_STOP.get(self.execute_uuid)
-        if fs and fs == self.user.pk:
-            self.step_force_stop = True
+        elif self.vic_case.force_stop:
             return True
         else:
             return False
@@ -669,7 +664,7 @@ class VicStep:
                                     pretty_request_header = str(self.api_headers)
                                 pretty_response_header = json.dumps(response, indent=1, ensure_ascii=False)
 
-                                run_result_status = 'p'
+                                run_result_state = 'p'
                                 response_body_msg = response_body
                                 if self.api_data:
                                     run_result, response_body_msg = api_method.verify_http_response(
@@ -677,7 +672,7 @@ class VicStep:
                                     if run_result[0] == 'p':
                                         prefix_msg = '请求发送完毕，结果验证通过'
                                     else:
-                                        run_result_status = 'f'
+                                        run_result_state = 'f'
                                         prefix_msg = '请求发送完毕，结果验证失败'
                                     suffix_msg = '验证结果：\n{}'.format(run_result[1])
                                 else:
@@ -698,7 +693,7 @@ class VicStep:
                                         self.api_method,
                                         pretty_request_header,
                                         self.api_body,
-                                        response.status, response.reason,
+                                        response.state, response.reason,
                                         pretty_response_header,
                                         response_body_msg, suffix_msg)
 
@@ -715,11 +710,11 @@ class VicStep:
                                         response, response_body, self.api_save, var, logger=logger)
                                     msg = '{}\n响应内容保存情况：\n{}'.format(msg, msg_)
                                     if not success:
-                                        run_result_status = 'f'
+                                        run_result_state = 'f'
                                         prefix_msg = '{}，响应内容保存失败'.format(prefix_msg)
 
                                 msg = '{}\n{}'.format(prefix_msg, msg)
-                                self.run_result = [run_result_status, msg]
+                                self.run_result = [run_result_state, msg]
 
                         # ===== DB =====
                         elif ac == 'DB_EXECUTE_SQL':
@@ -742,14 +737,14 @@ class VicStep:
                                 if len(pretty_result) > 10000:
                                     pretty_result = '{}\n*****（为节约空间，测试结果只保存前10000个字符）*****'.format(pretty_result[:10000])
 
-                                run_result_status = 'p'
+                                run_result_state = 'p'
                                 msg = 'SQL执行完毕\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
                                     self.db_sql, sql_result, pretty_result)
 
                                 if self.save_as:
                                     _msg = var.set_variable(self.save_as, select_result)
                                     msg = '{}\n{}'.format(msg, _msg)
-                                self.run_result = [run_result_status, msg]
+                                self.run_result = [run_result_state, msg]
 
                         elif ac == 'DB_VERIFY_SQL_RESULT':
                             self.update_test_data(
@@ -777,23 +772,23 @@ class VicStep:
                                 run_result = db_method.verify_db_test_result(
                                     expect=self.db_data, result=select_result, logger=logger)
                                 if run_result[0] == 'p':
-                                    run_result_status = 'p'
+                                    run_result_state = 'p'
                                     msg = 'SQL执行完毕，结果验证通过\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
                                         self.db_sql, sql_result, pretty_result)
                                 else:
-                                    run_result_status = 'f'
+                                    run_result_state = 'f'
                                     msg = 'SQL执行完毕，结果验证失败\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
                                         self.db_sql, sql_result, pretty_result)
 
                                 if self.save_as:
-                                    if run_result_status == 'p':
+                                    if run_result_state == 'p':
                                         verify_result = True
                                     else:
                                         verify_result = False
                                     _msg = var.set_variable(self.save_as, verify_result)
                                     msg = '{}\n{}'.format(msg, _msg)
 
-                                self.run_result = [run_result_status, msg]
+                                self.run_result = [run_result_state, msg]
 
                         # ===== OTHER =====
                         # 等待
@@ -1039,32 +1034,32 @@ class VicStep:
                         raise
 
             if self.run_result[0] == 's':
-                self.step_result.result_status = 0
+                self.step_result.result_state = 0
             elif self.run_result[0] == 'p':
-                self.step_result.result_status = 1
+                self.step_result.result_state = 1
             else:
-                self.step_result.result_status = 2
+                self.step_result.result_state = 2
             self.step_result.result_message = self.run_result[1]
 
         except socket_timeout_error:
             self.socket_no_response = True
             logger.error('【{}】\t浏览器响应超时'.format(eid), exc_info=True)
-            self.step_result.result_status = 3
+            self.step_result.result_state = 3
             self.step_result.result_message = '浏览器响应超时，请检查网络连接或驱动位于的浏览器窗口是否被关闭'
             self.step_result.result_error = traceback.format_exc()
         except exceptions.TimeoutException:
             logger.error('【{}】\t超时'.format(eid), exc_info=True)
-            self.step_result.result_status = 3
+            self.step_result.result_state = 3
             self.step_result.result_message = '执行超时，请增大超时值'
             self.step_result.result_error = traceback.format_exc()
         except exceptions.InvalidSelectorException:
             logger.error('【{}】\t定位符【{}】无效'.format(eid, self.ui_locator), exc_info=True)
-            self.step_result.result_status = 3
+            self.step_result.result_state = 3
             self.step_result.result_message = '定位符【{}】无效'.format(self.ui_locator)
             self.step_result.result_error = traceback.format_exc()
         except Exception as e:
             logger.error('【{}】\t出错'.format(eid), exc_info=True)
-            self.step_result.result_status = 3
+            self.step_result.result_state = 3
             self.step_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
             self.step_result.result_error = traceback.format_exc()
 
@@ -1082,7 +1077,7 @@ class VicStep:
                 self.step_result.ui_last_url = 'URL获取失败'
 
             # 获取报错时截图
-            if self.ui_get_ss and self.step_result.result_status == 3:
+            if self.ui_get_ss and self.step_result.result_state == 3:
                 try:
                     self.ui_by = None
                     self.ui_locator = None

@@ -46,11 +46,11 @@
                 <div class="col">
                     <span class="font-weight-bold">执行情况：</span>
                     <br>
-                    {% if obj.result_status == 0 %}
+                    {% if obj.result_state == 0 %}
                         <pre class="text-secondary">{{ obj.result_message }}</pre>
-                    {% elif obj.result_status == 1 %}
+                    {% elif obj.result_state == 1 %}
                         <pre class="text-info">{{ obj.result_message }}</pre>
-                    {% elif obj.result_status == 2 %}
+                    {% elif obj.result_state == 2 %}
                         <pre class="text-warning">{{ obj.result_message }}</pre>
                     {% else %}
                         <pre class="text-danger">{{ obj.result_message }}</pre>

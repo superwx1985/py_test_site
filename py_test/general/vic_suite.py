@@ -4,15 +4,16 @@ import json
 import traceback
 import logging
 import uuid
-# import pytz
 from py_test.general import vic_variables, vic_public_elements, vic_log, vic_method
+from .public_items import status_str_dict
 from .vic_case import VicCase
 from concurrent.futures import wait, CancelledError, TimeoutError as f_TimeoutError
 from main.models import Case, SuiteResult, Step
 from django.forms.models import model_to_dict
-from utils.system import FORCE_STOP
-from utils.thread_pool import VicThreadPoolExecutor, RUNNING_SUITES, get_pool, safety_shutdown_pool
+from utils.system import RUNNING_SUITES
+from utils.thread_pool import VicThreadPoolExecutor, get_pool, safety_shutdown_pool
 from py_test_site.settings import SUITE_MAX_CONCURRENT_EXECUTE_COUNT
+
 
 
 class VicSuite:
@@ -29,9 +30,14 @@ class VicSuite:
             self.logger.addHandler(ws_handler)
 
         self.suite = suite
+        self.name = suite.name
         self.user = user
         self.execute_uuid = execute_uuid
-        self.suite_force_stop = False  # 用例级别强制停止信号
+        self.force_stop_ = False  # 用例级别强制停止信号
+        self.vic_cases = list()
+        self.status = 0
+        self.init_date = datetime.datetime.now()
+        self.start_date = None
 
         self.config = self.suite.config if self.suite.config and self.suite.config.is_active else None
         self.global_variables = vic_variables.Variables(self.logger)
@@ -67,21 +73,22 @@ class VicSuite:
     # 强制停止标志
     @property
     def force_stop(self):
-        if self.suite_force_stop:
-            return True
-        fs = FORCE_STOP.get(self.execute_uuid)
-        if fs and fs == self.user.pk:
-            self.suite_force_stop = True
+        if self.force_stop_:
+            self.status = 2
             return True
         else:
             return False
 
+    @property
+    def status_str(self):
+        return status_str_dict[self.status]
+
     def execute(self):
         # 记录开始执行时的时间
-        self.suite_result.start_date = datetime.datetime.now()
-
+        self.start_date = self.suite_result.start_date = datetime.datetime.now()
+        self.status = 1
         self.logger.info('开始')
-        RUNNING_SUITES[self.execute_uuid] = True
+        RUNNING_SUITES.add_suite(self.execute_uuid, self)
 
         try:
             # 获取配置json
@@ -133,13 +140,15 @@ class VicSuite:
             if len(cases) > 0:
 
                 self.logger.info('准备运行下列{}个用例:'.format(len(cases)))
-                vic_cases = list()
                 case_order = 0
+                case_order_list = list()
                 for case in cases:
                     case_order += 1
-                    vic_cases.append(
+                    case_order_list.append(str(case_order))
+                    self.vic_cases.append(
                         VicCase(case=case, case_order=case_order, vic_suite=self, execute_str=str(case_order))
                     )
+
                     self.logger.info('【{}】\tID:{} | {}'.format(case_order, case.pk, case.name))
 
                 self.logger.info('========================================')
@@ -148,7 +157,7 @@ class VicSuite:
 
                 with VicThreadPoolExecutor(self.thread_count) as pool:  # 保证线程池被关闭
 
-                    for vic_case in vic_cases:
+                    for vic_case in self.vic_cases:
                         futures.append(pool.submit(self.add_vic_case_into_pool, vic_case))
                     future_results = wait(futures)
 
@@ -156,24 +165,24 @@ class VicSuite:
                         case_ = future_result.result()
                         case_result = case_.case_result
                         self.suite_result.execute_count += 1
-                        if case_result.result_status == 1:
+                        if case_result.result_state == 1:
                             self.suite_result.pass_count += 1
-                        elif case_result.result_status == 2:
+                        elif case_result.result_state == 2:
                             self.suite_result.fail_count += 1
-                        elif case_result.result_status == 3:
+                        elif case_result.result_state == 3:
                             self.suite_result.error_count += 1
 
             skip_count = (self.suite_result.execute_count - self.suite_result.pass_count
                           - self.suite_result.fail_count - self.suite_result.error_count)
 
             if self.suite_result.error_count > 0:
-                self.suite_result.result_status = 3
+                self.suite_result.result_state = 3
             elif self.suite_result.fail_count > 0:
-                self.suite_result.result_status = 2
+                self.suite_result.result_state = 2
             elif self.suite_result.execute_count == skip_count:
-                self.suite_result.result_status = 0
+                self.suite_result.result_state = 0
             else:
-                self.suite_result.result_status = 1
+                self.suite_result.result_state = 1
 
             self.suite_result.result_message = '执行: {} | 通过: {} | 失败: {} | 出错: {} | 跳过: {}'.format(
                 self.suite_result.execute_count, self.suite_result.pass_count, self.suite_result.fail_count,
@@ -181,34 +190,32 @@ class VicSuite:
             self.suite_result.end_date = datetime.datetime.now()
             self.suite_result.save()
         except Exception as e:
-            self.suite_result.result_status = 3
+            self.suite_result.result_state = 3
             self.suite_result.result_message = '套件执行出错：{}'.format(getattr(e, 'msg', str(e)))
             self.suite_result.result_error = traceback.format_exc()
             self.suite_result.end_date = datetime.datetime.now()
             self.suite_result.save()
         finally:
-            RUNNING_SUITES.pop(self.execute_uuid)
+            RUNNING_SUITES.remove_suite(self.execute_uuid)
             safety_shutdown_pool(self.logger)
 
-            # 清除停止信号
-            if FORCE_STOP.get(self.execute_uuid):
-                del FORCE_STOP[self.execute_uuid]
+            self.logger.info('测试执行完毕')
+            self.logger.info('========================================')
+            if self.suite_result.result_state == 3:
+                self.logger.error(self.suite_result.result_message)
+            elif self.suite_result.result_state in (2, 0):
+                self.logger.warning(self.suite_result.result_message)
+            else:
+                self.logger.info(self.suite_result.result_message)
+            self.logger.info('耗时: ' + str(self.suite_result.end_date - self.suite_result.start_date))
+            self.logger.info('========================================')
+            self.logger.info('结束')
 
-        self.logger.info('测试执行完毕')
-        self.logger.info('========================================')
-        if self.suite_result.result_status == 3:
-            self.logger.error(self.suite_result.result_message)
-        elif self.suite_result.result_status in (2, 0):
-            self.logger.warning(self.suite_result.result_message)
-        else:
-            self.logger.info(self.suite_result.result_message)
-        self.logger.info('耗时: ' + str(self.suite_result.end_date - self.suite_result.start_date))
-        self.logger.info('========================================')
-        self.logger.info('结束')
+            # 关闭日志文件句柄
+            for h in self.logger.handlers:
+                h.close()
 
-        # 关闭日志文件句柄
-        for h in self.logger.handlers:
-            h.close()
+            self.status = 3
 
         return self
 
@@ -228,7 +235,7 @@ class VicSuite:
             except f_TimeoutError:
                 if self.force_stop:
                     task.cancel()
-                    vic_case.case_result.result_status = 0
+                    vic_case.case_result.result_state = 0
                     vic_case.case_result.result_message = '接收到强制停止信号，用例被取消执行'
                     vic_case.case_result.end_date = datetime.datetime.now()
                     vic_case.case_result.save()
@@ -242,14 +249,14 @@ class VicSuite:
                         self.logger.warning('【{}】\t用例【{}】已在队列{:.1f}秒，尝试取消'.format(
                             vic_case.execute_str, vic_case.name, elapsed_time))
                         _success = task.cancel()
-                        vic_case.case_result.result_status = 3
+                        vic_case.case_result.result_state = 3
                         vic_case.case_result.result_error = '线程等待超时，可能由于服务器线程池队列已满，用例被取消执行'
                         vic_case.case_result.end_date = datetime.datetime.now()
                         vic_case.case_result.save()
                         if not _success:
                             self.logger.warning('【{}】\t用例【{}】取消失败，发送用例级别强制停止信号'.format(
                                 vic_case.execute_str, vic_case.name))
-                            vic_case.case_force_stop = True
+                            vic_case.force_stop = True
                             break
                     else:
                         self.logger.info('【{}】\t用例【{}】已在队列{:.1f}秒，排队中...'.format(

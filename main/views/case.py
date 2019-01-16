@@ -16,6 +16,7 @@ from utils.other import get_query_condition, change_to_positive_integer, Cookie,
     check_recursive_call
 from urllib.parse import quote
 from main.views import step, suite, variable_group
+from utils import system
 
 logger = logging.getLogger('django.request')
 
@@ -23,9 +24,9 @@ logger = logging.getLogger('django.request')
 # 用例列表
 @login_required
 def list_(request):
-    if request.session.get('status', None) == 'success':
+    if request.session.get('state', None) == 'success':
         prompt = 'success'
-    request.session['status'] = None
+    request.session['state'] = None
 
     project_list = get_project_list()
     has_sub_object = True
@@ -155,7 +156,7 @@ def detail(request, pk):
                         order += 1
                         CaseVsStep.objects.create(case=obj, step=m2m_obj, order=order, creator=request.user,
                                                   modifier=request.user)
-            request.session['status'] = 'success'
+            request.session['state'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect:
                 return HttpResponseRedirect(next_)
@@ -176,9 +177,9 @@ def detail(request, pk):
         return render(request, 'main/case/detail.html', locals())
     else:
         form = CaseForm(instance=obj)
-        if request.session.get('status', None) == 'success':
+        if request.session.get('state', None) == 'success':
             prompt = 'success'
-        request.session['status'] = None
+        request.session['state'] = None
         return render(request, 'main/case/detail.html', locals())
 
 
@@ -217,7 +218,7 @@ def add(request):
                     order += 1
                     CaseVsStep.objects.create(case=obj, step=m2m_obj, order=order, creator=request.user,
                                               modifier=request.user)
-            request.session['status'] = 'success'
+            request.session['state'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect == 'add_another':
                 return HttpResponseRedirect(request.get_full_path())
@@ -239,9 +240,9 @@ def add(request):
             form = CaseForm(initial={'project': parent_project})
         else:
             form = CaseForm()
-        if request.session.get('status', None) == 'success':
+        if request.session.get('state', None) == 'success':
             prompt = 'success'
-        request.session['status'] = None
+        request.session['state'] = None
         return render(request, 'main/case/detail.html', locals())
 
 
@@ -266,9 +267,9 @@ def delete(request, pk):
         err = '无效请求'
 
     if err:
-        return JsonResponse({'status': 2, 'message': err, 'data': pk})
+        return JsonResponse({'state': 2, 'message': err, 'data': pk})
     else:
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk})
 
 
 @login_required
@@ -284,10 +285,10 @@ def multiple_delete(request):
                 Case.objects.filter(pk__in=pk_list, creator=request.user).update(
                     is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 @login_required
@@ -303,10 +304,10 @@ def multiple_delete(request):
                 Case.objects.filter(pk__in=pk_list, creator=request.user).update(
                     is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 @login_required
@@ -325,10 +326,10 @@ def quick_update(request, pk):
             else:
                 raise ValueError('非法的字段名称')
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': new_value})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': new_value})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': None})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
 # 获取选中的step
@@ -343,7 +344,7 @@ def steps(_, pk):
         obj['url'] = reverse(step.detail, args=[obj['pk']])
         obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
         obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
-    return JsonResponse({'status': 1, 'message': 'OK', 'data': list(objects)})
+    return JsonResponse({'state': 1, 'message': 'OK', 'data': list(objects)})
 
 
 # 获取m2m json
@@ -406,7 +407,7 @@ def list_json(request):
         obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
         obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
 
-    return JsonResponse({'status': 1, 'message': 'OK', 'data': {
+    return JsonResponse({'state': 1, 'message': 'OK', 'data': {
         'objects': list(objects), 'page': page, 'max_page': paginator.num_pages, 'size': size}})
 
 
@@ -432,7 +433,7 @@ def list_temp(request):
         obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
         obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
         data_list.append(objects[0])
-    return JsonResponse({'status': 1, 'message': 'OK', 'data': data_list})
+    return JsonResponse({'state': 1, 'message': 'OK', 'data': data_list})
 
 
 # 复制操作
@@ -496,11 +497,11 @@ def copy_(request, pk):
     try:
         obj = copy_action(pk, request.user, name_prefix, copy_sub_item)
         return JsonResponse({
-            'status': 1, 'message': 'OK', 'data': {
+            'state': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
         })
     except Exception as e:
-        return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 2, 'message': str(e), 'data': None})
 
 
 # 批量复制
@@ -514,10 +515,10 @@ def multiple_copy(request):
             for pk in pk_list:
                 _ = copy_action(pk, request.user, name_prefix, copy_sub_item)
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 # 获取带搜索信息的下拉列表数据
@@ -550,7 +551,7 @@ def select_json(request):
         d['url'] = url
         data.append(d)
 
-    return JsonResponse({'status': 1, 'message': 'OK', 'data': data})
+    return JsonResponse({'state': 1, 'message': 'OK', 'data': data})
 
 
 # 获取调用列表
@@ -578,3 +579,40 @@ def reference(request, pk):
     objects.extend(list(objects2))
 
     return render(request, 'main/include/detail_reference.html', locals())
+
+
+# 查看状态
+@login_required
+def status(request, execute_uuid):
+    is_admin = check_admin(request.user)
+    running_suite = system.RUNNING_SUITES.get_suite(execute_uuid)
+    return render(request, 'main/case/status.html', locals())
+
+
+# 停止执行
+@login_required
+def stop(request):
+    execute_uuid = request.POST.get('execute_uuid')
+    case_order = request.POST.get('case_order')
+
+    force_stop = False
+    msg = ''
+
+    if execute_uuid and case_order:
+        if check_admin(request.user):
+            user = None
+        else:
+            user = request.user
+        try:
+            case_order = int(case_order)
+        except (ValueError, TypeError):
+            msg = '无效的用例编号'
+        else:
+            force_stop, msg = system.RUNNING_SUITES.stop_case(execute_uuid, case_order, user)
+    else:
+        msg = '未提供执行ID或用例编号'
+
+    if force_stop:
+        return JsonResponse({'state': 1, 'message': msg, 'data': execute_uuid})
+    else:
+        return JsonResponse({'state': 2, 'message': msg, 'data': execute_uuid})

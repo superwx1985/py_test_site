@@ -44,12 +44,12 @@
         function action_select(selected_pk) {
             update_mask($('#mask'), 1);
             if (!selected_pk) { selected_pk = $("select[name=action]").val() }
-            getList("{% url 'action_select_json' %}", window.$csrf_input.val(), update_action_dropdown, '{"selected_pk": "'+selected_pk+'"}');
+            getList("{% url 'actions_select_json' %}", window.$csrf_input.val(), update_action_dropdown, '{"selected_pk": "'+selected_pk+'"}');
         }
         function sub_case_select(selected_pk) {
             update_mask($('#mask'), 1);
             if (!selected_pk) { selected_pk = $("select[name=other_sub_case]").val() }
-            getList("{% url 'case_select_json' %}", window.$csrf_input.val(), update_other_sub_case_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'用例详情\', \'%url%?inside=1\',null, sub_case_select);", "url_replacer": "%url%"}');
+            getList("{% url 'cases_select_json' %}", window.$csrf_input.val(), update_other_sub_case_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'用例详情\', \'%url%?inside=1\',null, sub_case_select);", "url_replacer": "%url%"}');
         }
     </script>
     <script src="{% static 'main/js/detail_step.js' %}"></script>

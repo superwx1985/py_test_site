@@ -1,0 +1,148 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        <title>执行状态</title>
+        {% include 'main/include/general_css.html' %}
+        {% include 'main/include/general_script.html' %}
+        <style>
+
+        </style>
+        <script>
+            $(function () {
+                // 更新导航栏
+                $('#nav_status').addClass('active');
+                window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
+                // 反馈框提示样式
+                toastr.options = {
+                    "closeButton":false,//显示关闭按钮
+                    "debug":false,//启用debug
+                    "positionClass":"toast-top-center",//弹出的位置
+                    "showDuration":"300",//显示的时间
+                    "hideDuration":"1000",//消失的时间
+                    "timeOut":"5000",//停留的时间
+                    "extendedTimeOut":"1000",//控制时间
+                    "showEasing":"swing",//显示时的动画缓冲方式
+                    "hideEasing":"linear",//消失时的动画缓冲方式
+                    "showMethod":"fadeIn",//显示时的动画方式
+                    "hideMethod":"fadeOut"//消失时的动画方式
+                };
+            });
+
+            function stop(that) {
+                console.log(that);
+                var url = "{% url 'cases_stop' %}";
+                var tr = $(that).parents('tr');
+                var name = tr.find('td[col_name="name"]').text();
+                var execute_uuid = tr.attr('execute_uuid');
+                var case_order = tr.attr('case_order');
+                var msg = '确实要中止<span class="mark">[' + execute_uuid + '][' + case_order + ']' + name + '</span>？';
+                bootbox.confirm({
+                    title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
+                    message: msg,
+                    size: 'large',
+		            backdrop: true,
+                    buttons: {
+                        confirm: {
+                            label: '<i class="icon-ok">&nbsp;</i>确定',
+                            className: 'btn-success'
+                        },
+                        cancel: {
+                            label: '<i class="icon-undo">&nbsp;</i>取消',
+                            className: 'btn-secondary'
+                        }
+                    },
+                    callback: function (result) {
+                        if (result === true) {
+                            $.ajax({
+                                url: url,
+                                type: "POST",
+                                data: {
+                                    csrfmiddlewaretoken: window.$csrf_input.val(),
+                                    execute_uuid: execute_uuid,
+                                    case_order: case_order
+                                },
+                                dataType: "json",
+                                success: function (data, textStatus) {
+                                    if (data.state === 1) {
+                                        toastr.success(data.message);
+                                        tr.find('td[col_name="status_str"]').text('中止');
+                                    } else {
+                                        toastr.error(data.message);
+                                        tr.find('td[col_name="status_str"]').text('（请刷新）');
+                                    }
+                                    $(that).attr('disabled', true);
+                                },
+                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                    console.error(XMLHttpRequest.responseText)
+                                }
+                            })
+                        }
+                    }
+
+                });
+            }
+        </script>
+    </head>
+    <body>
+        {% csrf_token %}
+
+        <div class="container-fluid">
+            <div style="padding: 5px 0" class="middle">
+                <button class="btn btn-primary" onclick="location.reload()"><i class="icon-refresh"></i>&nbsp;刷新</button>
+            </div>
+            <div class="table-responsive text-left">
+                <table class="table table-bordered table-hover">
+                    <colgroup>
+                        <col style="width: 100px;">
+                        <col style="width: 100px;">
+                        <col>
+                        <col style="width: 120px;">
+                        <col style="width: 120px;">
+                        <col style="width: 120px;">
+                        <col style="width: 150px;">
+                        <col style="width: 100px;">
+                    </colgroup>
+                    <thead class="thead-light middle">
+                        <tr>
+                            <th>用例编号</th>
+                            <th>用例ID</th>
+                            <th>用例名称</th>
+                            <th>初始化</th>
+                            <th>开始</th>
+                            <th>结束</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="middle">
+                        {% for v in running_suite.vic_cases %}
+                            <tr execute_uuid="{{ running_suite.execute_uuid }}" case_order="{{ v.case_order }}">
+                                <td class="middle" col_name="case_order">{{ v.case_order }}</td>
+                                <td class="middle" col_name="pk">{{ v.case.pk }}</td>
+                                <td class="middle">{{ v.name }}</td>
+                                <td class="middle">{{ v.init_date }}</td>
+                                <td class="middle">{{ v.start_date }}</td>
+                                <td class="middle">{{ v.end_date }}</td>
+                                <td class="middle" col_name="status_str">{{ v.status_str }}</td>
+                                <td class="middle">
+                                    <button class="btn btn-danger" execute_uuid="{{ running_suite.execute_uuid }}" case_order="{{ v.case_order }}"
+                                            onclick="stop(this)"
+                                            {% if is_admin or v.user == request.user %}{% if v.status > 1 %} disabled{% endif %}{% else %} disabled{% endif %}
+                                    ><i class="icon-stop"></i>&nbsp;中止</button>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
+                            </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>

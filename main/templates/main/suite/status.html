@@ -1,0 +1,163 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        <title>执行状态</title>
+        {% include 'main/include/general_css.html' %}
+        {% include 'main/include/general_script.html' %}
+        <style>
+
+        </style>
+        <script>
+            $(function () {
+                // 更新导航栏
+                $('#nav_status').addClass('active');
+                window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
+                // 反馈框提示样式
+                toastr.options = {
+                    "closeButton":false,//显示关闭按钮
+                    "debug":false,//启用debug
+                    "positionClass":"toast-top-center",//弹出的位置
+                    "showDuration":"300",//显示的时间
+                    "hideDuration":"1000",//消失的时间
+                    "timeOut":"5000",//停留的时间
+                    "extendedTimeOut":"1000",//控制时间
+                    "showEasing":"swing",//显示时的动画缓冲方式
+                    "hideEasing":"linear",//消失时的动画缓冲方式
+                    "showMethod":"fadeIn",//显示时的动画方式
+                    "hideMethod":"fadeOut"//消失时的动画方式
+                };
+            });
+
+            function stop(that) {
+                console.log(that);
+                var url = "{% url 'suites_stop' %}";
+                var tr = $(that).parents('tr');
+                var name = tr.find('td[col_name="name"]').text();
+                var execute_uuid = tr.attr('execute_uuid');
+                var msg = '确实要中止<span class="mark">[' + execute_uuid + ']' + name + '</span>？';
+                bootbox.confirm({
+                    title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
+                    message: msg,
+                    size: 'large',
+		            backdrop: true,
+                    buttons: {
+                        confirm: {
+                            label: '<i class="icon-ok">&nbsp;</i>确定',
+                            className: 'btn-success'
+                        },
+                        cancel: {
+                            label: '<i class="icon-undo">&nbsp;</i>取消',
+                            className: 'btn-secondary'
+                        }
+                    },
+                    callback: function (result) {
+                        if (result === true) {
+                            $.ajax({
+                                url: url,
+                                type: "POST",
+                                data: {
+                                    csrfmiddlewaretoken: window.$csrf_input.val(),
+                                    execute_uuid: execute_uuid
+                                },
+                                dataType: "json",
+                                success: function (data, textStatus) {
+                                    if (data.state === 1) {
+                                        toastr.success(data.message);
+                                        tr.find('td[col_name="status_str"] a').text('中止');
+                                    } else {
+                                        toastr.error(data.message);
+                                        tr.find('td[col_name="status_str"] a').text('（请刷新）');
+                                    }
+                                    $(that).attr('disabled', true);
+                                },
+                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                    console.error(XMLHttpRequest.responseText)
+                                }
+                            })
+                        }
+                    }
+
+                });
+            }
+        </script>
+    </head>
+    <body>
+        {% csrf_token %}
+        {% include 'main/include/navbar.html' %}
+        <div class="container-fluid" style="padding-top: 60px; padding-bottom: 40px">
+            <div style="padding: 5px 0" class="middle">
+                <button class="btn btn-primary" onclick="location.reload()"><i class="icon-refresh"></i>&nbsp;刷新</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-borderless">
+                    <colgroup>
+                        <col style="width: 150px">
+                        <col>
+                    </colgroup>
+                    <tbody>
+                        <tr><td>当前线程总数</td><td>{{ active_thread }}</td></tr>
+                        <tr><td>测试线程池大小</td><td>{{ pool_size }}</td></tr>
+                        <tr><td>测试线程池状态</td><td>{{ pool_state }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <colgroup>
+                        <col style="width: 300px;">
+                        <col style="width: 100px;">
+                        <col>
+                        <col style="width: 200px;">
+                        <col style="width: 120px;">
+                        <col style="width: 120px;">
+                        <col style="width: 150px;">
+                        <col style="width: 100px;">
+                    </colgroup>
+                    <thead class="thead-light middle">
+                        <tr>
+                            <th>执行ID</th>
+                            <th>套件ID</th>
+                            <th>套件名称</th>
+                            <th>执行者</th>
+                            <th>初始化</th>
+                            <th>开始</th>
+                            <th>状态</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody class="middle">
+                        {% for k, v in suites.items %}
+                            <tr execute_uuid="{{ k }}">
+                                <td class="middle" col_name="execute_uuid">{{ k }}</td>
+                                <td class="middle" col_name="pk">{{ v.suite.pk }}</td>
+                                <td class="middle" col_name="name">{{ v.name }}</td>
+                                <td class="middle">{{ v.user.last_name }}{{ v.user.first_name }}[{{ v.user.username }}]</td>
+                                <td class="middle">{{ v.init_date }}</td>
+                                <td class="middle">{{ v.start_date }}</td>
+                                <td class="middle" col_name="status_str">
+                                    <a onclick="modal_with_iframe_max('case_status_modal', '[{{ k }}]的用例执行状态', '{% url "cases_status" k %}')"
+                                       href="javascript:;"
+                                    >{{ v.status_str }}</a>
+                                </td>
+                                <td class="middle">
+                                    <button class="btn btn-danger" execute_uuid="{{ k }}"
+                                            onclick="stop(this)"
+                                            {% if is_admin or v.user == request.user %}{% if v.status > 1 %} disabled{% endif %}{% else %} disabled{% endif %}
+                                    ><i class="icon-stop"></i>&nbsp;中止</button>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
+                            </tr>
+                        {% endfor %}
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>

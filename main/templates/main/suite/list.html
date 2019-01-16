@@ -13,7 +13,7 @@
             // 更新导航栏
             $('#nav_suite').addClass('active');
             // 获取添加地址
-            window.addUrl="{% url 'suite_add' %}";
+            window.addUrl="{% url 'suites_add' %}";
             // 获取批量删除地址
             window.multiple_delete_url="{% url 'suites_multiple_delete' %}";
             // 获取批量复制地址
@@ -51,7 +51,7 @@
                             var execute_result_div = $('<div id="execute_result_div"></div>');
                             $modal_body_div.append(execute_result_div);
                             var execute_button_div = $('<div id="execute_button_div" style="padding: 0 0 10px 0"></div>');
-                            var execute_button = $('<button id="force-stop" class="btn btn-danger">强制停止</button>');
+                            var execute_button = $('<button id="force-stop" class="btn btn-danger"><i class="icon-stop"></i>&nbsp;强制停止</button>');
                             $modal_body_div.append(execute_button_div.append(execute_button));
                             var execute_log_outer_div = $('<div class="jumbotron" style="padding: 10px 0 10px 10px"></div>');
                             var execute_log_div = $('<div id="execute_log_div" class="text-left small" style="height: 400px; overflow-y: auto;"></div>');
@@ -105,7 +105,7 @@
                                     var data_ = JSON.parse(data.data)['data'];
                                     var content_div = $('<div>').html(data_.suite_result_content);
                                     execute_result_div.append(content_div);
-                                    execute_button.text('结果详情').removeClass('btn-danger').addClass('btn-primary');
+                                    execute_button.removeClass('btn-danger').addClass('btn-primary').html('<i class="icon-table"></i>&nbsp;结果详情');
                                     execute_button.off('click').on('click', function () {
                                         modal_with_iframe_max('inside_detail_modal', '结果详情', data_.suite_result_url + '?inside=1')
                                     });

@@ -4,6 +4,7 @@ import weakref
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures.thread import _worker, _threads_queues
 from py_test_site.settings import SUITE_MAX_CONCURRENT_EXECUTE_COUNT
+from .system import RUNNING_SUITES
 
 
 class VicThreadPoolExecutor(ThreadPoolExecutor):
@@ -43,7 +44,6 @@ class VicThreadPoolExecutor(ThreadPoolExecutor):
 
 
 SUITE_EXECUTE_POOL = None
-RUNNING_SUITES = dict()
 lock = threading.Lock()
 
 
@@ -53,23 +53,21 @@ def get_pool(logger=logging.getLogger('py_test.{}')):
         msg = '线程被锁定'
     else:
         msg = '线程未被锁定'
-    logger.debug('{}，正在运行的套件为：\n{}\n公用线程池：{}\n当前线程总数：{}'.format(
-        msg, RUNNING_SUITES, SUITE_EXECUTE_POOL, threading.active_count()))
-    lock.acquire()
-    if not SUITE_EXECUTE_POOL or (not RUNNING_SUITES and SUITE_EXECUTE_POOL.work_queue_empty_shutdown()):
-        SUITE_EXECUTE_POOL = VicThreadPoolExecutor(SUITE_MAX_CONCURRENT_EXECUTE_COUNT or 1)
-        logger.debug('新建线程池')
-    lock.release()
+    logger.debug('{}，公用线程池：{}，当前线程总数：{}'.format(msg, SUITE_EXECUTE_POOL, threading.active_count()))
+    with lock:
+        if not SUITE_EXECUTE_POOL or (not RUNNING_SUITES.get_suites() and SUITE_EXECUTE_POOL.work_queue_empty_shutdown()):
+            SUITE_EXECUTE_POOL = VicThreadPoolExecutor(SUITE_MAX_CONCURRENT_EXECUTE_COUNT or 1)
+            logger.debug('新建线程池')
     return SUITE_EXECUTE_POOL
 
 
 def safety_shutdown_pool(logger=logging.getLogger('py_test.{}')):
     global SUITE_EXECUTE_POOL
-    lock.acquire()
-    if SUITE_EXECUTE_POOL and not RUNNING_SUITES and SUITE_EXECUTE_POOL.work_queue_empty_shutdown():
-        # del SUITE_EXECUTE_POOL
-        SUITE_EXECUTE_POOL = None
-        logger.debug('关闭线程池')
-    logger.debug('正在运行的套件为：\n{}\n公用线程池：{}\n当前线程总数：{}'.format(
-        RUNNING_SUITES, SUITE_EXECUTE_POOL, threading.active_count()))
-    lock.release()
+    with lock:
+        if SUITE_EXECUTE_POOL and not RUNNING_SUITES.get_suites() and SUITE_EXECUTE_POOL.work_queue_empty_shutdown():
+            # del SUITE_EXECUTE_POOL
+            SUITE_EXECUTE_POOL = None
+            msg = '关闭线程池'
+        else:
+            msg = '保留线程池'
+    logger.debug('{}，公用线程池：{}，当前线程总数：{}'.format(msg, SUITE_EXECUTE_POOL, threading.active_count()))

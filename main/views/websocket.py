@@ -6,7 +6,7 @@ from py_test.general.vic_suite import VicSuite
 from django.urls import reverse
 from django.template.loader import render_to_string
 from django.utils import timezone
-from utils.system import FORCE_STOP
+from utils.system import RUNNING_SUITES
 
 
 class SuiteConsumer(WebsocketConsumer):
@@ -49,7 +49,7 @@ class SuiteConsumer(WebsocketConsumer):
                         data_dict = self.get_result_data(vic_suite.suite_result)
                         self.send(text_data=json.dumps({'type': 'end', 'data': data_dict}), close=True)
             elif command == 'stop':
-                FORCE_STOP[execute_uuid] = user.pk
+                RUNNING_SUITES.stop_suite(execute_uuid)
                 self.send(text_data=json.dumps({'type': 'message', 'message': '已接收到强制停止指令，测试中止...'}), close=True)
         else:
             self.send(text_data=json.dumps({'type': 'error', 'data': 'token无效'}), close=True)
@@ -66,11 +66,11 @@ class SuiteConsumer(WebsocketConsumer):
 
     @staticmethod
     def get_result_data(suite_result):
-        sub_objects = suite_result.caseresult_set.filter(step_result=None).order_by('case_order')
+        sub_objects = suite_result.caseresult_set.filter(step_result=None)
         suite_result_content = render_to_string('main/include/suite_result_content.html', locals())
         data_dict = dict()
         data_dict['suite_result_content'] = suite_result_content
-        data_dict['suite_result_status'] = suite_result.result_status
+        data_dict['suite_result_state'] = suite_result.result_state
         data_dict['suite_result_url'] = reverse('result', args=[suite_result.pk])
         return data_dict
 
@@ -98,7 +98,7 @@ class SuiteRemoteConsumer(SuiteConsumer):
     @staticmethod
     def get_result_data(result):
         data_dict = dict()
-        data_dict['suite_result_status'] = result.result_status
+        data_dict['suite_result_state'] = result.result_state
         data_dict['suite_result_url'] = reverse('result', args=[result.pk])
         return data_dict
 

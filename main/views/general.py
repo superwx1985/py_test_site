@@ -29,7 +29,7 @@ def clear_db(request):
 
 
 def debug(request):
-    return render(request, 'main/other/debug.html')
+    return render(request, 'main/other/debug.html', locals())
 
 
 def test1(request):
@@ -55,7 +55,7 @@ def debug2(_):
 def debug3(_):
     data_dict = {'a': 'av', 'b': u'bv', u'c': u'cv', '一': '一VVV', '二': u'二VVV', u'三': u'三'}
 
-    return HttpResponse(json.dumps({'status': 1, 'message': 'OK', 'data': data_dict, '测试': '测试VVV'}))
+    return HttpResponse(json.dumps({'state': 1, 'message': 'OK', 'data': data_dict, '测试': '测试VVV'}))
 
 
 

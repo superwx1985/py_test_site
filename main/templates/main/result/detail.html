@@ -138,13 +138,13 @@
     <div class="row align-items-center">
         <div class="col-1 text-center font-weight-bold">测试结果</div>
         <div class="col">
-            {% if obj.result_status == 0 %}
+            {% if obj.result_state == 0 %}
                 <div class="text-secondary">{{ obj.result_message|default:'跳过' }}</div>
-            {% elif obj.result_status == 1 %}
+            {% elif obj.result_state == 1 %}
                 <div class="text-success">{{ obj.result_message|default:'通过' }}</div>
-            {% elif obj.result_status == 2 %}
+            {% elif obj.result_state == 2 %}
                 <div class="text-warning">{{ obj.result_message|default:'失败' }}</div>
-            {% elif obj.result_status == 3 %}
+            {% elif obj.result_state == 3 %}
                 <div class="text-danger">{{ obj.result_message|default:'出错' }}</div>
             {% else %}
                 <div class="text-danger">{{ obj.result_message|default:'N/A' }}</div>
@@ -157,7 +157,7 @@
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">测试时间</div>
+        <div class="col-1 text-center font-weight-bold">测试时间&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="包含系统自身耗时（例如初始化驱动，逻辑运算，读写数据库等）"></i></div>
         <div class="col">
             {% include 'main/include/result_time.html' with start_date=obj.start_date end_date=obj.end_date elapsed_time_str=obj.elapsed_time_str%}
         </div>
@@ -169,7 +169,7 @@
                 <ul class="nav nav-tabs" role="tablist">
                     {% for case_result in sub_objects %}
                         <li class="nav-item" data-toggle="tooltip" title="{{ case_result.name }}">
-                            <a class="nav-link {% if forloop.counter == 1 %}active{% endif %}" data-toggle="tab" href="#case_result_{{ case_result.pk }}">{% include 'main/include/status_icon.html' with status=case_result.result_status %}{{ forloop.counter }}.&nbsp;{{ case_result.name|truncatechars_html:20 }}</a>
+                            <a class="nav-link {% if forloop.counter == 1 %}active{% endif %}" data-toggle="tab" href="#case_result_{{ case_result.pk }}">{% include 'main/include/state_icon.html' with state=case_result.result_state %}{{ forloop.counter }}.&nbsp;{{ case_result.name|truncatechars_html:20 }}</a>
                         </li>
                     {% endfor %}
                 </ul>

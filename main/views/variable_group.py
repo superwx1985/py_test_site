@@ -21,9 +21,9 @@ logger = logging.getLogger('django.request')
 
 @login_required
 def list_(request):
-    if request.session.get('status', None) == 'success':
+    if request.session.get('state', None) == 'success':
         prompt = 'success'
-    request.session['status'] = None
+    request.session['state'] = None
 
     project_list = get_project_list()
     is_admin = check_admin(request.user)
@@ -136,7 +136,7 @@ def detail(request, pk):
                             Variable.objects.create(
                                 variable_group=obj, name=v['name'].strip(), value=v['value'],
                                 description=v['description'], order=order)
-            request.session['status'] = 'success'
+            request.session['state'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect:
                 return HttpResponseRedirect(next_)
@@ -152,9 +152,9 @@ def detail(request, pk):
         return render(request, 'main/variable_group/detail.html', locals())
     else:
         form = VariableGroupForm(instance=obj)
-        if request.session.get('status', None) == 'success':
+        if request.session.get('state', None) == 'success':
             prompt = 'success'
-        request.session['status'] = None
+        request.session['state'] = None
         return render(request, 'main/variable_group/detail.html', locals())
 
 
@@ -189,7 +189,7 @@ def add(request):
                         Variable.objects.create(
                             variable_group=obj, name=v['name'].strip(), value=v['value'], description=v['description'],
                             order=order)
-            request.session['status'] = 'success'
+            request.session['state'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect == 'add_another':
                 return HttpResponseRedirect(request.get_full_path())
@@ -211,9 +211,9 @@ def add(request):
         return render(request, 'main/variable_group/detail.html', locals())
     else:
         form = VariableGroupForm()
-        if request.session.get('status', None) == 'success':
+        if request.session.get('state', None) == 'success':
             prompt = 'success'
-        request.session['status'] = None
+        request.session['state'] = None
         return render(request, 'main/variable_group/detail.html', locals())
 
 
@@ -237,9 +237,9 @@ def delete(request, pk):
         err = '无效请求'
 
     if err:
-        return JsonResponse({'status': 2, 'message': err, 'data': pk})
+        return JsonResponse({'state': 2, 'message': err, 'data': pk})
     else:
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk})
 
 
 @login_required
@@ -255,10 +255,10 @@ def multiple_delete(request):
                 VariableGroup.objects.filter(pk__in=pk_list, creator=request.user).update(
                     is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 @login_required
@@ -277,10 +277,10 @@ def quick_update(request, pk):
             else:
                 raise ValueError('非法的字段名称')
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': new_value})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': new_value})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': None})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
 # 获取变量组中的变量
@@ -288,7 +288,7 @@ def quick_update(request, pk):
 def variables(_, pk):
     objects = Variable.objects.filter(variable_group=pk).order_by('order').values(
         'pk', 'uuid', 'name', 'value', 'description')
-    return JsonResponse({'status': 1, 'message': 'OK', 'data': list(objects)})
+    return JsonResponse({'state': 1, 'message': 'OK', 'data': list(objects)})
 
 
 # 获取带搜索信息的下拉列表数据
@@ -324,7 +324,7 @@ def select_json(request):
         d['url'] = url
         data.append(d)
 
-    return JsonResponse({'status': 1, 'message': 'OK', 'data': data})
+    return JsonResponse({'state': 1, 'message': 'OK', 'data': data})
 
 
 # 复制操作
@@ -360,11 +360,11 @@ def copy_(request, pk):
     try:
         obj = copy_action(pk, request.user, name_prefix)
         return JsonResponse({
-            'status': 1, 'message': 'OK', 'data': {
+            'state': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk])}
         })
     except Exception as e:
-        return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 2, 'message': str(e), 'data': None})
 
 
 # 批量复制
@@ -377,10 +377,10 @@ def multiple_copy(request):
             for pk in pk_list:
                 _ = copy_action(pk, request.user, name_prefix)
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 # 获取调用列表

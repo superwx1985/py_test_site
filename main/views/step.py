@@ -99,9 +99,9 @@ def list_(request):
 
 @login_required
 def detail(request, pk):
-    if request.session.get('status', None) == 'success':
+    if request.session.get('state', None) == 'success':
         prompt = 'success'
-    request.session['status'] = None
+    request.session['state'] = None
 
     next_ = request.GET.get('next', '/home/')
     inside = request.GET.get('inside')
@@ -124,7 +124,7 @@ def detail(request, pk):
             obj_temp.modifier = request.user
             obj_temp.save()
             form.save_m2m()
-            request.session['status'] = 'success'
+            request.session['state'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect:
                 return HttpResponseRedirect(next_)
@@ -134,9 +134,9 @@ def detail(request, pk):
         return render(request, 'main/step/detail.html', locals())
     else:
         form = StepForm(instance=obj)
-        if request.session.get('status', None) == 'success':
+        if request.session.get('state', None) == 'success':
             prompt = 'success'
-        request.session['status'] = None
+        request.session['state'] = None
         return render(request, 'main/step/detail.html', locals())
 
 
@@ -156,7 +156,7 @@ def add(request):
             obj_temp.save()
             form.save_m2m()
             pk = obj_temp.id
-            request.session['status'] = 'success'
+            request.session['state'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect == 'add_another':
                 return HttpResponseRedirect(request.get_full_path())
@@ -175,9 +175,9 @@ def add(request):
             form = StepForm(initial={'project': parent_project})
         else:
             form = StepForm()
-        if request.session.get('status', None) == 'success':
+        if request.session.get('state', None) == 'success':
             prompt = 'success'
-        request.session['status'] = None
+        request.session['state'] = None
         return render(request, 'main/step/detail.html', locals())
 
 
@@ -201,9 +201,9 @@ def delete(request, pk):
         err = '无效请求'
 
     if err:
-        return JsonResponse({'status': 2, 'message': err, 'data': pk})
+        return JsonResponse({'state': 2, 'message': err, 'data': pk})
     else:
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk})
 
 
 @login_required
@@ -219,10 +219,10 @@ def multiple_delete(request):
                 Step.objects.filter(pk__in=pk_list, creator=request.user).update(
                     is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 @login_required
@@ -241,10 +241,10 @@ def quick_update(request, pk):
             else:
                 raise ValueError('非法的字段名称')
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': new_value})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': new_value})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': None})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
 # 获取全部step，使用用序列化的方法
@@ -255,7 +255,7 @@ def quick_update(request, pk):
 #     json_ = serializers.serialize('json', objects, use_natural_foreign_keys=True)
 #     data_dict = dict()
 #     data_dict['data'] = json_
-#     return JsonResponse({'status': 1, 'message': 'OK', 'data': json_})
+#     return JsonResponse({'state': 1, 'message': 'OK', 'data': json_})
 
 
 # 获取m2m json
@@ -319,7 +319,7 @@ def list_json(request):
         obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
         obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
 
-    return JsonResponse({'status': 1, 'message': 'OK', 'data': {
+    return JsonResponse({'state': 1, 'message': 'OK', 'data': {
         'objects': list(objects), 'page': page, 'max_page': paginator.num_pages, 'size': size}})
 
 
@@ -346,7 +346,7 @@ def list_temp(request):
         obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
         obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
         data_list.append(obj)
-    return JsonResponse({'status': 1, 'message': 'OK', 'data': data_list})
+    return JsonResponse({'state': 1, 'message': 'OK', 'data': data_list})
 
 
 # 复制操作
@@ -388,11 +388,11 @@ def copy_(request, pk):
     try:
         obj = copy_action(pk, request.user, name_prefix)
         return JsonResponse({
-            'status': 1, 'message': 'OK', 'data': {
+            'state': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
         })
     except Exception as e:
-        return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 2, 'message': str(e), 'data': None})
 
 
 # 批量复制
@@ -405,10 +405,10 @@ def multiple_copy(request):
             for pk in pk_list:
                 _ = copy_action(pk, request.user, name_prefix)
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 # 获取调用列表

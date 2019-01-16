@@ -1,15 +1,13 @@
 import datetime
 import json
 import traceback
-import uuid
-import time
 from py_test.general import vic_variables, vic_method
 from py_test import ui_test
 from selenium.common.exceptions import UnexpectedAlertPresentException
 from main.models import CaseResult, Step
 from django.forms.models import model_to_dict
+from .public_items import status_str_dict
 from .vic_step import VicStep
-from utils.system import FORCE_STOP
 from utils.other import check_recursive_call
 
 
@@ -22,8 +20,13 @@ class VicCase:
         self.case = case
         self.case_order = case_order
         self.vic_suite = vic_suite
+        self.name = case.name
         self.user = vic_suite.user
         self.execute_uuid = vic_suite.execute_uuid
+        self.status = 0
+        self.init_date = datetime.datetime.now()
+        self.start_date = None
+        self.end_date = None
 
         self.execute_str = execute_str
 
@@ -48,7 +51,7 @@ class VicCase:
             else vic_suite.ui_step_interval
 
         # 用例级别强制停止信号
-        self.case_force_stop = False
+        self.force_stop_ = False
 
         # 分支列表
         self.if_list = list()
@@ -101,20 +104,23 @@ class VicCase:
     # 强制停止标志
     @property
     def force_stop(self):
-        if self.case_force_stop:
+        if self.force_stop_:
+            self.status = 2
             return True
-        if self.vic_suite.force_stop:
-            return True
-        fs = FORCE_STOP.get(self.execute_uuid)
-        if fs and fs == self.user.pk:
-            self.case_force_stop = True
+        elif self.vic_suite.force_stop:
+            self.status = 2
             return True
         else:
             return False
 
+    @property
+    def status_str(self):
+        return status_str_dict[self.status]
+
     def execute(self):
         # 记录开始执行时的时间
-        self.case_result.start_date = datetime.datetime.now()
+        self.start_date = self.case_result.start_date = datetime.datetime.now()
+        self.status = 1
 
         execute_id = self.execute_str
         
@@ -218,15 +224,15 @@ class VicCase:
                     ui_alert_handle = step.ui_alert_handle
 
                     self.case_result.execute_count += 1
-                    if step_result_.result_status == 0:
+                    if step_result_.result_state == 0:
                         self.logger.info('【{}】\t跳过'.format(execute_id))
-                    elif step_result_.result_status == 1:
+                    elif step_result_.result_state == 1:
                         self.case_result.pass_count += 1
                         self.logger.info('【{}】\t执行成功'.format(execute_id))
-                    elif step_result_.result_status == 2:
+                    elif step_result_.result_state == 2:
                         self.case_result.fail_count += 1
                         self.logger.warning('【{}】\t执行失败'.format(execute_id))
-                    elif step_result_.result_status == 3:
+                    elif step_result_.result_state == 3:
                         self.case_result.error_count += 1
                         self.logger.error('【{}】\t执行出错，错误信息 => {}'.format(execute_id, step_result_.result_message))
                         break
@@ -235,9 +241,6 @@ class VicCase:
                     if self.loop_active:
                         step_index = self.loop_list[-1][0] + 1
                         self.loop_active = False
-
-                    if self.force_stop:
-                        break
 
             except Exception as e:
                 self.logger.error('【{}】\t执行出错'.format(execute_id), exc_info=True)
@@ -275,19 +278,20 @@ class VicCase:
             del dr
 
         if self.case_result.error_count > 0 or self.case_result.result_error:
-            self.case_result.result_status = 3
+            self.case_result.result_state = 3
         elif self.case_result.fail_count > 0:
-            self.case_result.result_status = 2
+            self.case_result.result_state = 2
             self.case_result.result_message = '失败'
-        elif self.case_result.execute_count == 0:
-            self.case_result.result_status = 0
+        elif self.case_result.execute_count == 0 or self.force_stop:
+            self.case_result.result_state = 0
             self.case_result.result_message = '跳过'
         else:
-            self.case_result.result_status = 1
+            self.case_result.result_state = 1
             self.case_result.result_message = '通过'
-        self.case_result.end_date = datetime.datetime.now()
+        self.end_date = self.case_result.end_date = datetime.datetime.now()
         self.case_result.save()
 
         self.parent_case_pk_list.pop()
+        self.status = 3
 
         return self

@@ -125,7 +125,7 @@ function show_action_field($actionSelect) {
 		$('div[name=ui_special_action]').hide();
 	} else if (select_value === 'OTHER_SLEEP') {
 		introduce.children('div').text('等待若干秒');
-		$('div[name=other_data] .col-1').html('等待时间&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="" data-original-title="单位：秒"></i>');
+		$('div[name=other_data] .col-1').html('等待时间&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="单位：秒"></i>');
 		$('div[name=other_data]').show();
 	} else if (select_value === 'OTHER_SAVE_CASE_VARIABLE') {
 		introduce.children('div').text('把数值，字符串或表达式的值保存为用例级别的局部变量。在子用例中保存的局部变量可以被调用它的上级用例访问。例：依次运行2个用例，A和B；A调用子用例C，C运行时定义了局部变量bar=1，那么A访问bar得到1；若B也调用C，C运行时定义了局部变量bar=2，那么B访问bar得到2，A访问bar还是1');
@@ -154,7 +154,7 @@ function show_action_field($actionSelect) {
 		type_select.val(type);
         $('div[name=other_data] [form_data]').append(type_select);
         $('div[name=other_data] .col-1').text('类型');
-        $('div[name=save_as] .col-1').html('变量名&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="" data-original-title="需要转换的变量名称"></i>');;
+        $('div[name=save_as] .col-1').html('变量名&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="需要转换的变量名称"></i>');;
 		$('div[name=save_as],div[name=other_data]').show();
 	} else if (select_value === 'OTHER_GET_VALUE_WITH_RE') {
 		introduce.children('div').text('通过正则表达式截取变量并重新保存，使用方法请参考帮助文档《文本验证操作符》的re操作符。其中需要截取的内容用小括号括起');
@@ -243,7 +243,7 @@ function reset_action_field() {
 	$('[name=detail_content]').css('padding-bottom', '100px');
 	$('div[name=other_data] .col-1').html('表达式');
 	$('div[name=other_data] textarea').attr('name', 'other_data').show();
-	$('div[name=save_as] .col-1').html('保存为&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="" data-original-title="填入要保存为的变量名称，不能包含 ${  }$"></i>');
+	$('div[name=save_as] .col-1').html('保存为&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="填入要保存为的变量名称，不能包含 ${  }$"></i>');
 }
 
 // 展示SpecialAction相关内容

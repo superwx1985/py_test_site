@@ -30,5 +30,5 @@ def select_json(request):
             d['selected'] = False
         data.append(d)
 
-    return JsonResponse({'status': 1, 'message': 'OK', 'data': data})
+    return JsonResponse({'state': 1, 'message': 'OK', 'data': data})
 

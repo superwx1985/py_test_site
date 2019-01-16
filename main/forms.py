@@ -230,7 +230,7 @@ class SuiteResultForm(forms.ModelForm):
             'pass_count',
             'fail_count',
             'error_count',
-            'result_status',
+            'result_state',
             'result_message',
             'result_error',
         ]

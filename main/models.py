@@ -4,6 +4,13 @@ from django.utils import timezone
 import uuid
 from py_test.vic_tools.vic_date_handle import get_timedelta_str
 
+result_state_list = (
+    (0, '跳过'),
+    (1, '成功'),
+    (2, '失败'),
+    (3, '异常'),
+)
+
 
 # 用例表
 class Case(models.Model):
@@ -453,13 +460,7 @@ class SuiteResult(models.Model):
     fail_count = models.IntegerField(blank=True, null=True)
     error_count = models.IntegerField(blank=True, null=True)
 
-    result_status_list = (
-        (0, '跳过'),
-        (1, '成功'),
-        (2, '失败'),
-        (3, '异常'),
-    )
-    result_status = models.IntegerField(choices=result_status_list, blank=True, null=True)
+    result_state = models.IntegerField(choices=result_state_list, blank=True, null=True)
     result_message = models.TextField(blank=True)
     result_error = models.TextField(blank=True)
 
@@ -505,13 +506,7 @@ class CaseResult(models.Model):
     fail_count = models.IntegerField(blank=True, null=True)
     error_count = models.IntegerField(blank=True, null=True)
 
-    result_status_list = (
-        (0, '跳过'),
-        (1, '成功'),
-        (2, '失败'),
-        (3, '异常'),
-    )
-    result_status = models.IntegerField(choices=result_status_list, blank=True, null=True)
+    result_state = models.IntegerField(choices=result_state_list, blank=True, null=True)
     result_message = models.TextField(blank=True)
     result_error = models.TextField(blank=True)
 
@@ -546,13 +541,8 @@ class StepResult(models.Model):
     creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.SET_NULL, blank=True, null=True)
     start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
     end_date = models.DateTimeField(verbose_name='结束时间', blank=True, null=True)
-    result_status_list = (
-        (0, '跳过'),
-        (1, '成功'),
-        (2, '失败'),
-        (3, '异常'),
-    )
-    result_status = models.IntegerField(choices=result_status_list, blank=True, null=True)
+    
+    result_state = models.IntegerField(choices=result_state_list, blank=True, null=True)
     result_message = models.TextField(blank=True)
     result_error = models.TextField(blank=True)
 

@@ -50,17 +50,17 @@
         <thead class="thead-light middle">
             <tr>
                 <th>结果</th>
-                <th>顺序&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="" data-original-title="测试时步骤的实际执行顺序"></i></th>
-                <th>位置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="" data-original-title="步骤存放在用例中的位置"></i></th>
+                <th>顺序&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="测试时步骤的实际执行顺序"></i></th>
+                <th>位置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="步骤存放在用例中的位置"></i></th>
                 <th>步骤名称</th>
                 <th>动作</th>
-                <th>耗时&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="" data-original-title="未包含初始化的耗时（如初次启动浏览器和读取步骤数据的时间）"></i></th>
+                <th>耗时&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="未包含用例初始化的耗时（例如初次启动浏览器和读取步骤数据的时间）"></i></th>
             </tr>
         </thead>
         <tbody>
             {% for step_result in case_result.stepresult_set.all %}
                 <tr pk="{{ step_result.pk }}" step_result_url="{% url 'step_result' step_result.pk %}">
-                    <td class="middle">{% include 'main/include/status_icon.html' with status=step_result.result_status %}</td>
+                    <td class="middle">{% include 'main/include/state_icon.html' with state=step_result.result_state %}</td>
                     <td class="middle">{{ forloop.counter }}</td>
                     <td class="middle">{{ step_result.step_order }}</td>
                     <td><span>{{ step_result.loop_id }}</span><a name="step_result" step_result_pk={{ step_result.pk }} href="javascript:">{{ step_result.name }}</a></td>

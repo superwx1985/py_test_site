@@ -82,9 +82,9 @@ def detail(request):
             'first_name': obj.first_name,
             'last_name': obj.last_name,
         })
-        if request.session.get('status', None) == 'success':
+        if request.session.get('state', None) == 'success':
             prompt = 'success'
-        request.session['status'] = None
+        request.session['state'] = None
         redirect_url = request.GET.get('redirect_url', request.META.get('HTTP_REFERER', '/home/'))
         return render(request, 'main/user/detail.html', locals())
 
@@ -102,13 +102,13 @@ def detail(request):
                     obj.set_password(new_password)
                     obj.save()
                     auth.login(request, obj)
-                    request.session['status'] = 'success'
+                    request.session['state'] = 'success'
                     return HttpResponseRedirect(request.get_full_path())
                 else:
                     form.add_error('original_password', '原密码不正确')
             else:
                 obj.save()
-                request.session['status'] = 'success'
+                request.session['state'] = 'success'
                 return HttpResponseRedirect(request.get_full_path())
 
         return render(request, 'main/user/detail.html', locals())

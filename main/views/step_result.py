@@ -68,7 +68,7 @@ def detail_json(_, pk):
         img_dict['url'] = img.img.url
         data_dict['imgs'].append(img_dict)
 
-    return JsonResponse({'status': 1, 'message': 'OK', 'data': data_dict})
+    return JsonResponse({'state': 1, 'message': 'OK', 'data': data_dict})
 
 
 # 步骤快照

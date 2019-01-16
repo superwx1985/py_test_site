@@ -2,6 +2,7 @@ import json
 import logging
 import copy
 import uuid
+import threading
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -15,6 +16,8 @@ from main.forms import OrderByForm, PaginatorForm, SuiteForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
 from urllib.parse import quote
 from main.views import case, config, variable_group, element_group
+from utils import system, thread_pool
+from py_test_site import settings
 
 logger = logging.getLogger('django.request')
 
@@ -22,9 +25,9 @@ logger = logging.getLogger('django.request')
 # 列表
 @login_required
 def list_(request):
-    if request.session.get('status', None) == 'success':
+    if request.session.get('state', None) == 'success':
         prompt = 'success'
-    request.session['status'] = None
+    request.session['state'] = None
 
     project_list = get_project_list()
     has_sub_object = True
@@ -141,7 +144,7 @@ def detail(request, pk):
                         order += 1
                         SuiteVsCase.objects.create(suite=obj, case=m2m_obj, order=order, creator=request.user,
                                                    modifier=request.user)
-            request.session['status'] = 'success'
+            request.session['state'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect:
                 return HttpResponseRedirect(next_)
@@ -162,9 +165,9 @@ def detail(request, pk):
         return render(request, 'main/suite/detail.html', locals())
     else:
         form = SuiteForm(instance=obj)
-        if request.session.get('status', None) == 'success':
+        if request.session.get('state', None) == 'success':
             prompt = 'success'
-        request.session['status'] = None
+        request.session['state'] = None
         return render(request, 'main/suite/detail.html', locals())
 
 
@@ -200,7 +203,7 @@ def add(request):
                     order += 1
                     SuiteVsCase.objects.create(suite=obj, case=m2m_obj, order=order, creator=request.user,
                                                modifier=request.user)
-            request.session['status'] = 'success'
+            request.session['state'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect == 'add_another':
                 return HttpResponseRedirect(request.get_full_path())
@@ -219,9 +222,9 @@ def add(request):
         return render(request, 'main/suite/detail.html', locals())
     else:
         form = SuiteForm()
-        if request.session.get('status', None) == 'success':
+        if request.session.get('state', None) == 'success':
             prompt = 'success'
-        request.session['status'] = None
+        request.session['state'] = None
         return render(request, 'main/suite/detail.html', locals())
 
 
@@ -245,9 +248,9 @@ def delete(request, pk):
         err = '无效请求'
 
     if err:
-        return JsonResponse({'status': 2, 'message': err, 'data': pk})
+        return JsonResponse({'state': 2, 'message': err, 'data': pk})
     else:
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk})
 
 
 @login_required
@@ -263,10 +266,10 @@ def multiple_delete(request):
                 Suite.objects.filter(pk__in=pk_list, creator=request.user).update(
                     is_active=False, modifier=request.user, modified_date=timezone.now())
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 @login_required
@@ -285,10 +288,10 @@ def quick_update(request, pk):
             else:
                 raise ValueError('非法的字段名称')
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': new_value})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': new_value})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': None})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': None})
 
 
 # 获取带搜索信息的下拉列表数据
@@ -321,7 +324,7 @@ def select_json(request):
         d['url'] = url
         data.append(d)
 
-    return JsonResponse({'status': 1, 'message': 'OK', 'data': data})
+    return JsonResponse({'state': 1, 'message': 'OK', 'data': data})
 
 
 # 复制操作
@@ -386,11 +389,11 @@ def copy_(request, pk):
     try:
         obj = copy_action(pk, request.user, name_prefix, copy_sub_item)
         return JsonResponse({
-            'status': 1, 'message': 'OK', 'data': {
+            'state': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
         })
     except Exception as e:
-        return JsonResponse({'status': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 2, 'message': str(e), 'data': None})
 
 
 # 批量复制
@@ -404,10 +407,10 @@ def multiple_copy(request):
             for pk in pk_list:
                 _ = copy_action(pk, request.user, name_prefix, copy_sub_item)
         except Exception as e:
-            return JsonResponse({'status': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'status': 1, 'message': 'OK', 'data': pk_list})
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
     else:
-        return JsonResponse({'status': 2, 'message': 'Only accept "POST" method', 'data': []})
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 
 
 # 获取选中的case
@@ -421,5 +424,36 @@ def cases(_, pk):
         obj['url'] = reverse(case.detail, args=[obj['pk']])
         obj['modified_date_sort'] = obj['modified_date'].strftime('%Y-%m-%d')
         obj['modified_date'] = obj['modified_date'].strftime('%Y-%m-%d %H:%M:%S')
-    return JsonResponse({'status': 1, 'message': 'OK', 'data': list(objects)})
+    return JsonResponse({'state': 1, 'message': 'OK', 'data': list(objects)})
 
+
+# 查看状态
+@login_required
+def status(request):
+    is_admin = check_admin(request.user)
+    suites = system.RUNNING_SUITES.get_suites()
+    active_thread = threading.active_count()
+    pool_size = settings.SUITE_MAX_CONCURRENT_EXECUTE_COUNT
+    pool_state = '使用中' if thread_pool.SUITE_EXECUTE_POOL else '已关闭'
+    return render(request, 'main/suite/status.html', locals())
+
+
+# 停止执行
+@login_required
+def stop(request):
+    execute_uuid = request.POST.get('execute_uuid')
+
+    if execute_uuid:
+        if check_admin(request.user):
+            user = None
+        else:
+            user = request.user
+        force_stop, msg = system.RUNNING_SUITES.stop_suite(execute_uuid, user)
+    else:
+        force_stop = False
+        msg = '未提供执行ID'
+
+    if force_stop:
+        return JsonResponse({'state': 1, 'message': msg, 'data': execute_uuid})
+    else:
+        return JsonResponse({'state': 2, 'message': msg, 'data': execute_uuid})

@@ -22,7 +22,7 @@
         <tbody>
             {% for case_result in sub_objects %}
                 <tr pk="{{ case_result.pk }}">
-                    <td class="middle">{% include 'main/include/status_icon.html' with status=case_result.result_status %}</td>
+                    <td class="middle">{% include 'main/include/state_icon.html' with state=case_result.result_state %}</td>
                     <td>{{ case_result.name }}</td>
                     <td class="middle">{{ case_result.elapsed_time_str }}</td>
                 </tr>
