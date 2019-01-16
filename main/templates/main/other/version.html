@@ -23,6 +23,12 @@
     <body>
         <div class="container-fluid">
             <div id="execute_log_div" class="jumbotron" style="overflow: auto; white-space: pre-wrap;">
+2019.01.16
+1. 添加状态监控页面，可以在状态监控页面查看当前运行的套件以及线程状态，并可中止套件执行
+2. 添加中止用例执行功能，可单独中止套件中的特定用例
+3. 重构中止执行功能，改为使用主动方式发送中止信号
+4. 修复变量命名错误
+
 2019.01.07
 1. 等待动作改为使用other_data设置时间，支持使用变量
 2. 解决隐藏的字段如果包含不存在的变量，执行时报错的问题
