@@ -31,11 +31,11 @@
     <script>
         $(function () {
             // 获取配置下拉项
-            config_select("{{ obj.config.pk }}");
+            config_select("{{ form.config.value }}");
             // 获取变量组下拉项
-            variable_group_select("{{ obj.variable_group.pk }}");
+            variable_group_select("{{ form.variable_group.value }}");
             // 获取元素组下拉项
-            element_group_select("{{ obj.element_group.pk }}");
+            element_group_select("{{ form.element_group.value }}");
             // 注册只看自己复选框
             $('#all_').on('click', function() {$('#m2m_objects_form').submit()});
             // 注册m2m新增按钮

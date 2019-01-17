@@ -151,6 +151,7 @@ def detail(request, pk):
             else:
                 return HttpResponseRedirect(request.get_full_path())
         else:
+            temp_config = request.POST.get('config')
             if m2m_list is not None:
                 # 暂存step列表
                 m2m = SuiteVsCase.objects.filter(suite=obj).order_by('order')
@@ -216,6 +217,9 @@ def add(request):
                     para = '&inside=1&new_pk={}'.format(pk)
                 return HttpResponseRedirect('{}?next={}{}'.format(reverse(detail, args=[pk]), quote(next_), para))
         else:
+            temp_config = request.POST.get('config')
+            temp_variable_group = request.POST.get('variable_group')
+            temp_config = request.POST.get('config')
             if m2m_list is not None:
                 temp_list_json = json.dumps(m2m_list)
 
