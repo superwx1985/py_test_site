@@ -19,7 +19,7 @@ def get_screenshot(vic_step):
         vic_step.ui_data = None
         run_result_temp, visible_elements, _ = method.wait_for_element_visible(vic_step)
         vic_step.ui_data = _ui_data
-        if len(visible_elements) > 0:
+        if visible_elements:
             element = visible_elements[0]
         else:
             run_result = ['f', '截图失败，指定的截取元素未找到，{}'.format(run_result_temp[1])]

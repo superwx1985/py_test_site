@@ -9,6 +9,7 @@ result_state_list = (
     (1, '成功'),
     (2, '失败'),
     (3, '异常'),
+    (4, '中止'),
 )
 
 
@@ -459,6 +460,7 @@ class SuiteResult(models.Model):
     pass_count = models.IntegerField(blank=True, null=True)
     fail_count = models.IntegerField(blank=True, null=True)
     error_count = models.IntegerField(blank=True, null=True)
+    stop_count = models.IntegerField(blank=True, null=True)
 
     result_state = models.IntegerField(choices=result_state_list, blank=True, null=True)
     result_message = models.TextField(blank=True)

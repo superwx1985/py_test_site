@@ -146,6 +146,8 @@
                 <div class="text-warning">{{ obj.result_message|default:'失败' }}</div>
             {% elif obj.result_state == 3 %}
                 <div class="text-danger">{{ obj.result_message|default:'出错' }}</div>
+            {% elif obj.result_state == 4 %}
+                <div class="text-dark">{{ obj.result_message|default:'中止' }}</div>
             {% else %}
                 <div class="text-danger">{{ obj.result_message|default:'N/A' }}</div>
             {% endif %}

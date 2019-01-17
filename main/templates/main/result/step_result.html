@@ -52,6 +52,8 @@
                         <pre class="text-info">{{ obj.result_message }}</pre>
                     {% elif obj.result_state == 2 %}
                         <pre class="text-warning">{{ obj.result_message }}</pre>
+                    {% elif obj.result_state == 4 %}
+                        <pre class="text-dark">{{ obj.result_message }}</pre>
                     {% else %}
                         <pre class="text-danger">{{ obj.result_message }}</pre>
                     {% endif %}

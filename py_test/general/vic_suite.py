@@ -33,7 +33,7 @@ class VicSuite:
         self.name = suite.name
         self.user = user
         self.execute_uuid = execute_uuid
-        self.force_stop_ = False  # 用例级别强制停止信号
+        self.force_stop_ = False  # 强制停止信号
         self.vic_cases = list()
         self.status = 0
         self.init_date = datetime.datetime.now()
@@ -68,6 +68,7 @@ class VicSuite:
             pass_count=0,
             fail_count=0,
             error_count=0,
+            stop_count=0,
         )
 
     # 强制停止标志
@@ -137,7 +138,7 @@ class VicSuite:
             if not self.config:
                 raise ValueError('配置读取出错，请检查配置是否已被删除')
 
-            if len(cases) > 0:
+            if cases:
 
                 self.logger.info('准备运行下列{}个用例:'.format(len(cases)))
                 case_order = 0
@@ -171,22 +172,26 @@ class VicSuite:
                             self.suite_result.fail_count += 1
                         elif case_result.result_state == 3:
                             self.suite_result.error_count += 1
+                        elif case_result.result_state == 4:
+                            self.suite_result.stop_count += 1
 
-            skip_count = (self.suite_result.execute_count - self.suite_result.pass_count
-                          - self.suite_result.fail_count - self.suite_result.error_count)
+            skip_count = (self.suite_result.execute_count - self.suite_result.pass_count - self.suite_result.fail_count
+                          - self.suite_result.error_count - self.suite_result.stop_count)
 
-            if self.suite_result.error_count > 0:
+            if self.suite_result.error_count:
                 self.suite_result.result_state = 3
-            elif self.suite_result.fail_count > 0:
+            elif self.suite_result.fail_count:
                 self.suite_result.result_state = 2
+            elif self.force_stop or self.suite_result.stop_count:
+                self.suite_result.result_state = 4
             elif self.suite_result.execute_count == skip_count:
                 self.suite_result.result_state = 0
             else:
                 self.suite_result.result_state = 1
 
-            self.suite_result.result_message = '执行: {} | 通过: {} | 失败: {} | 出错: {} | 跳过: {}'.format(
+            self.suite_result.result_message = '执行: {} | 通过: {} | 失败: {} | 出错: {} | 中止: {} | 跳过: {}'.format(
                 self.suite_result.execute_count, self.suite_result.pass_count, self.suite_result.fail_count,
-                self.suite_result.error_count, skip_count)
+                self.suite_result.error_count, self.suite_result.stop_count, skip_count)
             self.suite_result.end_date = datetime.datetime.now()
             self.suite_result.save()
         except Exception as e:
@@ -203,7 +208,7 @@ class VicSuite:
             self.logger.info('========================================')
             if self.suite_result.result_state == 3:
                 self.logger.error(self.suite_result.result_message)
-            elif self.suite_result.result_state in (2, 0):
+            elif self.suite_result.result_state != 1:
                 self.logger.warning(self.suite_result.result_message)
             else:
                 self.logger.info(self.suite_result.result_message)

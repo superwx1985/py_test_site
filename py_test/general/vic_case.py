@@ -13,7 +13,7 @@ from utils.other import check_recursive_call
 
 class VicCase:
     def __init__(
-            self, case, case_order, vic_suite, execute_str, variables=None, step_result=None, parent_case_pk_list=None,
+            self, case, case_order, vic_suite, execute_str, variables=None, vic_step=None, parent_case_pk_list=None,
             driver_container=None):
         self.logger = vic_suite.logger
 
@@ -33,7 +33,7 @@ class VicCase:
         self.variables = variables
         self.global_variables = vic_suite.global_variables
         self.public_elements = vic_suite.public_elements
-        self.step_result = step_result
+        self.vic_step = vic_step
 
         # 记录用例id以防递归调用
         if not parent_case_pk_list:
@@ -50,8 +50,7 @@ class VicCase:
         self.ui_step_interval = case.ui_step_interval if case.ui_step_interval is not None \
             else vic_suite.ui_step_interval
 
-        # 用例级别强制停止信号
-        self.force_stop_ = False
+        self.force_stop_ = False  # 强制停止信号
 
         # 分支列表
         self.if_list = list()
@@ -87,7 +86,7 @@ class VicCase:
             variable_group=variable_group_json,
 
             suite_result=vic_suite.suite_result,
-            step_result=step_result,
+            step_result=vic_step.step_result if vic_step else None,
             parent_case_pk_list=json.dumps(parent_case_pk_list) if parent_case_pk_list else None,
             case_order=case_order,
             case=case,
@@ -104,10 +103,8 @@ class VicCase:
     # 强制停止标志
     @property
     def force_stop(self):
-        if self.force_stop_:
-            self.status = 2
-            return True
-        elif self.vic_suite.force_stop:
+        if self.force_stop_ or self.vic_suite.force_stop or (self.vic_step.force_stop if self.vic_step else False):
+            self.force_stop_ = True
             self.status = 2
             return True
         else:
@@ -140,7 +137,7 @@ class VicCase:
                             recursive_id, case_list[-1], case_list))
 
                 # 初始化driver
-                if dr is None and self.step_result is None and self.config.ui_selenium_client != 0:
+                if not dr and not self.vic_step and self.config.ui_selenium_client != 0:
                     init_timeout = self.timeout if self.timeout > 30 else 30
                     self.logger.info('【{}】\t启动浏览器...'.format(execute_id))
                     dr = ui_test.driver.get_driver(self.config, 3, init_timeout, logger=self.logger)
@@ -255,7 +252,7 @@ class VicCase:
                 execute_id, len(self.loop_list)))
 
         # 如果不是子用例，且浏览器未关闭，则关闭浏览器
-        if self.step_result is None and dr is not None:
+        if dr and not self.vic_step:
             # 如果logging level小于10，保留浏览器以供调试
             if self.logger.level < 10:
                 self.logger.warning('【{}】\t由于日志级别为DEV，将保留浏览器以供调试，请自行关闭'.format(execute_id))
@@ -277,12 +274,14 @@ class VicCase:
                     self.logger.error('【{}】\t有一个浏览器无法关闭，请手动关闭。错误信息 => {}'.format(execute_id, e))
             del dr
 
-        if self.case_result.error_count > 0 or self.case_result.result_error:
+        if self.force_stop:
+            self.case_result.result_state = 4
+        elif self.case_result.error_count or self.case_result.result_error:
             self.case_result.result_state = 3
-        elif self.case_result.fail_count > 0:
+        elif self.case_result.fail_count:
             self.case_result.result_state = 2
             self.case_result.result_message = '失败'
-        elif self.case_result.execute_count == 0 or self.force_stop:
+        elif self.case_result.execute_count == 0:
             self.case_result.result_state = 0
             self.case_result.result_message = '跳过'
         else:

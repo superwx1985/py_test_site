@@ -80,7 +80,7 @@ class EvalObject:
         new_value_list = list()
         for value in value_list:
             new_value_list.extend(value.split(operator))
-        if len(valid_operator_list) > 0:
+        if valid_operator_list:
             new_value_list = self._get_new_value_list(new_value_list, valid_operator_list)
         return new_value_list
 

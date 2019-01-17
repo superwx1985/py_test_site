@@ -85,6 +85,8 @@
                             <td class="middle"><span class="badge badge-pill badge-success">{{ obj.result_state_str }}</span></td>
                         {% elif obj.result_state == 2 %}
                             <td class="middle"><span class="badge badge-pill badge-warning">{{ obj.result_state_str }}</span></td>
+                        {% elif obj.result_state == 4 %}
+                            <td class="middle"><span class="badge badge-pill badge-dark">{{ obj.result_state_str }}</span></td>
                         {% else %}
                             <td class="middle"><span class="badge badge-pill badge-danger">{{ obj.result_state_str }}</span></td>
                         {% endif %}

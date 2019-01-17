@@ -120,9 +120,8 @@ class VicStep:
     # 强制停止标志
     @property
     def force_stop(self):
-        if self.force_stop_:
-            return True
-        elif self.vic_case.force_stop:
+        if self.force_stop_ or self.vic_case.force_stop:
+            self.force_stop_ = True
             return True
         else:
             return False
@@ -946,7 +945,7 @@ class VicStep:
                                     vic_suite=vc.vic_suite,
                                     execute_str=eid,
                                     variables=var,
-                                    step_result=self.step_result,
+                                    vic_step=self,
                                     parent_case_pk_list=vc.parent_case_pk_list,
                                     driver_container=vc.driver_container
                                 )
@@ -955,9 +954,9 @@ class VicStep:
                                 # 更新driver
                                 dr = vc.driver_container[0]
                                 self.step_result.has_sub_case = True
-                                if case_result_.error_count > 0 or case_result_.result_error:
+                                if case_result_.error_count or case_result_.result_error:
                                     raise RuntimeError('子用例执行时出现错误')
-                                elif case_result_.fail_count > 0:
+                                elif case_result_.fail_count:
                                     self.run_result = ['f', '子用例执行时验证失败']
                                 elif case_result_.execute_count == 0:
                                     self.run_result = ['s', '子用例未执行']
@@ -985,9 +984,9 @@ class VicStep:
                         if 'UI_VERIFY_' in ac:
                             if self.ui_get_ss:
                                 highlight_elements_map = {}
-                                if len(self.elements) > 0:
+                                if self.elements:
                                     highlight_elements_map = ui_test.method.highlight(dr, self.elements, 'green')
-                                if len(self.fail_elements) > 0:
+                                if self.fail_elements:
                                     highlight_elements_map = {**highlight_elements_map,
                                                               **ui_test.method.highlight(dr, self.fail_elements, 'red')}
                                 try:
@@ -1002,12 +1001,12 @@ class VicStep:
                                     self.ui_locator = _ui_locator
                                 except Exception:
                                     logger.warning('【{}】\t无法获取UI验证截图'.format(eid), exc_info=True)
-                                if len(highlight_elements_map) > 0:
+                                if highlight_elements_map:
                                     ui_test.method.cancel_highlight(dr, highlight_elements_map)
                             else:
-                                if len(self.elements) > 0:
+                                if self.elements:
                                     ui_test.method.highlight_for_a_moment(dr, self.elements, 'green')
-                                if len(self.fail_elements) > 0:
+                                if self.fail_elements:
                                     ui_test.method.highlight_for_a_moment(dr, self.fail_elements, 'red')
 
                         # 通过添加步骤间等待时间控制UI测试执行速度
@@ -1033,7 +1032,10 @@ class VicStep:
                     else:
                         raise
 
-            if self.run_result[0] == 's':
+            if self.force_stop:
+                self.step_result.result_state = 4
+                self.run_result[1] = '执行中止，中止前信息如下：\n{}'.format(self.run_result[1])
+            elif self.run_result[0] == 's':
                 self.step_result.result_state = 0
             elif self.run_result[0] == 'p':
                 self.step_result.result_state = 1

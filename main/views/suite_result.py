@@ -16,7 +16,7 @@ from py_test.vic_tools.vic_date_handle import get_timedelta_str
 logger = logging.getLogger('django.request')
 
 
-# 用例列表
+# 列表
 @login_required
 def list_(request):
     if request.session.get('state', None) == 'success':

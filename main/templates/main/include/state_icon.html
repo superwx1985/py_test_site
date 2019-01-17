@@ -4,6 +4,10 @@
     <i class="icon-ok-sign text-success" data-toggle="tooltip" title="成功" data-placement="left"></i>
 {% elif state == 2 %}
     <i class="icon-remove-sign text-warning" data-toggle="tooltip" title="失败" data-placement="left"></i>
-{% else %}
+{% elif state == 3 %}
     <i class="icon-exclamation-sign text-danger" data-toggle="tooltip" title="出错" data-placement="left"></i>
+{% elif state == 4 %}
+    <i class="icon-stop text-dark" data-toggle="tooltip" title="中止" data-placement="left"></i>
+{% else %}
+    <i class="icon-question-sign text-danger" data-toggle="tooltip" title="N/A" data-placement="left"></i>
 {% endif %}
