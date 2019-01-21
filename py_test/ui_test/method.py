@@ -239,10 +239,10 @@ def wait_for_element_visible(vic_step, timeout=None, print_=True):
                 eval_success, eval_result, final_expression = eo.get_eval_result()
                 compare_result = eval_result
                 if compare_result is True:
-                    msg = '{}，符合给定的数量限制'.format(msg)
+                    msg = '{}，符合给定的数量限制\n数量表达式：{}'.format(msg, final_expression)
                     _success = True
                 else:
-                    msg = '{}，不符合给定的数量限制'.format(msg)
+                    msg = '{}，不符合给定的数量限制\n数量表达式：{}'.format(msg, final_expression)
             else:
                 _success = True
 
@@ -471,10 +471,16 @@ def get_special_keys(data_, logger=logging.getLogger('py_test')):
         key_str = key_str.replace('#{#plus#}#', '+').replace('\\$', '#{#dollar#}#')
         if key_str.find('$') == 0 and len(key_str) > 1:
             key_str = key_str.replace('#{#dollar#}#', '$')
-            try:
-                key_str = getattr(Keys, key_str.replace('$', '', 1).upper())
-            except AttributeError:
-                logger.warning('【{}】不是一个合法的特殊键，不进行转换'.format(key_str))
+            key_name = key_str.replace('$', '', 1).upper()
+            if key_name == '\\N':
+                key_str = '\n'
+            elif key_name == '\\R':
+                key_str = '\r'
+            else:
+                try:
+                    key_str = getattr(Keys, key_name)
+                except AttributeError:
+                    logger.warning('【{}】不是一个合法的特殊键，不进行转换'.format(key_str))
             keys.append(key_str)
         else:
             key_str = key_str.replace('#{#dollar#}#', '$')
@@ -486,14 +492,18 @@ def get_special_keys(data_, logger=logging.getLogger('py_test')):
 def perform_special_action(vic_step, update_test_data=False, print_=True):
     if not vic_step.ui_by or not vic_step.ui_locator:
         element = None
+        el_msg = ''
     else:
-        element, _, _ = get_variable_element(vic_step, print_=print_)
+        element, el_msg, _ = get_element(vic_step, print_=print_)
 
     dr = vic_step.dr
     sp = vic_step.ui_special_action
 
+    msg = '特殊动作执行完毕'
+
     if sp == 'click':
         ActionChains(dr).click(element).perform()
+        msg = '点击元素{}'.format(el_msg)
 
     elif sp == 'click_and_hold':
         ActionChains(dr).click_and_hold(element).perform()
@@ -575,11 +585,12 @@ def perform_special_action(vic_step, update_test_data=False, print_=True):
             raise ValueError('必须指定一个被操作元素')
         keys = get_special_keys(vic_step.ui_data, logger=vic_step.logger)
         ActionChains(dr).send_keys_to_element(element, keys).perform()
+        msg = '在元素{}上输入【{}】'.format(el_msg, vic_step.ui_data)
 
     else:
         raise ValueError('无法处理的特殊操作[{}]'.format(sp))
 
-    run_result = ['p', '特殊动作执行完毕']
+    run_result = ['p', msg]
     return run_result, element
 
 

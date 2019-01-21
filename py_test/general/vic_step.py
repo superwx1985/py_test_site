@@ -1057,7 +1057,7 @@ class VicStep:
         except exceptions.InvalidSelectorException:
             logger.error('【{}】\t定位符【{}】无效'.format(eid, self.ui_locator), exc_info=True)
             self.step_result.result_state = 3
-            self.step_result.result_message = '定位符【{}】无效'.format(self.ui_locator)
+            self.step_result.result_message = '定位信息【By:{}|Locator:{}】无效'.format(self.ui_by, self.ui_locator)
             self.step_result.result_error = traceback.format_exc()
         except Exception as e:
             logger.error('【{}】\t出错'.format(eid), exc_info=True)
