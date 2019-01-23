@@ -687,10 +687,13 @@ def try_to_switch_to_window(vic_step, current_window_handle, print_=True):
         raise exceptions.NoSuchWindowException('经过%s秒 - 无法切换到新窗口或没找到指定的窗口' % elapsed_time)
     else:
         try:
+            vic_step.dr.implicitly_wait(3)  # 遇到无标题页面不要等待太久
             title = vic_step.dr.find_element_by_tag_name('title')
             title_str = title.get_attribute('innerText')  # selenium获取不可见元素的文本不能直接用text
         except exceptions.WebDriverException:
             title_str = '（无标题）'
+        finally:
+            vic_step.dr.implicitly_wait(vic_step.timeout)
         run_result = ['p', '经过{}秒 - 切换到新窗口【{}】'.format(elapsed_time, title_str)]
     return run_result, new_window_handle
 

@@ -968,16 +968,36 @@ class VicStep:
                             raise exceptions.UnknownMethodException('未知的动作代码【{}】'.format(ac))
 
                         if atc == 'UI' and dr is not None:
-                            try:
-                                last_url = dr.current_url  # 通过获取当前url测试是否有弹窗需要处理
-                            except exceptions.UnexpectedAlertPresentException:  # 如有弹窗则处理弹窗
-                                alert_handle_text, alert_text = ui_test.method.confirm_alert(
-                                    alert_handle=self.ui_alert_handle, vic_step=self)
-                                logger.info(
-                                    '【{}】\t处理了一个弹窗，处理方式为【{}】，弹窗内容为\n{}'.format(
-                                        eid, alert_handle_text, alert_text))
-                                last_url = dr.current_url
+                            alert_count = 0
+                            msg = ''
+                            while alert_count < 10:
+                                try:
+                                    last_url = dr.current_url  # 通过获取当前url测试是否有弹窗需要处理
+                                    break
+                                except exceptions.UnexpectedAlertPresentException:  # 如有弹窗则处理弹窗
+                                    alert_count += 1
+                                    alert_handle_text, alert_text = ui_test.method.confirm_alert(
+                                        alert_handle=self.ui_alert_handle, vic_step=self)
+                                    _msg = '处理了一个弹窗，处理方式为【{}】，弹窗内容为：\n{}'.format(
+                                            alert_handle_text, alert_text)
+                                    logger.warning('【{}】\t{}'.format(eid, _msg))
+                                    if msg:
+                                        _msg = '\n' + _msg
+                                    msg = '{}{}'.format(msg, _msg)
+                            else:
+                                try:
+                                    last_url = dr.current_url
+                                except exceptions.UnexpectedAlertPresentException:
+                                    alert_ = dr.switch_to.alert
+                                    _msg = '总共处理了{}个弹窗，但还有弹窗，请排查原因'.format(alert_count)
+                                    logger.warning('【{}】\t{}'.format(eid, _msg))
+                                    if msg:
+                                        _msg = '\n' + _msg
+                                    msg = '\n{}{}'.format(msg, _msg)
+                                    raise exceptions.UnexpectedAlertPresentException(msg, alert_text=alert_.text)
 
+                            if msg:
+                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
                             self.step_result.ui_last_url = last_url if last_url != 'data:,' else ''
 
                         # 获取UI验证截图
