@@ -13,11 +13,25 @@
         <script>
             $(function () {
 
-            })
+            });
+            function _confirm() {
+                var s = confirm('确认');
+                $('#h1_1').text(s);
+            }
+            function _prompt() {
+                var s = prompt('请输入：');
+                if (s) {
+                    $('#h1_1').text(s);
+                }
+            }
         </script>
     </head>
     <body>
-        <h1 id="h1_1"></h1>
+        <h1 id="h1_1">h1_1</h1>
+        <br>
+        <button id="button_alert" onclick="alert('警告')">alert</button>
+        <button id="button_confirm" onclick="_confirm()">confirm</button>
+        <button id="button_prompt" onclick="_prompt()">prompt</button>
         <br>
         <div id="div_1">div1</div>
         <div id="div_2">div2</div>

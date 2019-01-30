@@ -99,10 +99,10 @@ class Step(models.Model):
     ui_alert_handle_list_ = (
         (1, '确定', 'accept'),
         (2, '取消', 'dismiss'),
-        (3, '忽略', 'ignore'),
     )
     ui_alert_handle_list = [(i[0], i[1]) for i in ui_alert_handle_list_]
     ui_alert_handle = models.IntegerField(choices=ui_alert_handle_list, default=1)
+    ui_alert_handle_text = models.TextField(blank=True)
     api_url = models.TextField(blank=True)
     api_method_list = (
         (1, 'GET'),

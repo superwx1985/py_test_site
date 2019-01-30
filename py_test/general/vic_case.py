@@ -199,36 +199,6 @@ class VicCase:
                     self.logger.info('【{}】\t执行步骤 => ID:{} | {} | {}'.format(
                         execute_id, step.id, step.name, step.step.action))
 
-                    # 如有弹窗则处理弹窗
-                    if dr is not None:
-                        alert_count = 0
-                        msg = ''
-                        while alert_count < 10:
-                            try:
-                                _ = dr.current_url
-                                break
-                            except UnexpectedAlertPresentException:
-                                alert_count += 1
-                                alert_handle_text, alert_text = ui_test.method.confirm_alert(
-                                    alert_handle=ui_alert_handle, vic_case=self)
-                                _msg = '处理了一个弹窗，处理方式为【{}】，弹窗内容为：\n{}'.format(
-                                    alert_handle_text, alert_text)
-                                self.logger.warning('【{}】\t{}'.format(execute_id, _msg))
-                                if msg:
-                                    _msg = '\n' + _msg
-                                msg = '{}{}'.format(msg, _msg)
-                        else:
-                            try:
-                                _ = dr.current_url
-                            except UnexpectedAlertPresentException:
-                                alert_ = dr.switch_to.alert
-                                _msg = '总共处理了{}个弹窗，但还有弹窗，请排查原因'.format(alert_count)
-                                self.logger.warning('【{}】\t{}'.format(execute_id, _msg))
-                                if msg:
-                                    _msg = '\n' + _msg
-                                msg = '\n{}{}'.format(msg, _msg)
-                                raise UnexpectedAlertPresentException(msg, alert_text=alert_.text)
-
                     # 执行步骤
                     step_ = step.execute()
                     step_result_ = step_.step_result

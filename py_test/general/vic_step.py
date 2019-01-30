@@ -32,6 +32,8 @@ class VicStep:
         self.action_type_code = step.action.type.code
         self.action_code = step.action.code
 
+        self.browser_alert = False
+
         # timeout为0时也要取
         self.timeout = step.timeout if step.timeout is not None else vic_case.timeout
         # ui_step_interval为0时也要取
@@ -88,6 +90,7 @@ class VicStep:
             self.ui_special_action = ui_special_action_dict[step.ui_special_action]
             ui_alert_handle_dict = {i[0]: i[2] for i in Step.ui_alert_handle_list_}
             self.ui_alert_handle = ui_alert_handle_dict.get(step.ui_alert_handle, 'accept')
+            self.ui_alert_handle_text = step.ui_alert_handle_text
 
             self.api_url = step.api_url
             api_method_dict = {i[0]: i[1] for i in Step.api_method_list}
@@ -147,17 +150,11 @@ class VicStep:
                 self.ui_by, self.ui_locator = ui_test.method.get_public_elements(self)
 
     def execute(self):
-        # 记录开始执行时的时间
-        self.step_result.start_date = datetime.datetime.now()
+        self.step_result.start_date = datetime.datetime.now()  # 记录开始执行时的时间
 
-        # 记录循环迭代次数
-        self.step_result.loop_id = self.loop_id
-
-        # 暂存，防止子用例设置调用步骤时报错
-        self.step_result.save()
-
-        # 获取运行时driver
-        dr = self.dr = self.vic_case.driver_container[0]
+        self.step_result.loop_id = self.loop_id  # 记录循环迭代次数
+        self.step_result.save()  # 暂存，防止子用例设置调用步骤时报错
+        dr = self.dr = self.vic_case.driver_container[0]  # 获取运行时driver
         # 简称
         eid = self.execute_id
         vc = self.vic_case
@@ -348,6 +345,12 @@ class VicStep:
                                 'OTHER_END_LOOP'):
                             pass
                         # ===== UI =====
+                        # 处理浏览器弹窗
+                        elif ac == 'UI_ALERT_HANDLE':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_alert_handle_text')
+                            self.run_result, _ = ui_test.method.alert_handle(self)
+
                         # 打开URL
                         elif ac == 'UI_GO_TO_URL':
                             if re_run_count == 0:
@@ -967,67 +970,49 @@ class VicStep:
                         else:
                             raise exceptions.UnknownMethodException('未知的动作代码【{}】'.format(ac))
 
+                        # 判断是否出现浏览器弹窗
                         if atc == 'UI' and dr is not None:
-                            alert_count = 0
-                            msg = ''
-                            while alert_count < 10:
-                                try:
-                                    last_url = dr.current_url  # 通过获取当前url测试是否有弹窗需要处理
-                                    break
-                                except exceptions.UnexpectedAlertPresentException:  # 如有弹窗则处理弹窗
-                                    alert_count += 1
-                                    alert_handle_text, alert_text = ui_test.method.confirm_alert(
-                                        alert_handle=self.ui_alert_handle, vic_step=self)
-                                    _msg = '处理了一个弹窗，处理方式为【{}】，弹窗内容为：\n{}'.format(
-                                            alert_handle_text, alert_text)
-                                    logger.warning('【{}】\t{}'.format(eid, _msg))
-                                    if msg:
-                                        _msg = '\n' + _msg
-                                    msg = '{}{}'.format(msg, _msg)
-                            else:
-                                try:
-                                    last_url = dr.current_url
-                                except exceptions.UnexpectedAlertPresentException:
-                                    alert_ = dr.switch_to.alert
-                                    _msg = '总共处理了{}个弹窗，但还有弹窗，请排查原因'.format(alert_count)
-                                    logger.warning('【{}】\t{}'.format(eid, _msg))
-                                    if msg:
-                                        _msg = '\n' + _msg
-                                    msg = '\n{}{}'.format(msg, _msg)
-                                    raise exceptions.UnexpectedAlertPresentException(msg, alert_text=alert_.text)
-
-                            if msg:
-                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
-                            self.step_result.ui_last_url = last_url if last_url != 'data:,' else ''
+                            try:
+                                alert_ = dr.switch_to.alert
+                                self.browser_alert = alert_.text
+                            except exceptions.NoAlertPresentException:
+                                pass
 
                         # 获取UI验证截图
                         if 'UI_VERIFY_' in ac:
-                            if self.ui_get_ss:
-                                highlight_elements_map = {}
-                                if self.elements:
-                                    highlight_elements_map = ui_test.method.highlight(dr, self.elements, 'green')
-                                if self.fail_elements:
-                                    highlight_elements_map = {**highlight_elements_map,
-                                                              **ui_test.method.highlight(dr, self.fail_elements, 'red')}
-                                try:
-                                    _ui_by = self.ui_by
-                                    _ui_locator = self.ui_locator
-                                    self.ui_by = None
-                                    self.ui_locator = None
-                                    _, img = ui_test.screenshot.get_screenshot(self)
-                                    if img:
-                                        self.img_list.append(img)
-                                    self.ui_by = _ui_by
-                                    self.ui_locator = _ui_locator
-                                except Exception:
-                                    logger.warning('【{}】\t无法获取UI验证截图'.format(eid), exc_info=True)
-                                if highlight_elements_map:
-                                    ui_test.method.cancel_highlight(dr, highlight_elements_map)
+                            if self.browser_alert:
+                                logger.warning(
+                                    '【{}】\t无法获取UI验证截图，因为出现浏览器弹窗导致浏览器被锁死，内容为：{}'.format(
+                                        eid, self.browser_alert))
                             else:
-                                if self.elements:
-                                    ui_test.method.highlight_for_a_moment(dr, self.elements, 'green')
-                                if self.fail_elements:
-                                    ui_test.method.highlight_for_a_moment(dr, self.fail_elements, 'red')
+                                if self.ui_get_ss:
+                                    highlight_elements_map = {}
+                                    if self.elements:
+                                        highlight_elements_map = ui_test.method.highlight(dr, self.elements, 'green')
+                                    if self.fail_elements:
+                                        highlight_elements_map = {
+                                            **highlight_elements_map,
+                                            **ui_test.method.highlight(dr, self.fail_elements, 'red')
+                                        }
+                                    try:
+                                        _ui_by = self.ui_by
+                                        _ui_locator = self.ui_locator
+                                        self.ui_by = None
+                                        self.ui_locator = None
+                                        _, img = ui_test.screenshot.get_screenshot(self)
+                                        if img:
+                                            self.img_list.append(img)
+                                        self.ui_by = _ui_by
+                                        self.ui_locator = _ui_locator
+                                    except Exception:
+                                        logger.warning('【{}】\t无法获取UI验证截图'.format(eid), exc_info=True)
+                                    if highlight_elements_map:
+                                        ui_test.method.cancel_highlight(dr, highlight_elements_map)
+                                else:
+                                    if self.elements:
+                                        ui_test.method.highlight_for_a_moment(dr, self.elements, 'green')
+                                    if self.fail_elements:
+                                        ui_test.method.highlight_for_a_moment(dr, self.fail_elements, 'red')
 
                         # 通过添加步骤间等待时间控制UI测试执行速度
                         if atc == 'UI' and self.ui_step_interval:
@@ -1079,6 +1064,14 @@ class VicStep:
             self.step_result.result_state = 3
             self.step_result.result_message = '定位信息【By:{}|Locator:{}】无效'.format(self.ui_by, self.ui_locator)
             self.step_result.result_error = traceback.format_exc()
+        except exceptions.UnexpectedAlertPresentException:
+            self.browser_alert = True
+            alert_ = dr.switch_to.alert
+            msg = '出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(alert_.text)
+            logger.error(msg, exc_info=True)
+            self.step_result.result_state = 3
+            self.step_result.result_message = msg
+            self.step_result.result_error = traceback.format_exc()
         except Exception as e:
             logger.error('【{}】\t出错'.format(eid), exc_info=True)
             self.step_result.result_state = 3
@@ -1094,9 +1087,12 @@ class VicStep:
             try:
                 last_url = dr.current_url
                 self.step_result.ui_last_url = last_url if last_url != 'data:,' else ''
-            except:
-                logger.warning('【{}】\t无法获取报错时的URL'.format(eid))
-                self.step_result.ui_last_url = 'URL获取失败'
+            except exceptions.UnexpectedAlertPresentException:
+                alert_ = dr.switch_to.alert
+                msg = 'URL获取失败，因为出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(alert_.text)
+                logger.warning('【{}】\t{}'.format(eid, msg))
+                self.step_result.ui_last_url = msg
+                self.browser_alert = True
 
             # 获取报错时截图
             if self.ui_get_ss and self.step_result.result_state == 3:
@@ -1106,8 +1102,12 @@ class VicStep:
                     self.run_result, img = ui_test.screenshot.get_screenshot(self)
                     if img:
                         self.img_list.append(img)
+                except exceptions.UnexpectedAlertPresentException:
+                    alert_ = dr.switch_to.alert
+                    msg = '截图失败，因为出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(alert_.text)
+                    logger.warning('【{}】\t{}'.format(eid, msg))
                 except:
-                    logger.warning('【{}】\t无法获取错误截图'.format(eid))
+                    logger.warning('【{}】\t截图失败'.format(eid))
 
         # 关联截图
         for img in self.img_list:

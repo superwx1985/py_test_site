@@ -7,7 +7,7 @@
 <div class="row align-items-center" base>
     <div class="col-1 text-center font-weight-bold">描述</div>
     <div class="col" form_data>
-        {% include 'main/include/form_textarea.html' with field=form.description rows='2' %}
+        {% include 'main/include/form_textarea.html' with field=form.description rows='3' %}
     </div>
 </div>
 <div class="row align-items-center" base>
@@ -62,7 +62,7 @@
     </div>
 </div>
 <div class="row align-items-center" ui name="ui_index">
-    <div class="col-1 text-center font-weight-bold">索引&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="如果提供的定位方式和定位值得到的元素大于1个，可以使用索引来指定唯一元素"></i></div>
+    <div class="col-1 text-center font-weight-bold">索引&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="如果提供的定位方式和定位值得到的元素大于1个，可以使用索引来指定唯一元素，索引从0开始"></i></div>
     <div class="col" form_data>
         {% include 'main/include/form_input.html' with field=form.ui_index %}
     </div>
@@ -76,7 +76,7 @@
 <div class="row align-items-center" ui name="ui_data">
     <div class="col-1 text-center font-weight-bold">数据</div>
     <div class="col" form_data>
-        {% include 'main/include/form_textarea.html' with field=form.ui_data rows='2' %}
+        {% include 'main/include/form_textarea.html' with field=form.ui_data rows='5' %}
     </div>
 </div>
 <div class="row align-items-center" ui_hidden name="ui_data_select">
@@ -85,10 +85,16 @@
         {% include 'main/step/ui_data_select.html' %}
     </div>
 </div>
-<div class="row align-items-center" ui name="ui_alert_handle">
-    <div class="col-1 text-center font-weight-bold">弹窗处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="选择如果遇到浏览器弹窗（非页面内部弹窗）的处理方式"></i></div>
+<div class="row align-items-center" ui_hidden name="ui_alert_handle">
+    <div class="col-1 text-center font-weight-bold">弹窗处理方式</div>
     <div class="col" form_data>
         {% include 'main/include/form_input.html' with field=form.ui_alert_handle %}
+    </div>
+</div>
+<div class="row align-items-center" ui_hidden name="ui_alert_handle_text">
+    <div class="col-1 text-center font-weight-bold">弹窗输入内容&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="填写要在浏览器弹窗输入的内容"></i></div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.ui_alert_handle_text rows='5' %}
     </div>
 </div>
 <div class="row align-items-center" api>
@@ -106,19 +112,19 @@
 <div class="row align-items-center" api>
     <div class="col-1 text-center font-weight-bold">请求头</div>
     <div class="col" form_data>
-        {% include 'main/include/form_textarea.html' with field=form.api_headers rows='2' %}
+        {% include 'main/include/form_textarea.html' with field=form.api_headers rows='5' %}
     </div>
 </div>
 <div class="row align-items-center" api>
     <div class="col-1 text-center font-weight-bold">请求体</div>
     <div class="col" form_data>
-        {% include 'main/include/form_textarea.html' with field=form.api_body rows='2' %}
+        {% include 'main/include/form_textarea.html' with field=form.api_body rows='5' %}
     </div>
 </div>
 <div class="row align-items-center" api>
     <div class="col-1 text-center font-weight-bold">字符编码&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="默认（留空）使用utf-8编码处理响应内容"></i></div>
     <div class="col" form_data>
-        {% include 'main/include/form_textarea.html' with field=form.api_decode rows='2' %}
+        {% include 'main/include/form_textarea.html' with field=form.api_decode %}
     </div>
 </div>
 <div class="row align-items-center" api>
@@ -179,13 +185,13 @@
 <div class="row align-items-center" db>
     <div class="col-1 text-center font-weight-bold">SQL</div>
     <div class="col" form_data>
-        {% include 'main/include/form_textarea.html' with field=form.db_sql rows='2' %}
+        {% include 'main/include/form_textarea.html' with field=form.db_sql rows='5' %}
     </div>
 </div>
 <div class="row align-items-center" db name="db_data">
     <div class="col-1 text-center font-weight-bold">待验证内容</div>
     <div class="col" form_data>
-        {% include 'main/include/form_textarea.html' with field=form.db_data rows='2' %}
+        {% include 'main/include/form_textarea.html' with field=form.db_data rows='5' %}
     </div>
 </div>
 <div class="row align-items-center" other name="other_data">

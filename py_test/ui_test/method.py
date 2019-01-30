@@ -604,45 +604,47 @@ def try_to_scroll_into_view(vic_step, print_=True):
 
 
 # 处理浏览器弹窗
-def confirm_alert(alert_handle, vic_step=None, vic_case=None, print_=True):
+def alert_handle(vic_step, print_=True):
     last_print_time = 0
-    done = False
-    alert_handle_text = ''
+    success_ = False
+    msg = '找不到任何浏览器弹窗'
     alert_text = ''
-    if vic_case:
-        dr = vic_case.driver_container[0]
-        obj = vic_case
-    else:
-        dr = vic_step.dr
-        obj = vic_step
+    dr = vic_step.dr
 
     start_time = time.time()
-    while (time.time() - start_time) <= obj.timeout and not obj.force_stop:
+    while (time.time() - start_time) <= vic_step.timeout and not vic_step.force_stop:
         try:
             alert_ = dr.switch_to.alert
             alert_text = alert_.text
-            if alert_handle.lower() in ('no', 'dismiss', 'cancel'):
+            if vic_step.ui_alert_handle == 'dismiss':
                 alert_.dismiss()
-                alert_handle_text = '取消'
-            elif alert_handle.lower() in ('skip', 'ignore'):
-                alert_.ignore()
-                alert_handle_text = '忽略'
+                msg = '点击【取消】按钮关闭弹窗，弹窗内容：{}'.format(alert_text)
             else:
+                _msg = ''
+                if vic_step.ui_alert_handle_text:
+                    alert_.send_keys(vic_step.ui_alert_handle_text)
+                    _msg = '输入【{}】，'.format(vic_step.ui_alert_handle_text)
                 alert_.accept()
-                alert_handle_text = '确定'
-            done = True
-            break
+                msg = '{}点击【确定】按钮关闭弹窗，弹窗内容：{}'.format(_msg, alert_text)
+            success_ = True
         except exceptions.NoAlertPresentException:
             pass
+
         now_time = time.time()
         if print_ and now_time - last_print_time >= 1:
             elapsed_time = str(round(now_time - start_time, 2))
-            obj.logger.info('经过%s秒 - 尝试以【%s】方式关闭弹窗' % (elapsed_time, alert_handle))
+            msg = '经过{}秒 - {}'.format(elapsed_time, msg)
+            vic_step.logger.info(msg)
             last_print_time = now_time
-    elapsed_time = str(round(time.time() - start_time, 2))
-    if not done:
-        raise exceptions.NoAlertPresentException('经过%s秒 - 找不到任何弹窗' % elapsed_time)
-    return alert_handle_text, alert_text
+        if success_:
+            break
+
+    if success_:
+        run_result = ['p', msg]
+    else:
+        raise exceptions.NoAlertPresentException(msg)
+
+    return run_result, alert_text
 
 
 # 尝试切换window或tap
@@ -650,6 +652,7 @@ def try_to_switch_to_window(vic_step, current_window_handle, print_=True):
     last_print_time = 0
     _success = False
     new_window_handle = None
+
     start_time = time.time()
     while (time.time() - start_time) <= vic_step.timeout and not vic_step.force_stop:
         for window_handle in vic_step.dr.window_handles:
@@ -700,10 +703,11 @@ def try_to_switch_to_window(vic_step, current_window_handle, print_=True):
 
 # 尝试切换到框架
 def try_to_switch_to_frame(vic_step, print_=True):
-    start_time = time.time()
     last_print_time = 0
     success_ = False
     msg = '未能切换到符合条件的框架'
+
+    start_time = time.time()
     while (time.time() - start_time) <= vic_step.timeout and not vic_step.force_stop:
         if vic_step.ui_by and vic_step.ui_locator:
             frame, el_msg, err_msg = get_element(vic_step, timeout=1, print_=False, necessary=False)

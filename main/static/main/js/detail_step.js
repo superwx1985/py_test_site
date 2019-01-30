@@ -3,19 +3,22 @@ function show_action_field($actionSelect) {
     reset_action_field();
 	window.select_value = window.action_map[$actionSelect.val()];
 	var introduce = $('#introduce');
-	if (select_value === 'UI_GO_TO_URL') {
+	if (select_value === 'UI_ALERT_HANDLE') {
+		introduce.children('div').text('处理浏览器弹窗（非页面元素弹窗），如：alert，confirm，prompt');
+		$('div[name=ui_alert_handle],div[name=ui_alert_handle_text],div[name=timeout],div[name=ui_step_interval]').show();
+	} else if (select_value === 'UI_GO_TO_URL') {
 		introduce.children('div').text('打开一个页面，请填入页面URL');
 		$('div[name=ui_data] .col-1').text('URL');
-		$('div[name=ui_alert_handle],div[name=ui_data],div[name=timeout],div[name=ui_step_interval]').show();
+		$('div[name=ui_data],div[name=timeout],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_REFRESH') {
 		introduce.children('div').text('触发浏览器刷新页面操作');
-		$('div[name=ui_alert_handle],div[name=timeout],div[name=ui_step_interval]').show();
+		$('div[name=timeout],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_FORWARD') {
 		introduce.children('div').text('触发浏览器前进操作');
-		$('div[name=ui_alert_handle],div[name=timeout],div[name=ui_step_interval]').show();
+		$('div[name=timeout],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_BACK') {
 		introduce.children('div').text('触发浏览器后退操作');
-		$('div[name=ui_alert_handle],div[name=timeout],div[name=ui_step_interval]').show();
+		$('div[name=timeout],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_SCREENSHOT') {
 		introduce.children('div').text('获取当前页面截图，如果提供了定位信息则只截取定位到的元素');
 		$('[ui],div[name=timeout]').show();
@@ -26,7 +29,7 @@ function show_action_field($actionSelect) {
 		$('div[name=ui_data],div[name=ui_special_action]').hide();
 	} else if (select_value === 'UI_SWITCH_TO_DEFAULT_CONTENT') {
 		introduce.children('div').text('回到框架的上一级页面，如进入了多层框架，请使用多次该动作');
-		$('div[name=ui_alert_handle],div[name=timeout],div[name=ui_step_interval]').show();
+		$('div[name=timeout],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_SWITCH_TO_WINDOW') {
 		introduce.children('div').text('切换至浏览器的其他窗口或标签。如果提供了窗口标题，则切换到标题（head中title元素的值）中包含该文字的窗口；如果提供了定位信息，则切换到包含该元素的窗口；否则切换至任意一个非当前窗口');
 		$('[ui],div[name=timeout]').show();
@@ -39,7 +42,7 @@ function show_action_field($actionSelect) {
 		$('div[name=ui_data] .col-1').text('窗口标题');
 	} else if (select_value === 'UI_RESET_BROWSER') {
 		introduce.children('div').text('关闭浏览器，清空所有缓存，再重新打开浏览器');
-		$('div[name=ui_alert_handle],div[name=timeout],div[name=ui_step_interval]').show();
+		$('div[name=timeout],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_CLICK') {
 		introduce.children('div').text('在指定的元素上触发单击，如果找不到元素或元素当前不可见会报错。如果填写了“保存为”，找到的元素将被保存为变量');
 		$('[ui],div[name=timeout],div[name=save_as]').show();
@@ -79,7 +82,7 @@ function show_action_field($actionSelect) {
 	} else if (select_value === 'UI_VERIFY_URL') {
 		introduce.children('div').text('验证当前页面的URL是否匹配，待验证内容可以为字符串或表达式。如果填写了“保存为”，验证结果将被保存为变量');
 		$('div[name=ui_data] .col-1').text('待验证内容');
-		$('div[name=ui_alert_handle],div[name=ui_data],div[name=timeout],div[name=save_as],div[name=ui_step_interval]').show();
+		$('div[name=ui_data],div[name=timeout],div[name=save_as],div[name=ui_step_interval]').show();
 	} else if (select_value === 'UI_VERIFY_TEXT') {
 		introduce.children('div').text('验证页面是否包含文字（如果待验证内容是输入框内的值，或者是表达式，请指定元素）。如果指定了元素，则验证该元素是否包含文字。如果填写了“保存为”，验证结果将被保存为变量');
 		$('[ui],div[name=timeout],div[name=save_as]').show();
@@ -112,7 +115,7 @@ function show_action_field($actionSelect) {
 		$('div[name=ui_special_action],div[name=ui_data]').hide();
 	} else if (select_value === 'UI_SAVE_URL') {
 		introduce.children('div').html('把URL或URL的一部分保存为变量。可以使用正则表达式指定要匹配的部分。例：<span class="mark">#{re}#id=(\\d+)&</span>将匹配<span class="text-info">http://www.test.com/user/?id=12345&pk=45678</span>中的<span class="text-info">12345</span>');
-		$('div[name=ui_alert_handle],div[name=timeout],div[name=save_as],div[name=ui_data],div[name=ui_step_interval]').show();
+		$('div[name=timeout],div[name=save_as],div[name=ui_data],div[name=ui_step_interval]').show();
 		$('div[name=ui_data] .col-1').text('正则表达式');
 	} else if (select_value === 'UI_SAVE_ELEMENT_TEXT') {
 		introduce.children('div').html('把元素文本保存为变量');
@@ -269,10 +272,9 @@ function show_special_action_field($actionSelect) {
 		$('div[name=ui_data]').hide();
 	} else if (select_value === '5') {
 		introduce.empty().append($('<div>').text('释放鼠标按键'));
-		$('div[name=ui_alert_handle]').show();
 	} else if (select_value === '6') {
 		introduce.empty().append($('<div>').text('鼠标从当前位置偏移一定距离。偏移量x,y为一对半角逗号分隔的数字（单位：像素，水平方向为x轴，左负右正，垂直方向为y轴，上负下正）。例：300,200'));
-		$('div[name=ui_alert_handle],div[name=ui_data]').show();
+		$('div[name=ui_data]').show();
 		$('div[name=ui_data] .col-1').text('偏移量');
 	} else if (select_value === '7') {
 		introduce.empty().append($('<div>').text('鼠标从当前位置移动到一个元素（通过定位信息指定）的中间'));
@@ -303,7 +305,7 @@ function show_special_action_field($actionSelect) {
 		introduce.append($('<div>').html('常用的特殊键：<span class="mark">$SHIFT $CONTROL $ALT $ENTER $ESCAPE $SPACE $BACKSPACE $TAB $PAGE_UP $PAGE_DOWN $END $HOME $LEFT $UP $RIGHT $DOWN $INSERT $DELETE</span>'));
 		introduce.append($('<div>').html('特殊键和普通键之间，以及特殊键和特殊键之间，用+号分隔。例如要实现全选删除原有字符后输入Abc，可以使用：<span class="mark">$CONTROL+a+$CONTROL+$BACKSPACE+Abc</span>'));
 		introduce.append($('<div>').html('如需输入真正的+号和$号，请添加转义符。例如：<span class="mark">\$control\+a</span>将被当作字符串<span class="text-info">$control+a</span>'));
-		$('div[name=ui_alert_handle],div[name=ui_data]').show();
+		$('div[name=ui_data]').show();
 		$('div[name=ui_data] .col-1').html('按键（组）&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头，多个特殊按键以+分隔，连续的普通按键可以不分隔，如需输入正常的$和+请用\\转义，如\\$，\\+"></i>');
 	} else if (select_value === '14') {
 		introduce.empty().append($('<div>').text('向指定的元素发送按键（组），修饰键发送一次后一直有效，直到出现相同的修饰键'));
