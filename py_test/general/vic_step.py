@@ -485,7 +485,7 @@ class VicStep:
                         elif ac == 'UI_VERIFY_URL':
                             if re_run_count == 0:
                                 self.update_test_data('ui_data')
-                            if self.ui_data == '':
+                            if not self.ui_data:
                                 raise ValueError('无验证内容')
                             else:
                                 self.run_result = ui_test.method.wait_for_page_redirect(self)

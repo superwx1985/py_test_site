@@ -92,10 +92,13 @@ def wait_for_text_present(vic_step, print_=True):
                 msg = '在页面找到期望文字【{}】'.format(text)
                 _success = True
         else:
-            _ui_data = vic_step.ui_data  # 把ui_data置空，防止查找元素时被当做数量限制表达式
-            vic_step.ui_data = None
-            run_result_temp, elements_temp, elements_all = wait_for_element_visible(vic_step, timeout=1, print_=False)
-            vic_step.ui_data = _ui_data
+            _ui_data = vic_step.ui_data
+            vic_step.ui_data = None  # 把ui_data置空，防止查找元素时被当做数量限制表达式
+            try:
+                run_result_temp, elements_temp, elements_all = wait_for_element_visible(
+                    vic_step, timeout=1, print_=False)
+            finally:
+                vic_step.ui_data = _ui_data
             if run_result_temp[0] == 'f':
                 msg = '未找到期望元素【By:{}|Locator:{}】或元素不可见'.format(vic_step.ui_by, vic_step.ui_locator)
             else:
@@ -270,10 +273,12 @@ def get_variable_element(vic_step, timeout=None, print_=True, necessary=True):
     err_msg = ''
     if not timeout:
         timeout = vic_step.timeout
-    _ui_data = vic_step.ui_data  # 把ui_data置空，防止查找元素时被当做数量限制表达式
-    vic_step.ui_data = None
-    run_result_temp, elements, _ = wait_for_element_visible(vic_step, timeout=timeout, print_=print_)
-    vic_step.ui_data = _ui_data
+    _ui_data = vic_step.ui_data
+    vic_step.ui_data = None  # 把ui_data置空，防止查找元素时被当做数量限制表达式
+    try:
+        run_result_temp, elements, _ = wait_for_element_visible(vic_step, timeout=timeout, print_=print_)
+    finally:
+        vic_step.ui_data = _ui_data
     if run_result_temp[0] == 'f':
         err_msg = '未找到元素，因为{}'.format(run_result_temp[1])
     elif len(elements) == 1 and vic_step.ui_index in (None, 0):
