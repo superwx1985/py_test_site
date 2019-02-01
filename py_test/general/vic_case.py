@@ -168,7 +168,6 @@ class VicCase:
 
             # 执行步骤
             try:
-                ui_alert_handle = 'accept'  # 初始化弹窗处理方式
                 step_index = 0
                 while step_index < len(self.steps):
 
@@ -206,9 +205,6 @@ class VicCase:
 
                     # 更新driver
                     dr = self.driver_container[0]
-
-                    # 获取最后一次弹窗处理方式
-                    ui_alert_handle = step.ui_alert_handle
 
                     self.case_result.execute_count += 1
                     if step_result_.result_state == 0:
