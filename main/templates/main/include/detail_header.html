@@ -1,7 +1,7 @@
 <ol class="breadcrumb my-4">
     <li class="breadcrumb-item active small">
     {% if obj %}
-        <span class="font-weight-bold">{{ object_name }}</span>[<a href="#" data-toggle="popover" title="uuid" data-content="{{ obj.uuid }}">{{ obj.pk }}</a>]&nbsp;&nbsp;&nbsp;&nbsp;
+        <span class="font-weight-bold">{{ object_name }}</span>[<a href="{{ request.path }}" target="_blank" title="{{ obj.uuid }}">{{ obj.pk }}</a>]&nbsp;&nbsp;&nbsp;&nbsp;
         <span class="font-weight-bold">作者：</span>{{ obj.creator.last_name }}{{ obj.creator.first_name }}[{{ obj.creator.username }}]&nbsp;&nbsp;&nbsp;&nbsp;
         <span class="font-weight-bold">创建时间：</span>{{ obj.created_date }}&nbsp;&nbsp;&nbsp;&nbsp;
         <span class="font-weight-bold">修改者：</span>{{ obj.modifier.last_name }}{{ obj.modifier.first_name }}[{{ obj.modifier.username }}]&nbsp;&nbsp;&nbsp;&nbsp;

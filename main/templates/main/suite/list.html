@@ -50,9 +50,10 @@
                             $modal_body_div.append(execute_name_div);
                             var execute_result_div = $('<div id="execute_result_div"></div>');
                             $modal_body_div.append(execute_result_div);
-                            var execute_button_div = $('<div id="execute_button_div" style="padding: 0 0 10px 0"></div>');
-                            var execute_button = $('<button id="force-stop" class="btn btn-danger"><i class="icon-stop"></i>&nbsp;强制停止</button>');
-                            $modal_body_div.append(execute_button_div.append(execute_button));
+                            var execute_button_div = $('<div id="execute_button_div" style="padding: 0 0 10px 0" class="btn-group"></div>');
+                            var pause_button = $('<button id="pause_button" class="btn btn-warning"><i class="icon-pause"></i>&nbsp;暂停</button>');
+                            var stop_button = $('<button id="stop_button" class="btn btn-danger"><i class="icon-stop"></i>&nbsp;中止</button>');
+                            $modal_body_div.append(execute_button_div.append(pause_button).append(stop_button));
                             var execute_log_outer_div = $('<div class="jumbotron" style="padding: 10px 0 10px 10px"></div>');
                             var execute_log_div = $('<div id="execute_log_div" class="text-left small" style="height: 400px; overflow-y: auto;"></div>');
                             $modal_body_div.append(execute_log_outer_div.append(execute_log_div));
@@ -68,13 +69,58 @@
                                 auto_scroll = (execute_log_div.get(0).scrollHeight - execute_log_div.height() <= execute_log_div.scrollTop());
                             });
 
-                            execute_button.off('click').on('click', function () {
-                                execute_button.off('click');
-                                var suite_socket_stop = new WebSocket(websocket_url);
-                                suite_socket_stop.onmessage = function(data) {
+
+                            function continue_button_f(button, websocket_url) {
+                                button.attr('disabled', true).off('click');
+                                var ws = new WebSocket(websocket_url);
+                                ws.onmessage = function (data) {
+                                    var type = JSON.parse(data.data)['type'];
+                                    if (type === 'ready') {
+                                        ws.send(JSON.stringify({'command': 'continue', 'execute_uuid': execute_uuid}));
+                                    } else if (type === 'message') {
+                                        var message = JSON.parse(data.data)['message'];
+                                        var pre = $('<pre>').text(message).addClass('text-info');
+                                        execute_log_div.append(pre);
+                                        execute_log_div.scrollTop(execute_log_div.get(0).scrollHeight);
+                                    } else if (type === 'continue'){
+                                        button.html('<i class="icon-pause"></i>&nbsp;暂停').removeClass('btn-success').addClass('btn-warning').removeAttr('disabled').off('click').on('click', function () {
+                                            pause_button_f(button, websocket_url);
+                                        });
+                                    }
+                                }
+                            }
+
+                            function pause_button_f(button, websocket_url) {
+                                button.attr('disabled', true).off('click');
+                                var ws = new WebSocket(websocket_url);
+                                ws.onmessage = function(data) {
                                     var type = JSON.parse(data.data)['type'];
                                     if (type === 'ready'){
-                                        suite_socket_stop.send(JSON.stringify({'command': 'stop', 'execute_uuid': execute_uuid}));
+                                        ws.send(JSON.stringify({'command': 'pause', 'execute_uuid': execute_uuid}));
+                                    } else if (type === 'message'){
+                                        var message = JSON.parse(data.data)['message'];
+                                        var pre = $('<pre>').text(message).addClass('text-info');
+                                        execute_log_div.append(pre);
+                                        execute_log_div.scrollTop(execute_log_div.get(0).scrollHeight);
+                                    } else if (type === 'pause'){
+                                        button.html('<i class="icon-play"></i>&nbsp;继续').removeClass('btn-warning').addClass('btn-success').removeAttr('disabled').off('click').on('click', function () {
+                                            continue_button_f(button, websocket_url);
+                                        });
+                                    }
+                                }
+                            }
+
+                            pause_button.off('click').on('click', function () {
+                                pause_button_f(pause_button, websocket_url);
+                            });
+
+                            stop_button.off('click').on('click', function () {
+                                pause_button.attr('disabled', true).off('click');
+                                var ws = new WebSocket(websocket_url);
+                                ws.onmessage = function(data) {
+                                    var type = JSON.parse(data.data)['type'];
+                                    if (type === 'ready'){
+                                        ws.send(JSON.stringify({'command': 'stop', 'execute_uuid': execute_uuid}));
                                     } else if (type === 'message'){
                                         var message = JSON.parse(data.data)['message'];
                                         var pre = $('<pre>').text(message).addClass('text-info');
@@ -105,8 +151,10 @@
                                     var data_ = JSON.parse(data.data)['data'];
                                     var content_div = $('<div>').html(data_.suite_result_content);
                                     execute_result_div.append(content_div);
-                                    execute_button.removeClass('btn-danger').addClass('btn-primary').html('<i class="icon-table"></i>&nbsp;结果详情');
-                                    execute_button.off('click').on('click', function () {
+                                    execute_button_div.empty();
+                                    var detail_button = $('<button id="detail_button" class="btn btn-primary"><i class="icon-table"></i>&nbsp;结果详情</button>');
+                                    execute_button_div.append(detail_button);
+                                    detail_button.off('click').on('click', function () {
                                         modal_with_iframe_max('inside_detail_modal', '结果详情', data_.suite_result_url + '?inside=1')
                                     });
                                     my_modal.find('.modal-title').text('执行结束');
@@ -121,7 +169,7 @@
                                     var data_ = JSON.parse(data.data)['data'];
                                     var content_div = $('<div>').addClass('text-left lead text-danger').text(data_);
                                     execute_result_div.append(content_div);
-                                    execute_button.remove();
+                                    execute_button_div.empty();
                                     my_modal.find('.modal-title').text('执行出错');
                                     // 使modal可以通过点击外部关闭
                                     try {
@@ -130,6 +178,14 @@
                                     catch (e) {
                                         console.log(e);
                                     }
+                                } else if (type === 'continue'){
+                                    pause_button.html('<i class="icon-pause"></i>&nbsp;暂停').removeClass('btn-success').addClass('btn-warning').removeAttr('disabled').off('click').on('click', function () {
+                                        pause_button_f(pause_button, websocket_url);
+                                    });
+                                } else if (type === 'pause'){
+                                    pause_button.html('<i class="icon-play"></i>&nbsp;继续').removeClass('btn-warning').addClass('btn-success').removeAttr('disabled').off('click').on('click', function () {
+                                        continue_button_f(pause_button, websocket_url);
+                                    });
                                 }
                             };
                             suite_socket.onclose = function(e) {

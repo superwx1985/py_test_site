@@ -21,24 +21,78 @@ class RunningSuites:
                     self.suites.pop(execute_uuid)
 
     def stop_suite(self, execute_uuid, user=None):
-        force_stop = False
-        msg = '任务不存在，无法中止'
+        success = False
+        msg = '套件不存在，无法中止'
         if execute_uuid in self.suites:
             with lock:
                 if execute_uuid in self.suites:
                     suite = self.suites[execute_uuid]
                     if not user or user == suite.user:
-                        if suite.status < 2:
-                            suite.status = 2
-                            suite.force_stop_ = True
-                            force_stop = True
+                        if suite.status < 3:
+                            suite.status = 3
+                            suite.force_stop_signal = True
+                            success = True
                             msg = '已发送中止信号'
                         else:
-                            msg = '此任务正在中止或已经结束'
+                            msg = '套件正在中止或已经结束'
                     else:
                         msg = '该用户无中止执行权限'
 
-        return force_stop, msg
+        return success, msg
+
+    def pause_suite(self, execute_uuid, user=None):
+        success = False
+        msg = '套件不存在，无法暂停'
+        if execute_uuid in self.suites:
+            with lock:
+                if execute_uuid in self.suites:
+                    suite = self.suites[execute_uuid]
+                    if not user or user == suite.user:
+                        if suite.status == 0:
+                            msg = '套件未运行'
+                        elif suite.status == 1:
+                            suite.status = 2
+                            for case in suite.vic_cases:
+                                if case.status == 1:
+                                    case.pause_signal = True
+                            success = True
+                            msg = '已发送暂停信号'
+                        elif suite.status == 2:
+                            success = True
+                            msg = '套件已暂停'
+                        else:
+                            msg = '套件已结束'
+                    else:
+                        msg = '该用户无中止执行权限'
+
+        return success, msg
+
+    def continue_suite(self, execute_uuid, user=None):
+        success = False
+        msg = '套件不存在，无法继续'
+        if execute_uuid in self.suites:
+            with lock:
+                if execute_uuid in self.suites:
+                    suite = self.suites[execute_uuid]
+                    if not user or user == suite.user:
+                        if suite.status == 0:
+                            msg = '套件未运行'
+                        elif suite.status in (1, 2):
+                            for case in suite.vic_cases:
+                                if case.status == 2 or case.pause_signal:
+                                    case.pause_signal = False
+                                    case.continue_signal = True
+                                    success = True
+                            if success:
+                                msg = '已发送继续信号'
+                            else:
+                                msg = '套件没有暂停中的用例'
+                        else:
+                            msg = '套件已结束'
+                    else:
+                        msg = '该用户无中止执行权限'
+
+        return success, msg
 
     def get_suites(self):
         with lock:
@@ -54,8 +108,8 @@ class RunningSuites:
         return suite
 
     def stop_case(self, execute_uuid, case_order, user=None):
-        force_stop = False
-        msg = '任务不存在，无法中止'
+        success = False
+        msg = '套件不存在，无法中止'
         if execute_uuid in self.suites:
             with lock:
                 if execute_uuid in self.suites:
@@ -63,17 +117,77 @@ class RunningSuites:
                     i = case_order - 1
                     if 0 <= i < len(suite.vic_cases):
                         if not user or user == suite.user:
-                            if suite.vic_cases[i].status < 2:
-                                suite.vic_cases[i].status = 2
-                                suite.vic_cases[i].force_stop_ = True
-                                force_stop = True
+                            if suite.vic_cases[i].status < 3:
+                                suite.vic_cases[i].status = 3
+                                suite.vic_cases[i].force_stop_signal = True
+                                success = True
                                 msg = '已发送中止信号'
                             else:
-                                msg = '此任务正在中止或已经结束'
+                                msg = '用例正在中止或已经结束'
                         else:
                             msg = '该用户无中止执行权限'
+                    else:
+                        msg = '用例不存在，无法中止'
 
-        return force_stop, msg
+        return success, msg
+
+    def pause_case(self, execute_uuid, case_order, user=None):
+        success = False
+        msg = '套件不存在，无法暂停'
+        if execute_uuid in self.suites:
+            with lock:
+                if execute_uuid in self.suites:
+                    suite = self.suites[execute_uuid]
+                    i = case_order - 1
+                    if 0 <= i < len(suite.vic_cases):
+                        if not user or user == suite.user:
+                            case = suite.vic_cases[i]
+                            if case.status == 0:
+                                msg = '用例未运行'
+                            elif case.status == 1:
+                                case.pause_signal = True
+                                success = True
+                                msg = '已发送暂停信号'
+                            elif case.status == 2:
+                                success = True
+                                msg = '用例已暂停'
+                            else:
+                                msg = '用例已结束'
+                        else:
+                            msg = '该用户无中止执行权限'
+                    else:
+                        msg = '用例不存在，无法暂停'
+
+        return success, msg
+
+    def continue_case(self, execute_uuid, case_order, user=None):
+        success = False
+        msg = '套件不存在，无法继续'
+        if execute_uuid in self.suites:
+            with lock:
+                if execute_uuid in self.suites:
+                    suite = self.suites[execute_uuid]
+                    i = case_order - 1
+                    if 0 <= i < len(suite.vic_cases):
+                        if not user or user == suite.user:
+                            case = suite.vic_cases[i]
+                            if case.status == 0:
+                                msg = '用例未运行'
+                            elif case.status == 1:
+                                msg = '用例未暂停'
+                            elif case.status == 2 or case.pause_signal:
+                                case.pause_signal = False
+                                case.continue_signal = True
+                                success = True
+                                msg = '已发送继续信号'
+                            else:
+                                msg = '用例已结束'
+                        else:
+                            msg = '该用户无中止执行权限'
+                    else:
+                        msg = '用例不存在，无法继续'
+
+        return success, msg
 
 
 # 运行中套件

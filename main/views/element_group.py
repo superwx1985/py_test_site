@@ -95,7 +95,7 @@ def list_(request):
 
 @login_required
 def detail(request, pk):
-    next_ = request.GET.get('next', '/home/')
+    next_ = request.GET.get('next')
     inside = request.GET.get('inside')
     new_pk = request.GET.get('new_pk')
     reference_url = reverse(reference, args=[pk])  # 被其他对象调用
@@ -138,6 +138,8 @@ def detail(request, pk):
             request.session['state'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect:
+                if not next_:
+                    request.session['state'] = None
                 return HttpResponseRedirect(next_)
             else:
                 return HttpResponseRedirect(request.get_full_path())
@@ -159,7 +161,7 @@ def detail(request, pk):
 
 @login_required
 def add(request):
-    next_ = request.GET.get('next', '/home/')
+    next_ = request.GET.get('next')
     inside = request.GET.get('inside')
     by_list_json = json.dumps(Step.ui_by_list)
 
@@ -194,11 +196,12 @@ def add(request):
             if redirect == 'add_another':
                 return HttpResponseRedirect(request.get_full_path())
             elif redirect:
+                if not next_:
+                    request.session['state'] = None
                 return HttpResponseRedirect(next_)
             else:
-                # 如果是内嵌网页，则加上内嵌标志后再跳转
                 para = ''
-                if inside:
+                if inside:  # 如果是内嵌网页，则加上内嵌标志后再跳转
                     para = '&inside=1&new_pk={}'.format(pk)
                 return HttpResponseRedirect('{}?next={}{}'.format(reverse(detail, args=[pk]), quote(next_), para))
         else:
@@ -391,7 +394,8 @@ def reference(request, pk):
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
-        obj_['url'] = '{}?next={}'.format(reverse(suite.detail, args=[obj_['pk']]), reverse(suite.list_))
+        # obj_['url'] = '{}?next={}'.format(reverse(suite.detail, args=[obj_['pk']]), reverse(suite.list_))
+        obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
         obj_['type'] = '套件'
     objects = list(objects)
 

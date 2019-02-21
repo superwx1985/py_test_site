@@ -101,7 +101,7 @@ def list_(request):
 # 详情
 @login_required
 def detail(request, pk):
-    next_ = request.GET.get('next', '/home/')
+    next_ = request.GET.get('next')
     inside = request.GET.get('inside')
     new_pk = request.GET.get('new_pk')
     project_list = get_project_list()
@@ -147,6 +147,8 @@ def detail(request, pk):
             request.session['state'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect:
+                if not next_:
+                    request.session['state'] = None
                 return HttpResponseRedirect(next_)
             else:
                 return HttpResponseRedirect(request.get_full_path())
@@ -174,7 +176,7 @@ def detail(request, pk):
 
 @login_required
 def add(request):
-    next_ = request.GET.get('next', '/home/')
+    next_ = request.GET.get('next')
     inside = request.GET.get('inside')
     project_list = get_project_list()
 
@@ -209,11 +211,12 @@ def add(request):
             if redirect == 'add_another':
                 return HttpResponseRedirect(request.get_full_path())
             elif redirect:
+                if not next_:
+                    request.session['state'] = None
                 return HttpResponseRedirect(next_)
             else:
-                # 如果是内嵌网页，则加上内嵌标志后再跳转
                 para = ''
-                if inside:
+                if inside:  # 如果是内嵌网页，则加上内嵌标志后再跳转
                     para = '&inside=1&new_pk={}'.format(pk)
                 return HttpResponseRedirect('{}?next={}{}'.format(reverse(detail, args=[pk]), quote(next_), para))
         else:
@@ -442,7 +445,7 @@ def status(request):
     return render(request, 'main/suite/status.html', locals())
 
 
-# 停止执行
+# 中止
 @login_required
 def stop(request):
     execute_uuid = request.POST.get('execute_uuid')
@@ -452,12 +455,54 @@ def stop(request):
             user = None
         else:
             user = request.user
-        force_stop, msg = system.RUNNING_SUITES.stop_suite(execute_uuid, user)
+        success, msg = system.RUNNING_SUITES.stop_suite(execute_uuid, user)
     else:
-        force_stop = False
+        success = False
         msg = '未提供执行ID'
 
-    if force_stop:
+    if success:
+        return JsonResponse({'state': 1, 'message': msg, 'data': execute_uuid})
+    else:
+        return JsonResponse({'state': 2, 'message': msg, 'data': execute_uuid})
+
+
+# 暂停
+@login_required
+def pause(request):
+    execute_uuid = request.POST.get('execute_uuid')
+
+    if execute_uuid:
+        if check_admin(request.user):
+            user = None
+        else:
+            user = request.user
+        success, msg = system.RUNNING_SUITES.pause_suite(execute_uuid, user)
+    else:
+        success = False
+        msg = '未提供执行ID'
+
+    if success:
+        return JsonResponse({'state': 1, 'message': msg, 'data': execute_uuid})
+    else:
+        return JsonResponse({'state': 2, 'message': msg, 'data': execute_uuid})
+
+
+# 继续
+@login_required
+def continue_(request):
+    execute_uuid = request.POST.get('execute_uuid')
+
+    if execute_uuid:
+        if check_admin(request.user):
+            user = None
+        else:
+            user = request.user
+        success, msg = system.RUNNING_SUITES.continue_suite(execute_uuid, user)
+    else:
+        success = False
+        msg = '未提供执行ID'
+
+    if success:
         return JsonResponse({'state': 1, 'message': msg, 'data': execute_uuid})
     else:
         return JsonResponse({'state': 2, 'message': msg, 'data': execute_uuid})

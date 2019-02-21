@@ -312,10 +312,13 @@ ASGI_APPLICATION = 'py_test_site.routing.application'
 SITE_NAME = '汇智自动化测试工具'
 
 # 站点版本
-SITE_VERSION = 'V1.12.20190201.01'
+SITE_VERSION = 'V1.13.20190221.01'
 
 # 最大并行测试线程数
 SUITE_MAX_CONCURRENT_EXECUTE_COUNT = 8
 
 # 步骤循环次数限制
 LOOP_ITERATIONS_LIMIT = 100
+
+# 出错后暂停的最大时间（秒）
+ERROR_PAUSE_TIMEOUT = 600

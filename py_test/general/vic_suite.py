@@ -4,6 +4,7 @@ import json
 import traceback
 import logging
 import uuid
+import threading
 from py_test.general import vic_variables, vic_public_elements, vic_log, vic_method
 from .public_items import status_str_dict
 from .vic_case import VicCase
@@ -13,7 +14,6 @@ from django.forms.models import model_to_dict
 from utils.system import RUNNING_SUITES
 from utils.thread_pool import VicThreadPoolExecutor, get_pool, safety_shutdown_pool
 from py_test_site.settings import SUITE_MAX_CONCURRENT_EXECUTE_COUNT
-
 
 
 class VicSuite:
@@ -33,7 +33,11 @@ class VicSuite:
         self.name = suite.name
         self.user = user
         self.execute_uuid = execute_uuid
-        self.force_stop_ = False  # 强制停止信号
+        self.force_stop_signal = False  # 强制停止信号
+        self.pause_lock = threading.Lock()
+        # self.pause_signal = False  # 暂停信号
+        # self.pause_count = 0  # 暂停计数
+        # self.continue_signal = False  # 继续信号
         self.vic_cases = list()
         self.status = 0
         self.init_date = datetime.datetime.now()
@@ -74,11 +78,45 @@ class VicSuite:
     # 强制停止标志
     @property
     def force_stop(self):
-        if self.force_stop_:
-            self.status = 2
+        if self.force_stop_signal:
+            self.status = 3
             return True
         else:
             return False
+
+    def continue_(self):
+        with self.pause_lock:
+            _continue = True
+            for vc in self.vic_cases:
+                if vc.status == 2:
+                    _continue = False
+                    break
+            if _continue and self.status == 2:
+                self.status = 1
+                self.websocket_sender('套件已继续', 20, _type='continue')
+
+    # # 暂停标志
+    # @property
+    # def pause(self):
+    #     pause_state = False
+    #     if self.status == 2:
+    #         pause_state = True
+    #     elif self.force_stop:
+    #         self.continue_signal = False
+    #     elif self.pause_signal:
+    #         if self.continue_signal:
+    #             self.continue_signal = False
+    #         else:
+    #             pause_state = True
+    #
+    #
+    #
+    #     if pause_state:
+    #         self.pause_signal = False
+    #         self.status = 2
+    #         return True
+    #     else:
+    #         return False
 
     @property
     def status_str(self):
@@ -220,7 +258,7 @@ class VicSuite:
             for h in self.logger.handlers:
                 h.close()
 
-            self.status = 3
+            self.status = 4
 
         return self
 

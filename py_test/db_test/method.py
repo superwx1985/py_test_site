@@ -20,7 +20,7 @@ def makedict(cursor):
 # 获取查询结果
 def get_sql_result(vic_step):
     select_result = list()
-    if vic_step.db_type == 1:
+    if vic_step.db_type == 'oracle':
         if vic_step.db_lang:
             os.environ['NLS_LANG'] = vic_step.db_lang
         database_connect_string = '{}:{}/{}'.format(vic_step.db_host, vic_step.db_port, vic_step.db_name)
@@ -40,7 +40,7 @@ def get_sql_result(vic_step):
             # 关闭定时器
             timer.cancel()
             cursor.close()
-    elif vic_step.db_type == 2:
+    elif vic_step.db_type == 'mysql':
         if vic_step.db_lang:
             charset = vic_step.db_lang
         else:

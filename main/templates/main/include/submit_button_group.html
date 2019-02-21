@@ -1,4 +1,4 @@
-<div class="text-center float-button" id="submit_button_group" next_="{{ next_ }}">
+<div class="text-center float-button" id="submit_button_group" next_="{{ next_|default_if_none:"" }}">
     <div class="btn-group">
         {% if pk %}
             <td><button type="button" name="return_button" class="btn btn-secondary"><i class="icon-reply">&nbsp;</i>返回</button></td>

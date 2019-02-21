@@ -14,7 +14,7 @@ from py_test.api_test import method as api_method
 from py_test.db_test import method as db_method
 from py_test.vic_tools import vic_eval, vic_date_handle
 from main.models import StepResult, Step
-from py_test_site.settings import LOOP_ITERATIONS_LIMIT
+from py_test_site.settings import LOOP_ITERATIONS_LIMIT, ERROR_PAUSE_TIMEOUT
 
 
 class VicStep:
@@ -40,6 +40,8 @@ class VicStep:
         self.ui_step_interval = step.ui_step_interval if step.ui_step_interval is not None \
             else vic_case.ui_step_interval
 
+        self.error_handle = Step.error_handle_dict.get(step.error_handle, 'stop')
+
         self.save_as = step.save_as
 
         self.ui_get_ss = vic_case.vic_suite.ui_get_ss
@@ -52,7 +54,8 @@ class VicStep:
         self.execute_id = '{}-{}'.format(vic_case.execute_str, step_order)
         self.loop_id = ''
         self.img_list = list()  # 截图列表
-        self.force_stop_ = False  # 强制停止信号
+        self.status = 0
+        self.force_stop_signal = False  # 强制停止信号
         self.dr = None
         self.socket_no_response = False  # 驱动停止响应标志
         self.variable_elements = None
@@ -80,21 +83,17 @@ class VicStep:
         )
 
         try:
-            ui_by_dict = {i[0]: i[1] for i in Step.ui_by_list}
-            self.ui_by = ui_by_dict[step.ui_by]
+            self.ui_by = Step.ui_by_dict.get(step.ui_by, '')
             self.ui_locator = step.ui_locator
             self.ui_index = step.ui_index
             self.ui_base_element = step.ui_base_element
             self.ui_data = step.ui_data
-            ui_special_action_dict = {i[0]: i[2] for i in Step.ui_special_action_list_}
-            self.ui_special_action = ui_special_action_dict[step.ui_special_action]
-            ui_alert_handle_dict = {i[0]: i[2] for i in Step.ui_alert_handle_list_}
-            self.ui_alert_handle = ui_alert_handle_dict.get(step.ui_alert_handle, 'accept')
+            self.ui_special_action = Step.ui_special_action_dict.get(step.ui_special_action, '')
+            self.ui_alert_handle = Step.ui_alert_handle_dict.get(step.ui_alert_handle, 'accept')
             self.ui_alert_handle_text = step.ui_alert_handle_text
 
             self.api_url = step.api_url
-            api_method_dict = {i[0]: i[1] for i in Step.api_method_list}
-            self.api_method = api_method_dict[step.api_method]
+            self.api_method = Step.api_method_dict.get(step.api_method, '')
             self.api_headers = step.api_headers
             self.api_body = step.api_body
             self.api_decode = step.api_decode
@@ -104,7 +103,7 @@ class VicStep:
             self.other_data = step.other_data
             self.other_sub_case = step.other_sub_case
 
-            self.db_type = step.db_type
+            self.db_type = Step.db_type_dict.get(step.db_type, '')
             self.db_host = step.db_host
             self.db_port = step.db_port
             self.db_name = step.db_name
@@ -123,11 +122,46 @@ class VicStep:
     # 强制停止标志
     @property
     def force_stop(self):
-        if self.force_stop_ or self.vic_case.force_stop:
-            self.force_stop_ = True
+        if self.force_stop_signal or self.vic_case.force_stop:
+            self.force_stop_signal = True
+            self.status = 3
             return True
         else:
             return False
+
+    # 暂停标志
+    @property
+    def pause(self):
+        pause_state = False
+        if self.status == 2 or (not self.force_stop and self.vic_case.pause):
+            self.status = 2
+            pause_state = True
+
+        return pause_state
+
+    def continue_(self):
+        self.vic_case.continue_()
+        if not self.force_stop:
+            self.status = 1
+
+    # 判断是否需要暂停
+    def pause_(self):
+        if self.pause:
+            start_time = time.time()
+            _timeout = math.modf(float(ERROR_PAUSE_TIMEOUT))
+            time.sleep(_timeout[0])  # 补上小数部分
+            x = int(_timeout[1])
+            for i in range(x):
+                if self.vic_case.continue_signal or self.force_stop:
+                    break
+                time.sleep(1)
+                y = i + 1
+                self.logger.info('【{}】\t已暂停{}秒，剩余{}秒'.format(self.execute_id, y, x - y))
+
+            self.continue_()
+            return time.time() - start_time
+        else:
+            return 0
 
     # 更新测试数据
     def update_test_data(self, *args):
@@ -166,6 +200,8 @@ class VicStep:
         timeout = self.timeout
 
         try:
+            self.pause_()
+
             # selenium驱动初始化检查
             if atc == 'UI' and dr is None:
                 raise exceptions.WebDriverException('浏览器未初始化，请检查是否配置有误或浏览器被意外关闭')
@@ -585,7 +621,7 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, self.elements = ui_test.method.wait_for_element_present(self)
+                            self.run_result, self.elements, _ = ui_test.method.wait_for_element_present(self)
 
                             if self.run_result[0] == 'p':
                                 msg = var.set_variable(self.save_as, self.elements)
@@ -807,6 +843,7 @@ class VicStep:
                             for i in range(int(_timeout[1])):
                                 if self.force_stop:
                                     break
+                                self.pause_()
                                 time.sleep(1)
                                 logger.info('【{}】\t已等待【{}】秒'.format(eid, i + 1))
                             time.sleep(_timeout[0])  # 补上小数部分
@@ -1017,11 +1054,13 @@ class VicStep:
                         # 通过添加步骤间等待时间控制UI测试执行速度
                         if atc == 'UI' and self.ui_step_interval:
                             _timeout = math.modf(float(self.ui_step_interval))
-                            for i in range(int(_timeout[1])):
+                            x = int(_timeout[1])
+                            for i in range(x):
                                 if self.force_stop:
                                     break
                                 time.sleep(1)
-                                logger.info('【{}】\t已暂停【{}】秒'.format(eid, i + 1))
+                                y = i + 1
+                                logger.info('【{}】\t步骤间已停顿{}秒，剩余{}秒'.format(eid, y, x-y))
                             time.sleep(_timeout[0])  # 补上小数部分
                     else:
                         self.run_result = ['s', '跳过步骤']
@@ -1112,6 +1151,11 @@ class VicStep:
         # 关联截图
         for img in self.img_list:
             self.step_result.imgs.add(img)
+
+        # if self.ignore_error and self.step_result.result_state in (2, 3):
+        #     self.step_result.result_state = 1
+        #     self.step_result.result_message = '因为步骤设置了忽略错误，下列错误被忽略\n{}'.format(
+        #         self.step_result.result_message)
 
         self.step_result.end_date = datetime.datetime.now()
         self.step_result.save()

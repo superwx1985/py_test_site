@@ -35,12 +35,69 @@
                 };
             });
 
+            function continue_(that) {
+                var url = "{% url 'suites_continue' %}";
+                var tr = $(that).parents('tr');
+                var execute_uuid = tr.attr('execute_uuid');
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        csrfmiddlewaretoken: window.$csrf_input.val(),
+                        execute_uuid: execute_uuid
+                    },
+                    dataType: "json",
+                    success: function (data, textStatus) {
+                        if (data.state === 1) {
+                            toastr.success(data.message);
+                            tr.find('[name="pause_button"]').removeAttr('disabled');
+                            tr.find('td[col_name="status_str"] a').text('执行中');
+                        } else {
+                            toastr.error(data.message);
+                            tr.find('td[col_name="status_str"] a').text('（请刷新）');
+                        }
+                        $(that).attr('disabled', true);
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        console.error(XMLHttpRequest.responseText)
+                    }
+                })
+            }
+
+            function pause(that) {
+                var url = "{% url 'suites_pause' %}";
+                var tr = $(that).parents('tr');
+                var execute_uuid = tr.attr('execute_uuid');
+                $.ajax({
+                    url: url,
+                    type: "POST",
+                    data: {
+                        csrfmiddlewaretoken: window.$csrf_input.val(),
+                        execute_uuid: execute_uuid
+                    },
+                    dataType: "json",
+                    success: function (data, textStatus) {
+                        if (data.state === 1) {
+                            toastr.success(data.message);
+                            tr.find('[name="continue_button"]').removeAttr('disabled');
+                            tr.find('td[col_name="status_str"] a').text('暂停');
+                        } else {
+                            toastr.error(data.message);
+                            tr.find('td[col_name="status_str"] a').text('（请刷新）');
+                        }
+                        $(that).attr('disabled', true);
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        console.error(XMLHttpRequest.responseText)
+                    }
+                })
+            }
+
             function stop(that) {
-                console.log(that);
                 var url = "{% url 'suites_stop' %}";
                 var tr = $(that).parents('tr');
-                var name = tr.find('td[col_name="name"]').text();
                 var execute_uuid = tr.attr('execute_uuid');
+                var name = tr.find('td[col_name="name"]').text();
                 var msg = '确实要中止<span class="mark">[' + execute_uuid + ']' + name + '</span>？';
                 bootbox.confirm({
                     title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
@@ -118,7 +175,7 @@
                         <col style="width: 120px;">
                         <col style="width: 120px;">
                         <col style="width: 150px;">
-                        <col style="width: 100px;">
+                        <col style="width: 160px;">
                     </colgroup>
                     <thead class="thead-light middle">
                         <tr>
@@ -147,10 +204,18 @@
                                     >{{ v.status_str }}</a>
                                 </td>
                                 <td class="middle">
-                                    <button class="btn btn-danger" execute_uuid="{{ k }}"
-                                            onclick="stop(this)"
-                                            {% if is_admin or v.user == request.user %}{% if v.status > 1 %} disabled{% endif %}{% else %} disabled{% endif %}
-                                    ><i class="icon-stop"></i>&nbsp;中止</button>
+                                    <button name="continue_button" class="btn btn-success"
+                                            onclick="continue_(this)" data-toggle="tooltip" title="继续"
+                                            {% if is_admin or v.user == request.user %}{% if v.status != 2 %} disabled{% endif %}{% else %} disabled{% endif %}
+                                    ><i class="icon-play"></i></button>
+                                    <button name="pause_button" class="btn btn-warning"
+                                            onclick="pause(this)" data-toggle="tooltip" title="暂停"
+                                            {% if is_admin or v.user == request.user %}{% if v.status != 1 %} disabled{% endif %}{% else %} disabled{% endif %}
+                                    ><i class="icon-pause"></i></button>
+                                    <button name="stop_button" class="btn btn-danger"
+                                            onclick="stop(this)" data-toggle="tooltip" title="中止"
+                                            {% if is_admin or v.user == request.user %}{% if v.status > 2 %} disabled{% endif %}{% else %} disabled{% endif %}
+                                    ><i class="icon-stop"></i></button>
                                 </td>
                             </tr>
                         {% empty %}

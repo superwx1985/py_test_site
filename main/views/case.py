@@ -110,7 +110,7 @@ def list_(request):
 # 用例详情
 @login_required
 def detail(request, pk):
-    next_ = request.GET.get('next', '/home/')
+    next_ = request.GET.get('next')
     inside = request.GET.get('inside')
     new_pk = request.GET.get('new_pk')
     order = request.GET.get('order')
@@ -159,6 +159,8 @@ def detail(request, pk):
             request.session['state'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect:
+                if not next_:
+                    request.session['state'] = None
                 return HttpResponseRedirect(next_)
             else:
                 return HttpResponseRedirect(request.get_full_path())
@@ -185,7 +187,7 @@ def detail(request, pk):
 
 @login_required
 def add(request):
-    next_ = request.GET.get('next', '/home/')
+    next_ = request.GET.get('next')
     inside = request.GET.get('inside')
     copy_sub_item = True
     project_list = get_project_list()
@@ -223,11 +225,12 @@ def add(request):
             if redirect == 'add_another':
                 return HttpResponseRedirect(request.get_full_path())
             elif redirect:
+                if not next_:
+                    request.session['state'] = None
                 return HttpResponseRedirect(next_)
             else:
-                # 如果是内嵌网页，则加上内嵌标志后再跳转
                 para = ''
-                if inside:
+                if inside:  # 如果是内嵌网页，则加上内嵌标志后再跳转
                     para = '&inside=1&new_pk={}'.format(pk)
                 return HttpResponseRedirect('{}?next={}{}'.format(reverse(detail, args=[pk]), quote(next_), para))
         else:
@@ -338,7 +341,7 @@ def steps(_, pk):
     objects = Step.objects.filter(case=pk, is_active=True).order_by('casevsstep__order').values(
         'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date',
         order=F('casevsstep__order')
-    ).annotate(action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()),
+    ).annotate(action=Concat('action__type__name', Value('-'), 'action__name', output_field=CharField()),
                real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj in objects:
         obj['url'] = reverse(step.detail, args=[obj['pk']])
@@ -565,7 +568,8 @@ def reference(request, pk):
         'suitevscase__order').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
-        obj_['url'] = '{}?next={}'.format(reverse(suite.detail, args=[obj_['pk']]), reverse(suite.list_))
+        # obj_['url'] = '{}?next={}'.format(reverse(suite.detail, args=[obj_['pk']]), reverse(suite.list_))
+        obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
         obj_['type'] = '套件'
         obj_['order'] = obj_['suitevscase__order']
     action = Action.objects.get(code='OTHER_CALL_SUB_CASE')
@@ -573,7 +577,8 @@ def reference(request, pk):
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects2:
-        obj_['url'] = '{}?next={}'.format(reverse(step.detail, args=[obj_['pk']]), reverse(step.list_))
+        # obj_['url'] = '{}?next={}'.format(reverse(step.detail, args=[obj_['pk']]), reverse(step.list_))
+        obj_['url'] = reverse(step.detail, args=[obj_['pk']])
         obj_['type'] = '步骤'
     objects = list(objects)
     objects.extend(list(objects2))
@@ -589,14 +594,13 @@ def status(request, execute_uuid):
     return render(request, 'main/case/status.html', locals())
 
 
-# 停止执行
+# 中止
 @login_required
 def stop(request):
     execute_uuid = request.POST.get('execute_uuid')
     case_order = request.POST.get('case_order')
 
-    force_stop = False
-    msg = ''
+    success = False
 
     if execute_uuid and case_order:
         if check_admin(request.user):
@@ -608,11 +612,67 @@ def stop(request):
         except (ValueError, TypeError):
             msg = '无效的用例编号'
         else:
-            force_stop, msg = system.RUNNING_SUITES.stop_case(execute_uuid, case_order, user)
+            success, msg = system.RUNNING_SUITES.stop_case(execute_uuid, case_order, user)
     else:
         msg = '未提供执行ID或用例编号'
 
-    if force_stop:
+    if success:
+        return JsonResponse({'state': 1, 'message': msg, 'data': execute_uuid})
+    else:
+        return JsonResponse({'state': 2, 'message': msg, 'data': execute_uuid})
+
+
+# 暂停
+@login_required
+def pause(request):
+    execute_uuid = request.POST.get('execute_uuid')
+    case_order = request.POST.get('case_order')
+
+    success = False
+
+    if execute_uuid and case_order:
+        if check_admin(request.user):
+            user = None
+        else:
+            user = request.user
+        try:
+            case_order = int(case_order)
+        except (ValueError, TypeError):
+            msg = '无效的用例编号'
+        else:
+            success, msg = system.RUNNING_SUITES.pause_case(execute_uuid, case_order, user)
+    else:
+        msg = '未提供执行ID或用例编号'
+
+    if success:
+        return JsonResponse({'state': 1, 'message': msg, 'data': execute_uuid})
+    else:
+        return JsonResponse({'state': 2, 'message': msg, 'data': execute_uuid})
+
+
+# 继续
+@login_required
+def continue_(request):
+    execute_uuid = request.POST.get('execute_uuid')
+    case_order = request.POST.get('case_order')
+
+    success = False
+
+    if execute_uuid and case_order:
+        if check_admin(request.user):
+            user = None
+        else:
+            user = request.user
+        try:
+            case_order = int(case_order)
+        except (ValueError, TypeError):
+            msg = '无效的用例编号'
+        else:
+            success, msg = system.RUNNING_SUITES.continue_case(execute_uuid, case_order, user)
+    else:
+        msg = '未提供执行ID或用例编号'
+
+    if success:
         return JsonResponse({'state': 1, 'message': msg, 'data': execute_uuid})
     else:
         return JsonResponse({'state': 2, 'message': msg, 'data': execute_uuid})

@@ -69,8 +69,18 @@
                     $('[data-toggle=popover]').popover();
                     // 注册按钮功能
                     {% if not inside %}
-                        $('[name=return_button]').on('click', function() { window.open($('#submit_button_group').attr('next_'), '_self') });
-                        $('[name=save_and_return_button]').on('click', function() { $('[name=redirect]').val(true) });
+                        if ($('#submit_button_group').attr('next_') === '') {
+                            if (window.opener === null) {
+                                $('[name=return_button]').attr('disabled', true);
+                                $('[name=save_and_return_button]').attr('disabled', true);
+                            } else {
+                                $('[name=return_button]').on('click', function() { window.close() });
+                                $('[name=save_and_return_button]').on('click', function() { $('[name=redirect]').val(true); window.close() });
+                            }
+                        } else {
+                            $('[name=return_button]').on('click', function() { window.open($('#submit_button_group').attr('next_'), '_self') });
+                            $('[name=save_and_return_button]').on('click', function() { $('[name=redirect]').val(true) });
+                        }
                         $('[name=add_another_button]').on('click', function() { $('[name=redirect]').val('add_another') });
                         $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url')) });
                     {% else %}

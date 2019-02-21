@@ -1,14 +1,16 @@
 import datetime
 import json
 import traceback
+import time
+import math
 from py_test.general import vic_variables, vic_method
 from py_test import ui_test
-from selenium.common.exceptions import UnexpectedAlertPresentException
 from main.models import CaseResult, Step
 from django.forms.models import model_to_dict
 from .public_items import status_str_dict
 from .vic_step import VicStep
 from utils.other import check_recursive_call
+from py_test_site.settings import ERROR_PAUSE_TIMEOUT
 
 
 class VicCase:
@@ -50,7 +52,10 @@ class VicCase:
         self.ui_step_interval = case.ui_step_interval if case.ui_step_interval is not None \
             else vic_suite.ui_step_interval
 
-        self.force_stop_ = False  # 强制停止信号
+        self.force_stop_signal = False  # 强制停止信号
+        self.pause_signal = False  # 暂停信号
+        self.pause_from_suite = 0
+        self.continue_signal = False  # 继续信号
 
         # 分支列表
         self.if_list = list()
@@ -103,12 +108,37 @@ class VicCase:
     # 强制停止标志
     @property
     def force_stop(self):
-        if self.force_stop_ or self.vic_suite.force_stop or (self.vic_step.force_stop if self.vic_step else False):
-            self.force_stop_ = True
-            self.status = 2
+        if self.force_stop_signal or self.vic_suite.force_stop or (
+                self.vic_step.force_stop if self.vic_step else False):
+            self.force_stop_signal = True
+            self.status = 3
             return True
         else:
             return False
+
+    # 暂停标志
+    @property
+    def pause(self):
+        pause_state = False
+        if self.continue_signal:
+            self.continue_()
+        elif self.status == 2 or (not self.force_stop and self.pause_signal) or (
+                self.vic_step.pause if self.vic_step else False):
+            self.status = 2
+            pause_state = True
+            self.vic_suite.websocket_sender('用例暂停', 20, _type='pause')
+        self.pause_signal = False
+        return pause_state
+
+    def continue_(self):
+        self.continue_signal = False
+        if not self.force_stop:
+            self.status = 1
+            self.pause_signal = False
+        if self.vic_step:
+            self.vic_step.continue_()
+        else:
+            self.vic_suite.continue_()
 
     @property
     def status_str(self):
@@ -206,24 +236,53 @@ class VicCase:
                     # 更新driver
                     dr = self.driver_container[0]
 
+                    # 处理循环标志
+                    if self.loop_active:
+                        step_index = self.loop_list[-1][0] + 1
+                        self.loop_active = False
+
+                    # 统计步骤结果
                     self.case_result.execute_count += 1
                     if step_result_.result_state == 0:
                         self.logger.info('【{}】\t跳过'.format(execute_id))
                     elif step_result_.result_state == 1:
                         self.case_result.pass_count += 1
                         self.logger.info('【{}】\t执行成功'.format(execute_id))
-                    elif step_result_.result_state == 2:
-                        self.case_result.fail_count += 1
-                        self.logger.warning('【{}】\t执行失败'.format(execute_id))
-                    elif step_result_.result_state == 3:
-                        self.case_result.error_count += 1
-                        self.logger.error('【{}】\t执行出错，错误信息 => {}'.format(execute_id, step_result_.result_message))
-                        break
+                    elif step_result_.result_state == 4:
+                        self.logger.warning('【{}】\t执行中止'.format(execute_id))
+                    else:
+                        if step_result_.result_state == 2:
+                            self.logger.warning('【{}】\t执行失败'.format(execute_id))
+                        else:
+                            self.logger.error('【{}】\t执行出错，错误信息 => {}'.format(execute_id, step_result_.result_message))
+                        if step_.error_handle == 'skip':
+                            self.logger.info('【{}】\t因为本步骤被设置为遇到错误跳过，所以执行结果更改为跳过'.format(execute_id))
+                            step_result_.result_state = 0
+                            step_result_.result_message = '因为本步骤被设置为遇到错误跳过，下列错误被忽略\n==========\n{}'.format(
+                                step_result_.result_message)
+                            step_result_.save()
+                        else:
+                            if step_result_.result_state == 2:
+                                self.case_result.fail_count += 1
+                            else:
+                                self.case_result.error_count += 1
+                            if step_.error_handle == 'stop':
+                                break
+                            elif step_.error_handle == 'pause':
+                                self.status = 2
+                                self.vic_suite.status = 2
+                                self.vic_suite.websocket_sender('用例暂停', 20, _type='pause')
+                                _timeout = math.modf(float(ERROR_PAUSE_TIMEOUT))
+                                time.sleep(_timeout[0])  # 暂停小数部分
+                                x = int(_timeout[1])
+                                for i in range(x):
+                                    if self.continue_signal or self.force_stop:
+                                        break
+                                    time.sleep(1)
+                                    y = i + 1
+                                    self.logger.info('【{}】\t遇到错误，已暂停{}秒，剩余{}秒'.format(execute_id, y, x - y))
 
-                    # 处理循环标志
-                    if self.loop_active:
-                        step_index = self.loop_list[-1][0] + 1
-                        self.loop_active = False
+                                self.continue_()
 
             except Exception as e:
                 self.logger.error('【{}】\t执行出错'.format(execute_id), exc_info=True)
@@ -277,6 +336,6 @@ class VicCase:
         self.case_result.save()
 
         self.parent_case_pk_list.pop()
-        self.status = 3
+        self.status = 4
 
         return self

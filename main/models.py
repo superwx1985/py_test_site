@@ -57,6 +57,15 @@ class Step(models.Model):
     action = models.ForeignKey('main.Action', on_delete=models.SET_NULL, blank=True, null=True)
     timeout = models.FloatField(blank=True, null=True)
     ui_step_interval = models.FloatField(blank=True, null=True)
+    error_handle_list_ = (
+        (1, '中止测试', 'stop'),
+        (2, '继续测试', 'continue'),
+        (3, '暂停测试', 'pause'),
+        (4, '跳过步骤', 'skip'),
+    )
+    error_handle_dict = {i[0]: i[2] for i in error_handle_list_}
+    error_handle_list = [(i[0], i[1]) for i in error_handle_list_]
+    error_handle = models.IntegerField(choices=error_handle_list, default=1)
 
     save_as = models.CharField(blank=True, max_length=100)
     ui_by_list = (
@@ -72,6 +81,7 @@ class Step(models.Model):
         (9, 'public element'),
         (10, 'variable'),
     )
+    ui_by_dict = {i[0]: i[1] for i in ui_by_list}
     ui_by = models.IntegerField(choices=ui_by_list, default=0)
     ui_locator = models.TextField(blank=True)
     ui_index = models.IntegerField(blank=True, null=True)
@@ -94,12 +104,14 @@ class Step(models.Model):
         (13, '键盘 - 发送按键（组）到当前焦点元素', 'send_keys'),
         (14, '键盘 - 发送按键（组）到指定元素', 'send_keys_to_element'),
     )
+    ui_special_action_dict = {i[0]: i[2] for i in ui_special_action_list_}
     ui_special_action_list = [(i[0], i[1]) for i in ui_special_action_list_]
     ui_special_action = models.IntegerField(choices=ui_special_action_list, default=0)
     ui_alert_handle_list_ = (
         (1, '确定', 'accept'),
         (2, '取消', 'dismiss'),
     )
+    ui_alert_handle_dict = {i[0]: i[2] for i in ui_alert_handle_list_}
     ui_alert_handle_list = [(i[0], i[1]) for i in ui_alert_handle_list_]
     ui_alert_handle = models.IntegerField(choices=ui_alert_handle_list, default=1)
     ui_alert_handle_text = models.TextField(blank=True)
@@ -114,6 +126,7 @@ class Step(models.Model):
         (7, 'OPTIONS'),
         (8, 'TRACE'),
     )
+    api_method_dict = {i[0]: i[1] for i in api_method_list}
     api_method = models.IntegerField(choices=api_method_list, default=1)
     api_headers = models.TextField(blank=True)
     api_body = models.TextField(blank=True)
@@ -123,10 +136,12 @@ class Step(models.Model):
     other_data = models.TextField(blank=True)
     other_sub_case = models.ForeignKey(
         'main.Case', on_delete=models.SET_NULL, blank=True, null=True, related_name='step_sub_case')
-    db_type_list = (
-        (1, 'Oracle'),
-        (2, 'MySQL'),
+    db_type_list_ = (
+        (1, 'Oracle', 'oracle'),
+        (2, 'MySQL', 'mysql'),
     )
+    db_type_dict = {i[0]: i[2] for i in db_type_list_}
+    db_type_list = [(i[0], i[1]) for i in db_type_list_]
     db_type = models.IntegerField(choices=db_type_list, default=1)
     db_host = models.CharField(max_length=255, blank=True)
     db_port = models.CharField(max_length=255, blank=True)

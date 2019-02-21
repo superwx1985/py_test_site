@@ -56,7 +56,7 @@ def list_(request):
 
     objects = Step.objects.filter(q).values(
         'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
-        action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()),
+        action=Concat('action__type__name', Value('-'), 'action__name', output_field=CharField()),
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     # 使用join的方式把多个model结合起来
     # objects = Step.objects.filter(q, is_active=True).order_by('id').select_related('action__type')
@@ -103,7 +103,7 @@ def detail(request, pk):
         prompt = 'success'
     request.session['state'] = None
 
-    next_ = request.GET.get('next', '/home/')
+    next_ = request.GET.get('next')
     inside = request.GET.get('inside')
     new_pk = request.GET.get('new_pk')
     order = request.GET.get('order')
@@ -127,6 +127,8 @@ def detail(request, pk):
             request.session['state'] = 'success'
             redirect = request.POST.get('redirect')
             if redirect:
+                if not next_:
+                    request.session['state'] = None
                 return HttpResponseRedirect(next_)
             else:
                 return HttpResponseRedirect(request.get_full_path())
@@ -142,7 +144,7 @@ def detail(request, pk):
 
 @login_required
 def add(request):
-    next_ = request.GET.get('next', '/home/')
+    next_ = request.GET.get('next')
     inside = request.GET.get('inside')
     action_map_json = other.get_action_map_json()
 
@@ -161,11 +163,12 @@ def add(request):
             if redirect == 'add_another':
                 return HttpResponseRedirect(request.get_full_path())
             elif redirect:
+                if not next_:
+                    request.session['state'] = None
                 return HttpResponseRedirect(next_)
             else:
-                # 如果是内嵌网页，则加上内嵌标志后再跳转
                 para = ''
-                if inside:
+                if inside:  # 如果是内嵌网页，则加上内嵌标志后再跳转
                     para = '&inside=1&new_pk={}'.format(pk)
                 return HttpResponseRedirect('{}?next={}{}'.format(reverse(detail, args=[pk]), quote(next_), para))
 
@@ -297,7 +300,7 @@ def list_json(request):
 
     objects = Step.objects.filter(q).values(
         'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
-        action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()),
+        action=Concat('action__type__name', Value('-'), 'action__name', output_field=CharField()),
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     # 排序
     if objects:
@@ -334,7 +337,7 @@ def list_temp(request):
             continue
         objects = Step.objects.filter(pk=pk).values(
             'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
-            action=Concat('action__type__name', Value(' - '), 'action__name', output_field=CharField()),
+            action=Concat('action__type__name', Value('-'), 'action__name', output_field=CharField()),
             real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
         if not objects:
             continue
@@ -421,7 +424,8 @@ def reference(request, pk):
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date', 'casevsstep__order').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
-        obj_['url'] = '{}?next={}'.format(reverse(case.detail, args=[obj_['pk']]), reverse(case.list_))
+        # obj_['url'] = '{}?next={}'.format(reverse(case.detail, args=[obj_['pk']]), reverse(case.list_))
+        obj_['url'] = reverse(case.detail, args=[obj_['pk']])
         obj_['type'] = '用例'
         obj_['order'] = obj_['casevsstep__order']
     return render(request, 'main/include/detail_reference.html', locals())

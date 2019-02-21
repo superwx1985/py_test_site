@@ -18,9 +18,9 @@ class SuiteConsumer(WebsocketConsumer):
         else:
             self.send(text_data=json.dumps({'type': 'error', 'data': '用户鉴权失败'}), close=True)
 
-    def sender(self, msg, level):
+    def sender(self, msg, level, _type='message'):
         try:
-            self.send(text_data=json.dumps({'type': 'message', 'message': msg, 'level': level}))
+            self.send(text_data=json.dumps({'type': _type, 'message': msg, 'level': level}))
         # 如果websocket客户端被意外关闭
         except KeyError:
             pass
@@ -49,8 +49,21 @@ class SuiteConsumer(WebsocketConsumer):
                         data_dict = self.get_result_data(vic_suite.suite_result)
                         self.send(text_data=json.dumps({'type': 'end', 'data': data_dict}), close=True)
             elif command == 'stop':
-                RUNNING_SUITES.stop_suite(execute_uuid)
-                self.send(text_data=json.dumps({'type': 'message', 'message': '已接收到强制停止指令，测试中止...'}), close=True)
+                self.send(text_data=json.dumps({'type': 'message', 'message': '中止...'}))
+                _, msg = RUNNING_SUITES.stop_suite(execute_uuid)
+                self.send(text_data=json.dumps({'type': 'message', 'message': msg}), close=True)
+            elif command == 'pause':
+                self.send(text_data=json.dumps({'type': 'message', 'message': '暂停...'}))
+                success, msg = RUNNING_SUITES.pause_suite(execute_uuid)
+                if success:
+                    self.send(text_data=json.dumps({'type': 'pause'}))
+                self.send(text_data=json.dumps({'type': 'message', 'message': msg}), close=True)
+            elif command == 'continue':
+                self.send(text_data=json.dumps({'type': 'message', 'message': '继续...'}))
+                success, msg = RUNNING_SUITES.continue_suite(execute_uuid)
+                if success:
+                    self.send(text_data=json.dumps({'type': 'continue'}))
+                self.send(text_data=json.dumps({'type': 'message', 'message': msg}), close=True)
         else:
             self.send(text_data=json.dumps({'type': 'error', 'data': 'token无效'}), close=True)
 
