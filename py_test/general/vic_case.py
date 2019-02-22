@@ -122,7 +122,7 @@ class VicCase:
         pause_state = False
         if self.continue_signal:
             self.continue_()
-        elif self.status == 2 or (not self.force_stop and self.pause_signal) or (
+        elif (not self.vic_step and self.status == 2) or (not self.force_stop and self.pause_signal) or (
                 self.vic_step.pause if self.vic_step else False):
             self.status = 2
             pause_state = True

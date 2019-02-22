@@ -111,7 +111,7 @@ def list_(request):
 
 @login_required
 def detail(request, pk):
-    next_ = request.GET.get('next')
+    next_ = request.GET.get('next', '')
     inside = request.GET.get('inside')
     is_admin = check_admin(request.user)
 
@@ -134,6 +134,7 @@ def detail(request, pk):
             redirect = request.POST.get('redirect')
             if redirect:
                 if not next_:
+                    next_ = reverse(list_)
                     request.session['state'] = None
                 return HttpResponseRedirect(next_)
             else:

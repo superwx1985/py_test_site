@@ -97,7 +97,7 @@ def list_(request):
 
 @login_required
 def detail(request, pk):
-    next_ = request.GET.get('next')
+    next_ = request.GET.get('next', '')
     inside = request.GET.get('inside')
     new_pk = request.GET.get('new_pk')
     reference_url = reverse(reference, args=[pk])  # 被其他对象调用
@@ -140,6 +140,7 @@ def detail(request, pk):
             redirect = request.POST.get('redirect')
             if redirect:
                 if not next_:
+                    next_ = reverse(list_)
                     request.session['state'] = None
                 return HttpResponseRedirect(next_)
             else:
@@ -162,7 +163,7 @@ def detail(request, pk):
 
 @login_required
 def add(request):
-    next_ = request.GET.get('next')
+    next_ = request.GET.get('next', '')
     inside = request.GET.get('inside')
 
     if request.method == 'POST':
@@ -197,6 +198,7 @@ def add(request):
                 return HttpResponseRedirect(request.get_full_path())
             elif redirect:
                 if not next_:
+                    next_ = reverse(list_)
                     request.session['state'] = None
                 return HttpResponseRedirect(next_)
             else:

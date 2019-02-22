@@ -49,10 +49,10 @@
                         if (data.state === 1) {
                             toastr.success(data.message);
                             tr.find('[name="pause_button"]').removeAttr('disabled');
-                            tr.find('td[col_name="status_str"] a').text('执行中');
+                            tr.find('td[col_name="status_str"]').text('执行中');
                         } else {
                             toastr.error(data.message);
-                            tr.find('td[col_name="status_str"] a').text('（请刷新）');
+                            tr.find('td[col_name="status_str"]').text('（请刷新）');
                         }
                         $(that).attr('disabled', true);
                     },
@@ -80,10 +80,10 @@
                         if (data.state === 1) {
                             toastr.success(data.message);
                             tr.find('[name="continue_button"]').removeAttr('disabled');
-                            tr.find('td[col_name="status_str"] a').text('暂停');
+                            tr.find('td[col_name="status_str"]').text('暂停');
                         } else {
                             toastr.error(data.message);
-                            tr.find('td[col_name="status_str"] a').text('（请刷新）');
+                            tr.find('td[col_name="status_str"]').text('（请刷新）');
                         }
                         $(that).attr('disabled', true);
                     },

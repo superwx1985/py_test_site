@@ -133,7 +133,9 @@ class VicStep:
     @property
     def pause(self):
         pause_state = False
-        if self.status == 2 or (not self.force_stop and self.vic_case.pause):
+        if self.vic_case.continue_signal:
+            self.continue_()
+        elif not self.force_stop and self.vic_case.pause:
             self.status = 2
             pause_state = True
 
@@ -152,7 +154,7 @@ class VicStep:
             time.sleep(_timeout[0])  # 补上小数部分
             x = int(_timeout[1])
             for i in range(x):
-                if self.vic_case.continue_signal or self.force_stop:
+                if not self.pause or self.force_stop:
                     break
                 time.sleep(1)
                 y = i + 1

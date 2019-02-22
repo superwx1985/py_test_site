@@ -103,7 +103,7 @@ def detail(request, pk):
         prompt = 'success'
     request.session['state'] = None
 
-    next_ = request.GET.get('next')
+    next_ = request.GET.get('next', '')
     inside = request.GET.get('inside')
     new_pk = request.GET.get('new_pk')
     order = request.GET.get('order')
@@ -128,6 +128,7 @@ def detail(request, pk):
             redirect = request.POST.get('redirect')
             if redirect:
                 if not next_:
+                    next_ = reverse(list_)
                     request.session['state'] = None
                 return HttpResponseRedirect(next_)
             else:
@@ -144,7 +145,7 @@ def detail(request, pk):
 
 @login_required
 def add(request):
-    next_ = request.GET.get('next')
+    next_ = request.GET.get('next', '')
     inside = request.GET.get('inside')
     action_map_json = other.get_action_map_json()
 
@@ -164,6 +165,7 @@ def add(request):
                 return HttpResponseRedirect(request.get_full_path())
             elif redirect:
                 if not next_:
+                    next_ = reverse(list_)
                     request.session['state'] = None
                 return HttpResponseRedirect(next_)
             else:

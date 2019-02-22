@@ -35,9 +35,6 @@ class VicSuite:
         self.execute_uuid = execute_uuid
         self.force_stop_signal = False  # 强制停止信号
         self.pause_lock = threading.Lock()
-        # self.pause_signal = False  # 暂停信号
-        # self.pause_count = 0  # 暂停计数
-        # self.continue_signal = False  # 继续信号
         self.vic_cases = list()
         self.status = 0
         self.init_date = datetime.datetime.now()
@@ -94,29 +91,6 @@ class VicSuite:
             if _continue and self.status == 2:
                 self.status = 1
                 self.websocket_sender('套件已继续', 20, _type='continue')
-
-    # # 暂停标志
-    # @property
-    # def pause(self):
-    #     pause_state = False
-    #     if self.status == 2:
-    #         pause_state = True
-    #     elif self.force_stop:
-    #         self.continue_signal = False
-    #     elif self.pause_signal:
-    #         if self.continue_signal:
-    #             self.continue_signal = False
-    #         else:
-    #             pause_state = True
-    #
-    #
-    #
-    #     if pause_state:
-    #         self.pause_signal = False
-    #         self.status = 2
-    #         return True
-    #     else:
-    #         return False
 
     @property
     def status_str(self):
