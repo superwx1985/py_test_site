@@ -1,6 +1,5 @@
 import logging
 import threading
-# from concurrent.futures import ThreadPoolExecutor, wait
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.remote.remote_connection import RemoteConnection
