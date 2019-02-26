@@ -88,9 +88,10 @@ class VicSuite:
                 if vc.status == 2:
                     _continue = False
                     break
-            if _continue and self.status == 2:
-                self.status = 1
+            if _continue:
                 self.websocket_sender('套件已继续', 20, _type='continue')
+                if self.status == 2:
+                    self.status = 1
 
     @property
     def status_str(self):
