@@ -423,7 +423,7 @@ def wait_for_page_redirect(vic_step, print_=True):
 
 
 # 获取URL
-def get_url(vic_step):
+def get_url(vic_step, print_=True):
     url = vic_step.dr.current_url
     condition_value = vic_step.ui_data
 
@@ -437,6 +437,8 @@ def get_url(vic_step):
             run_result = ['f', '找不到符合条件【{}】的URL内容'.format(condition_value)]
     else:
         run_result = ['p', '获取到URL【{}】'.format(url)]
+    if print_:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_id, run_result[1]))
     return run_result, url
 
 
@@ -446,6 +448,8 @@ def try_to_click(vic_step, print_=True):
     highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     element.click()
     run_result = ['p', '点击元素{}'.format(el_msg)]
+    if print_:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_id, run_result[1]))
     return run_result, element
 
 
@@ -456,6 +460,8 @@ def try_to_enter(vic_step, print_=True):
     element.clear()
     element.send_keys(vic_step.ui_data)
     run_result = ['p', '在元素{}中输入【{}】'.format(el_msg, vic_step.ui_data)]
+    if print_:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_id, run_result[1]))
     return run_result, element
 
 
@@ -509,6 +515,8 @@ def try_to_select(vic_step, print_=True):
     [selected_text_list.append(_option.text) for _option in select.all_selected_options]
 
     run_result = ['p', '在元素{}中进行了选择操作，被选中的选项为【{}】'.format(el_msg, '|'.join(selected_text_list))]
+    if print_:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_id, run_result[1]))
     return run_result, element
 
 
@@ -642,6 +650,8 @@ def perform_special_action(vic_step, update_test_data=False, print_=True):
         raise ValueError('无法处理的特殊操作[{}]'.format(sp))
 
     run_result = ['p', msg]
+    if print_:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_id, run_result[1]))
     return run_result, element
 
 
@@ -651,6 +661,8 @@ def try_to_scroll_into_view(vic_step, print_=True):
     highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     vic_step.dr.execute_script('arguments[0].scrollIntoView()', element)
     run_result = ['p', '移动窗口到元素{}的位置'.format(el_msg)]
+    if print_:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_id, run_result[1]))
     return run_result, element
 
 
@@ -658,7 +670,6 @@ def try_to_scroll_into_view(vic_step, print_=True):
 def alert_handle(vic_step, print_=True):
     pause_time = 0
     _success = False
-    msg = '找不到任何浏览器弹窗'
     msg_format = '经过{:.1f}秒 - {}'
     full_msg = 'N/A'
     run_result = ['f', full_msg]
@@ -708,8 +719,8 @@ def alert_handle(vic_step, print_=True):
     return run_result, alert_text
 
 
-# 尝试切换window或tap
-def try_to_switch_to_window(vic_step, current_window_handle, print_=True):
+# 尝试切换窗口
+def try_to_switch_to_window(vic_step, current_window_handle=None, print_=True):
     pause_time = 0
     _success = False
     msg = '无法切换到符合条件的窗口'
@@ -717,6 +728,12 @@ def try_to_switch_to_window(vic_step, current_window_handle, print_=True):
     full_msg = 'N/A'
     run_result = ['f', full_msg]
     new_window_handle = None
+    if not current_window_handle:
+        try:
+            current_window_handle = vic_step.dr.current_window_handle
+        except exceptions.NoSuchWindowException:
+            vic_step.logger.warning('【{}】\t无法获取当前窗口'.format(vic_step.execute_id), exc_info=True)
+            current_window_handle = 'N/A'
     last_print_time = 0
     start_time = time.time()
     while (time.time() - start_time - pause_time) <= vic_step.timeout and not vic_step.force_stop:
@@ -770,6 +787,18 @@ def try_to_switch_to_window(vic_step, current_window_handle, print_=True):
     if not _success:
         raise exceptions.NoSuchWindowException(full_msg)
 
+    return run_result, new_window_handle
+
+
+# 尝试关闭当前窗口后切换窗口
+def try_to_close_and_switch_to_window(vic_step, print_=True):
+    try:
+        current_window_handle = vic_step.dr.current_window_handle
+        vic_step.dr.close()
+    except exceptions.NoSuchWindowException:
+        vic_step.logger.warning('【{}】\t无法获取当前窗口'.format(vic_step.execute_id), exc_info=True)
+        current_window_handle = 'N/A'
+    run_result, new_window_handle = try_to_switch_to_window(vic_step, current_window_handle, print_)
     return run_result, new_window_handle
 
 
@@ -845,10 +874,9 @@ def run_js(vic_step, print_=True):
             js_result = vic_step.dr.execute_script(vic_step.ui_data, elements[vic_step.ui_index])
     if isinstance(js_result, WebElement):
         js_result = [js_result]
-    full_msg = 'JavaScript执行完毕，返回值为：\n{}'.format(js_result)
+    run_result = ['p', 'JavaScript执行完毕，返回值为：\n{}'.format(js_result)]
     if print_:
-        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_id, full_msg))
-    run_result = ['p', full_msg]
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_id, run_result[1]))
     return run_result, js_result
 
 
@@ -857,7 +885,9 @@ def get_element_text(vic_step, print_=True):
     element, el_msg, _, _ = get_element(vic_step, print_=print_)
     highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     text = element.text
-    run_result = ['p', '元素{}的文本为：{}'.format(el_msg, text)]
+    run_result = ['p', '获取了元素{}的文本：{}'.format(el_msg, text)]
+    if print_:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_id, run_result[1]))
     return run_result, text
 
 
@@ -867,21 +897,12 @@ def get_element_attr(vic_step, print_=True):
     highlight_for_a_moment(vic_step.dr, [element], 'outline: 2px dotted yellow; border: 1px solid yellow;')
     attr = element.get_attribute(vic_step.ui_data)
     if attr:
-        run_result = ['p', '元素{}的【{}】属性的值为：{}'.format(el_msg, vic_step.ui_data, attr)]
+        run_result = ['p', '获取了元素{}的【{}】属性值：{}'.format(el_msg, vic_step.ui_data, attr)]
     else:
         run_result = ['f', '元素{}不存在【{}】属性'.format(el_msg, vic_step.ui_data)]
+    if print_:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_id, run_result[1]))
     return run_result, attr
 
 
-# 解析表达式
-def analysis_expression(vic_step):
-    eval_expression = vic_step.other_data
-    variable_dict = vic_variables.get_variable_dict(vic_step.variables, vic_step.global_variables)
-    logger = vic_step.logger
-    eo = vic_eval.EvalObject(eval_expression, variable_dict, logger)
-    eval_success, eval_result, final_expression = eo.get_eval_result()
-    if eval_success:
-        run_result = ['p', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result)]
-    else:
-        raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
-    return run_result, eval_success, eval_result, final_expression
+

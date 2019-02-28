@@ -14,7 +14,7 @@ def get_driver_(config, logger=logging.getLogger('py_test')):
             'test-type',
             "start-maximized",
             "no-default-browser-check",
-            # "disable-browser-side-navigation",
+            "disable-infobars",
         ]
         if config.ui_selenium_client == 1:  # 本地
             if config.ui_driver_type == 1:  # Chrome

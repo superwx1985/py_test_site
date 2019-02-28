@@ -310,9 +310,7 @@ class VicCase:
                             _conn.timeout = 5
                         except AttributeError:
                             dr.command_executor.set_timeout(5)
-                    # 先通过close方法判断驱动是否可控，然后再关闭
                     self.logger.info('【{}】\t关闭浏览器...'.format(execute_id))
-                    dr.close()
                     dr.quit()
                     self.logger.info('【{}】\t已关闭'.format(execute_id))
                 except Exception as e:

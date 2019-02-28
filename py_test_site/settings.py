@@ -309,10 +309,10 @@ LOGGING = {
 ASGI_APPLICATION = 'py_test_site.routing.application'
 
 # 站点名称
-SITE_NAME = '汇智自动化测试工具'
+SITE_NAME = '汇智自动化测试平台'
 
 # 站点版本
-SITE_VERSION = 'V1.13.20190226.01'
+SITE_VERSION = 'V1.13.20190228.01'
 
 # 最大并行测试线程数
 SUITE_MAX_CONCURRENT_EXECUTE_COUNT = 8

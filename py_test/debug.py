@@ -12,9 +12,3 @@
 #
 # print(eo.get_eval_result())
 
-import threading
-import time
-
-now_time = time.time()
-
-print(now_time)

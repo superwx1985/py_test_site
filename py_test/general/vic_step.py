@@ -185,6 +185,18 @@ class VicStep:
             elif self.ui_by == 'public element':
                 self.ui_by, self.ui_locator = ui_test.method.get_public_elements(self)
 
+    # 解析表达式
+    def analysis_expression(self):
+        eval_expression = self.other_data
+        variable_dict = vic_variables.get_variable_dict(self.variables, self.global_variables)
+        eo = vic_eval.EvalObject(eval_expression, variable_dict, self.logger)
+        eval_success, eval_result, final_expression = eo.get_eval_result()
+        if eval_success:
+            run_result = ['p', '计算表达式：{}\n结果为：{}'.format(final_expression, eval_result)]
+        else:
+            raise ValueError('不合法的表达式：{}\n错误信息：{}'.format(final_expression, eval_result))
+        return run_result, eval_success, eval_result, final_expression
+
     def execute(self):
         self.step_result.start_date = datetime.datetime.now()  # 记录开始执行时的时间
 
@@ -239,7 +251,7 @@ class VicStep:
                                 # 解析表达式
                                 if not self.other_data:
                                     raise ValueError('未提供表达式')
-                                run_result, _, eval_result, _ = ui_test.method.analysis_expression(self)
+                                run_result, _, eval_result, _ = self.analysis_expression()
                                 if eval_result is True:
                                     run_result[1] = '{}\n表达式为真，进入分支'.format(run_result[1])
                                     _result = True
@@ -279,7 +291,7 @@ class VicStep:
                                         # 解析表达式
                                         if not self.other_data:
                                             raise ValueError('未提供表达式')
-                                        run_result, _, eval_result, _ = ui_test.method.analysis_expression(self)
+                                        run_result, _, eval_result, _ = self.analysis_expression()
                                         if eval_result is True:
                                             run_result[1] = '{}\n表达式为真，进入分支'.format(run_result[1])
                                             if_object['result'] = _result = True
@@ -358,7 +370,7 @@ class VicStep:
                                         # 解析表达式
                                         if not self.other_data:
                                             raise ValueError('未提供表达式')
-                                        run_result, _, eval_result, _ = ui_test.method.analysis_expression(self)
+                                        run_result, _, eval_result, _ = self.analysis_expression()
 
                                     if eval_result is True:
                                         run_result[1] = '{}\n第【{}】次循环结束，表达式为真，进入下一次循环'.format(
@@ -431,8 +443,7 @@ class VicStep:
                         elif ac == 'UI_SWITCH_TO_WINDOW':
                             if re_run_count == 0:
                                 self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
-                            self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(
-                                self, dr.current_window_handle)
+                            self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(self)
 
                         # 关闭当前浏览器窗口或标签并切换至其他窗口或标签
                         elif ac == 'UI_CLOSE_WINDOW':
@@ -441,10 +452,12 @@ class VicStep:
                                     '当前窗口是浏览器的最后一个窗口，如果需要关闭浏览器请使用【重置浏览器】步骤')
                             if re_run_count == 0:
                                 self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
-                            current_window_handle = dr.current_window_handle
+                            # try:
+                            #     current_window_handle = dr.current_window_handle
+                            # except exceptions.NoSuchWindowException:
+                            #     current_window_handle = None
                             dr.close()
-                            self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(
-                                self, current_window_handle)
+                            self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(self)
 
                         # 重置浏览器
                         elif ac == 'UI_RESET_BROWSER':
@@ -456,7 +469,7 @@ class VicStep:
                                 del dr
                                 init_timeout = timeout if timeout > 30 else 30
                                 self.logger.info('【{}】\t启动浏览器...'.format(eid))
-                                dr = ui_test.driver.get_driver(self.config, 3, init_timeout, logger=logger)
+                                self.dr = dr = ui_test.driver.get_driver(self.config, 3, init_timeout, logger=logger)
                                 vc.driver_container[0] = dr
 
                         # 单击
@@ -1123,20 +1136,29 @@ class VicStep:
             if self.socket_no_response:
                 self.step_result.ui_last_url = '由于浏览器响应超时，URL获取失败'
                 logger.warning('【{}】\t由于浏览器响应超时，无法获取报错时的URL和截图'.format(eid))
-
-            # 获取当前URL
-            try:
-                last_url = dr.current_url
-                self.step_result.ui_last_url = last_url if last_url != 'data:,' else ''
-            except exceptions.UnexpectedAlertPresentException:
-                alert_ = dr.switch_to.alert
-                msg = 'URL获取失败，因为出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(alert_.text)
-                logger.warning('【{}】\t{}'.format(eid, msg))
-                self.step_result.ui_last_url = msg
-                self.browser_alert = True
+            else:
+                # 获取当前URL
+                try:
+                    last_url = dr.current_url
+                    self.step_result.ui_last_url = last_url if last_url != 'data:,' else ''
+                except exceptions.UnexpectedAlertPresentException:
+                    alert_ = dr.switch_to.alert
+                    msg = 'URL获取失败，因为出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(alert_.text)
+                    logger.warning('【{}】\t{}'.format(eid, msg))
+                    self.step_result.ui_last_url = msg
+                    self.browser_alert = True
+                except socket_timeout_error as e:
+                    self.socket_no_response = True
+                    _msg = 'URL获取失败：{}'.format(getattr(e, 'msg', str(e)))
+                    logger.warning('【{}】\t{}'.format(eid, _msg), exc_info=True)
+                    self.step_result.ui_last_url = _msg
+                except Exception as e:
+                    _msg = 'URL获取失败：{}'.format(getattr(e, 'msg', str(e)))
+                    logger.warning('【{}】\t{}'.format(eid, _msg), exc_info=True)
+                    self.step_result.ui_last_url = _msg
 
             # 获取报错时截图
-            if self.ui_get_ss and self.step_result.result_state == 3:
+            if not self.socket_no_response and self.ui_get_ss and self.step_result.result_state == 3:
                 try:
                     self.ui_by = None
                     self.ui_locator = None
