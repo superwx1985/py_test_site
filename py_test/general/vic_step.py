@@ -709,7 +709,8 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, text = ui_test.method.get_element_text(self)
+                            self.run_result, text, _, _pause_time= ui_test.method.get_element_text(self)
+                            pause_time += _pause_time
 
                             if self.run_result[0] == 'p':
                                 msg = var.set_variable(self.save_as, text)
@@ -726,7 +727,8 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, text = ui_test.method.get_element_attr(self)
+                            self.run_result, text, _, _pause_time = ui_test.method.get_element_attr(self)
+                            pause_time += _pause_time
 
                             if self.run_result[0] == 'p':
                                 msg = var.set_variable(self.save_as, text)
