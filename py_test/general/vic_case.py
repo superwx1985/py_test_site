@@ -126,9 +126,31 @@ class VicCase:
                 self.vic_step.pause if self.vic_step else False):
             self.status = 2
             pause_state = True
+            if self.vic_suite.status == 1:
+                self.vic_suite.status = 1.5
             self.vic_suite.websocket_sender('用例暂停', 20, _type='pause')
         self.pause_signal = False
         return pause_state
+
+    # 判断是否需要暂停
+    def pause_(self, seconds=0, msg_format='【{}】\t已暂停{}秒，剩余{}秒'):
+        if self.pause:
+            if seconds <= 0:
+                seconds = ERROR_PAUSE_TIMEOUT
+            _timeout = math.modf(float(seconds))
+            start_time = time.time()
+            time.sleep(_timeout[0])  # 补上小数部分
+            x = int(_timeout[1])
+            for i in range(x):
+                if not self.pause or self.force_stop:
+                    break
+                time.sleep(1)
+                y = i + 1
+                self.logger.info(msg_format.format(self.execute_str, y, x - y))
+            self.continue_()
+            return time.time() - start_time
+        else:
+            return 0
 
     def continue_(self):
         self.continue_signal = False
@@ -149,16 +171,16 @@ class VicCase:
         self.start_date = self.case_result.start_date = datetime.datetime.now()
         self.status = 1
 
-        execute_id = self.execute_str
+        execute_str = self.execute_str
         
         # 从容器中获取driver
         dr = self.driver_container[0]
 
         if not self.force_stop:
             # 用例初始化
-            execute_id = '{}-{}'.format(self.execute_str, 0)
+            step_execute_str = '{}-{}'.format(self.execute_str, 0)
             try:
-                self.logger.info('【{}】\t初始化 => {}'.format(execute_id, self.name))
+                self.logger.info('【{}】\t初始化 => {}'.format(step_execute_str, self.name))
 
                 # 判断是否递归调用
                 recursive_id, case_list = check_recursive_call(self.case)
@@ -169,8 +191,8 @@ class VicCase:
                 # 初始化driver
                 if not dr and not self.vic_step and self.config.ui_selenium_client != 0:
                     init_timeout = self.timeout if self.timeout > 30 else 30
-                    self.logger.info('【{}】\t启动浏览器...'.format(execute_id))
-                    dr = ui_test.driver.get_driver(self.config, 3, init_timeout, logger=self.logger)
+                    self.logger.info('【{}】\t启动浏览器...'.format(step_execute_str))
+                    dr = ui_test.driver.get_driver(self.config, execute_str, 3, init_timeout, logger=self.logger)
                     self.driver_container[0] = dr
 
                 # 读取本地变量
@@ -192,7 +214,7 @@ class VicCase:
                     self.steps.append(VicStep(step=step, vic_case=self, step_order=step_order))
 
             except Exception as e:
-                self.logger.error('【{}】\t初始化出错'.format(execute_id), exc_info=True)
+                self.logger.error('【{}】\t初始化出错'.format(step_execute_str), exc_info=True)
                 self.case_result.result_message = '初始化出错：{}'.format(getattr(e, 'msg', str(e)))
                 self.case_result.result_error = traceback.format_exc()
 
@@ -206,7 +228,7 @@ class VicCase:
 
                     step = self.steps[step_index]
                     step_index += 1
-                    execute_id = '{}-{}'.format(self.execute_str, step_index)
+                    step_execute_str = '{}-{}'.format(self.execute_str, step_index)
 
                     # 如果处于循环体
                     if self.loop_list:
@@ -216,17 +238,17 @@ class VicCase:
                             loop_id = '{}({})'.format(loop_id, loop_[1])
                             if loop_[1] > 1:
                                 is_first = False
-                        execute_id = '{}{}'.format(execute_id, loop_id)
+                        step_execute_str = '{}{}'.format(step_execute_str, loop_id)
                         # 如果不是首次迭代，获取新的vic step对象
                         if not is_first:
                             _step = step.step
                             _step_order = step.step_order
                             step = VicStep(step=_step, vic_case=self, step_order=_step_order)
-                        step.execute_id = execute_id
+                        step.execute_str = step_execute_str
                         step.loop_id = loop_id
 
                     self.logger.info('【{}】\t执行步骤 => ID:{} | {} | {}'.format(
-                        execute_id, step.id, step.name, step.step.action))
+                        step_execute_str, step.id, step.name, step.step.action))
 
                     # 执行步骤
                     step_ = step.execute()
@@ -244,19 +266,19 @@ class VicCase:
                     # 统计步骤结果
                     self.case_result.execute_count += 1
                     if step_result_.result_state == 0:
-                        self.logger.info('【{}】\t跳过'.format(execute_id))
+                        self.logger.info('【{}】\t跳过'.format(step_execute_str))
                     elif step_result_.result_state == 1:
                         self.case_result.pass_count += 1
-                        self.logger.info('【{}】\t执行成功'.format(execute_id))
+                        self.logger.info('【{}】\t执行成功'.format(step_execute_str))
                     elif step_result_.result_state == 4:
-                        self.logger.warning('【{}】\t执行中止'.format(execute_id))
+                        self.logger.warning('【{}】\t执行中止'.format(step_execute_str))
                     else:
                         if step_result_.result_state == 2:
-                            self.logger.warning('【{}】\t执行失败'.format(execute_id))
+                            self.logger.warning('【{}】\t执行失败'.format(step_execute_str))
                         else:
-                            self.logger.error('【{}】\t执行出错，错误信息 => {}'.format(execute_id, step_result_.result_message))
+                            self.logger.error('【{}】\t执行出错，错误信息 => {}'.format(step_execute_str, step_result_.result_message))
                         if step_.error_handle == 'skip':
-                            self.logger.info('【{}】\t因为本步骤被设置为遇到错误跳过，所以执行结果更改为跳过'.format(execute_id))
+                            self.logger.info('【{}】\t因为本步骤被设置为遇到错误跳过，所以执行结果更改为跳过'.format(step_execute_str))
                             step_result_.result_state = 0
                             step_result_.result_message = '因为本步骤被设置为遇到错误跳过，下列错误被忽略\n==========\n{}'.format(
                                 step_result_.result_message)
@@ -269,38 +291,42 @@ class VicCase:
                             if step_.error_handle == 'stop':
                                 break
                             elif step_.error_handle == 'pause':
-                                self.status = 2
-                                self.vic_suite.status = 2
-                                self.vic_suite.websocket_sender('用例暂停', 20, _type='pause')
-                                _timeout = math.modf(float(ERROR_PAUSE_TIMEOUT))
-                                time.sleep(_timeout[0])  # 暂停小数部分
-                                x = int(_timeout[1])
-                                for i in range(x):
-                                    if self.continue_signal or self.force_stop:
-                                        break
-                                    time.sleep(1)
-                                    y = i + 1
-                                    self.logger.info('【{}】\t遇到错误，已暂停{}秒，剩余{}秒'.format(execute_id, y, x - y))
+                                self.vic_suite.vic_cases[self.case_order-1].pause_signal = True  # 向一级用例发送暂停信号
+                                _ = self.pause_(msg_format='【{}】\t遇到错误，已暂停{}秒，剩余{}秒')
 
-                                self.continue_()
+
+                                # self.status = 2
+                                # self.vic_suite.status = 2
+                                # self.vic_suite.websocket_sender('用例暂停', 20, _type='pause')
+                                # _timeout = math.modf(float(ERROR_PAUSE_TIMEOUT))
+                                # time.sleep(_timeout[0])  # 暂停小数部分
+                                # x = int(_timeout[1])
+                                # for i in range(x):
+                                #     if self.continue_signal or self.force_stop:
+                                #         break
+                                #     time.sleep(1)
+                                #     y = i + 1
+                                #     self.logger.info(.format(step_execute_str, y, x - y))
+                                #
+                                # self.continue_()
 
             except Exception as e:
-                self.logger.error('【{}】\t执行出错'.format(execute_id), exc_info=True)
+                self.logger.error('【{}】\t执行出错'.format(execute_str), exc_info=True)
                 self.case_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
                 self.case_result.result_error = traceback.format_exc()
 
         if self.if_list:
             self.logger.warning('【{}】\t有{}个条件分支块缺少关闭步骤，可能会导致意外的错误，请添加关闭步骤'.format(
-                execute_id, len(self.if_list)))
+                execute_str, len(self.if_list)))
         if self.loop_list:
             self.logger.warning('【{}】\t有{}个循环块缺少关闭步骤，可能会导致意外的错误，请添加关闭步骤'.format(
-                execute_id, len(self.loop_list)))
+                execute_str, len(self.loop_list)))
 
         # 如果不是子用例，且浏览器未关闭，则关闭浏览器
         if dr and not self.vic_step:
             # 如果logging level小于10，保留浏览器以供调试
             if self.logger.level < 10:
-                self.logger.warning('【{}】\t由于日志级别为DEV，将保留浏览器以供调试，请自行关闭'.format(execute_id))
+                self.logger.warning('【{}】\t由于日志级别为DEV，将保留浏览器以供调试，请自行关闭'.format(execute_str))
             else:
                 try:
                     if self.socket_no_response:
@@ -310,11 +336,11 @@ class VicCase:
                             _conn.timeout = 5
                         except AttributeError:
                             dr.command_executor.set_timeout(5)
-                    self.logger.info('【{}】\t关闭浏览器...'.format(execute_id))
+                    self.logger.info('【{}】\t关闭浏览器...'.format(execute_str))
                     dr.quit()
-                    self.logger.info('【{}】\t已关闭'.format(execute_id))
-                except Exception as e:
-                    self.logger.error('【{}】\t有一个浏览器无法关闭，请手动关闭。错误信息 => {}'.format(execute_id, e))
+                    self.logger.info('【{}】\t已关闭'.format(execute_str))
+                except:
+                    self.logger.warning('【{}】\t有一个浏览器无法关闭，请手动关闭'.format(execute_str), exc_info=True)
             del dr
 
         if self.force_stop:

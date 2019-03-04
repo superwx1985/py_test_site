@@ -42,6 +42,7 @@ class VicSuite:
 
         self.config = self.suite.config if self.suite.config and self.suite.config.is_active else None
         self.global_variables = vic_variables.Variables(self.logger)
+        self.global_variables.variable_dict = vic_variables.system_variable
         self.public_elements = vic_public_elements.PublicElements(self.logger)
         self.timeout = suite.timeout
         self.ui_step_interval = suite.ui_step_interval
@@ -90,7 +91,7 @@ class VicSuite:
                     break
             if _continue:
                 self.websocket_sender('套件已继续', 20, _type='continue')
-                if self.status == 2:
+                if 1 < self.status <= 2:
                     self.status = 1
 
     @property

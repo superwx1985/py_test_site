@@ -206,11 +206,11 @@
                                 <td class="middle">
                                     <button name="continue_button" class="btn btn-success"
                                             onclick="continue_(this)" data-toggle="tooltip" title="继续"
-                                            {% if is_admin or v.user == request.user %}{% if v.status != 2 %} disabled{% endif %}{% else %} disabled{% endif %}
+                                            {% if is_admin or v.user == request.user %}{% if v.status <= 1 and v.status > 2 %} disabled{% endif %}{% else %} disabled{% endif %}
                                     ><i class="icon-play"></i></button>
                                     <button name="pause_button" class="btn btn-warning"
                                             onclick="pause(this)" data-toggle="tooltip" title="暂停"
-                                            {% if is_admin or v.user == request.user %}{% if v.status != 1 %} disabled{% endif %}{% else %} disabled{% endif %}
+                                            {% if is_admin or v.user == request.user %}{% if v.status == 2 %} disabled{% endif %}{% else %} disabled{% endif %}
                                     ><i class="icon-pause"></i></button>
                                     <button name="stop_button" class="btn btn-danger"
                                             onclick="stop(this)" data-toggle="tooltip" title="中止"

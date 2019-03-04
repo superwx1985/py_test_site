@@ -426,7 +426,7 @@ def list_temp(request):
         if pk.strip() == '':
             continue
         objects = Case.objects.filter(pk=pk).values(
-            'pk', 'uuid', 'name', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
+            'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
             real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
         if not objects:
             continue

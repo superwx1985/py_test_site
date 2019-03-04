@@ -3,6 +3,11 @@ from selenium.common import exceptions
 from selenium.webdriver.remote.webelement import WebElement
 
 
+system_variable = {
+    '\\n': '\n'
+}
+
+
 class Variables:
     def __init__(self, logger=logging.getLogger('py_test')):
         self.variable_dict = dict()

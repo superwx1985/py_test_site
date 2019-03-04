@@ -6,7 +6,7 @@ from selenium.webdriver.remote.remote_connection import RemoteConnection
 
 
 # 获取浏览器driver
-def get_driver_(config, logger=logging.getLogger('py_test')):
+def get_driver_(config, execute_str, logger=logging.getLogger('py_test')):
     dr = None
     try:
         chrome_options = webdriver.ChromeOptions()
@@ -69,8 +69,8 @@ def get_driver_(config, logger=logging.getLogger('py_test')):
         try:
             if dr:
                 dr.quit()
-        except Exception as e:
-            logger.error('有一个浏览器无法关闭，请手动关闭。错误信息 => {}'.format(e))
+        except:
+            logger.warning('【{}】\t有一个浏览器无法关闭，请手动关闭'.format(execute_str), exc_info=True)
         raise
     else:
         return dr
@@ -80,16 +80,16 @@ lock = threading.Lock()
 
 
 # 获取浏览器driver，添加重试功能
-def get_driver(config, retry=3, timeout=10, logger=logging.getLogger('py_test')):
+def get_driver(config, execute_str, retry=3, timeout=10, logger=logging.getLogger('py_test')):
     with lock:  # 防止多线程测试时RemoteConnection的timeout被同时修改
         RemoteConnection.set_timeout(timeout)  # 设置RemoteConnection的初始timeout值
         for i in range(retry):
             try:
-                dr = get_driver_(config, logger)
+                dr = get_driver_(config, execute_str, logger)
                 return dr
             except Exception as e:
                 if i >= retry - 1:
                     raise
                 else:
-                    logger.warning('浏览器初始化出错，尝试进行第{}次初始化。错误信息 => {}'.format(i+2, e))
+                    logger.warning('【{}】\t浏览器初始化出错，尝试进行第{}次初始化。错误信息 => {}'.format(execute_str, i+2, e))
                     continue

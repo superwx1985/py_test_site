@@ -51,7 +51,7 @@ class VicStep:
         self.config = vic_case.config
 
         self.step_order = step_order
-        self.execute_id = '{}-{}'.format(vic_case.execute_str, step_order)
+        self.execute_str = '{}-{}'.format(vic_case.execute_str, step_order)
         self.loop_id = ''
         self.img_list = list()  # 截图列表
         self.status = 0
@@ -113,7 +113,7 @@ class VicStep:
             self.db_sql = step.db_sql
             self.db_data = step.db_data
         except Exception as e:
-            self.logger.info('【{}】\t步骤读取出错'.format(self.execute_id), exc_info=True)
+            self.logger.info('【{}】\t步骤读取出错'.format(self.execute_str), exc_info=True)
             self.step_result.result_state = 3
             self.step_result.result_message = '步骤读取出错：{}'.format(getattr(e, 'msg', str(e)))
             self.step_result.result_error = traceback.format_exc()
@@ -147,10 +147,12 @@ class VicStep:
             self.status = 1
 
     # 判断是否需要暂停
-    def pause_(self):
+    def pause_(self, seconds=0.0, msg_format='【{}】\t已暂停{}秒，剩余{}秒'):
         if self.pause:
+            if seconds <= 0:
+                seconds = ERROR_PAUSE_TIMEOUT
+            _timeout = math.modf(float(seconds))
             start_time = time.time()
-            _timeout = math.modf(float(ERROR_PAUSE_TIMEOUT))
             time.sleep(_timeout[0])  # 补上小数部分
             x = int(_timeout[1])
             for i in range(x):
@@ -158,8 +160,7 @@ class VicStep:
                     break
                 time.sleep(1)
                 y = i + 1
-                self.logger.info('【{}】\t已暂停{}秒，剩余{}秒'.format(self.execute_id, y, x - y))
-
+                self.logger.info(msg_format.format(self.execute_str, y, x - y))
             self.continue_()
             return time.time() - start_time
         else:
@@ -204,7 +205,7 @@ class VicStep:
         self.step_result.save()  # 暂存，防止子用例设置调用步骤时报错
         dr = self.dr = self.vic_case.driver_container[0]  # 获取运行时driver
         # 简称
-        eid = self.execute_id
+        estr = self.execute_str
         vc = self.vic_case
         var = self.variables
         gvar = self.global_variables
@@ -280,7 +281,7 @@ class VicStep:
                                     # 判断之前有没出现else
                                     if 'else' in if_object:
                                         msg = '“ELSE_IF”不应出现在ELSE之后，请检查用例'
-                                        logger.warning('【{}】\t{}'.format(eid, msg))
+                                        logger.warning('【{}】\t{}'.format(estr, msg))
                                         self.run_result = ['f', msg]
                                         vc.step_active = False
                                     # 如之前的分支已匹配成功
@@ -306,7 +307,7 @@ class VicStep:
                                     self.run_result = ['s', '跳过步骤']
                             else:
                                 msg = '出现多余的“ELSE_IF”步骤，可能会导致意外的错误，请检查用例'
-                                logger.warning('【{}】\t{}'.format(eid, msg))
+                                logger.warning('【{}】\t{}'.format(estr, msg))
                                 self.run_result = ['f', msg]
                         # 分支判断 - 否则
                         elif ac == 'OTHER_ELSE':
@@ -318,7 +319,7 @@ class VicStep:
                                 if if_object['active']:
                                     # 判断是否分支中的第一个else
                                     if 'else' in if_object:
-                                        logger.warning('【{}】\t{}'.format(eid, msg))
+                                        logger.warning('【{}】\t{}'.format(estr, msg))
                                         self.run_result = ['f', msg]
                                         vc.step_active = False
                                     else:
@@ -333,7 +334,7 @@ class VicStep:
                                 else:
                                     self.run_result = ['s', '跳过步骤']
                             else:
-                                logger.warning('【{}】\t{}'.format(eid, msg))
+                                logger.warning('【{}】\t{}'.format(estr, msg))
                                 self.run_result = ['f', msg]
                         # 分支判断 - 结束
                         elif ac == 'OTHER_END_IF':
@@ -348,7 +349,7 @@ class VicStep:
                                     self.run_result = ['s', '跳过步骤']
                             else:
                                 msg = '出现多余的“END_IF”步骤，可能会导致意外的错误，请检查用例'
-                                logger.warning('【{}】\t{}'.format(eid, msg))
+                                logger.warning('【{}】\t{}'.format(estr, msg))
                                 self.run_result = ['f', msg]
 
                         if vc.step_active:
@@ -363,7 +364,7 @@ class VicStep:
                                     loop_count = vc.loop_list[-1][1]
                                     if loop_count > LOOP_ITERATIONS_LIMIT-1:
                                         msg = '循环次数超限，强制跳出循环'
-                                        logger.warning('【{}】\t{}'.format(eid, msg))
+                                        logger.warning('【{}】\t{}'.format(estr, msg))
                                         run_result = ['f', msg]
                                         eval_result = False
                                     else:
@@ -384,7 +385,7 @@ class VicStep:
                                     self.run_result = run_result
                                 else:
                                     msg = '出现多余的“END_LOOP”步骤，可能会导致意外的错误，请检查用例'
-                                    logger.warning('【{}】\t{}'.format(eid, msg))
+                                    logger.warning('【{}】\t{}'.format(estr, msg))
                                     self.run_result = ['f', msg]
 
                     # 如果步骤为分支判断，那么保留步骤结果文字
@@ -452,24 +453,27 @@ class VicStep:
                                     '当前窗口是浏览器的最后一个窗口，如果需要关闭浏览器请使用【重置浏览器】步骤')
                             if re_run_count == 0:
                                 self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
-                            # try:
-                            #     current_window_handle = dr.current_window_handle
-                            # except exceptions.NoSuchWindowException:
-                            #     current_window_handle = None
+                            try:
+                                current_window_handle = dr.current_window_handle
+                            except exceptions.NoSuchWindowException:
+                                logger.warning('【{}】\t无法获取当前窗口'.format(estr), exc_info=True)
+                                current_window_handle = 'N/A'
                             dr.close()
-                            self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(self)
+                            self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(
+                                self, current_window_handle)
 
                         # 重置浏览器
                         elif ac == 'UI_RESET_BROWSER':
                             if dr is not None:
                                 try:
                                     dr.quit()
-                                except Exception as e:
-                                    logger.error('有一个浏览器无法关闭，请手动关闭。错误信息 => {}'.format(e))
+                                except:
+                                    logger.warning('【{}】\t有一个浏览器无法关闭，请手动关闭'.format(estr), exc_info=True)
                                 del dr
                                 init_timeout = timeout if timeout > 30 else 30
-                                self.logger.info('【{}】\t启动浏览器...'.format(eid))
-                                self.dr = dr = ui_test.driver.get_driver(self.config, 3, init_timeout, logger=logger)
+                                self.logger.info('【{}】\t启动浏览器...'.format(estr))
+                                self.dr = dr = ui_test.driver.get_driver(
+                                    self.config, estr, 3, init_timeout, logger=logger)
                                 vc.driver_container[0] = dr
 
                         # 单击
@@ -492,6 +496,18 @@ class VicStep:
                                 raise ValueError('无效的定位方式或定位符')
 
                             self.run_result, element = ui_test.method.try_to_enter(self)
+                            self.elements = [element]
+                            if self.save_as:
+                                var.set_variable(self.save_as, self.elements)
+
+                        # 输入
+                        elif ac == 'UI_CLEAR':
+                            if re_run_count == 0:
+                                self.update_test_data('ui_locator', 'ui_base_element')
+                            if not self.ui_by or not self.ui_locator:
+                                raise ValueError('无效的定位方式或定位符')
+
+                            self.run_result, element = ui_test.method.try_to_clear(self)
                             self.elements = [element]
                             if self.save_as:
                                 var.set_variable(self.save_as, self.elements)
@@ -636,7 +652,7 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, self.elements, _ = ui_test.method.wait_for_element_present(self)
+                            self.run_result, self.elements, _, _ = ui_test.method.wait_for_element_present(self)
 
                             if self.run_result[0] == 'p':
                                 msg = var.set_variable(self.save_as, self.elements)
@@ -777,7 +793,7 @@ class VicStep:
                                 sql_result, select_result = db_method.get_sql_result(self)
                             except:
                                 logger.warning('【{}】\t连接数据库或SQL执行报错\nSQL语句：\n{}'.format(
-                                    eid, self.db_sql), exc_info=True)
+                                    estr, self.db_sql), exc_info=True)
                                 e_str = traceback.format_exc()
                                 self.run_result = ['f', '连接数据库或SQL执行报错\nSQL语句：\n{}\n{}'.format(
                                     self.db_sql, e_str)]
@@ -809,7 +825,7 @@ class VicStep:
                                 sql_result, select_result = db_method.get_sql_result(self)
                             except:
                                 logger.warning('【{}】\t连接数据库或SQL执行报错\nSQL语句：\n{}'.format(
-                                    eid, self.db_sql), exc_info=True)
+                                    estr, self.db_sql), exc_info=True)
                                 e_str = traceback.format_exc()
                                 self.run_result = ['f', '连接数据库或SQL执行报错\nSQL语句：\n{}\n{}'.format(
                                     self.db_sql, e_str)]
@@ -851,17 +867,20 @@ class VicStep:
                             if not self.other_data:
                                 raise ValueError('未提供等待时间')
                             try:
-                                _timeout = math.modf(float(self.other_data))
-                            except ValueError:
+                                _timeout = float(self.other_data)
+                            except (ValueError, TypeError):
                                 raise ValueError('【{}】无法转换为数字'.format(self.other_data))
 
-                            for i in range(int(_timeout[1])):
-                                if self.force_stop:
-                                    break
-                                self.pause_()
-                                time.sleep(1)
-                                logger.info('【{}】\t已等待【{}】秒'.format(eid, i + 1))
-                            time.sleep(_timeout[0])  # 补上小数部分
+                            vc.vic_suite.vic_cases[vc.case_order-1].pause_signal = True  # 向一级用例发送暂停信号
+                            self.pause_(_timeout, '【{}】\t已等待【{}】秒，剩余{}秒')
+
+                            # for i in range(int(_timeout[1])):
+                            #     if self.force_stop:
+                            #         break
+                            #     self.pause_()
+                            #     time.sleep(1)
+                            #     logger.info('【{}】\t已等待【{}】秒'.format(estr, i + 1))
+                            # time.sleep(_timeout[0])  # 补上小数部分
 
                         # 保存用例变量
                         elif ac == 'OTHER_SAVE_CASE_VARIABLE':
@@ -996,9 +1015,9 @@ class VicStep:
                                 from .vic_case import VicCase
                                 sub_case = VicCase(
                                     case=self.other_sub_case,
-                                    case_order=None,
+                                    case_order=vc.case_order,
                                     vic_suite=vc.vic_suite,
-                                    execute_str=eid,
+                                    execute_str=estr,
                                     variables=var,
                                     vic_step=self,
                                     parent_case_pk_list=vc.parent_case_pk_list,
@@ -1035,7 +1054,7 @@ class VicStep:
                             if self.browser_alert:
                                 logger.warning(
                                     '【{}】\t无法获取UI验证截图，因为出现浏览器弹窗导致浏览器被锁死，内容为：{}'.format(
-                                        eid, self.browser_alert))
+                                        estr, self.browser_alert))
                             else:
                                 if self.ui_get_ss:
                                     highlight_elements_map = {}
@@ -1057,14 +1076,14 @@ class VicStep:
                                         self.ui_by = _ui_by
                                         self.ui_locator = _ui_locator
                                     except Exception:
-                                        logger.warning('【{}】\t无法获取UI验证截图'.format(eid), exc_info=True)
+                                        logger.warning('【{}】\t无法获取UI验证截图'.format(estr), exc_info=True)
                                     if highlight_elements_map:
                                         ui_test.method.cancel_highlight(dr, highlight_elements_map)
                                 else:
                                     if self.elements:
-                                        ui_test.method.highlight_for_a_moment(dr, self.elements, 'green')
+                                        ui_test.method.highlight_for_a_moment(dr, self.elements, 'green', sleep=0.5)
                                     if self.fail_elements:
-                                        ui_test.method.highlight_for_a_moment(dr, self.fail_elements, 'red')
+                                        ui_test.method.highlight_for_a_moment(dr, self.fail_elements, 'red', sleep=0.5)
 
                         # 通过添加步骤间等待时间控制UI测试执行速度
                         if atc == 'UI' and self.ui_step_interval:
@@ -1075,7 +1094,7 @@ class VicStep:
                                     break
                                 time.sleep(1)
                                 y = i + 1
-                                logger.info('【{}】\t步骤间已停顿{}秒，剩余{}秒'.format(eid, y, x-y))
+                                logger.info('【{}】\t步骤间已停顿{}秒，剩余{}秒'.format(estr, y, x-y))
                             time.sleep(_timeout[0])  # 补上小数部分
                     else:
                         self.run_result = ['s', '跳过步骤']
@@ -1087,7 +1106,7 @@ class VicStep:
                     if isinstance(e, exceptions.StaleElementReferenceException) or msg_ in e.msg:
                         re_run = True
                         re_run_count += 1
-                        logger.warning('【{}】\t元素已过期，可能是由于页面异步刷新导致，将尝试重新获取元素'.format(eid))
+                        logger.warning('【{}】\t元素已过期，可能是由于页面异步刷新导致，将尝试重新获取元素'.format(estr))
                     else:
                         raise
 
@@ -1104,17 +1123,17 @@ class VicStep:
 
         except socket_timeout_error:
             self.socket_no_response = True
-            logger.error('【{}】\t浏览器响应超时'.format(eid), exc_info=True)
+            logger.error('【{}】\t浏览器响应超时'.format(estr), exc_info=True)
             self.step_result.result_state = 3
             self.step_result.result_message = '浏览器响应超时，请检查网络连接或驱动位于的浏览器窗口是否被关闭'
             self.step_result.result_error = traceback.format_exc()
         except exceptions.TimeoutException:
-            logger.error('【{}】\t超时'.format(eid), exc_info=True)
+            logger.error('【{}】\t超时'.format(estr), exc_info=True)
             self.step_result.result_state = 3
             self.step_result.result_message = '执行超时，请增大超时值'
             self.step_result.result_error = traceback.format_exc()
         except exceptions.InvalidSelectorException:
-            logger.error('【{}】\t定位符【{}】无效'.format(eid, self.ui_locator), exc_info=True)
+            logger.error('【{}】\t定位符【{}】无效'.format(estr, self.ui_locator), exc_info=True)
             self.step_result.result_state = 3
             self.step_result.result_message = '定位信息【By:{}|Locator:{}】无效'.format(self.ui_by, self.ui_locator)
             self.step_result.result_error = traceback.format_exc()
@@ -1127,7 +1146,7 @@ class VicStep:
             self.step_result.result_message = msg
             self.step_result.result_error = traceback.format_exc()
         except Exception as e:
-            logger.error('【{}】\t出错'.format(eid), exc_info=True)
+            logger.error('【{}】\t出错'.format(estr), exc_info=True)
             self.step_result.result_state = 3
             self.step_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
             self.step_result.result_error = traceback.format_exc()
@@ -1135,7 +1154,7 @@ class VicStep:
         if atc == 'UI' and dr is not None:
             if self.socket_no_response:
                 self.step_result.ui_last_url = '由于浏览器响应超时，URL获取失败'
-                logger.warning('【{}】\t由于浏览器响应超时，无法获取报错时的URL和截图'.format(eid))
+                logger.warning('【{}】\t由于浏览器响应超时，无法获取报错时的URL和截图'.format(estr))
             else:
                 # 获取当前URL
                 try:
@@ -1144,17 +1163,17 @@ class VicStep:
                 except exceptions.UnexpectedAlertPresentException:
                     alert_ = dr.switch_to.alert
                     msg = 'URL获取失败，因为出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(alert_.text)
-                    logger.warning('【{}】\t{}'.format(eid, msg))
+                    logger.warning('【{}】\t{}'.format(estr, msg))
                     self.step_result.ui_last_url = msg
                     self.browser_alert = True
                 except socket_timeout_error as e:
                     self.socket_no_response = True
                     _msg = 'URL获取失败：{}'.format(getattr(e, 'msg', str(e)))
-                    logger.warning('【{}】\t{}'.format(eid, _msg), exc_info=True)
+                    logger.warning('【{}】\t{}'.format(estr, _msg), exc_info=True)
                     self.step_result.ui_last_url = _msg
                 except Exception as e:
                     _msg = 'URL获取失败：{}'.format(getattr(e, 'msg', str(e)))
-                    logger.warning('【{}】\t{}'.format(eid, _msg), exc_info=True)
+                    logger.warning('【{}】\t{}'.format(estr, _msg), exc_info=True)
                     self.step_result.ui_last_url = _msg
 
             # 获取报错时截图
@@ -1168,9 +1187,9 @@ class VicStep:
                 except exceptions.UnexpectedAlertPresentException:
                     alert_ = dr.switch_to.alert
                     msg = '截图失败，因为出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(alert_.text)
-                    logger.warning('【{}】\t{}'.format(eid, msg))
+                    logger.warning('【{}】\t{}'.format(estr, msg))
                 except:
-                    logger.warning('【{}】\t截图失败'.format(eid))
+                    logger.warning('【{}】\t截图失败'.format(estr))
 
         # 关联截图
         for img in self.img_list:

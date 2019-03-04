@@ -212,7 +212,7 @@ class Action(models.Model):
 
     @property
     def full_name(self):
-        return '{} - {}'.format(self.type, self.name)
+        return '{}-{}'.format(self.type, self.name)
 
     def __str__(self):
         return self.full_name

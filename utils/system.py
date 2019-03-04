@@ -50,11 +50,11 @@ class RunningSuites:
                     if not user or user == suite.user:
                         if suite.status == 0:
                             msg = '套件未运行'
-                        elif suite.status == 1:
-                            suite.status = 2
+                        elif 0 < suite.status < 2:
                             for case in suite.vic_cases:
                                 if case.status == 1:
                                     case.pause_signal = True
+                            suite.status = 2
                             success = True
                             msg = '已发送暂停信号'
                         elif suite.status == 2:
@@ -77,7 +77,7 @@ class RunningSuites:
                     if not user or user == suite.user:
                         if suite.status == 0:
                             msg = '套件未运行'
-                        elif suite.status in (1, 2):
+                        elif 1 < suite.status <= 2:
                             for case in suite.vic_cases:
                                 if case.status == 2 or case.pause_signal:
                                     case.pause_signal = False

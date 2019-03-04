@@ -52,6 +52,10 @@ function show_action_field($actionSelect) {
 		$('[ui],div[name=timeout],div[name=save_as]').show();
 		$('div[name=ui_special_action]').hide();
 		$('div[name=ui_data] .col-1').text('文字内容');
+	} else if (select_value === 'UI_CLEAR') {
+		introduce.children('div').text('清空指定输入框、文本框的值，如果找不到元素或元素当前不可见会报错。如果填写了“保存为”，找到的元素将被保存为变量');
+		$('[ui],div[name=timeout],div[name=save_as]').show();
+		$('div[name=ui_data],div[name=ui_special_action]').hide();
 	} else if (select_value === 'UI_SELECT') {
 		introduce.children('div').text('在指定的下拉列表进行选择操作，如果找不到元素或元素当前不可见会报错。此动作只能操作由select，option元素组成的标准下拉列表，其他类型的下拉列表请使用单击或JS进行选择');
 		introduce.append($('<div>').text('不提供选项代表在指定的下拉列表取消所有选择'));

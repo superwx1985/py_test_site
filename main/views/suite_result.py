@@ -4,6 +4,7 @@ import datetime
 from django.http import HttpResponseRedirect, JsonResponse, Http404, HttpResponse
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.urls import reverse
 from django.db.models import Q, CharField, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
@@ -67,7 +68,9 @@ def list_(request):
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
 
     d = {l[0]: l[1] for l in result_state_list}
-    m2m_objects = SuiteResult.objects.filter(is_active=True, caseresult__case_order__isnull=False).values('pk').annotate(
+    m2m_objects = SuiteResult.objects.filter(
+        # is_active=True, caseresult__case_order__isnull=False).values('pk').annotate(
+        is_active=True, caseresult__step_result__isnull=True).values('pk').annotate(
         m2m_count=Count('caseresult'))
     m2m_count = {o['pk']: o['m2m_count'] for o in m2m_objects}
     for o in objects:
