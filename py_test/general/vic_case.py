@@ -294,22 +294,6 @@ class VicCase:
                                 self.vic_suite.vic_cases[self.case_order-1].pause_signal = True  # 向一级用例发送暂停信号
                                 _ = self.pause_(msg_format='【{}】\t遇到错误，已暂停{}秒，剩余{}秒')
 
-
-                                # self.status = 2
-                                # self.vic_suite.status = 2
-                                # self.vic_suite.websocket_sender('用例暂停', 20, _type='pause')
-                                # _timeout = math.modf(float(ERROR_PAUSE_TIMEOUT))
-                                # time.sleep(_timeout[0])  # 暂停小数部分
-                                # x = int(_timeout[1])
-                                # for i in range(x):
-                                #     if self.continue_signal or self.force_stop:
-                                #         break
-                                #     time.sleep(1)
-                                #     y = i + 1
-                                #     self.logger.info(.format(step_execute_str, y, x - y))
-                                #
-                                # self.continue_()
-
             except Exception as e:
                 self.logger.error('【{}】\t执行出错'.format(execute_str), exc_info=True)
                 self.case_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))

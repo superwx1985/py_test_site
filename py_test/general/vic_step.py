@@ -238,6 +238,8 @@ class VicStep:
             start_time = time.time()
             re_run = True
             re_run_count = 0
+            elapsed_time = 0
+            pause_time = 0
             while re_run and not self.force_stop:
                 re_run = False
                 try:
@@ -400,7 +402,8 @@ class VicStep:
                         elif ac == 'UI_ALERT_HANDLE':
                             if re_run_count == 0:
                                 self.update_test_data('ui_alert_handle_text')
-                            self.run_result, _ = ui_test.method.alert_handle(self)
+                            self.run_result, _, _, _pause_time = ui_test.method.alert_handle(self)
+                            pause_time += _pause_time
 
                         # 打开URL
                         elif ac == 'UI_GO_TO_URL':
@@ -426,7 +429,8 @@ class VicStep:
                         elif ac == 'UI_SCREENSHOT':
                             if re_run_count == 0:
                                 self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
-                            self.run_result, img = ui_test.screenshot.get_screenshot(self)
+                            self.run_result, img, _, _pause_time = ui_test.screenshot.get_screenshot(self)
+                            pause_time += _pause_time
                             if img:
                                 self.img_list.append(img)
 
@@ -434,7 +438,8 @@ class VicStep:
                         elif ac == 'UI_SWITCH_TO_FRAME':
                             if re_run_count == 0:
                                 self.update_test_data('ui_locator', 'ui_base_element')
-                            self.run_result = ui_test.method.try_to_switch_to_frame(self)
+                            self.run_result, _, _pause_time = ui_test.method.try_to_switch_to_frame(self)
+                            pause_time += _pause_time
 
                         # 退出frame
                         elif ac == 'UI_SWITCH_TO_DEFAULT_CONTENT':
@@ -444,7 +449,9 @@ class VicStep:
                         elif ac == 'UI_SWITCH_TO_WINDOW':
                             if re_run_count == 0:
                                 self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
-                            self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(self)
+                            self.run_result, new_window_handle, _, _pause_time \
+                                = ui_test.method.try_to_switch_to_window(self)
+                            pause_time += _pause_time
 
                         # 关闭当前浏览器窗口或标签并切换至其他窗口或标签
                         elif ac == 'UI_CLOSE_WINDOW':
@@ -459,8 +466,9 @@ class VicStep:
                                 logger.warning('【{}】\t无法获取当前窗口'.format(estr), exc_info=True)
                                 current_window_handle = 'N/A'
                             dr.close()
-                            self.run_result, new_window_handle = ui_test.method.try_to_switch_to_window(
-                                self, current_window_handle)
+                            self.run_result, new_window_handle, _, _pause_time \
+                                = ui_test.method.try_to_switch_to_window(self, current_window_handle)
+                            pause_time += _pause_time
 
                         # 重置浏览器
                         elif ac == 'UI_RESET_BROWSER':
@@ -483,7 +491,8 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, element = ui_test.method.try_to_click(self)
+                            self.run_result, element, _, _pause_time = ui_test.method.try_to_click(self)
+                            pause_time += _pause_time
                             self.elements = [element]
                             if self.save_as:
                                 var.set_variable(self.save_as, self.elements)
@@ -495,7 +504,8 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, element = ui_test.method.try_to_enter(self)
+                            self.run_result, element, _, _pause_time = ui_test.method.try_to_enter(self)
+                            pause_time += _pause_time
                             self.elements = [element]
                             if self.save_as:
                                 var.set_variable(self.save_as, self.elements)
@@ -507,7 +517,8 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, element = ui_test.method.try_to_clear(self)
+                            self.run_result, element, _, _pause_time = ui_test.method.try_to_clear(self)
+                            pause_time += _pause_time
                             self.elements = [element]
                             if self.save_as:
                                 var.set_variable(self.save_as, self.elements)
@@ -519,7 +530,8 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, element = ui_test.method.try_to_select(self)
+                            self.run_result, element, _, _pause_time = ui_test.method.try_to_select(self)
+                            pause_time += _pause_time
                             self.elements = [element]
                             if self.save_as:
                                 var.set_variable(self.save_as, self.elements)
@@ -531,7 +543,9 @@ class VicStep:
                                 _update_test_data = True
                             else:
                                 _update_test_data = False
-                            self.run_result, element = ui_test.method.perform_special_action(self, _update_test_data)
+                            self.run_result, element, _, _pause_time \
+                                = ui_test.method.perform_special_action(self, _update_test_data)
+                            pause_time += _pause_time
                             self.elements = [element]
                             if self.save_as:
                                 var.set_variable(self.save_as, self.elements)
@@ -543,7 +557,8 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, element = ui_test.method.try_to_scroll_into_view(self)
+                            self.run_result, element, _, _pause_time = ui_test.method.try_to_scroll_into_view(self)
+                            pause_time = _pause_time
                             self.elements = [element]
                             if self.save_as:
                                 var.set_variable(self.save_as, self.elements)
@@ -555,7 +570,8 @@ class VicStep:
                             if not self.ui_data:
                                 raise ValueError('无验证内容')
                             else:
-                                self.run_result = ui_test.method.wait_for_page_redirect(self)
+                                self.run_result, _, _pause_time = ui_test.method.wait_for_page_redirect(self)
+                            pause_time += _pause_time
                             if self.save_as:
                                 if self.run_result[0] == 'p':
                                     verify_result = True
@@ -570,8 +586,9 @@ class VicStep:
                                 self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                             if not self.ui_data:
                                 raise ValueError('请提供要验证的文字')
-                            self.run_result, self.elements, self.fail_elements = ui_test.method.wait_for_text_present(
-                                self)
+                            self.run_result, self.elements, self.fail_elements, _, _pause_time \
+                                = ui_test.method.wait_for_text_present(self)
+                            pause_time += _pause_time
                             if self.save_as:
                                 if self.run_result[0] == 'p':
                                     verify_result = True
@@ -587,7 +604,9 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, self.elements, _ = ui_test.method.wait_for_element_visible(self)
+                            self.run_result, self.elements, _, _, _pause_time \
+                                = ui_test.method.wait_for_element_visible(self)
+                            pause_time += _pause_time
 
                             if self.save_as:
                                 if self.run_result[0] == 'p':
@@ -604,7 +623,9 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, self.fail_elements = ui_test.method.wait_for_element_disappear(self)
+                            self.run_result, self.fail_elements, _, _pause_time \
+                                = ui_test.method.wait_for_element_disappear(self)
+                            pause_time += _pause_time
 
                             if self.save_as:
                                 if self.run_result[0] == 'p':
@@ -621,7 +642,8 @@ class VicStep:
                             if not self.ui_data:
                                 raise ValueError('未提供javascript代码')
 
-                            self.run_result, js_result = ui_test.method.run_js(self)
+                            self.run_result, js_result, _, _pause_time = ui_test.method.run_js(self)
+                            pause_time += _pause_time
                             if self.save_as:
                                 msg = var.set_variable(self.save_as, js_result)
                                 self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
@@ -633,7 +655,8 @@ class VicStep:
                             if not self.ui_data:
                                 raise ValueError('未提供javascript代码')
 
-                            self.run_result, js_result = ui_test.method.run_js(self)
+                            self.run_result, js_result, _, _pause_time = ui_test.method.run_js(self)
+                            pause_time += _pause_time
                             if js_result is not True:
                                 self.run_result = ['f', self.run_result[1]]
                                 verify_result = False
@@ -652,7 +675,9 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, self.elements, _, _ = ui_test.method.wait_for_element_present(self)
+                            self.run_result, self.elements, _, _pause_time \
+                                = ui_test.method.wait_for_element_present(self)
+                            pause_time += _pause_time
 
                             if self.run_result[0] == 'p':
                                 msg = var.set_variable(self.save_as, self.elements)
@@ -1065,18 +1090,23 @@ class VicStep:
                                             **highlight_elements_map,
                                             **ui_test.method.highlight(dr, self.fail_elements, 'red')
                                         }
+                                    _start_time = time.time()
+                                    _pause_time = 0
                                     try:
                                         _ui_by = self.ui_by
                                         _ui_locator = self.ui_locator
                                         self.ui_by = None
                                         self.ui_locator = None
-                                        _, img = ui_test.screenshot.get_screenshot(self)
+                                        _, img, _, _pause_time = ui_test.screenshot.get_screenshot(self)
                                         if img:
                                             self.img_list.append(img)
                                         self.ui_by = _ui_by
                                         self.ui_locator = _ui_locator
                                     except Exception:
                                         logger.warning('【{}】\t无法获取UI验证截图'.format(estr), exc_info=True)
+                                        _pause_time = time.time() - _start_time
+                                    finally:
+                                        pause_time += _pause_time
                                     if highlight_elements_map:
                                         ui_test.method.cancel_highlight(dr, highlight_elements_map)
                                 else:
@@ -1100,7 +1130,7 @@ class VicStep:
                         self.run_result = ['s', '跳过步骤']
                 # 如果遇到元素过期，将尝试重跑该步骤，直到超时
                 except (exceptions.StaleElementReferenceException, exceptions.WebDriverException) as e:
-                    if self.force_stop or (time.time() - start_time) > timeout:
+                    if self.force_stop or (time.time() - start_time - pause_time) > timeout:
                         raise
                     msg_ = 'element is not attached to the page document'
                     if isinstance(e, exceptions.StaleElementReferenceException) or msg_ in e.msg:
@@ -1181,7 +1211,7 @@ class VicStep:
                 try:
                     self.ui_by = None
                     self.ui_locator = None
-                    self.run_result, img = ui_test.screenshot.get_screenshot(self)
+                    self.run_result, img, _, _ = ui_test.screenshot.get_screenshot(self)
                     if img:
                         self.img_list.append(img)
                 except exceptions.UnexpectedAlertPresentException:
@@ -1194,11 +1224,6 @@ class VicStep:
         # 关联截图
         for img in self.img_list:
             self.step_result.imgs.add(img)
-
-        # if self.ignore_error and self.step_result.result_state in (2, 3):
-        #     self.step_result.result_state = 1
-        #     self.step_result.result_message = '因为步骤设置了忽略错误，下列错误被忽略\n{}'.format(
-        #         self.step_result.result_message)
 
         self.step_result.end_date = datetime.datetime.now()
         self.step_result.save()

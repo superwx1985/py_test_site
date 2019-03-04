@@ -14,10 +14,12 @@ def get_screenshot(vic_step):
     element = None
     img = None
     run_result = None
+    elapsed_time = 0
+    pause_time = 0
     if vic_step.ui_by and vic_step.ui_locator:
         _ui_data = vic_step.ui_data  # 把ui_data置空，防止查找元素时被当做数量限制表达式
         vic_step.ui_data = None
-        run_result_temp, visible_elements, _ = method.wait_for_element_visible(vic_step)
+        run_result_temp, visible_elements, _, elapsed_time, pause_time = method.wait_for_element_visible(vic_step)
         vic_step.ui_data = _ui_data
         if visible_elements:
             element = visible_elements[0]
@@ -28,7 +30,7 @@ def get_screenshot(vic_step):
             run_result, img = _get_screenshot(vic_step.dr, element)
         except Exception as e:
             run_result = ['f', '截图失败，原因为{}'.format(getattr(e, 'msg', str(e)))]
-    return run_result, img
+    return run_result, img, elapsed_time, pause_time
 
 
 # 根据浏览器类型调取不同的截图方法

@@ -73,6 +73,7 @@ def wait_for_text_present(vic_step, print_=True):
     index_ = vic_step.ui_index
     text = vic_step.ui_data
     _success = False
+    _full_msg = ''
     msg = '没找到期望文字【{}】'.format(text)
     msg_format = '经过{:.1f}秒 - {}'
     last_print_time = 0
@@ -96,10 +97,17 @@ def wait_for_text_present(vic_step, print_=True):
         else:
             _ui_data = vic_step.ui_data
             vic_step.ui_data = None  # 把ui_data置空，防止查找元素时被当做数量限制表达式
+            _start_time = time.time()
+            _pause_time = 0
+            run_result_temp = ['f', 'N/A']
+            elements_temp = None
             try:
-                run_result_temp, elements_temp, elements_all = wait_for_element_visible(
+                run_result_temp, elements_temp, elements_all, _, _pause_time = wait_for_element_visible(
                     vic_step, timeout=1, print_=False)
+            except:
+                _pause_time = time.time() - _start_time
             finally:
+                pause_time += _pause_time
                 vic_step.ui_data = _ui_data
             if run_result_temp[0] == 'f':
                 msg = '未找到期望元素【By:{}|Locator:{}】或元素不可见'.format(vic_step.ui_by, vic_step.ui_locator)
@@ -135,9 +143,9 @@ def wait_for_text_present(vic_step, print_=True):
         if time.time() - last_print_time >= 1:
             pause_time += vic_step.pause_()
             elapsed_time = time.time() - start_time - pause_time
-            full_msg = msg_format.format(elapsed_time, msg)
+            _full_msg = msg_format.format(elapsed_time, msg)
             if print_:
-                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
+                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, _full_msg))
             last_print_time = time.time()
 
         if _success:
@@ -145,17 +153,20 @@ def wait_for_text_present(vic_step, print_=True):
 
     elapsed_time = time.time() - start_time - pause_time
     full_msg = msg_format.format(elapsed_time, msg)
+    if print_ and full_msg != _full_msg:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
     if _success:
         run_result = ['p', full_msg]
     else:
         run_result = ['f', full_msg]
     vic_step.dr.implicitly_wait(vic_step.timeout)
-    return run_result, elements, fail_elements
+    return run_result, elements, fail_elements, elapsed_time, pause_time
 
 
 # 等待元素出现
 def wait_for_element_present(vic_step, timeout=None, print_=True):
     pause_time = 0
+    _full_msg = ''
     elements = list()
     if not timeout:
         timeout = vic_step.timeout
@@ -178,9 +189,9 @@ def wait_for_element_present(vic_step, timeout=None, print_=True):
         if time.time() - last_print_time >= 1:
             pause_time += vic_step.pause_()
             elapsed_time = time.time() - start_time - pause_time
-            full_msg = msg_format.format(elapsed_time, msg)
+            _full_msg = msg_format.format(elapsed_time, msg)
             if print_:
-                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
+                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, _full_msg))
             last_print_time = time.time()
 
         if elements:
@@ -188,6 +199,8 @@ def wait_for_element_present(vic_step, timeout=None, print_=True):
 
     elapsed_time = time.time() - start_time - pause_time
     full_msg = msg_format.format(elapsed_time, msg)
+    if print_ and full_msg != _full_msg:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
     if elements:
         run_result = ['p', full_msg]
     else:
@@ -230,9 +243,10 @@ def wait_for_element_visible(vic_step, timeout=None, print_=True):
     visible_elements = list()
     if not timeout:
         timeout = vic_step.timeout
+    _success = False
+    _full_msg = ''
     msg = '未找到期望元素【By:{}|Locator:{}】'.format(vic_step.ui_by, vic_step.ui_locator)
     msg_format = '经过{:.1f}秒 - {}'
-    _success = False
     vic_step.dr.implicitly_wait(0)
     last_print_time = 0
     start_time = time.time()
@@ -268,9 +282,9 @@ def wait_for_element_visible(vic_step, timeout=None, print_=True):
         if time.time() - last_print_time >= 1:
             pause_time += vic_step.pause_()
             elapsed_time = time.time() - start_time - pause_time
-            full_msg = msg_format.format(elapsed_time, msg)
+            _full_msg = msg_format.format(elapsed_time, msg)
             if print_:
-                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
+                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, _full_msg))
             last_print_time = time.time()
 
         if _success:
@@ -278,12 +292,14 @@ def wait_for_element_visible(vic_step, timeout=None, print_=True):
 
     elapsed_time = time.time() - start_time - pause_time
     full_msg = msg_format.format(elapsed_time, msg)
+    if print_ and full_msg != _full_msg:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
     if _success:
         run_result = ['p', full_msg]
     else:
         run_result = ['f', full_msg]
     vic_step.dr.implicitly_wait(timeout)
-    return run_result, visible_elements, elements
+    return run_result, visible_elements, elements, elapsed_time, pause_time
 
 
 # 获取可见元素
@@ -296,7 +312,7 @@ def get_visible_element(vic_step, timeout=None, print_=True, necessary=True):
     _ui_data = vic_step.ui_data
     vic_step.ui_data = None  # 把ui_data置空，防止查找元素时被当做数量限制表达式
     try:
-        run_result_temp, elements, _ = wait_for_element_visible(vic_step, timeout=timeout, print_=print_)
+        run_result_temp, elements, _, elapsed_time, pause_time = wait_for_element_visible(vic_step, timeout=timeout, print_=print_)
     finally:
         vic_step.ui_data = _ui_data
     if run_result_temp[0] == 'f':
@@ -314,16 +330,17 @@ def get_visible_element(vic_step, timeout=None, print_=True, necessary=True):
         element = elements[vic_step.ui_index]
     if not element and necessary:
         raise exceptions.NoSuchElementException(err_msg)
-    return element, el_msg, err_msg
+    return element, el_msg, err_msg, elapsed_time, pause_time
 
 
 # 等待元素消失
 def wait_for_element_disappear(vic_step, print_=True):
     pause_time = 0
     visible_elements = list()
+    _success = False
+    _full_msg = ''
     msg = '未找到期望元素【By:{}|Locator:{}】'.format(vic_step.ui_by, vic_step.ui_locator)
     msg_format = '经过{:.1f}秒 - {}'
-    _success = False
     vic_step.dr.implicitly_wait(0)
     last_print_time = 0
     start_time = time.time()
@@ -352,9 +369,9 @@ def wait_for_element_disappear(vic_step, print_=True):
         if time.time() - last_print_time >= 1:
             pause_time += vic_step.pause_()
             elapsed_time = time.time() - start_time - pause_time
-            full_msg = msg_format.format(elapsed_time, msg)
+            _full_msg = msg_format.format(elapsed_time, msg)
             if print_:
-                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
+                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, _full_msg))
             last_print_time = time.time()
 
         if _success:
@@ -362,12 +379,14 @@ def wait_for_element_disappear(vic_step, print_=True):
 
     elapsed_time = time.time() - start_time - pause_time
     full_msg = msg_format.format(elapsed_time, msg)
+    if print_ and full_msg != _full_msg:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
     if _success:
         run_result = ['p', full_msg]
     else:
         run_result = ['f', full_msg]
     vic_step.dr.implicitly_wait(vic_step.timeout)
-    return run_result, visible_elements
+    return run_result, visible_elements, elapsed_time, pause_time
 
 
 # 跳转到url
@@ -381,9 +400,10 @@ def go_to_url(vic_step):
 # 等待页面跳转
 def wait_for_page_redirect(vic_step, print_=True):
     pause_time = 0
+    _success = False
+    _full_msg = ''
     msg = '新URL不符合期望【{}】'.format(vic_step.ui_data)
     msg_format = '经过{:.1f}秒 - {}'
-    _success = False
     last_print_time = 0
     start_time = time.time()
     while (time.time() - start_time - pause_time) <= vic_step.timeout and not vic_step.force_stop:
@@ -396,9 +416,9 @@ def wait_for_page_redirect(vic_step, print_=True):
         if time.time() - last_print_time >= 1:
             pause_time += vic_step.pause_()
             elapsed_time = time.time() - start_time - pause_time
-            full_msg = msg_format.format(elapsed_time, msg)
+            _full_msg = msg_format.format(elapsed_time, msg)
             if print_:
-                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
+                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, _full_msg))
             last_print_time = time.time()
 
         if _success:
@@ -406,11 +426,13 @@ def wait_for_page_redirect(vic_step, print_=True):
 
     elapsed_time = time.time() - start_time - pause_time
     full_msg = msg_format.format(elapsed_time, msg)
+    if print_ and full_msg != _full_msg:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
     if _success:
         run_result = ['p', full_msg]
     else:
         run_result = ['f', full_msg]
-    return run_result
+    return run_result, elapsed_time, pause_time
 
 
 # 获取URL
@@ -474,6 +496,7 @@ def try_to_clear(vic_step, print_=True):
 def try_to_do(vic_step, func, print_=True):
     err = None
     _success = False
+    _full_msg = ''
     msg = '超时'
     msg_format = '经过{:.1f}秒 - {}'
     pause_time = 0
@@ -504,9 +527,9 @@ def try_to_do(vic_step, func, print_=True):
             if time.time() - last_print_time >= 1:
                 pause_time += vic_step.pause_()
                 elapsed_time = time.time() - start_time - pause_time
-                full_msg = msg_format.format(elapsed_time, msg)
+                _full_msg = msg_format.format(elapsed_time, msg)
                 if print_:
-                    vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
+                    vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, _full_msg))
                 last_print_time = time.time()
 
             if _success:
@@ -519,6 +542,8 @@ def try_to_do(vic_step, func, print_=True):
 
     elapsed_time = time.time() - start_time - pause_time
     full_msg = msg_format.format(elapsed_time, msg)
+    if print_ and full_msg != _full_msg:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
     if _success:
         run_result = ['p', full_msg]
     else:
@@ -527,12 +552,12 @@ def try_to_do(vic_step, func, print_=True):
             raise err
         else:
             raise exceptions.WebDriverException(full_msg)
-    return run_result, element
+    return run_result, element, elapsed_time, pause_time
 
 
 # 尝试选择
 def try_to_select(vic_step, print_=True):
-    element, el_msg, _ = get_visible_element(vic_step, print_=print_)
+    element, el_msg, _, elapsed_time, pause_time = get_visible_element(vic_step, print_=print_)
     highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     select = Select(element)
     # 如果data为空则全不选
@@ -582,7 +607,7 @@ def try_to_select(vic_step, print_=True):
     run_result = ['p', '在元素{}中进行了选择操作，被选中的选项为【{}】'.format(el_msg, '|'.join(selected_text_list))]
     if print_:
         vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, run_result[1]))
-    return run_result, element
+    return run_result, element, elapsed_time, pause_time
 
 
 # 获取特殊键组合
@@ -614,11 +639,13 @@ def get_special_keys(data_, logger=logging.getLogger('py_test')):
 
 # 特殊动作
 def perform_special_action(vic_step, update_test_data=False, print_=True):
+    elapsed_time = 0
+    pause_time = 0
     if not vic_step.ui_by or not vic_step.ui_locator:
         element = None
         el_msg = ''
     else:
-        element, el_msg, _, _, _ = get_element(vic_step, print_=print_)
+        element, el_msg, _, elapsed_time, pause_time = get_element(vic_step, print_=print_)
 
     dr = vic_step.dr
     sp = vic_step.ui_special_action
@@ -717,24 +744,25 @@ def perform_special_action(vic_step, update_test_data=False, print_=True):
     run_result = ['p', msg]
     if print_:
         vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, run_result[1]))
-    return run_result, element
+    return run_result, element, elapsed_time, pause_time
 
 
 # 尝试滚动到元素位置
 def try_to_scroll_into_view(vic_step, print_=True):
-    element, el_msg, _, _, _ = get_element(vic_step, print_=print_)
+    element, el_msg, _, elapsed_time, pause_time = get_element(vic_step, print_=print_)
     highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     vic_step.dr.execute_script('arguments[0].scrollIntoView()', element)
     run_result = ['p', '移动窗口到元素{}的位置'.format(el_msg)]
     if print_:
         vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, run_result[1]))
-    return run_result, element
+    return run_result, element, elapsed_time, pause_time
 
 
 # 处理浏览器弹窗
 def alert_handle(vic_step, print_=True):
     pause_time = 0
     _success = False
+    _full_msg = ''
     msg = 'N/A'
     msg_format = '经过{:.1f}秒 - {}'
     alert_text = ''
@@ -762,9 +790,9 @@ def alert_handle(vic_step, print_=True):
         if time.time() - last_print_time >= 1:
             pause_time += vic_step.pause_()
             elapsed_time = time.time() - start_time - pause_time
-            full_msg = msg_format.format(elapsed_time, msg)
+            _full_msg = msg_format.format(elapsed_time, msg)
             if print_:
-                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
+                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, _full_msg))
             last_print_time = time.time()
 
         if _success:
@@ -772,17 +800,20 @@ def alert_handle(vic_step, print_=True):
 
     elapsed_time = time.time() - start_time - pause_time
     full_msg = msg_format.format(elapsed_time, msg)
+    if print_ and full_msg != _full_msg:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
     if _success:
         run_result = ['p', full_msg]
     else:
         raise exceptions.NoAlertPresentException(full_msg)
-    return run_result, alert_text
+    return run_result, alert_text, elapsed_time, pause_time
 
 
 # 尝试切换窗口
 def try_to_switch_to_window(vic_step, current_window_handle=None, print_=True):
     pause_time = 0
     _success = False
+    _full_msg = ''
     msg = '无法切换到符合条件的窗口'
     msg_format = '经过{:.1f}秒 - {}'
     new_window_handle = None
@@ -828,9 +859,9 @@ def try_to_switch_to_window(vic_step, current_window_handle=None, print_=True):
         if time.time() - last_print_time >= 1:
             pause_time += vic_step.pause_()
             elapsed_time = time.time() - start_time - pause_time
-            full_msg = msg_format.format(elapsed_time, msg)
+            _full_msg = msg_format.format(elapsed_time, msg)
             if print_:
-                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
+                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, _full_msg))
             last_print_time = time.time()
 
         if _success:
@@ -838,29 +869,20 @@ def try_to_switch_to_window(vic_step, current_window_handle=None, print_=True):
 
     elapsed_time = time.time() - start_time - pause_time
     full_msg = msg_format.format(elapsed_time, msg)
+    if print_ and full_msg != _full_msg:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
     if _success:
         run_result = ['p', full_msg]
     else:
         raise exceptions.NoSuchWindowException(full_msg)
-    return run_result, new_window_handle
+    return run_result, new_window_handle, elapsed_time, pause_time
 
 
-# 尝试关闭当前窗口后切换窗口
-def try_to_close_and_switch_to_window(vic_step, print_=True):
-    try:
-        current_window_handle = vic_step.dr.current_window_handle
-        vic_step.dr.close()
-    except exceptions.NoSuchWindowException:
-        vic_step.logger.warning('【{}】\t无法获取当前窗口'.format(vic_step.execute_str), exc_info=True)
-        current_window_handle = 'N/A'
-    run_result, new_window_handle = try_to_switch_to_window(vic_step, current_window_handle, print_)
-    return run_result, new_window_handle
-
-
-# 尝试切换到框架
+# 尝试切换框架
 def try_to_switch_to_frame(vic_step, print_=True):
     pause_time = 0
     _success = False
+    _full_msg = ''
     msg = '未能切换到指定的框架'
     msg_format = '经过{:.1f}秒 - {}'
     last_print_time = 0
@@ -873,7 +895,6 @@ def try_to_switch_to_frame(vic_step, print_=True):
             if frame:
                 vic_step.dr.switch_to.frame(frame)
                 _success = True
-                print(vic_step.dr.current_url)
                 msg = '切换到元素{}对应的框架'.format(el_msg)
             else:
                 msg = '未能切换到元素对应的框架，因为{}'.format(err_msg)
@@ -889,9 +910,9 @@ def try_to_switch_to_frame(vic_step, print_=True):
         if time.time() - last_print_time >= 1:
             pause_time += vic_step.pause_()
             elapsed_time = time.time() - start_time - pause_time
-            full_msg = msg_format.format(elapsed_time, msg)
+            _full_msg = msg_format.format(elapsed_time, msg)
             if print_:
-                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
+                vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, _full_msg))
             last_print_time = time.time()
 
         if _success:
@@ -899,22 +920,26 @@ def try_to_switch_to_frame(vic_step, print_=True):
 
     elapsed_time = time.time() - start_time - pause_time
     full_msg = msg_format.format(elapsed_time, msg)
+    if print_ and full_msg != _full_msg:
+        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
     if _success:
         run_result = ['p', full_msg]
     else:
         raise exceptions.NoSuchFrameException(full_msg)
-    return run_result
+    return run_result, elapsed_time, pause_time
 
 
 # 运行javascript
 def run_js(vic_step, print_=True):
+    elapsed_time = 0
+    pause_time = 0
     if vic_step.ui_by in (None, ''):
         js_result = vic_step.dr.execute_script(vic_step.ui_data)
     else:
         if vic_step.variable_elements:
             elements = vic_step.variable_elements
         else:
-            run_result_temp, elements, _, _ = wait_for_element_present(vic_step, print_=print_)
+            run_result_temp, elements, elapsed_time, pause_time = wait_for_element_present(vic_step, print_=print_)
             if run_result_temp[0] == 'f':
                 raise exceptions.NoSuchElementException(run_result_temp[1])
         if vic_step.ui_index is None:
@@ -929,23 +954,23 @@ def run_js(vic_step, print_=True):
     run_result = ['p', 'JavaScript执行完毕，返回值为：\n{}'.format(js_result)]
     if print_:
         vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, run_result[1]))
-    return run_result, js_result
+    return run_result, js_result, elapsed_time, pause_time
 
 
 # 获取元素文本
 def get_element_text(vic_step, print_=True):
-    element, el_msg, _, _, _ = get_element(vic_step, print_=print_)
+    element, el_msg, _, elapsed_time, pause_time = get_element(vic_step, print_=print_)
     highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     text = element.text
     run_result = ['p', '获取了元素{}的文本：{}'.format(el_msg, text)]
     if print_:
         vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, run_result[1]))
-    return run_result, text
+    return run_result, text, elapsed_time, pause_time
 
 
 # 获取元素属性
 def get_element_attr(vic_step, print_=True):
-    element, el_msg, _, _, _ = get_element(vic_step, print_=print_)
+    element, el_msg, _, elapsed_time, pause_time = get_element(vic_step, print_=print_)
     highlight_for_a_moment(vic_step.dr, [element], 'outline: 2px dotted yellow; border: 1px solid yellow;')
     attr = element.get_attribute(vic_step.ui_data)
     if attr:
@@ -954,7 +979,7 @@ def get_element_attr(vic_step, print_=True):
         run_result = ['f', '元素{}不存在【{}】属性'.format(el_msg, vic_step.ui_data)]
     if print_:
         vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, run_result[1]))
-    return run_result, attr
+    return run_result, attr, elapsed_time, pause_time
 
 
 
