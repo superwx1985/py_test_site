@@ -154,8 +154,7 @@ if __name__ == "__main__":
         if suite_result_url:
             logger.info('测试结果页面：http://{}{}'.format(test_server, suite_result_url))
         else:
-            logger.warning('找不到测试结果页')
-        assert suite_result_state, '测试意外终止或结果入库失败'
-        assert run_result['suite_result_state'] == 1, '本次测试未通过'
+            logger.warning('测试意外终止或结果入库失败')
+        assert suite_result_state == 1, '本次测试未通过'
     else:
         raise ConnectionError('服务器未能返回测试结果')

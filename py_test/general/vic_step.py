@@ -789,7 +789,7 @@ class VicStep:
                                         self.api_method,
                                         pretty_request_header,
                                         self.api_body,
-                                        response.state, response.reason,
+                                        response.status, response.reason,
                                         pretty_response_header,
                                         response_body_msg, suffix_msg)
 
@@ -1134,8 +1134,8 @@ class VicStep:
                 except (exceptions.StaleElementReferenceException, exceptions.WebDriverException) as e:
                     if self.force_stop or (time.time() - start_time - pause_time) > timeout:
                         raise
-                    msg_ = 'element is not attached to the page document'
-                    if isinstance(e, exceptions.StaleElementReferenceException) or msg_ in e.msg:
+                    _err_msg = 'element is not attached to the page document'
+                    if isinstance(e, exceptions.StaleElementReferenceException) or _err_msg in e.msg:
                         re_run = True
                         re_run_count += 1
                         logger.warning('【{}】\t元素已过期，可能是由于页面异步刷新导致，将尝试重新获取元素'.format(estr))
