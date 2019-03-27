@@ -5,7 +5,7 @@ import time
 import math
 from py_test.general import vic_variables, vic_method
 from py_test import ui_test
-from main.models import CaseResult, Step
+from main.models import CaseResult, Step, error_handle_dict
 from django.forms.models import model_to_dict
 from .public_items import status_str_dict
 from .vic_step import VicStep
@@ -46,11 +46,34 @@ class VicCase:
         self.name = case.name
         self.steps = list()
 
-        # timeout为0时也要取
-        self.timeout = case.timeout if case.timeout is not None else vic_suite.timeout
-        # ui_step_interval为0时也要取
-        self.ui_step_interval = case.ui_step_interval if case.ui_step_interval is not None \
-            else vic_suite.ui_step_interval
+        if case.timeout is not None:  # timeout 可以为0
+            self.timeout = case.timeout
+        elif vic_step:
+            self.timeout = vic_step.timeout
+        else:
+            self.timeout = vic_suite.timeout
+
+        if case.ui_step_interval is not None:  # ui_step_interval 可以为0
+            self.ui_step_interval = case.ui_step_interval
+        elif vic_step:
+            self.ui_step_interval = vic_step.ui_step_interval
+        else:
+            self.ui_step_interval = vic_suite.ui_step_interval
+
+        error_handle = error_handle_dict.get(case.error_handle)
+        if error_handle:
+            self.error_handle = error_handle
+        elif vic_step:
+            self.error_handle = vic_step.error_handle
+        else:
+            self.error_handle = vic_suite.error_handle
+
+        if case.config:
+            self.config = case.config
+        elif vic_step:
+            self.config = vic_step.config
+        else:
+            self.config = self.vic_suite.config
 
         self.force_stop_signal = False  # 强制停止信号
         self.pause_signal = False  # 暂停信号
@@ -66,8 +89,6 @@ class VicCase:
         self.loop_list = list()
         # 循环迭代次数
         self.loop_active = False
-
-        self.config = self.vic_suite.config
 
         # 获取变量组json
         variable_group_json = None
@@ -189,7 +210,7 @@ class VicCase:
                             recursive_id, case_list[-1], case_list))
 
                 # 初始化driver
-                if not dr and not self.vic_step and self.config.ui_selenium_client != 0:
+                if not dr and self.config.ui_selenium_client != 0:
                     init_timeout = self.timeout if self.timeout > 30 else 30
                     self.logger.info('【{}】\t启动浏览器...'.format(step_execute_str))
                     dr = ui_test.driver.get_driver(self.config, execute_str, 3, init_timeout, logger=self.logger)
@@ -271,17 +292,19 @@ class VicCase:
                         self.case_result.pass_count += 1
                         self.logger.info('【{}】\t执行成功'.format(step_execute_str))
                     elif step_result_.result_state == 4:
-                        self.logger.warning('【{}】\t执行中止'.format(step_execute_str))
+                        self.logger.warning('【{}】\t中止'.format(step_execute_str))
                     else:
                         if step_result_.result_state == 2:
-                            self.logger.warning('【{}】\t执行失败'.format(step_execute_str))
+                            self.logger.warning('【{}】\t验证失败'.format(step_execute_str))
                         else:
-                            self.logger.error('【{}】\t执行出错，错误信息 => {}'.format(step_execute_str, step_result_.result_message))
+                            self.logger.error('【{}】\t执行出错'.format(step_execute_str))
+
                         if step_.error_handle == 'skip':
-                            self.logger.info('【{}】\t因为本步骤被设置为遇到错误跳过，所以执行结果更改为跳过'.format(step_execute_str))
+                            skip_msg = '因为本步骤被设置为遇到错误跳过，所以执行结果更改为跳过'
+                            self.logger.warning('【{}】\t{}'.format(step_execute_str, skip_msg))
                             step_result_.result_state = 0
-                            step_result_.result_message = '因为本步骤被设置为遇到错误跳过，下列错误被忽略\n==========\n{}'.format(
-                                step_result_.result_message)
+                            step_result_.result_message = '{}\n==========\n{}'.format(
+                                step_result_.result_message, skip_msg)
                             step_result_.save()
                         else:
                             if step_result_.result_state == 2:
@@ -292,7 +315,7 @@ class VicCase:
                                 break
                             elif step_.error_handle == 'pause':
                                 self.vic_suite.vic_cases[self.case_order-1].pause_signal = True  # 向一级用例发送暂停信号
-                                _ = self.pause_(msg_format='【{}】\t遇到错误，已暂停{}秒，剩余{}秒')
+                                _ = self.pause_(msg_format='【{}】\t执行中遇到问题，已暂停{}秒，剩余{}秒')
 
             except Exception as e:
                 self.logger.error('【{}】\t执行出错'.format(execute_str), exc_info=True)

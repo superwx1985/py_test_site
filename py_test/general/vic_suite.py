@@ -9,7 +9,7 @@ from py_test.general import vic_variables, vic_public_elements, vic_log, vic_met
 from .public_items import status_str_dict
 from .vic_case import VicCase
 from concurrent.futures import wait, CancelledError, TimeoutError as f_TimeoutError
-from main.models import Case, SuiteResult, Step
+from main.models import Case, SuiteResult, Step, error_handle_dict
 from django.forms.models import model_to_dict
 from utils.system import RUNNING_SUITES
 from utils.thread_pool import VicThreadPoolExecutor, get_pool, safety_shutdown_pool
@@ -49,6 +49,7 @@ class VicSuite:
         self.ui_get_ss = suite.ui_get_ss
         self.log_level = suite.log_level
         self.thread_count = suite.thread_count
+        self.error_handle = error_handle_dict.get(suite.error_handle, 'stop')
 
         # 初始化suite result
         self.suite_result = SuiteResult.objects.create(
@@ -102,7 +103,7 @@ class VicSuite:
         # 记录开始执行时的时间
         self.start_date = self.suite_result.start_date = datetime.datetime.now()
         self.status = 1
-        self.logger.info('开始')
+        self.logger.info('开始测试，套件ID[{}]'.format(self.suite_result.pk))
         RUNNING_SUITES.add_suite(self.execute_uuid, self)
 
         try:
@@ -218,7 +219,7 @@ class VicSuite:
             RUNNING_SUITES.remove_suite(self.execute_uuid)
             safety_shutdown_pool(self.logger)
 
-            self.logger.info('测试执行完毕')
+            self.logger.info('测试执行完毕，套件ID[{}]'.format(self.suite_result.pk))
             self.logger.info('========================================')
             if self.suite_result.result_state == 3:
                 self.logger.error(self.suite_result.result_message)

@@ -12,6 +12,61 @@ result_state_list = (
     (4, '中止'),
 )
 
+error_handle_list_ = (
+    (0, '', None),
+    (1, '中止测试', 'stop'),
+    (2, '继续测试', 'continue'),
+    (3, '暂停测试', 'pause'),
+    (4, '跳过步骤', 'skip'),
+)
+error_handle_dict = {i[0]: i[2] for i in error_handle_list_}
+error_handle_list = [(i[0], i[1]) for i in error_handle_list_]
+error_handle_list_suite = error_handle_list[1:]
+
+
+# 套件表
+class Suite(models.Model):
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(blank=True, max_length=100)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='suite_creator', on_delete=models.SET_NULL, blank=True, null=True)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='suite_modifier', on_delete=models.SET_NULL, blank=True, null=True)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_active = models.BooleanField(default=True)
+    timeout = models.FloatField(default=10)
+    ui_step_interval = models.FloatField(default=0)
+    ui_get_ss = models.BooleanField(default=True)
+    log_level_list = (
+        (1, 'DEV'),
+        (10, 'DEBUG'),
+        (20, 'INFO'),
+        (30, 'WARNING'),
+        (40, 'ERROR'),
+        (50, 'CRITICAL'),
+    )
+    log_level = models.IntegerField(choices=log_level_list, default=20)
+    thread_count = models.IntegerField(default=1)
+    config = models.ForeignKey('main.Config', on_delete=models.SET_NULL, blank=True, null=True)
+    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.SET_NULL, blank=True, null=True)
+    element_group = models.ForeignKey('main.ElementGroup', on_delete=models.SET_NULL, blank=True, null=True)
+    error_handle = models.IntegerField(choices=error_handle_list_suite, default=1)
+
+    case = models.ManyToManyField('Case', through='SuiteVsCase', through_fields=('suite', 'case'))
+
+    def natural_key(self):  # 序列化时，可以用此值代替外键ID
+        return self.name
+
+    class Meta:
+        ordering = ['-modified_date']
+
+    def __str__(self):
+        return self.name
+
 
 # 用例表
 class Case(models.Model):
@@ -29,7 +84,10 @@ class Case(models.Model):
     is_active = models.BooleanField(default=True)
     timeout = models.FloatField(blank=True, null=True)
     ui_step_interval = models.FloatField(blank=True, null=True)
+    config = models.ForeignKey('main.Config', on_delete=models.SET_NULL, blank=True, null=True)
     variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.SET_NULL, blank=True, null=True)
+    error_handle = models.IntegerField(choices=error_handle_list, default=0)
+
     step = models.ManyToManyField('Step', through='CaseVsStep', through_fields=('case', 'step'))
 
     class Meta:
@@ -57,16 +115,7 @@ class Step(models.Model):
     action = models.ForeignKey('main.Action', on_delete=models.SET_NULL, blank=True, null=True)
     timeout = models.FloatField(blank=True, null=True)
     ui_step_interval = models.FloatField(blank=True, null=True)
-    error_handle_list_ = (
-        (1, '中止测试', 'stop'),
-        (2, '继续测试', 'continue'),
-        (3, '暂停测试', 'pause'),
-        (4, '跳过步骤', 'skip'),
-    )
-    error_handle_dict = {i[0]: i[2] for i in error_handle_list_}
-    error_handle_list = [(i[0], i[1]) for i in error_handle_list_]
-    error_handle = models.IntegerField(choices=error_handle_list, default=1)
-
+    error_handle = models.IntegerField(choices=error_handle_list, default=0)
     save_as = models.CharField(blank=True, max_length=100)
     ui_by_list = (
         (0, ''),
@@ -158,6 +207,29 @@ class Step(models.Model):
 
     def __str__(self):
         return self.name
+
+
+# 套件和用例的对应关系
+class SuiteVsCase(models.Model):
+    suite = models.ForeignKey('main.Suite', on_delete=models.CASCADE)
+    case = models.ForeignKey('main.Case', on_delete=models.CASCADE)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='suite_vs_case_creator', on_delete=models.SET_NULL, blank=True,
+        null=True)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='suite_vs_case_modifier', on_delete=models.SET_NULL, blank=True,
+        null=True)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_active = models.BooleanField(default=True)
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ('suite', 'case', 'order')
+        ordering = ['-modified_date']
+
+    def __str__(self):
+        return '{} [{}]<===>{} [{}]'.format(self.suite.id, self.suite.name, self.case.id, self.case.name)
 
 
 # 用例和步骤关系表
@@ -377,71 +449,6 @@ class Element(models.Model):
         unique_together = ('name', 'element_group')
 
 
-# 测试套件
-class Suite(models.Model):
-    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    keyword = models.CharField(blank=True, max_length=100)
-    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
-    creator = models.ForeignKey(
-        User, verbose_name='创建人', related_name='suite_creator', on_delete=models.SET_NULL, blank=True, null=True)
-    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(
-        User, verbose_name='修改人', related_name='suite_modifier', on_delete=models.SET_NULL, blank=True, null=True)
-    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_active = models.BooleanField(default=True)
-    timeout = models.FloatField(default=10)
-    ui_step_interval = models.FloatField(default=0)
-    ui_get_ss = models.BooleanField(default=True)
-    log_level_list = (
-        (1, 'DEV'),
-        (10, 'DEBUG'),
-        (20, 'INFO'),
-        (30, 'WARNING'),
-        (40, 'ERROR'),
-        (50, 'CRITICAL'),
-    )
-    log_level = models.IntegerField(choices=log_level_list, default=20)
-    thread_count = models.IntegerField(default=1)
-    config = models.ForeignKey('main.Config', on_delete=models.SET_NULL, blank=True, null=True)
-    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.SET_NULL, blank=True, null=True)
-    element_group = models.ForeignKey('main.ElementGroup', on_delete=models.SET_NULL, blank=True, null=True)
-    case = models.ManyToManyField('Case', through='SuiteVsCase', through_fields=('suite', 'case'))
-
-    def natural_key(self):  # 序列化时，可以用此值代替外键ID
-        return self.name
-
-    class Meta:
-        ordering = ['-modified_date']
-
-    def __str__(self):
-        return self.name
-
-
-# 测试套件和用例的对应关系
-class SuiteVsCase(models.Model):
-    suite = models.ForeignKey('main.Suite', on_delete=models.CASCADE)
-    case = models.ForeignKey('main.Case', on_delete=models.CASCADE)
-    creator = models.ForeignKey(
-        User, verbose_name='创建人', related_name='suite_vs_case_creator', on_delete=models.SET_NULL, blank=True,
-        null=True)
-    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(
-        User, verbose_name='修改人', related_name='suite_vs_case_modifier', on_delete=models.SET_NULL, blank=True,
-        null=True)
-    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_active = models.BooleanField(default=True)
-    order = models.IntegerField(default=0)
-
-    class Meta:
-        unique_together = ('suite', 'case', 'order')
-        ordering = ['-modified_date']
-
-    def __str__(self):
-        return '{} [{}]<===>{} [{}]'.format(self.suite.id, self.suite.name, self.case.id, self.case.name)
-
-
 # suite测试结果
 class SuiteResult(models.Model):
     uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
@@ -508,6 +515,7 @@ class CaseResult(models.Model):
 
     timeout = models.FloatField(blank=True, null=True)
     ui_step_interval = models.FloatField(blank=True, null=True)
+    config = models.TextField(blank=True, null=True)
     variable_group = models.TextField(blank=True, null=True)
 
     suite_result = models.ForeignKey('main.SuiteResult', on_delete=models.CASCADE)

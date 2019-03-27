@@ -32,6 +32,8 @@
         $(function () {
             // 获取变量组下拉项
             variable_group_select("{{ form.variable_group.value }}");
+            // 获取配置下拉项
+            config_select("{{ form.config.value }}");
             // 注册只看自己复选框
             $('#all_').on('click', function() {$('#m2m_objects_form').submit()});
             // 注册m2m新增按钮
@@ -67,6 +69,12 @@
             update_mask($('#mask'), 1);
             if (!selected_pk) { selected_pk = $("select[name=variable_group]").val() }
             getList("{% url 'variable_groups_select_json' %}", window.$csrf_input.val(), update_variable_group_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'变量组详情\', \'%url%?inside=1\',null, variable_group_select);", "url_replacer": "%url%"}');
+        }
+        // 获取配置下拉项
+        function config_select(selected_pk) {
+            update_mask($('#mask'), 1);
+            if (!selected_pk) { selected_pk = $("select[name=config]").val() }
+            getList("{% url 'configs_select_json' %}", window.$csrf_input.val(), update_config_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'配置详情\', \'%url%?inside=1\',null, config_select);", "url_replacer": "%url%"}');
         }
         // 回调更新m2m
         function update_m2m_objects() {
@@ -205,6 +213,21 @@
             <div class="col-1 text-center font-weight-bold">UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。如果步骤单独设置了间隔时间，将使用步骤的值"></i></div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.ui_step_interval %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。如果步骤单独设置了处理方式，将使用步骤的值"></i></div>
+            <div class="col" form_data>
+                {% include 'main/include/form_input.html' with field=form.error_handle %}
+            </div>
+        </div>
+        <div class="row align-items-center">
+            <div class="col-1 text-center font-weight-bold">测试配置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的配置项"></i></div>
+            <div class="col" form_data>
+                <div id="config_dropdown" name="config"></div>
+                {% for error in form.config.errors %}
+                    <div class="invalid-feedback" style="display: block">{{ error }}</div>
+                {% endfor %}
             </div>
         </div>
 

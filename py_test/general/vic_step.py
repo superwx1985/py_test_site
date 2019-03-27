@@ -13,7 +13,7 @@ from py_test import ui_test
 from py_test.api_test import method as api_method
 from py_test.db_test import method as db_method
 from py_test.vic_tools import vic_eval, vic_date_handle
-from main.models import StepResult, Step
+from main.models import StepResult, Step, error_handle_dict
 from py_test_site.settings import LOOP_ITERATIONS_LIMIT, ERROR_PAUSE_TIMEOUT
 
 
@@ -40,7 +40,8 @@ class VicStep:
         self.ui_step_interval = step.ui_step_interval if step.ui_step_interval is not None \
             else vic_case.ui_step_interval
 
-        self.error_handle = Step.error_handle_dict.get(step.error_handle, 'stop')
+        error_handle = error_handle_dict.get(step.error_handle)
+        self.error_handle = error_handle if error_handle else vic_case.error_handle
 
         self.save_as = step.save_as
 
@@ -578,7 +579,7 @@ class VicStep:
                                 else:
                                     verify_result = False
                                 msg = var.set_variable(self.save_as, verify_result)
-                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
+                                self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
 
                         # 验证文字
                         elif ac == 'UI_VERIFY_TEXT':
@@ -595,7 +596,7 @@ class VicStep:
                                 else:
                                     verify_result = False
                                 msg = var.set_variable(self.save_as, verify_result)
-                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
+                                self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
 
                         # 验证元素可见
                         elif ac == 'UI_VERIFY_ELEMENT_SHOW':
@@ -614,7 +615,7 @@ class VicStep:
                                 else:
                                     verify_result = False
                                 msg = var.set_variable(self.save_as, verify_result)
-                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
+                                self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
 
                         # 验证元素隐藏
                         elif ac == 'UI_VERIFY_ELEMENT_HIDE':
@@ -633,7 +634,7 @@ class VicStep:
                                 else:
                                     verify_result = False
                                 msg = var.set_variable(self.save_as, verify_result)
-                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
+                                self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
 
                         # 运行JavaScript
                         elif ac == 'UI_EXECUTE_JS':
@@ -646,7 +647,7 @@ class VicStep:
                             pause_time += _pause_time
                             if self.save_as:
                                 msg = var.set_variable(self.save_as, js_result)
-                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
+                                self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
 
                         # 验证JavaScript结果
                         elif ac == 'UI_VERIFY_JS_RETURN':
@@ -664,7 +665,7 @@ class VicStep:
                                 verify_result = True
                             if self.save_as:
                                 msg = var.set_variable(self.save_as, verify_result)
-                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
+                                self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
 
                         # 保存元素变量
                         elif ac == 'UI_SAVE_ELEMENT':
@@ -681,7 +682,7 @@ class VicStep:
 
                             if self.run_result[0] == 'p':
                                 msg = var.set_variable(self.save_as, self.elements)
-                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
+                                self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
                             else:
                                 raise exceptions.NoSuchElementException('无法保存变量，{}'.format(self.run_result[1]))
 
@@ -696,7 +697,7 @@ class VicStep:
 
                             if self.run_result[0] == 'p':
                                 msg = var.set_variable(self.save_as, data_)
-                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
+                                self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
                             else:
                                 raise exceptions.WebDriverException('无法保存变量，{}'.format(self.run_result[1]))
 
@@ -714,7 +715,7 @@ class VicStep:
 
                             if self.run_result[0] == 'p':
                                 msg = var.set_variable(self.save_as, text)
-                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
+                                self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
                             else:
                                 raise exceptions.NoSuchElementException('无法保存变量，{}'.format(self.run_result[1]))
 
@@ -732,7 +733,7 @@ class VicStep:
 
                             if self.run_result[0] == 'p':
                                 msg = var.set_variable(self.save_as, text)
-                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
+                                self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
                             else:
                                 raise exceptions.NoSuchAttributeException('无法保存变量，{}'.format(self.run_result[1]))
 
@@ -1029,7 +1030,7 @@ class VicStep:
                                 else:
                                     verify_result = False
                                 msg = var.set_variable(self.save_as, verify_result)
-                                self.run_result[1] = '{}\n{}'.format(self.run_result[1], msg)
+                                self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
 
                         # 调用子用例
                         elif ac == 'OTHER_CALL_SUB_CASE':
@@ -1056,13 +1057,23 @@ class VicStep:
                                 dr = vc.driver_container[0]
                                 self.step_result.has_sub_case = True
                                 if case_result_.error_count or case_result_.result_error:
-                                    raise RuntimeError('子用例执行时出现错误')
+                                    self.run_result = ['e', '子用例执行出错，请查看子用例中步骤的执行结果']
                                 elif case_result_.fail_count:
-                                    self.run_result = ['f', '子用例执行时验证失败']
+                                    self.run_result = ['f', '子用例验证失败，请查看子用例中步骤的执行结果']
                                 elif case_result_.execute_count == 0:
                                     self.run_result = ['s', '子用例未执行']
                                 else:
                                     self.run_result = ['p', '子用例执行成功']
+
+                                if self.save_as:
+                                    if self.run_result[0] == 'p':
+                                        verify_result = True
+                                    else:
+                                        verify_result = False
+                                    msg = var.set_variable(self.save_as, verify_result)
+                                    self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
+                                if self.run_result[0] == 'e':
+                                    raise RuntimeError('子用例出现错误，请查看子用例中步骤的执行结果')
 
                         # 无效的关键字
                         else:
@@ -1173,14 +1184,18 @@ class VicStep:
             self.browser_alert = True
             alert_ = dr.switch_to.alert
             msg = '出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(alert_.text)
-            logger.error(msg, exc_info=True)
+            logger.error('【{}】\t{}'.format(estr, msg), exc_info=True)
             self.step_result.result_state = 3
             self.step_result.result_message = msg
             self.step_result.result_error = traceback.format_exc()
         except Exception as e:
-            logger.error('【{}】\t出错'.format(estr), exc_info=True)
+            logger.error('【{}】\t出错 => {}'.format(estr, getattr(e, 'msg', str(e))), exc_info=True)
+            if self.run_result[0] == 'e':
+                msg = self.run_result[1]
+            else:
+                msg = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
             self.step_result.result_state = 3
-            self.step_result.result_message = '执行出错：{}'.format(getattr(e, 'msg', str(e)))
+            self.step_result.result_message = msg
             self.step_result.result_error = traceback.format_exc()
 
         if atc == 'UI' and dr is not None:

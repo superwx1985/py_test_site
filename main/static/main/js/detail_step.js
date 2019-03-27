@@ -177,7 +177,7 @@ function show_action_field($actionSelect) {
 		$('div[name=save_as],div[name=other_data]').show();
 	} else if (select_value === 'OTHER_CALL_SUB_CASE') {
 		introduce.children('div').text('调用一个子用例。子用例会继承母用例的变量和配置项。如果出现递归调用，系统将会中断执行');
-		$('div[name=other_sub_case]').show();
+		$('div[name=other_sub_case],div[name=save_as]').show();
 		$('[name=detail_content]').css('padding-bottom', '350px');
 	} else if (select_value === 'OTHER_IF') {
 		introduce.children('div').html('开始一个条件判断分支。如果条件为真（表达式的计算结果为<span class="text-info">True</span>），将执行后续的步骤');
