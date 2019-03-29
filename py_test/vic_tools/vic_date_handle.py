@@ -1,5 +1,6 @@
 import datetime
 import time
+import calendar
 
 
 # 字符串转时间
@@ -103,9 +104,11 @@ def time_add(time_=datetime.datetime.now(), add_unit='d', add_value=0):
     if add_value in ('', None):
         add_value = 0
     if add_unit in ('year', 'Y'):
-        time_ = time_ + datetime.timedelta(days=float(add_value) * 365)
+        # time_ = time_ + datetime.timedelta(days=float(add_value) * 365)
+        time_ = delta_month(time_, 12*round(float(add_value)))
     elif add_unit in ('month', 'm'):
-        time_ = time_ + datetime.timedelta(days=float(add_value) * 30)
+        # time_ = time_ + datetime.timedelta(days=float(add_value) * 30)
+        time_ = delta_month(time_, round(float(add_value)))
     elif add_unit in ('day', 'd'):
         time_ = time_ + datetime.timedelta(days=float(add_value))
     elif add_unit in ('hour', 'H'):
@@ -151,3 +154,17 @@ def get_timedelta_str(timedelta_, ndigits=0):
         str_ = '负{}'.format(str_)
 
     return str_
+
+
+# 按月份偏移，如果偏移后日期大于那个月份的最大日期，将取最大日期
+def delta_month(date, add_month):
+    month_dict = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+
+    month = date.month + add_month
+    new_month = month_dict[month % 12]
+    new_year = date.year + month // 12
+    new_day = date.day
+    max_day = calendar.monthrange(new_year, new_month)[1]  # 获取新日期月份的最后一天
+    new_day = max_day if max_day < new_day else new_day
+    return datetime.datetime(
+        new_year, new_month, new_day, date.hour, date.minute, date.second, date.microsecond, date.tzinfo)
