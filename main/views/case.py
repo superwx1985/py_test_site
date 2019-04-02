@@ -15,7 +15,7 @@ from main.forms import OrderByForm, PaginatorForm, CaseForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin,\
     check_recursive_call
 from urllib.parse import quote
-from main.views import step, suite, variable_group
+from main.views import step, suite, variable_group, config
 from utils import system
 
 logger = logging.getLogger('django.request')
@@ -442,7 +442,7 @@ def list_temp(request):
 
 
 # 复制操作
-def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=None, call_items=None):
+def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=None):
     obj = Case.objects.get(pk=pk)
     if copy_sub_item:
         recursive_id, case_list = check_recursive_call(obj)
@@ -458,17 +458,21 @@ def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=Non
 
     if not copied_items:
         copied_items = [dict()]
-    if not call_items:
-        call_items = [list()]
-    call_items[0].append(obj)
-    if copy_sub_item and obj.variable_group:
-        # 判断是否已被复制
-        if copied_items[0] and obj.variable_group in copied_items[0]:
-            obj.variable_group = copied_items[0][obj.variable_group]
-        else:
-            new_sub_obj = variable_group.copy_action(obj.variable_group.pk, user, name_prefix)
-            copied_items[0][obj.variable_group] = new_sub_obj
-            obj.variable_group = new_sub_obj
+    if copy_sub_item:
+        if obj.variable_group:
+            # 判断是否已被复制
+            if copied_items[0] and obj.variable_group in copied_items[0]:
+                obj.variable_group = copied_items[0][obj.variable_group]
+            else:
+                new_sub_obj = variable_group.copy_action(obj.variable_group.pk, user, name_prefix)
+                copied_items[0][obj.variable_group] = obj.variable_group = new_sub_obj
+        if obj.config:
+            # 判断是否已被复制
+            if copied_items[0] and obj.config in copied_items[0]:
+                obj.config = copied_items[0][obj.config]
+            else:
+                new_sub_obj = config.copy_action(obj.config.pk, user, name_prefix)
+                copied_items[0][obj.config] = obj.config = new_sub_obj
     obj.creator = obj.modifier = user
     obj.uuid = uuid.uuid1()
     obj.clean_fields()
@@ -482,7 +486,7 @@ def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=Non
             if copied_items[0] and m2m_obj in copied_items[0]:
                 m2m_obj_ = copied_items[0][m2m_obj]
             else:
-                m2m_obj_ = step.copy_action(m2m_obj.pk, user, name_prefix, copy_sub_item, copied_items, call_items)
+                m2m_obj_ = step.copy_action(m2m_obj.pk, user, name_prefix, copy_sub_item, copied_items)
                 copied_items[0][m2m_obj] = m2m_obj_
         else:
             m2m_obj_ = m2m_obj

@@ -42,7 +42,6 @@ class VicSuite:
 
         self.config = self.suite.config if self.suite.config and self.suite.config.is_active else None
         self.global_variables = vic_variables.Variables(self.logger)
-        self.global_variables.variable_dict = vic_variables.system_variable
         self.public_elements = vic_public_elements.PublicElements(self.logger)
         self.timeout = suite.timeout
         self.ui_step_interval = suite.ui_step_interval

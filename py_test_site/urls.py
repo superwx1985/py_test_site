@@ -148,7 +148,8 @@ urlpatterns = [
     path('step_result/<str:pk>/snapshot', step_result.snapshot, name='step_snapshot'),
 
     path('helps/', help_.list_, name='helps'),
-    path('help/<str:pk>/', help_.detail, name='help'),
+    path('help/<int:pk>/', help_.detail, name='help'),
+    path('help/variable_test/', help_.variable_test, name='variable_test'),
 
     path('maintenance/', maintenance.detail, name='maintenance'),
 

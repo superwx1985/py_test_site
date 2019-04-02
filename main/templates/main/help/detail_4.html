@@ -1,0 +1,103 @@
+{% load staticfiles %}
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        <title>变量测试</title>
+        {% include 'main/include/general_css.html' %}
+        <style type='text/css' media='screen'>
+            div.row {
+                padding: 5px 0;
+                {#min-height: 2em;#}
+            }
+        </style>
+        {% include 'main/include/general_script.html' %}
+        <script src="{% static 'main/js/detail.js' %}"></script>
+
+        <script>
+            $(function () {
+                // 更新导航栏
+                $('#nav_help').addClass('active');
+                // 注册注销按钮
+                $("#logout_btn").click(function () {
+                    window.open('{% url 'user_logout' %}', '_self');
+                });
+                window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
+                window.editable = true;
+                // 反馈框提示样式
+                toastr.options = {
+                    "closeButton":false,//显示关闭按钮
+                    "debug":false,//启用debug
+                    "positionClass":"toast-top-center",//弹出的位置
+                    "showDuration":"300",//显示的时间
+                    "hideDuration":"1000",//消失的时间
+                    "timeOut":"1000",//停留的时间
+                    "extendedTimeOut":"2000",//控制时间
+                    "showEasing":"swing",//显示时的动画缓冲方式
+                    "hideEasing":"linear",//消失时的动画缓冲方式
+                    "showMethod":"fadeIn",//显示时的动画方式
+                    "hideMethod":"fadeOut"//消失时的动画方式
+                };
+                $("#test_button").off("click").on("click", function () {
+                    $("#result_mask").show();
+                    var condition_json = '{"variable_str": "' + $("#test_textarea").val() + '", "variable_group_pk": "' + $("select[name=variable_group]").val() +'"}';
+                    console.log(condition_json)
+                    getList("{% url "variable_test" %}", window.$csrf_input.val(), update_result_div, condition_json);
+                });
+                // 获取变量组下拉项
+                variable_group_select();
+                $("#result_mask").hide();
+            });
+            function update_result_div(success, data) {
+                var result_div = $("#result_div");
+                result_div.empty();
+                if (success) {
+                    if (data.state === 1) {
+                        toastr.success('测试成功');
+                        result_div.append($("<pre>").addClass("text-success").text(data.data.value));
+                        result_div.append($("<pre>").addClass("text-info").text("类型：" + data.data.value_type));
+                    } else {
+                        toastr.error('测试出错');
+                        var div = $("<pre>").addClass("text-danger").text(data.message);
+                        result_div.append(div);
+                    }
+                } else {
+                    toastr.error('测试出错');
+                    var div = $("<pre>").addClass("text-danger").text(data);
+                    result_div.append(div);
+                }
+                $("#result_mask").hide();
+            }
+            function variable_group_select(selected_pk) {
+                if (!selected_pk) { selected_pk = $("select[name=variable_group]").val() }
+                getList("{% url 'variable_groups_select_json' %}", window.$csrf_input.val(), update_variable_group_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'变量组详情\', \'%url%?inside=1\',null, variable_group_select);", "url_replacer": "%url%"}');
+            }
+        </script>
+    </head>
+    <body>
+        {% csrf_token %}
+        {% include 'main/include/navbar.html' %}
+        <div class="container" style="padding-top: 60px; padding-bottom: 200px">
+            <h2 class="text-center">变量测试</h2>
+            <div class="row align-items-center">
+                <div class="col-2 text-center font-weight-bold">测试变量组</div>
+                <div class="col" form_data>
+                    <div id="variable_group_dropdown" name="variable_group"></div>
+                </div>
+            </div>
+            <div>
+                <textarea class="form-control" id="test_textarea" rows="5" placeholder="请输入要测试的变量，例如：${t|now}$"></textarea>
+            </div>
+            <br>
+            <div><button class="btn btn-primary" id="test_button">测试</button></div>
+            <br>
+            <div style="min-height: 250px; position: relative">
+                {% include 'main/include/mask.html' with mask_class='element-mask' mask_id='result_mask' %}
+                <div class="jumbotron" style="padding: 10px 0 10px 10px; font-size: larger">
+                    <div id="result_div" style="height: 250px; overflow-y: auto;"></div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

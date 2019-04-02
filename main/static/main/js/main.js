@@ -110,7 +110,7 @@ function get_element_outside_height($e) {
 function copy_obj(copy_url, order) {
     var now = new Date().Format("yyyy-MM-dd HH:mm:ss");
     var body = $('<div>').addClass('modal-body');
-    var div = $('<div>准备复制对象。请输入复制后的名称前缀：</div>');
+    var div = $('<div>准备复制对象。请输入复制后对象的名称前缀：</div>');
     body.append(div);
     body.append($('<br>'));
     var input = $('<input class="form-control" autocomplete="off" type="text" id="copy_obj_name">').attr('value', '【' + now + ' 复制】');
@@ -127,7 +127,7 @@ function copy_obj(copy_url, order) {
                 callback: function () { callback_copy_obj(copy_url, $('#copy_obj_name').val(), order) }
             },
             copy_sub_item: {
-                label: '<i class="icon-copy">&nbsp;</i>同时复制子对象',
+                label: '<span title="复制该对象包含的所有子对象，将生成大量数据，请耐心等待"><i class="icon-copy">&nbsp;</i>复制子对象（谨慎使用）</span>',
                 className: 'btn btn-warning-dark',
                 callback: function () { callback_copy_obj_sub_item(copy_url, $('#copy_obj_name').val(), order) }
             }

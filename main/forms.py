@@ -15,11 +15,11 @@ class UserForm(forms.Form):
     last_name = forms.CharField(label='姓', max_length=50, required=False)
     first_name = forms.CharField(label='名', max_length=50, required=False)
     original_password = forms.CharField(
-        label='原密码', max_length=50, widget=forms.PasswordInput(), required=False)
+        label='原密码', max_length=50, widget=forms.PasswordInput(), required=False, strip=False)
     new_password = forms.CharField(
-        label='新密码', max_length=50, required=False, strip=False)
+        label='新密码', max_length=50, widget=forms.PasswordInput(), required=False, strip=False)
     confirm_password = forms.CharField(
-        label='确认密码', max_length=50, required=False, strip=False)
+        label='确认密码', max_length=50, widget=forms.PasswordInput(), required=False, strip=False)
 
     def __init__(self, user, *args, **kwargs):
         self.user = user

@@ -1,4 +1,5 @@
 import logging
+import copy
 from selenium.common import exceptions
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -10,7 +11,7 @@ system_variable = {
 
 class Variables:
     def __init__(self, logger=logging.getLogger('py_test')):
-        self.variable_dict = dict()
+        self.variable_dict = copy.copy(system_variable)
         self.logger = logger
 
     @staticmethod

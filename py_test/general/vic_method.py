@@ -22,7 +22,8 @@ def check_name(name, invalid_character=r'\/:*?<>|'):
 # 替换字符串内的变量
 def replace_parameter_in_str(
         str_, start_str, end_str, f, variables, global_variables, logger=logging.getLogger('py_test')):
-    logger.debug('start replace: [%s]' % str_)
+    value = str_
+    logger.debug('start replace: [%s]' % value)
     if start_str == end_str:
         raise ValueError('start_str is same as end_str')
     while True:
@@ -39,16 +40,19 @@ def replace_parameter_in_str(
         logger.debug('%s ======> %s' % (str_[start_index:end_index + len(end_str)], value))
         # 如果返回值不是字符串且无需拼接，将直接返回替换后的对象
         if start_index == 0 and end_index + len(end_str) == len(str_) and not isinstance(value, str):
-            str_ = value
             break
         else:
-            str_ = str_[0:start_index] + str(value) + str_[end_index + len(end_str):]  # 为防止替换了相同的内容，采用拼接的方法
-    logger.debug('end replace: [%s]' % str_)
-    return str_
+            str_ = value = str_[0:start_index] + str(value) + str_[end_index + len(end_str):]  # 为防止替换了相同的内容，采用拼接的方法
+    logger.debug('end replace: [%s]' % value)
+    return value
 
 
 # 整合参数方便调用
 def replace_special_value(str_, variables=None, global_variables=None, logger=logging.getLogger('py_test')):
+    if not variables:
+        variables = vic_variables.Variables()
+    if not global_variables:
+        global_variables = vic_variables.Variables()
     str_ = replace_parameter_in_str(
         str_=str_, start_str='${', end_str='}$', f=select_func, variables=variables, global_variables=global_variables,
         logger=logger)

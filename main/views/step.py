@@ -355,7 +355,7 @@ def list_temp(request):
 
 
 # 复制操作
-def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=None, call_items=None):
+def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=None):
     obj = Step.objects.select_related('action').get(pk=pk)
     obj.pk = None
     if name_prefix:
@@ -365,16 +365,13 @@ def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=Non
 
     if not copied_items:
         copied_items = [dict()]
-    if not call_items:
-        call_items = [list()]
-    call_items[0].append(obj)
     if copy_sub_item and obj.action.code == 'OTHER_CALL_SUB_CASE' and obj.other_sub_case:
         # 判断是否已被复制
         if copied_items[0] and obj.other_sub_case in copied_items[0]:
             obj.other_sub_case = copied_items[0][obj.other_sub_case]
         else:
             new_sub_obj = case.copy_action(
-                obj.other_sub_case.pk, user, name_prefix, copy_sub_item, copied_items, call_items)
+                obj.other_sub_case.pk, user, name_prefix, copy_sub_item, copied_items)
             copied_items[0][obj.other_sub_case] = new_sub_obj
             obj.other_sub_case = new_sub_obj
     obj.creator = obj.modifier = user
