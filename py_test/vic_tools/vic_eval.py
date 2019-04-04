@@ -19,7 +19,7 @@ class EvalObject:
         # =======================================================================
         # 必须把较长的操作符放在前面
         self.__valid_operator_list = ['round',
-                                      'not', 'and',
+                                      'not', 'and', 'len',
                                       'or', 'in', '==', '!=', '<=', '>=', '**', '//', '<<', '>>',
                                       '<', '>', '(', ')', '[', ']', '+', '-', '*', '/', '%', '&', '|', '^', '~', ',']
         if variable_dict is None:
@@ -120,7 +120,6 @@ class EvalObject:
     # 替换表达式中的变量
     def get_final_expression(self):
         final_expression = self.__eval_expression
-        locals_dict = dict()
         for k, v in self.__variable_dict.items():
             if not isinstance(k, str):
                 raise ValueError('Variables\' key should be str class')
