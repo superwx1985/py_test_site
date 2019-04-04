@@ -127,7 +127,7 @@ class EvalObject:
             # 加上左右边界，但不能重复添加
             k_ = self.__left_separator + k.replace(self.__left_separator, '').replace(
                 self.__right_separator,  '') + self.__right_separator
-            if not final_expression.find(k) == -1:
+            if not final_expression.find(k_) == -1:
                 if isinstance(v, (int, float)):
                     v = str(v)
                 elif isinstance(v, str):
