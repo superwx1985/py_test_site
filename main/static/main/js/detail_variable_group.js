@@ -24,7 +24,7 @@ function init_variable(success, data) {
 				$('<td class="middle" col_index></td>').append(span).appendTo(tr);
 				var input = $('<input placeholder="请输入变量名" class="form-control">').val(v.name).off('change').on('change', function () { update_variable_index_and_field() });
 				$('<td col_name></td>').append(input).appendTo(tr);
-				var input = $('<input placeholder="请输入变量值" class="form-control">').val(v.value);
+				var input = $('<input placeholder="" class="form-control">').val(v.value);
 				$('<td col_value></td>').append(input).appendTo(tr);
 				var input = $('<input placeholder="" class="form-control">').val(v.description);
 				$('<td col_description></td>').append(input).appendTo(tr);
