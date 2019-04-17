@@ -29,16 +29,11 @@ def login(request):
             remember_me = form.cleaned_data['remember_me']
             user = auth.authenticate(username=username, password=password)
             if user is not None:
+                request.session.clear_expired()  # 清除过期的session
                 auth.login(request, user)
                 if remember_me:
-                    # cookies.append(Cookie('remember_me', 'on', max_age=30*24*3600, path=request.path))
-                    # cookies.append(Cookie('username', username, max_age=30*24*3600, path=request.path))
-                    # cookies.append(Cookie('password', password, max_age=30*24*3600, path=request.path))
                     request.session.set_expiry(30*24*3600)  # 登录信息默认30天过期
                 else:
-                    # delete_cookies.append('remember_me')
-                    # delete_cookies.append('username')
-                    # delete_cookies.append('password')
                     request.session.set_expiry(0)  # 不保留登录信息
                 request.session['user'] = username
                 response = HttpResponseRedirect(redirect_url)
@@ -46,11 +41,6 @@ def login(request):
                 error_msg = '账号或密码错误'
 
     else:
-        # remember_me = request.COOKIES.get('remember_me', 'off')
-        # if remember_me == 'on':
-        #     remember_me = True
-        # else:
-        #     remember_me = False
         form = LoginForm(initial={'remember_me': False})
 
     response = render(request, 'main/user/login.html', locals()) if not response else response
@@ -61,7 +51,7 @@ def login(request):
     return response
 
 
-# 跟目录跳转，防止直接使用根目录，污染cookie
+# 根目录跳转，防止直接使用根目录，污染cookie
 def login_redirect(_):
     return HttpResponseRedirect(reverse('user_login'))
 

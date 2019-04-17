@@ -66,9 +66,8 @@
 
                             var auto_scroll = true;
                             execute_log_div.scroll(function () {
-                                auto_scroll = (execute_log_div.get(0).scrollHeight - execute_log_div.height() <= execute_log_div.scrollTop());
+                                auto_scroll = (execute_log_div.get(0).scrollHeight - execute_log_div.height() <= execute_log_div.scrollTop() + 1);
                             });
-
 
                             function continue_button_f(button, websocket_url) {
                                 button.attr('disabled', true).off('click');

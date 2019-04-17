@@ -93,6 +93,8 @@ def wait_for_text_present(vic_step, print_=True):
                     elements.append(_body)
                 msg = '在页面找到期望文字【{}】'.format(text)
                 _success = True
+            elif find_result.error_msg:
+                msg = '没找到期望文字【{}】\n在查找过程中出现错误：{}'.format(text, find_result.error_msg)
         else:
             _ui_data = vic_step.ui_data
             vic_step.ui_data = None  # 把ui_data置空，防止查找元素时被当做数量限制表达式
@@ -111,6 +113,7 @@ def wait_for_text_present(vic_step, print_=True):
             if run_result_temp[0] == 'f':
                 msg = '未找到期望元素【By:{}|Locator:{}】或元素不可见'.format(vic_step.ui_by, vic_step.ui_locator)
             else:
+                _error_msg = None
                 if index_ is None:
                     for element_temp in elements_temp:
                         # element_text = vic_step.dr.execute_script(
@@ -122,6 +125,11 @@ def wait_for_text_present(vic_step, print_=True):
                             elements.append(element_temp)
                         else:
                             fail_elements.append(element_temp)
+                            if find_result.error_msg:
+                                if _error_msg:
+                                    _error_msg = '{};{}'.format(_error_msg, find_result.error_msg)
+                                else:
+                                    _error_msg = find_result.error_msg
                 elif index_ > (len(elements_temp) - 1):
                     raise ValueError('找到{}个元素，但指定的索引【{}】超出可用范围（0到{}）'.format(
                         len(elements), index_, len(elements) - 1))
@@ -134,8 +142,12 @@ def wait_for_text_present(vic_step, print_=True):
                         elements.append(elements_temp[index_])
                     else:
                         fail_elements.append(elements_temp[index_])
+                        if find_result.error_msg:
+                            _error_msg = find_result.error_msg
                 msg = '找到期望元素【By:{}|Locator:{}】{}个，其中有{}个元素包含期望文字【{}】'.format(
                     vic_step.ui_by, vic_step.ui_locator, len(elements_temp), len(elements), text)
+                if _error_msg:
+                    msg = '{}\n在查找过程中出现错误：{}'.format(msg, _error_msg)
             if elements and not fail_elements:
                 _success = True
 
@@ -401,12 +413,16 @@ def wait_for_page_redirect(vic_step, print_=True):
     msg = '新URL不符合期望【{}】'.format(vic_step.ui_data)
     msg_format = '经过{:.1f}秒 - {}'
     last_print_time = start_time = time.time()
+    _error_msg = None
     while (time.time() - start_time - pause_time) <= vic_step.timeout and not vic_step.force_stop:
         current_url = vic_step.dr.current_url
         find_result = vic_find_object.find_with_condition(vic_step.ui_data, current_url, logger=vic_step.logger)
         if find_result.is_matched:
             msg = '新URL符合期望【{}】'.format(vic_step.ui_data)
             _success = True
+        elif find_result.error_msg:
+            _error_msg = find_result.error_msg
+            msg = '新URL不符合期望【{}】\n在查找过程中出现错误：{}'.format(vic_step.ui_data, _error_msg)
 
         if time.time() - last_print_time >= 1:
             pause_time += vic_step.pause_()
@@ -416,7 +432,7 @@ def wait_for_page_redirect(vic_step, print_=True):
                 vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, _full_msg))
             last_print_time = time.time()
 
-        if _success:
+        if _success or _error_msg:
             break
 
     elapsed_time = time.time() - start_time - pause_time
@@ -442,7 +458,10 @@ def get_url(vic_step, print_=True):
                 url = find_result.re_result[0]
             run_result = ['p', '找到符合条件【{}】的URL内容【{}】'.format(condition_value, url)]
         else:
-            run_result = ['f', '找不到符合条件【{}】的URL内容'.format(condition_value)]
+            msg = '找不到符合条件【{}】的URL内容'.format(condition_value)
+            if find_result.error_msg:
+                msg = '{}\n在查找过程中出现错误：{}'.format(msg, find_result.error_msg)
+            run_result = ['f', msg]
     else:
         run_result = ['p', '获取到URL【{}】'.format(url)]
     if print_:

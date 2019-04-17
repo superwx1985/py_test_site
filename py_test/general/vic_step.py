@@ -876,6 +876,8 @@ class VicStep:
                                     run_result_state = 'f'
                                     msg = 'SQL执行完毕，结果验证失败\nSQL语句：\n{}\n{}\n结果集：\n{}'.format(
                                         self.db_sql, sql_result, pretty_result)
+                                    if run_result[1].error_msg:
+                                        '{}\n在查找过程中出现错误：{}'.format(msg, run_result[1].error_msg)
 
                                 if self.save_as:
                                     if run_result_state == 'p':
@@ -1004,6 +1006,8 @@ class VicStep:
                                 self.run_result = ['p', msg]
                             else:
                                 msg = '无法匹配给定的正则表达式，所以变量【{}】的值没有改变'.format(self.save_as, variable)
+                                if find_result.error_msg:
+                                    msg = '{}\n在查找过程中出现错误：{}'.format(msg, find_result.error_msg)
                                 self.run_result = ['f', msg]
 
                         # 验证表达式

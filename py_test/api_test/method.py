@@ -129,6 +129,8 @@ def save_http_response(response, content, save_as_group, variables, logger=loggi
                             value = find_result.re_result[0]
                         else:
                             error_msg = '响应头中没有找到满足表达式【{}】的内容'.format(expression)
+                            if find_result.error_msg:
+                                '{}\n在查找过程中出现错误：{}'.format(error_msg, find_result.error_msg)
                             logger.warning(error_msg)
                             value = ''
                             success = False
@@ -141,6 +143,8 @@ def save_http_response(response, content, save_as_group, variables, logger=loggi
                         value = find_result.re_result[0]
                     else:
                         error_msg = '响应体中没有找到满足表达式【{}】的内容'.format(expression)
+                        if find_result.error_msg:
+                            '{}\n在查找过程中出现错误：{}'.format(error_msg, find_result.error_msg)
                         logger.warning(error_msg)
                         value = ''
                         success = False

@@ -25,6 +25,7 @@ class FindObject:
         found = False
         count = 0
         re_result = list()
+        error_msg = None
 
         # self.logger.debug('object1: %s' % object1)
         # self.logger.debug('object2: %s' % object2)
@@ -38,83 +39,97 @@ class FindObject:
         # 判断对象类型是否一致，如果一致就调用对应的比较方法获取比较结果
         _found = False
         _re_result = None
+        _error_msg = None
         if isinstance(object1, (list, tuple)) and isinstance(object2, type(object1)):
-            _found, _count, _re_result = self.find_list1_in_list2(object1, object2)
+            _found, _count, _re_result, _error_msg = self.find_list1_in_list2(object1, object2)
         elif isinstance(object1, dict) and isinstance(object2, type(object1)):
-            _found, _count, _re_result = self.find_dict1_in_dict2(object1, object2)
+            _found, _count, _re_result, _error_msg = self.find_dict1_in_dict2(object1, object2)
+
         if _found:
             found = True
             count += 1
             if isinstance(_re_result, list):
                 re_result.extend(_re_result)
+        elif _error_msg:
+            error_msg = _error_msg
 
         # 判断object2是否是可迭代的对象，如果是，则拆分该对象，递归调用本方法继续比较
         if isinstance(object2, (list, tuple)):
             for v in object2:
                 if isinstance(v, (list, tuple, dict)):
-                    _found, _count, _re_result = self.find_object_in_object(object1, v)
+                    _found, _count, _re_result, _error_msg = self.find_object_in_object(object1, v)
                     if _found:
                         found = True
                         count += _count
                         if isinstance(_re_result, list):
                             re_result.extend(_re_result)
+                    elif _error_msg:
+                        error_msg = _error_msg
         elif isinstance(object2, dict):
             for v in object2.values():
                 if isinstance(v, (list, tuple, dict)):
-                    _found, _count, _re_result = self.find_object_in_object(object1, v)
+                    _found, _count, _re_result, _error_msg = self.find_object_in_object(object1, v)
                     if _found:
                         found = True
                         count += _count
                         if isinstance(_re_result, list):
                             re_result.extend(_re_result)
+                    elif _error_msg:
+                        error_msg = _error_msg
 
         # self.logger.debug('found: %s count: %s' % (found, count))
         # self.logger.debug('object:\n%s' % object2)
-        return found, count, re_result
+        return found, count, re_result, error_msg
 
     # 在列表和元组中查找列表和元组
     def find_list1_in_list2(self, list1, list2):
         found = False
         count = 0
         re_result = list()
+        error_msg = None
         # list1及list2长度均为0，返回found为True
         if 0 == len(list1) and 0 == len(list2):
             found = True
             count = 1
-            return found, count, re_result
+            return found, count, re_result, error_msg
         # 如果__list_exact_match设为True，则两个列表的值顺序及数量都一致才能标记为found
         elif self.__list_exact_match:
             # 如果list1和list2长度不一致，直接返回found为False
             if len(list1) != len(list2):
-                return found, count, re_result
+                return found, count, re_result, error_msg
             i = -1
             for v in list1:
                 i += 1
-                # 如果lict1和lict2相同索引的值相等，匹配数加1
-                # if v == list2[i]:
-                #     count += 1
                 # 如果list1和list2相同索引的值为tuple或list，调用find_list1_in_list2
                 if isinstance(v, (tuple, list)) and isinstance(list2[i], type(v)):
-                    _found, _count, _re_result = self.find_list1_in_list2(v, list2[i])
+                    _found, _count, _re_result, _error_msg = self.find_list1_in_list2(v, list2[i])
                     if _found:
                         count += 1
                         if isinstance(_re_result, list):
                             re_result.extend(_re_result)
+                    elif _error_msg:
+                        error_msg = _error_msg
                 # 如果list1和list2相同索引的值为dict，调用find_dict1_in_dict2
                 elif isinstance(v, dict) and isinstance(list2[i], type(v)):
-                    _found, _count, _re_result = self.find_dict1_in_dict2(v, list2[i])
+                    _found, _count, _re_result, _error_msg = self.find_dict1_in_dict2(v, list2[i])
                     if _found:
                         count += 1
                         if isinstance(_re_result, list):
                             re_result.extend(_re_result)
-                # 如果v为str，且list2相同索引的值不为tuple或list或dict，调用find_with_condition方法进行比较
-                elif isinstance(v, str) and not isinstance(list2[i], (tuple, list, dict)):
+                    elif _error_msg:
+                        error_msg = _error_msg
+                # 如果v为str，调用find_with_condition方法进行比较
+                elif isinstance(v, str):
                     find_result = find_with_condition(
                         v, list2[i], default_operator_list=self.default_operator_list, logger=self.logger,)
                     if find_result.is_matched:
                         count += 1
                         if isinstance(find_result.re_result, list):
                             re_result.extend(find_result.re_result)
+                    elif find_result.error_msg:
+                        error_msg = find_result.error_msg
+                elif v == list2[i]:
+                    count += 1
             # 如果匹配数和list1长度一致，则标记为found
             if count == len(list1):
                 found = True
@@ -122,36 +137,35 @@ class FindObject:
         else:
             # 如果list1的长度大于list的长度，返回found为False
             if len(list1) > len(list2):
-                return found, count, re_result
+                return found, count, re_result, error_msg
             list2_original = deepcopy(list2)  # 防止remove影响到pre_data_object
             for v1 in list1:
                 list2_temp = deepcopy(list2_original)
                 for v2 in list2_temp:
-                    # 如果v1和v2相等，匹配数加1
-                    # if v1 == v2:
-                    #     count += 1
-                    #     list2_original.remove(v2)
-                    #     break
                     # 如果v1和v2为tuple或list，调用find_list1_in_list2
                     if isinstance(v1, (tuple, list)) and isinstance(v2, type(v1)):
-                        _found, _count, _re_result = self.find_list1_in_list2(v1, v2)
+                        _found, _count, _re_result, _error_msg = self.find_list1_in_list2(v1, v2)
                         if _found:
                             count += 1
                             list2_original.remove(v2)
                             if isinstance(_re_result, list):
                                 re_result.extend(_re_result)
                             break
+                        elif _error_msg:
+                            error_msg = _error_msg
                     # 如果v1和v2为dict，调用find_dict1_in_dict2
                     elif isinstance(v1, dict) and isinstance(v2, type(v1)):
-                        _found, _count, _re_result = self.find_dict1_in_dict2(v1, v2)
+                        _found, _count, _re_result, _error_msg = self.find_dict1_in_dict2(v1, v2)
                         if _found:
                             count += 1
                             list2_original.remove(v2)
                             if isinstance(_re_result, list):
                                 re_result.extend(_re_result)
                             break
-                    # 如果v1为str，且v2不为tuple或list或dict，调用find_with_condition方法进行比较
-                    elif isinstance(v1, str) and not isinstance(v2, (tuple, list, dict)):
+                        elif _error_msg:
+                            error_msg = _error_msg
+                    # 如果v1为str，调用find_with_condition方法进行比较
+                    elif isinstance(v1, str):
                         find_result = find_with_condition(
                             v1, v2, default_operator_list=self.default_operator_list, logger=self.logger)
                         if find_result.is_matched:
@@ -160,45 +174,57 @@ class FindObject:
                             if isinstance(find_result.re_result, list):
                                 re_result.extend(find_result.re_result)
                             break
+                        elif find_result.error_msg:
+                            error_msg = find_result.error_msg
+                    elif v1 == v2:
+                        count += 1
+                        list2_original.remove(v2)
+                        break
             # 如果匹配数和list1长度一致，则标记为found
             if count == len(list1):
                 found = True
-        return found, count, re_result
+        return found, count, re_result, error_msg
 
     # 在字典中查找字典
     def find_dict1_in_dict2(self, dict1, dict2):
         found = False
         count = 0
         re_result = list()
+        error_msg = None
         for k, v in dict1.items():
             # 如果在dict2中无对应的key，跳过当次匹配
             if k not in dict2:
                 continue
-            # 如果dict1和dict2相等，匹配数加1
-            # if v == dict2[k]:
-            #     count += 1
             # 如果dict1和dict2相同key对应的值为tuple或list，调用find_list1_in_list2
             if isinstance(v, (tuple, list)) and isinstance(dict2[k], type(v)):
-                _found, _count, _re_result = self.find_list1_in_list2(v, dict2[k])
+                _found, _count, _re_result, _error_msg = self.find_list1_in_list2(v, dict2[k])
                 if _found:
                     count += 1
                     if isinstance(_re_result, list):
                         re_result.extend(_re_result)
+                elif _error_msg:
+                    error_msg = _error_msg
             # 如果dict1和dict2相同key对应的值为dict，调用find_dict1_in_dict2
             elif isinstance(v, dict) and isinstance(dict2[k], type(v)):
-                _found, _count, _re_result = self.find_dict1_in_dict2(v, dict2[k])
+                _found, _count, _re_result, _error_msg = self.find_dict1_in_dict2(v, dict2[k])
                 if _found:
                     count += 1
                     if isinstance(_re_result, list):
                         re_result.extend(_re_result)
+                elif _error_msg:
+                    error_msg = _error_msg
             # 如果v为str，调用find_with_condition方法进行比较
-            elif isinstance(v, str) and not isinstance(dict2[k], (tuple, list, dict)):
+            elif isinstance(v, str):
                 find_result = find_with_condition(
                     v, dict2[k], default_operator_list=self.default_operator_list, logger=self.logger)
                 if find_result.is_matched:
                     count += 1
                     if isinstance(find_result.re_result, list):
                         re_result.extend(find_result.re_result)
+                elif find_result.error_msg:
+                    error_msg = find_result.error_msg
+            elif v == dict2[k]:
+                count += 1
         # 如果匹配数和dict1长度一致，则标记为found
         if count == len(dict1):
             found = True
@@ -206,14 +232,14 @@ class FindObject:
         if self.__dict_exact_match:
             if count < len(dict2):
                 found = False
-        return found, count, re_result
+        return found, count, re_result, error_msg
 
 
 # 保存查找结果
 class FindResult(AttrDisplay):
     def __init__(
             self, is_matched, condition, data, match_count, condition_value, operator_list, data_object,
-            re_result=None):
+            re_result=None, error_msg=''):
         self.is_matched = is_matched
         self.condition = condition
         self.data = data
@@ -222,6 +248,7 @@ class FindResult(AttrDisplay):
         self.operator_list = operator_list
         self.data_object = data_object
         self.re_result = re_result
+        self.error_msg = error_msg
 
 
 # 根据参数生成正则表达式flags的值
@@ -369,201 +396,211 @@ def find_with_condition(
     pre_data_object 用于传入一个已处理好的tuple，list，dict，以免data被多次转换影响性能
     default_operator_list 用于传入一个默认的操作符列表，如果condition不包含任何操作符，将使用默认操作符列表
     """
+    is_matched = False
+    match_count = -1
+    condition_value = ''
+    operator_list = ''
+    data_object = None
+    re_result = None
+    error_msg = None
 
-    operator_character, condition_value, operator_list, first_operator = resolve_operator(
-        condition, default_operator_list=default_operator_list)
+    try:
+        operator_character, condition_value, operator_list, first_operator = resolve_operator(
+            condition, default_operator_list=default_operator_list)
 
-    # 处理无操作符的条件
-    if first_operator == '':
-        is_matched = False
-        if condition_value == '':
-            if str(data) == '':
-                match_count = 1
-            else:
-                match_count = 0
-        else:
-            match_count = str(data).count(condition_value)
-        if match_count > 0:
-            is_matched = True
-        find_result = FindResult(is_matched, condition, data, match_count, condition_value, operator_list, None)
-
-    # 处理有操作符的条件
-    else:
-        parameter_list = []
-        if len(operator_list) > 1:
-            parameter_list = operator_list[1].split(sep=',')  # 这里故意不去掉参数两端的空格及换行，有些参数需要保留这些内容
-        # 处理数量匹配
-        if first_operator == 'count':
-            is_matched = False
-            find_result_temp = find_with_condition(condition_value, data, logger=logger)
-            if find_result_temp.is_matched:
-                # 出现1次及以上
-                if len(parameter_list) == 0 or parameter_list[0] in ('+', 'n'):
-                    if find_result_temp.match_count > 0:
-                        is_matched = True
+        # 处理无操作符的条件
+        if first_operator == '':
+            if condition_value == '':
+                if str(data) == '':
+                    match_count = 1
                 else:
-                    try:
-                        count_int = int(parameter_list[0])
-                        if find_result_temp.match_count == count_int:
-                            is_matched = True
-                    except ValueError:
-                        eo = vic_eval.EvalObject(parameter_list[0], {'x': find_result_temp.match_count}, logger)
-                        eval_success, eval_result, final_expression = eo.get_eval_result()
-                        if eval_success:
-                            if eval_result:
-                                is_matched = True
-                        else:
-                            raise ValueError('操作符【{}】处理过程中出现错误，无效的表达式【{}】'.format(
-                                operator_character, parameter_list[0]))
-            operator_list.extend(find_result_temp.operator_list)
-            find_result = FindResult(is_matched, condition, data, find_result_temp.match_count,
-                                     find_result_temp.condition_value, operator_list, find_result_temp.data_object)
-        # 完全相等
-        elif first_operator in ('===', '!=='):
-            is_matched = False
-            match_count = 0
-            if len(parameter_list) == 0 or parameter_list[0] == 'str':
-                pass
-            elif parameter_list[0] == 'int':
-                try:
-                    condition_value = int(condition_value)
-                except ValueError:
-                    raise ValueError('操作符【{}】处理过程中出现错误，【{}】无法转换为整型'.format(operator_character, condition_value))
-            elif parameter_list[0] == 'float':
-                try:
-                    condition_value = float(condition_value)
-                except ValueError:
-                    raise ValueError('操作符【{}】处理过程中出现错误，【{}】无法转换为浮点型'.format(operator_character, condition_value))
-            elif parameter_list[0] in ('datetime', 'time'):
-                time_format = ''
-                if len(parameter_list) > 1:
-                    time_format = parameter_list[1]
-                try:
-                    condition_value = str_to_time(condition_value, time_format)
-                except ValueError:
-                    raise ValueError('操作符【{}】处理过程中出现错误，【{}】无法转换为datetime类型'.format(operator_character, condition_value))
-            else:
-                raise ValueError('操作符【{}】处理过程中出现错误，无效的转换类型【{}】'.format(operator_character, parameter_list[0]))
-            if condition_value == data and type(condition_value) == type(data):  # 使用type()比较的方式确保类型完全相等而不单是属于子类
-                if first_operator == '===':
-                    is_matched = True
-                    match_count = 1
-            else:
-                if first_operator == '!==':
-                    is_matched = True
                     match_count = 0
-            find_result = FindResult(is_matched, condition, data, match_count, condition_value, operator_list, None)
-        # 尝试转换为相同类型的对象再进行比较
-        elif first_operator in ('==', '!=', '<=', '>=', '<', '>'):
-            is_matched = False
-            match_count = 0
-            if len(parameter_list) == 0 or parameter_list[0] == 'str':
-                data_object = str(data)
-            elif parameter_list[0] == 'int':
-                try:
-                    condition_value = int(condition_value)
-                except ValueError:
-                    raise ValueError('操作符【{}】处理过程中出现错误，【{}】无法转换为整型'.format(operator_character, condition_value))
-                try:
-                    data_object = int(data)
-                except ValueError:
-                    data_object = ValueError('Cannot change [%s] to int object' % data)
-                    # raise ValueError('Cannot change [%s] to int object'%(data))
-            elif parameter_list[0] == 'float':
-                try:
-                    condition_value = float(condition_value)
-                except ValueError:
-                    raise ValueError('操作符【{}】处理过程中出现错误，【{}】无法转换为浮点型'.format(operator_character, condition_value))
-                try:
-                    data_object = float(data)
-                except ValueError:
-                    data_object = ValueError('Cannot change [%s] to float object' % data)
-                    # raise ValueError('Cannot change [%s] to float object'%(data))
-            elif parameter_list[0] in ('datetime', 'time'):
-                time_format = ''
-                if len(parameter_list) > 1:
-                    time_format = parameter_list[1]
-                try:
-                    condition_value = str_to_time(condition_value, time_format)
-                except ValueError:
-                    raise ValueError('操作符【{}】处理过程中出现错误，【{}】无法转换为datetime类型'.format(operator_character, condition_value))
-                try:
-                    data_object = str_to_time(data, time_format)
-                except ValueError:
-                    data_object = ValueError('Cannot change [%s] to datetime object' % data)
-                    # raise ValueError('Cannot change [%s] to datetime object'%(data))
             else:
-                raise ValueError('操作符【{}】处理过程中出现错误，无效的转换类型【{}】'.format(operator_character, parameter_list[0]))
-            expression = 'data_object %s condition_value' % first_operator
-            if not isinstance(data_object, ValueError) and eval(expression):
-                is_matched = True
-                if first_operator != '!=':
-                    match_count = 1
-            find_result = FindResult(is_matched, condition, data, match_count, condition_value, operator_list,
-                                     data_object)
-        # 正则表达式比较
-        elif first_operator == 're':
-            is_matched = False
-            re_parameter = ''
-            if parameter_list:
-                re_parameter = parameter_list[0]
-            flags = generate_reg_flags(re_parameter)
-            re_result = re.findall(condition_value, str(data), flags)
-            match_count = len(re_result)
+                match_count = str(data).count(condition_value)
             if match_count > 0:
                 is_matched = True
-            find_result = FindResult(
-                is_matched, condition, data, match_count, condition_value, operator_list, None, re_result)
-        # json比较
-        elif first_operator == 'json':
-            try:
-                condition_object = json.loads(get_python_vaild_json(condition_value))
-            except ValueError as e:
-                raise ValueError(str(e) + '\nCannot change [%s] to object.' % condition_value)
-            condition_object = restore_control_character_in_objecr(condition_object, restore_control_character)
-            if isinstance(pre_data_object, (tuple, list, dict)):
-                data_object = pre_data_object
-            else:
-                if isinstance(data, (tuple, list, dict)):
-                    data_object = data
-                else:
-                    try:
-                        data_object = json.loads(get_python_vaild_json(data))
-                    except ValueError as e:
-                        raise ValueError(str(e) + '\nCannot change [%s] to object.' % data)
-                    data_object = restore_control_character_in_objecr(data_object, restore_control_character)
-            list_exact_match = False
-            dict_exact_match = False
-            default_operator_list_ = None
-            for parameter in parameter_list:
-                # 是否精确匹配list
-                if parameter == 'l':
-                    list_exact_match = True
-                # 是否精确匹配dict
-                elif parameter == 'd':
-                    dict_exact_match = True
-                # 是否默认使用正则表达式匹配
-                elif re.findall('^re\\[.*?\\]$|^re$', parameter, 0):
-                    re_parameter_list = re.findall('\\[(.*?)\\]', parameter, 0)
-                    if re_parameter_list:
-                        default_operator_list_ = ['re', re_parameter_list[0]]
-                    else:
-                        default_operator_list_ = ['re', ]
-                elif parameter.strip() == '':
-                    continue
-                else:
-                    raise ValueError('操作符【{}】处理过程中出现错误，无效的参数【{}】'.format(operator_character, parameter))
 
-            fo = FindObject(list_exact_match, dict_exact_match, default_operator_list=default_operator_list_)
-            is_matched, match_count, re_result = fo.find_object_in_object(condition_object, data_object)
-            find_result = FindResult(is_matched, condition, data, match_count, condition_value, operator_list,
-                                     data_object, re_result)
+        # 处理有操作符的条件
         else:
-            raise ValueError('Invalid operational character [' + first_operator + ']')
+            parameter_list = []
+            if len(operator_list) > 1:
+                parameter_list = operator_list[1].split(sep=',')  # 这里故意不去掉参数两端的空格及换行，有些参数需要保留这些内容
 
+            # 处理数量匹配
+            if first_operator == 'count':
+                find_result_temp = find_with_condition(condition_value, data, logger=logger)
+                if find_result_temp.is_matched:
+                    # 出现1次及以上
+                    if len(parameter_list) == 0 or parameter_list[0] in ('+', 'n'):
+                        if find_result_temp.match_count > 0:
+                            is_matched = True
+                    else:
+                        try:
+                            count_int = int(parameter_list[0])
+                            if find_result_temp.match_count == count_int:
+                                is_matched = True
+                        except ValueError:
+                            eo = vic_eval.EvalObject(parameter_list[0], {'x': find_result_temp.match_count}, logger)
+                            eval_success, eval_result, final_expression = eo.get_eval_result()
+                            if eval_success:
+                                if eval_result:
+                                    is_matched = True
+                            else:
+                                raise ValueError('操作符【{}】处理过程中出现错误，无效的表达式【{}】'.format(
+                                    operator_character, parameter_list[0]))
+                operator_list.extend(find_result_temp.operator_list)
+                match_count = find_result_temp.match_count
+                condition_value = find_result_temp.condition_value
+                data_object = find_result_temp.data_object
+
+            # 完全相等
+            elif first_operator in ('===', '!=='):
+                match_count = 0
+                if len(parameter_list) == 0 or parameter_list[0] == 'str':
+                    pass
+                elif parameter_list[0] == 'int':
+                    try:
+                        condition_value = int(condition_value)
+                    except ValueError:
+                        raise ValueError('操作符【{}】处理过程中出现错误，【{}】无法转换为整型'.format(operator_character, condition_value))
+                elif parameter_list[0] == 'float':
+                    try:
+                        condition_value = float(condition_value)
+                    except ValueError:
+                        raise ValueError('操作符【{}】处理过程中出现错误，【{}】无法转换为浮点型'.format(operator_character, condition_value))
+                elif parameter_list[0] in ('datetime', 'time'):
+                    time_format = ''
+                    if len(parameter_list) > 1:
+                        time_format = parameter_list[1]
+                    try:
+                        condition_value = str_to_time(condition_value, time_format)
+                    except ValueError:
+                        raise ValueError('操作符【{}】处理过程中出现错误，【{}】无法转换为datetime类型'.format(operator_character, condition_value))
+                else:
+                    raise ValueError('操作符【{}】处理过程中出现错误，无效的转换类型【{}】'.format(operator_character, parameter_list[0]))
+                if condition_value == data and type(condition_value) == type(data):  # 使用type()比较的方式确保类型完全相等而不单是属于子类
+                    if first_operator == '===':
+                        is_matched = True
+                        match_count = 1
+                else:
+                    if first_operator == '!==':
+                        is_matched = True
+                        match_count = 0
+
+            # 尝试转换为相同类型的对象再进行比较
+            elif first_operator in ('==', '!=', '<=', '>=', '<', '>'):
+                match_count = 0
+                if len(parameter_list) == 0 or parameter_list[0] == 'str':
+                    data_object = str(data)
+                elif parameter_list[0] == 'int':
+                    try:
+                        condition_value = int(condition_value)
+                    except ValueError:
+                        raise ValueError('操作符【{}】处理过程中出现错误，【{}】无法转换为整型'.format(operator_character, condition_value))
+                    try:
+                        data_object = int(data)
+                    except ValueError:
+                        data_object = ValueError('Cannot change [%s] to int object' % data)
+                        # raise ValueError('Cannot change [%s] to int object'%(data))
+                elif parameter_list[0] == 'float':
+                    try:
+                        condition_value = float(condition_value)
+                    except ValueError:
+                        raise ValueError('操作符【{}】处理过程中出现错误，【{}】无法转换为浮点型'.format(operator_character, condition_value))
+                    try:
+                        data_object = float(data)
+                    except ValueError:
+                        data_object = ValueError('Cannot change [%s] to float object' % data)
+                        # raise ValueError('Cannot change [%s] to float object'%(data))
+                elif parameter_list[0] in ('datetime', 'time'):
+                    time_format = ''
+                    if len(parameter_list) > 1:
+                        time_format = parameter_list[1]
+                    try:
+                        condition_value = str_to_time(condition_value, time_format)
+                    except ValueError:
+                        raise ValueError('操作符【{}】处理过程中出现错误，【{}】无法转换为datetime类型'.format(operator_character, condition_value))
+                    try:
+                        data_object = str_to_time(data, time_format)
+                    except ValueError:
+                        data_object = ValueError('Cannot change [%s] to datetime object' % data)
+                        # raise ValueError('Cannot change [%s] to datetime object'%(data))
+                else:
+                    raise ValueError('操作符【{}】处理过程中出现错误，无效的转换类型【{}】'.format(operator_character, parameter_list[0]))
+                expression = 'data_object %s condition_value' % first_operator
+                if not isinstance(data_object, ValueError) and eval(expression):
+                    is_matched = True
+                    if first_operator != '!=':
+                        match_count = 1
+
+            # 正则表达式比较
+            elif first_operator == 're':
+                re_parameter = ''
+                if parameter_list:
+                    re_parameter = parameter_list[0]
+                flags = generate_reg_flags(re_parameter)
+                re_result = re.findall(condition_value, str(data), flags)
+                match_count = len(re_result)
+                if match_count > 0:
+                    is_matched = True
+
+            # json比较
+            elif first_operator == 'json':
+                try:
+                    condition_object = json.loads(get_python_vaild_json(condition_value))
+                except ValueError:
+                    raise ValueError(
+                        "Cannot change [{}] {} to json object.".format(condition_value, type(condition_value)))
+                condition_object = restore_control_character_in_objecr(condition_object, restore_control_character)
+
+                if isinstance(pre_data_object, (tuple, list, dict)):
+                    data_object = pre_data_object
+                else:
+                    if isinstance(data, (tuple, list, dict)):
+                        data_object = data
+                    else:
+                        try:
+                            data_object = json.loads(get_python_vaild_json(data))
+                        except ValueError:
+                            raise ValueError("Cannot change [{}] {} to json object.".format(data, type(data)))
+
+                list_exact_match = False
+                dict_exact_match = False
+                default_operator_list_ = None
+                for parameter in parameter_list:
+                    # 是否精确匹配list
+                    if parameter == 'l':
+                        list_exact_match = True
+                    # 是否精确匹配dict
+                    elif parameter == 'd':
+                        dict_exact_match = True
+                    # 是否默认使用正则表达式匹配
+                    elif re.findall('^re\\[.*?\\]$|^re$', parameter, 0):
+                        re_parameter_list = re.findall('\\[(.*?)\\]', parameter, 0)
+                        if re_parameter_list:
+                            default_operator_list_ = ['re', re_parameter_list[0]]
+                        else:
+                            default_operator_list_ = ['re', ]
+                    elif parameter.strip() == '':
+                        continue
+                    else:
+                        raise ValueError('操作符【{}】处理过程中出现错误，无效的参数【{}】'.format(operator_character, parameter))
+
+                fo = FindObject(
+                    list_exact_match, dict_exact_match, default_operator_list=default_operator_list_, logger=logger)
+                is_matched, match_count, re_result, _error_msg = fo.find_object_in_object(condition_object, data_object)
+                if not is_matched and _error_msg:
+                    error_msg = _error_msg
+
+            else:
+                raise ValueError('Invalid operational character [' + first_operator + ']')
+    except Exception as e:
+        error_msg = getattr(e, 'msg', str(e))
+        # logger.debug(error_msg)
     # logger.debug('is_matched: [%s], match_count: [%s]' % (find_result.is_matched, find_result.match_count))
     # logger.debug('find_result: \n%s' % find_result)
-    return find_result
+    return FindResult(
+        is_matched, condition, data, match_count, condition_value, operator_list, data_object, re_result, error_msg)
 
 
 # 获取正则表达式结果中第一个有效字符串

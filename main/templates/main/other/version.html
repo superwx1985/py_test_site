@@ -24,6 +24,11 @@
         <div class="container-fluid">
             <div id="execute_log_div" class="jumbotron" style="overflow: auto; white-space: pre-wrap;">
 2019.04.04
+1. 修复对象查找时，对比非str类型一直返回不匹配的问题
+2. 现在进行比较操作时遇到类型转换出错将不会报错，而是当作不匹配
+3. 修复在某些分辨率下，测试实时日志无法自动滚动的问题
+
+2019.04.04
 1. 修复一个变量替换的问题
 2. 表达式中可以使用len统计对象长度
 3. 修复用例状态页面的按钮显示问题
