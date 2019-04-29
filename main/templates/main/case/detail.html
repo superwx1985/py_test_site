@@ -56,7 +56,7 @@
                 {% endif %}
             {% endif %}
             // 处理m2m拖动及排序
-            m2m_handle(window.$m2m_input, 8, '步骤详情');
+            m2m_handle(window.$m2m_input, '步骤详情');
             // 注册搜索按钮
             $('#search_button').off('click').on('click', function() { go_to_first_page(window.not_go_to_first_page, set_page_to_one, $('input[name=page]')); window.not_go_to_first_page = 0});
             // 注册清空按钮
@@ -113,7 +113,7 @@
                             distance: 15,
                             scope: "m2m_all",
                             helper: function() {
-                                var tr = $(this).clone().removeClass().css('background-color', 'lightblue');
+                                var tr = $(this).clone().css('background-color', 'lightblue').removeClass('ui-draggable').addClass('from_all_table');
                                 tr.children('[moveable]').after($('<td index class="text-center"></td>'));
                                 return tr;
                             },
@@ -283,6 +283,7 @@
                     <div class="row align-items-center">
                         <div class="col text-left">
                             <button type="button" id="m2m_add_button" class="btn btn-success"><i class="icon-plus"></i>&nbsp;新增</button>
+                            <button type="button" id="m2m_multiple_delete_button" class="btn btn-danger" disabled="disabled"><i class="icon-trash"></i>&nbsp;批量删除</button>
                         </div>
                     </div>
                 </div>
@@ -302,7 +303,7 @@
                     </colgroup>
                     <thead class="thead-light">
                         <tr>
-                            <th></th>
+                            <th select_all data-toggle="tooltip" title="全选/全不选"><i class="icon-check"></i></th>
                             <th>顺序</th>
                             <th>名称</th>
                             <th>关键字</th>

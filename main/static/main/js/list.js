@@ -114,7 +114,7 @@ function multiple_select($td) {
 
 // 批量操作按钮状态
 function multiple_operate_button_state() {
-    if (muliple_selected_id.length > 0) {
+    if (window.muliple_selected_id.length > 0) {
         $('#multiple_copy_button').removeAttr('disabled');
         $('#multiple_delete_button').removeAttr('disabled');
     } else {

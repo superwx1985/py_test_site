@@ -93,20 +93,22 @@ function m2m_detail_popup(title, url, parent_project) {
 // 更新已选m2m的序号，更新m2m field内容
 function update_m2m_selected_index_and_field($input, title) {
 	var m2m = $('#m2m_selected_table tbody tr:not([placeholder])');
-	var m2m_list = [];
+	var m2m_list = $('#m2m_selected_table tbody').sortable('toArray', {attribute: "pk"});  // 获取可排序对象的pk列表
 
 	m2m.each(function(i) {
 		$(this).children('[index]').text(i+1);
+		$(this).attr('order', i+1);
 		var href = "javascript:m2m_detail_popup('" + title + "','" + $(this).attr('url') + "?inside=1&order=" + (i+1) + "')";
 		$(this).find('[name]>a').attr('href', href);
-		m2m_list.push($(this).attr('pk'));
 	});
 	var json_str = JSON.stringify(m2m_list);
 	$input.val(json_str);
+	m2m_multiple_select_bind();
+	update_m2m_muliple_selected();
 }
 
 // 处理m2m拖动及排序
-function m2m_handle($input, col, title) {
+function m2m_handle($input, title) {
 	if (!window.editable) { return }
 	$('#m2m_selected_table tbody').sortable({
 		items: "tr:not([placeholder])",
@@ -114,6 +116,35 @@ function m2m_handle($input, col, title) {
 		handle: "[moveable]",
 		placeholder: 'ui-state-highlight',
 		stop: function( event, ui ) {
+			var from_all_table = false;
+			if (ui.item.hasClass('from_all_table')) {
+				from_all_table = true;
+				ui.item.removeClass('from_all_table');
+			}
+            // 如果拖动的是连续的多选，将进行整体移动
+			if (!from_all_table && m2m_muliple_selected_id.length > 1 && m2m_muliple_selected_id.indexOf(ui.item.attr('order')) > -1) {
+				var old_m2m_muliple_selected_id = window.m2m_muliple_selected_id;
+				var old_start = parseInt(m2m_muliple_selected_id[0]);
+				var old_end = parseInt(m2m_muliple_selected_id[m2m_muliple_selected_id.length-1]);
+
+				if (old_end === old_start+m2m_muliple_selected_id.length-1) {
+					var old_selected_element = [];
+					$.each(old_m2m_muliple_selected_id, function (i, v) {
+                       	old_selected_element.push($('#m2m_selected_table tr[order=' + v + ']'))
+                    });
+                    update_m2m_selected_index_and_field($input, title);
+                    var new_order = parseInt(ui.item.attr('order'));
+
+                    if (new_order < old_start || new_order > old_end) {
+						var target_tr = ui.item;
+						do {
+							var tr = old_selected_element.pop();
+							target_tr.before(tr);
+							target_tr = tr;
+						} while(old_selected_element.length);
+                    }
+				}
+			}
 			update_m2m_selected_index_and_field($input, title);
 		}
 	});
@@ -132,7 +163,7 @@ function m2m_handle($input, col, title) {
 		drop: function (event, ui) {
 			ui.draggable.remove();
 			if ($('#m2m_selected_table tbody tr').length <= 1) {
-				$('#m2m_selected_table tbody').append($('<tr placeholder><td colspan=' + col + ' class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>'));
+				$('#m2m_selected_table tbody').append($('<tr placeholder><td colspan=' + $('#m2m_selected_table thead th').length + ' class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>'));
 			}
 		}
 	})
@@ -344,4 +375,101 @@ function copy_obj_post(copy_url, name_prefix, copy_sub_item, order) {
 			bootbox.alert('<span class="text-danger">'+data.message+'</span>');
         }
 	});
+}
+
+// m2m批量操作按钮状态
+function m2m_multiple_operate_button_state() {
+    if (window.m2m_muliple_selected_id.length > 0) {
+        $('#m2m_multiple_delete_button').removeAttr('disabled');
+    } else {
+        $('#m2m_multiple_delete_button').attr('disabled', true);
+    }
+}
+
+// m2m多选列表刷新
+function update_m2m_muliple_selected() {
+	window.m2m_muliple_selected_id = [];
+	$('#m2m_selected_table tr[pk]').each(function (i, e) {
+		if ($(e).data('selected')) {
+			window.m2m_muliple_selected_id.push($(e).attr('order'))
+			$(e).css('background-color', 'lightblue');
+		} else {
+			$(e).css('background-color', '');
+		}
+	});
+	m2m_multiple_operate_button_state()
+}
+
+// m2m全选
+function bind_m2m_select_all_button() {
+    $('#m2m_selected_table th[select_all]').off('click').click(function () {
+        if (window.m2m_muliple_selected_id.length > 0) {
+            $('#m2m_selected_table tr[pk]').data('selected', false);
+		} else {
+			$('#m2m_selected_table tr[pk]').data('selected', true);
+		}
+	update_m2m_muliple_selected();
+    });
+}
+
+// m2m多选
+function m2m_multiple_select($td) {
+    var tr = $td.parent('tr');
+
+    if (!tr.data('selected')) {
+        tr.data('selected', true);
+    } else {
+        tr.data('selected', false);
+    }
+    update_m2m_muliple_selected();
+}
+
+// 注册m2m多择功能
+function m2m_multiple_select_bind() {
+	$('#m2m_selected_table td[moveable]').off('click').on('click', function() { m2m_multiple_select($(this)) });
+}
+
+// 批量删除m2m对象
+function m2m_multiple_delete() {
+	$.each(window.m2m_muliple_selected_id, function(i, v) {
+	    $('#m2m_selected_table tbody tr[order='+ v +']').attr('deleting', true)
+	});
+
+	$('#m2m_selected_table tbody tr[deleting]').fadeOut("slow", function() {
+        $(this).remove();
+        update_m2m_selected_index_and_field(window.$m2m_input, '步骤详情');
+        update_m2m_muliple_selected();
+        if ($('#m2m_selected_table tbody tr').length < 1) {
+			$('#m2m_selected_table tbody').append($('<tr placeholder><td colspan=' + $('#m2m_selected_table thead th').length + ' class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>'));
+		}
+    });
+
+}
+
+// m2m批量删除按钮
+function bind_m2m_multiple_delete_button() {
+    $('#m2m_multiple_delete_button').off('click').click(function () {
+        var msg = '要删除<span class="mark">' + window.m2m_muliple_selected_id.length + '</span>个对象吗？';
+            bootbox.confirm({
+                title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
+                message: msg,
+                size: 'large',
+                backdrop: true,
+                buttons: {
+                    confirm: {
+                        label: '<i class="icon-trash">&nbsp;</i>确定',
+                        className: 'btn-danger'
+                    },
+                    cancel: {
+                        label: '<i class="icon-undo">&nbsp;</i>取消',
+                        className: 'btn-secondary'
+                    }
+                },
+                callback: function (result) {
+                    if (result === true) {
+                    	m2m_multiple_delete();
+                    }
+                }
+            });
+    });
 }

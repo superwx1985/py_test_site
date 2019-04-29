@@ -12,6 +12,9 @@
                     padding: 5px 0;
                     {#min-height: 2em;#}
                 }
+                th[select_all], td[moveable] {
+                    cursor: pointer;
+                }
             </style>
         {% endblock %}
         {% block style %}
@@ -100,6 +103,11 @@
                     {% if inside and prompt == 'success' %}
                         parent.window.$('[name=inside_detail_modal]').modal('hide');
                     {% endif %}
+                    window.m2m_muliple_selected_id = [];
+                    // 注册全选按钮
+                    bind_m2m_select_all_button();
+                    // 注册批量删除按钮
+                    bind_m2m_multiple_delete_button();
                 });
             </script>
         {% endblock %}
