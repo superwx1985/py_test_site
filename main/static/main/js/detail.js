@@ -93,17 +93,21 @@ function m2m_detail_popup(title, url, parent_project) {
 // 更新已选m2m的序号，更新m2m field内容
 function update_m2m_selected_index_and_field($input, title) {
 	var m2m = $('#m2m_selected_table tbody tr:not([placeholder])');
-	var m2m_list = $('#m2m_selected_table tbody').sortable('toArray', {attribute: "pk"});  // 获取可排序对象的pk列表
+	// var m2m_list = $('#m2m_selected_table tbody').sortable('toArray', {attribute: "pk"});  // 获取可排序对象的pk列表，不能使用该方法，因为只读页面的列表不是可排序对象
+    var m2m_list = [];
 
 	m2m.each(function(i) {
 		$(this).children('[index]').text(i+1);
 		$(this).attr('order', i+1);
 		var href = "javascript:m2m_detail_popup('" + title + "','" + $(this).attr('url') + "?inside=1&order=" + (i+1) + "')";
 		$(this).find('[name]>a').attr('href', href);
+		m2m_list.push($('#m2m_selected_table tbody tr[order="'+(i+1)+'"]').attr('pk'));
 	});
 	var json_str = JSON.stringify(m2m_list);
 	$input.val(json_str);
-	m2m_multiple_select_bind();
+	if (window.editable) {
+		bind_m2m_multiple_select();
+	}
 	update_m2m_muliple_selected();
 }
 
@@ -123,13 +127,13 @@ function m2m_handle($input, title) {
 			}
             // 如果拖动的是连续的多选，将进行整体移动
 			if (!from_all_table && m2m_muliple_selected_id.length > 1 && m2m_muliple_selected_id.indexOf(ui.item.attr('order')) > -1) {
-				var old_m2m_muliple_selected_id = window.m2m_muliple_selected_id;
+				var old_muliple_selected_id = window.m2m_muliple_selected_id;
 				var old_start = parseInt(m2m_muliple_selected_id[0]);
 				var old_end = parseInt(m2m_muliple_selected_id[m2m_muliple_selected_id.length-1]);
 
 				if (old_end === old_start+m2m_muliple_selected_id.length-1) {
 					var old_selected_element = [];
-					$.each(old_m2m_muliple_selected_id, function (i, v) {
+					$.each(old_muliple_selected_id, function (i, v) {
                        	old_selected_element.push($('#m2m_selected_table tr[order=' + v + ']'))
                     });
                     update_m2m_selected_index_and_field($input, title);
@@ -343,7 +347,9 @@ function disable_interaction() {
 	$('td[col_del]').empty().off('click');
 	$('td[col_move]').empty().off('click');
 	$('[j_dropdown]').each(function(){$(this).data('dropdown').changeStatus('readonly')});
-	$('#m2m_add_button').off('click');
+	$('#m2m_add_button').off('click').attr('disabled', true);
+	$('#m2m_selected_table th, #m2m_selected_table td').off('click');
+	$('#variable_table th, #variable_table td').off('click');
 	//$('#m2m_all_table tbody tr').draggable('option', 'disabled');
 	//$('#m2m_selected_table tbody').sortable('option', 'disabled');
 	//$('#m2m_selected_table tbody').droppable('option', 'disabled');
@@ -391,7 +397,7 @@ function update_m2m_muliple_selected() {
 	window.m2m_muliple_selected_id = [];
 	$('#m2m_selected_table tr[pk]').each(function (i, e) {
 		if ($(e).data('selected')) {
-			window.m2m_muliple_selected_id.push($(e).attr('order'))
+			window.m2m_muliple_selected_id.push($(e).attr('order'));
 			$(e).css('background-color', 'lightblue');
 		} else {
 			$(e).css('background-color', '');
@@ -425,7 +431,7 @@ function m2m_multiple_select($td) {
 }
 
 // 注册m2m多择功能
-function m2m_multiple_select_bind() {
+function bind_m2m_multiple_select() {
 	$('#m2m_selected_table td[moveable]').off('click').on('click', function() { m2m_multiple_select($(this)) });
 }
 
@@ -438,7 +444,6 @@ function m2m_multiple_delete() {
 	$('#m2m_selected_table tbody tr[deleting]').fadeOut("slow", function() {
         $(this).remove();
         update_m2m_selected_index_and_field(window.$m2m_input, '步骤详情');
-        update_m2m_muliple_selected();
         if ($('#m2m_selected_table tbody tr').length < 1) {
 			$('#m2m_selected_table tbody').append($('<tr placeholder><td colspan=' + $('#m2m_selected_table thead th').length + ' class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>'));
 		}

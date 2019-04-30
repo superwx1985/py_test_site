@@ -20,7 +20,7 @@
             // 更新导航栏
             $('#nav_variable').addClass('active');
             // 列表可调宽度
-            $('th').resizable({maxHeight: 1, alsoResize: '#element_table'});
+            $('th').resizable({maxHeight: 1, alsoResize: '#variable_table'});
         });
     </script>
     <script src="{% static 'main/js/detail_variable_group.js' %}"></script>
@@ -51,6 +51,11 @@
             });
             // 启用排序功能
             sortable_variable();
+            window.sub_muliple_selected_id = [];
+            // 注册全选按钮
+            bind_sub_multiple_select_all_button();
+            // 注册批量删除按钮
+            bind_sub_multiple_delete_button();
         });
     </script>
 {% endblock %}

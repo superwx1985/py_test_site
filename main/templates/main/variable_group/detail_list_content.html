@@ -1,6 +1,9 @@
 <div class="row">
     <div class="col text-center">
         <h5 class="ui-widget-header">变量列表&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="变量的加载是有序的，先加载的变量可以被后加载的变量调用"></i></h5>
+        <p class="text-left">
+            <button type="button" id="sub_multiple_delete_button" class="btn btn-danger" disabled="disabled"><i class="icon-trash"></i>&nbsp;批量删除</button>
+        </p>
         <table id='variable_table' class="table table-sm table-bordered" style="width: 100%">
             <colgroup>
                 <col style='width: 60px;'>
@@ -10,7 +13,7 @@
                 <col>
                 <col>
             </colgroup>
-            <thead class="thead-light"><tr><th>排序</th><th>删除</th><th>顺序</th><th>名称</th><th>值</th><th>备注</th></tr></thead>
+            <thead class="thead-light"><tr><th select_all data-toggle="tooltip" title="全选/全不选">排序</th><th>删除</th><th>顺序</th><th>名称</th><th>值</th><th>备注</th></tr></thead>
             <tbody class="text-left">
                 <tr id="new_helper" class="bg-light">
                     <td class="middle" col_move><i class="icon-ok-circle icon-2x text-success" data-toggle="tooltip" title="添加到变量组"></i></td>

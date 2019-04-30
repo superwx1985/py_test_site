@@ -6,6 +6,30 @@ function sortable_element() {
 		handle: "[moveable]",
 		placeholder: 'ui-state-highlight',
 		stop: function( event, ui ) {
+			// 如果拖动的是连续的多选，将进行整体移动
+			if (sub_muliple_selected_id.length > 1 && sub_muliple_selected_id.indexOf(ui.item.attr('order')) > -1) {
+				var old_muliple_selected_id = window.sub_muliple_selected_id;
+				var old_start = parseInt(sub_muliple_selected_id[0]);
+				var old_end = parseInt(sub_muliple_selected_id[sub_muliple_selected_id.length-1]);
+
+				if (old_end === old_start+sub_muliple_selected_id.length-1) {
+					var old_selected_element = [];
+					$.each(old_muliple_selected_id, function (i, v) {
+                       	old_selected_element.push($('#element_table tr[order=' + v + ']'))
+                    });
+                    update_element_index_and_field();
+                    var new_order = parseInt(ui.item.attr('order'));
+
+                    if (new_order < old_start || new_order > old_end) {
+						var target_tr = ui.item;
+						do {
+							var tr = old_selected_element.pop();
+							target_tr.before(tr);
+							target_tr = tr;
+						} while(old_selected_element.length);
+                    }
+				}
+			}
 			update_element_index_and_field();
 		}
 	});
@@ -158,6 +182,7 @@ function update_element_index_and_field() {
 	var _list = [];
 	var name_list = [];
 	trs.each(function(i) {
+		$(this).attr('order', i+1);
 		$(this).find('td[col_index] span').text(i+1);
 		var name_input = $(this).find('td[col_name] input');
 		var name = name_input.val();
@@ -181,6 +206,10 @@ function update_element_index_and_field() {
 	});
 	var json_str = JSON.stringify(_list);
 	$('input[name=element]').val(json_str);
+	if (window.editable) {
+		bind_sub_multiple_select();
+	}
+	update_sub_muliple_selected();
 	// 关闭遮罩
 	$('#mask').hide();
 }
@@ -218,4 +247,98 @@ function check_unsaved() {
 		$('#object_form').removeAttr('onsubmit').submit();
 	}
 	return false;
+}
+
+// 批量操作按钮状态
+function sub_multiple_operate_button_state() {
+    if (window.sub_muliple_selected_id.length > 0) {
+        $('#sub_multiple_delete_button').removeAttr('disabled');
+    } else {
+        $('#sub_multiple_delete_button').attr('disabled', true);
+    }
+}
+
+// 多选列表刷新
+function update_sub_muliple_selected() {
+	window.sub_muliple_selected_id = [];
+	$('#element_table tbody tr:not(#new_helper)').each(function (i, e) {
+		if ($(e).data('selected')) {
+			window.sub_muliple_selected_id.push($(e).attr('order'));
+			$(e).css('background-color', 'lightblue');
+		} else {
+			$(e).css('background-color', '');
+		}
+	});
+	sub_multiple_operate_button_state()
+}
+
+// 全选
+function bind_sub_multiple_select_all_button() {
+    $('#element_table th[select_all]').off('click').click(function () {
+        if (window.sub_muliple_selected_id.length > 0) {
+            $('#element_table tbody tr:not(#new_helper)').data('selected', false);
+		} else {
+			$('#element_table tbody tr:not(#new_helper)').data('selected', true);
+		}
+	update_sub_muliple_selected();
+    });
+}
+
+// 多选
+function sub_multiple_select($td) {
+    var tr = $td.parent('tr');
+
+    if (!tr.data('selected')) {
+        tr.data('selected', true);
+    } else {
+        tr.data('selected', false);
+    }
+    update_sub_muliple_selected();
+}
+
+// 注册多择功能
+function bind_sub_multiple_select() {
+	$('#element_table td[moveable]').off('click').on('click', function() { sub_multiple_select($(this)) });
+}
+
+
+// 批量删除对象
+function sub_multiple_delete() {
+	$.each(window.sub_muliple_selected_id, function(i, v) {
+	    $('#element_table tbody tr[order='+ v +']').attr('deleting', true)
+	});
+
+	$('#element_table tbody tr[deleting]').fadeOut("slow", function() {
+        $(this).remove();
+        update_element_index_and_field();
+    });
+
+}
+
+// 批量删除按钮
+function bind_sub_multiple_delete_button() {
+    $('#sub_multiple_delete_button').off('click').click(function () {
+        var msg = '要删除<span class="mark">' + window.sub_muliple_selected_id.length + '</span>个对象吗？';
+            bootbox.confirm({
+                title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
+                message: msg,
+                size: 'large',
+                backdrop: true,
+                buttons: {
+                    confirm: {
+                        label: '<i class="icon-trash">&nbsp;</i>确定',
+                        className: 'btn-danger'
+                    },
+                    cancel: {
+                        label: '<i class="icon-undo">&nbsp;</i>取消',
+                        className: 'btn-secondary'
+                    }
+                },
+                callback: function (result) {
+                    if (result === true) {
+                    	sub_multiple_delete();
+                    }
+                }
+            });
+    });
 }
