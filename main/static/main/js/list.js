@@ -77,50 +77,70 @@ function quick_update(tds, func, callback_func) {
     });
 }
 
+// 批量操作按钮状态
+function multiple_operate_button_state() {
+    if (window.muliple_selected_id.length > 0) {
+        $('#multiple_delete_button').removeAttr('disabled');
+        $('#multiple_copy_button').removeAttr('disabled');
+    } else {
+        $('#multiple_delete_button').attr('disabled', true);
+        $('#multiple_copy_button').attr('disabled', true);
+    }
+}
+
+// 多选列表刷新
+function update_muliple_selected() {
+	window.muliple_selected_id = [];
+	$('#result_table tbody tr').each(function (i, e) {
+		if ($(e).data('selected')) {
+			window.muliple_selected_id.push($(e).attr('pk'));
+			$(e).css('background-color', 'lightblue');
+		} else {
+			$(e).css('background-color', '');
+		}
+	});
+	multiple_operate_button_state()
+}
+
 // 全选
 function bind_select_all_button() {
-    $('th[index]').off('click').click(function () {
+    $('#result_table th[select_all]').off('click').click(function () {
         if (window.muliple_selected_id.length > 0) {
-        $('tr[pk]').data('selected', false);
-        $('td[col_name=index]').css('background-color', '');
-        window.muliple_selected_id = [];
-    } else {
-        $('tr[pk]').data('selected', true);
-        $('td[col_name=index]').css('background-color', 'lightblue');
-        $('tr[pk]').each(function (i, e) {
-            window.muliple_selected_id.push($(e).attr('pk'))
-        });
-    }
-    multiple_operate_button_state();
+            if (window.muliple_selected_reverse) {
+                $('#result_table tbody tr').each(function (i, e) {
+                    if ($(e).data('selected')) {
+                        $(e).data('selected', false);
+                    } else {
+                        $(e).data('selected', true);
+                    }
+                });
+                window.muliple_selected_reverse = false;
+            } else {
+                $('#result_table tbody tr').data('selected', false);
+            }
+		} else {
+			$('#result_table tbody tr').data('selected', true);
+		}
+	update_muliple_selected();
     });
 }
 
 // 多选
 function multiple_select($td) {
     var tr = $td.parent('tr');
-    var selected_id = tr.attr('pk');
+    window.muliple_selected_reverse = true;
 
     if (!tr.data('selected')) {
         tr.data('selected', true);
-        $td.css('background-color', 'lightblue');
-        window.muliple_selected_id.push(selected_id)
     } else {
         tr.data('selected', false);
-        $td.css('background-color', '');
-        window.muliple_selected_id.splice($.inArray(selected_id, window.muliple_selected_id), 1)
     }
-    multiple_operate_button_state();
+    update_muliple_selected();
 }
 
-// 批量操作按钮状态
-function multiple_operate_button_state() {
-    if (window.muliple_selected_id.length > 0) {
-        $('#multiple_copy_button').removeAttr('disabled');
-        $('#multiple_delete_button').removeAttr('disabled');
-    } else {
-        $('#multiple_copy_button').attr('disabled', true);
-        $('#multiple_delete_button').attr('disabled', true);
-    }
+// 注册多择功能
+function bind_multiple_select() {
+	$('#result_table tbody tr td[col_name=index]').off('click').on('click', function() { multiple_select($(this)) });
 }
 
 // 批量删除按钮

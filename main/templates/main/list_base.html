@@ -14,7 +14,7 @@
                 .list_button {
                     width: 45px;
                 }
-                th[index],td[col_name=index] {
+                #result_table th[select_all], #result_table td[col_name=index] {
                     cursor: pointer;
                 }
             </style>
@@ -33,7 +33,6 @@
                     window.size = {{ paginator_form.size.value|default:10 }};
                     // 获取跳转参数
                     window.next_ = encodeURI(window.location.pathname) + encodeURIComponent(window.location.search);
-                    window.muliple_selected_id = [];
 
                     // 注册翻页工具条
                     var input = $('input[name=page]');
@@ -94,12 +93,6 @@
                     };
                     // 注册添加按钮
                     $('#add_button').off('click').on('click', function () {window.open(window.addUrl + '?next=' + window.next_, '_self');});
-                    // 注册批量删除按钮
-                    bind_multiple_delete_button();
-                    // 注册批量复制按钮
-                    bind_multiple_copy_button();
-                    // 注册全选按钮
-                    bind_select_all_button();
                     // 注册只看自己复选框
                     $('#all_').off('click').on('click', function() {$('#objects_form').submit()});
                     // 更新序号
@@ -150,8 +143,18 @@
                     $('[data-toggle=popover]').popover();
                     // 列表可调宽度
                     $('th').resizable({maxHeight: 1, alsoResize: '#result_table'});
+
+                    window.muliple_selected_id = [];
+                    window.muliple_selected_reverse = false;
+                    // 注册全选按钮
+                    bind_select_all_button();
+                    // 注册批量删除按钮
+                    bind_multiple_delete_button();
+                    // 注册批量复制按钮
+                    bind_multiple_copy_button();
                     // 注册多择功能
-                    $('td[col_name=index]').off('click').on('click', function() { multiple_select($(this)) });
+                    bind_multiple_select();
+
                     // 显示回到顶部按钮
                     $(window).scroll( function () {
                        if ($(this).scrollTop() > 200) {

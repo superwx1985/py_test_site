@@ -410,7 +410,18 @@ function update_m2m_muliple_selected() {
 function bind_m2m_select_all_button() {
     $('#m2m_selected_table th[select_all]').off('click').click(function () {
         if (window.m2m_muliple_selected_id.length > 0) {
-            $('#m2m_selected_table tr[pk]').data('selected', false);
+            if (window.m2m_muliple_selected_reverse) {
+                $('#m2m_selected_table tr[pk]').each(function (i, e) {
+                    if ($(e).data('selected')) {
+                        $(e).data('selected', false);
+                    } else {
+                        $(e).data('selected', true);
+                    }
+                });
+                window.m2m_muliple_selected_reverse = false;
+            } else {
+                $('#m2m_selected_table tr[pk]').data('selected', false);
+            }
 		} else {
 			$('#m2m_selected_table tr[pk]').data('selected', true);
 		}
@@ -421,6 +432,7 @@ function bind_m2m_select_all_button() {
 // m2m多选
 function m2m_multiple_select($td) {
     var tr = $td.parent('tr');
+    window.m2m_muliple_selected_reverse = true;
 
     if (!tr.data('selected')) {
         tr.data('selected', true);
