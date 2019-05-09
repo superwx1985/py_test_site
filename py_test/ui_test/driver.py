@@ -76,20 +76,16 @@ def get_driver_(config, execute_str, logger=logging.getLogger('py_test')):
         return dr
 
 
-lock = threading.Lock()
-
-
 # 获取浏览器driver，添加重试功能
-def get_driver(config, execute_str, retry=3, timeout=10, logger=logging.getLogger('py_test')):
-    with lock:  # 防止多线程测试时RemoteConnection的timeout被同时修改
-        RemoteConnection.set_timeout(timeout)  # 设置RemoteConnection的初始timeout值
-        for i in range(retry):
-            try:
-                dr = get_driver_(config, execute_str, logger)
-                return dr
-            except Exception as e:
-                if i >= retry - 1:
-                    raise
-                else:
-                    logger.warning('【{}】\t浏览器初始化出错，尝试进行第{}次初始化。错误信息 => {}'.format(execute_str, i+2, e))
-                    continue
+def get_driver(config, execute_str, retry=3, timeout=20, logger=logging.getLogger('py_test')):
+    RemoteConnection.set_timeout(timeout)  # 设置RemoteConnection的初始timeout值
+    for i in range(retry):
+        try:
+            dr = get_driver_(config, execute_str, logger)
+            return dr
+        except Exception as e:
+            if i >= retry - 1:
+                raise
+            else:
+                logger.warning('【{}】\t浏览器初始化出错，尝试进行第{}次初始化。错误信息 => {}'.format(execute_str, i+2, e))
+                continue

@@ -211,9 +211,8 @@ class VicCase:
 
                 # 初始化driver
                 if not dr and self.config.ui_selenium_client != 0:
-                    init_timeout = self.timeout if self.timeout > 30 else 30
                     self.logger.info('【{}】\t启动浏览器...'.format(step_execute_str))
-                    dr = ui_test.driver.get_driver(self.config, execute_str, 3, init_timeout, logger=self.logger)
+                    dr = ui_test.driver.get_driver(self.config, execute_str, 3, logger=self.logger)
                     self.driver_container[0] = dr
 
                 # 读取本地变量

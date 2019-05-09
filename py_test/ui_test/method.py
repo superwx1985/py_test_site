@@ -106,7 +106,8 @@ def wait_for_text_present(vic_step, print_=True):
                 run_result_temp, elements_temp, elements_all, _, _pause_time = wait_for_element_visible(
                     vic_step, timeout=1, print_=False)
             except:
-                _pause_time = time.time() - _start_time
+                _elapsed_time = time.time() - _start_time
+                _pause_time = 0 if _elapsed_time < 1.5 else _elapsed_time - 1.5
             finally:
                 pause_time += _pause_time
                 vic_step.ui_data = _ui_data
@@ -554,7 +555,7 @@ def try_to_do(vic_step, func, print_=True):
 
             if time.time() - last_print_time >= 1:
                 pause_time += vic_step.pause_()
-                elapsed_time = time.time() - start_time - pause_time
+                elapsed_time = time.time() - start_time - pause_time + _elapsed_time
                 _full_msg = msg_format.format(elapsed_time, msg)
                 if print_:
                     vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, _full_msg))
@@ -568,7 +569,7 @@ def try_to_do(vic_step, func, print_=True):
         msg = err_msg
         start_time = time.time()
 
-    elapsed_time = time.time() - start_time - pause_time
+    elapsed_time = time.time() - start_time - pause_time + _elapsed_time
     full_msg = msg_format.format(elapsed_time, msg)
     if print_ and full_msg != _full_msg:
         vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, full_msg))
@@ -914,7 +915,7 @@ def try_to_switch_to_frame(vic_step, print_=True):
     last_print_time = start_time = time.time()
     while (time.time() - start_time - pause_time) <= vic_step.timeout and not vic_step.force_stop:
         if vic_step.ui_by and vic_step.ui_locator:
-            frame, el_msg, err_msg, _elapsed_time, _pause_time = get_element(
+            frame, el_msg, err_msg, _, _pause_time = get_element(
                 vic_step, timeout=1, print_=False, necessary=False)
             pause_time += _pause_time
             if frame:

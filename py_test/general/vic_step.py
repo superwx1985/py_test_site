@@ -479,10 +479,8 @@ class VicStep:
                                 except:
                                     logger.warning('【{}】\t有一个浏览器无法关闭，请手动关闭'.format(estr), exc_info=True)
                                 del dr
-                                init_timeout = timeout if timeout > 30 else 30
                                 self.logger.info('【{}】\t启动浏览器...'.format(estr))
-                                self.dr = dr = ui_test.driver.get_driver(
-                                    self.config, estr, 3, init_timeout, logger=logger)
+                                self.dr = dr = ui_test.driver.get_driver(self.config, estr, 3, logger=logger)
                                 vc.driver_container[0] = dr
 
                         # 单击
