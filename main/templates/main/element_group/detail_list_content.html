@@ -3,7 +3,14 @@
         <h5 class="ui-widget-header">元素列表</h5>
         <p class="text-left">
             <button type="button" id="sub_multiple_delete_button" class="btn btn-danger" disabled="disabled"><i class="icon-trash"></i>&nbsp;批量删除</button>
+            <button type="button" id="sub_multiple_copy_obj_button" class="btn btn-warning" disabled="disabled"><i class="icon-trash"></i>&nbsp;生成对象列表</button>
+            <button type="button" id="sub_multiple_paste_obj_button" class="btn btn-info"><i class="icon-trash"></i>&nbsp;粘贴对象列表</button>
         </p>
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <div class="text-danger text-left">{{ error }}</div>
+            {% endfor %}
+        {% endif %}
         <table id='element_table' class="table table-sm table-bordered" style="width: 100%">
             <colgroup>
                 <col style='width: 60px;'>

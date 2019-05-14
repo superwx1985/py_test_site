@@ -123,7 +123,7 @@
                         });
                     }
                 } else {
-                    var tr = $('<tr placeholder><td colspan="7" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
+                    var tr = $('<tr placeholder><td colspan='+ $('#m2m_all_table thead th').length + ' class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
                     tbody.empty().append(tr);
                 }
                 update_sort_icon();
@@ -152,10 +152,10 @@
                         tbody.append(tr);
                     });
                 } else {
-                    var tr = $('<tr placeholder><td colspan="8" class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
+                    var tr = $('<tr placeholder><td colspan=' + $('#m2m_selected_table thead th').length + ' class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
                     tbody.empty().append(tr);
                 }
-                update_m2m_selected_index_and_field(window.$m2m_input, '步骤详情');
+                update_m2m_selected_index_and_field(window.$m2m_input, '步骤详情', true);
                 // 关闭遮罩
                 $('#m2m_selected_mask').hide();
             }
@@ -284,6 +284,8 @@
                         <div class="col text-left">
                             <button type="button" id="m2m_add_button" class="btn btn-success"><i class="icon-plus"></i>&nbsp;新增</button>
                             <button type="button" id="m2m_multiple_delete_button" class="btn btn-danger" disabled="disabled"><i class="icon-trash"></i>&nbsp;批量删除</button>
+                            <button type="button" id="m2m_multiple_copy_obj_button" class="btn btn-warning" disabled="disabled"><i class="icon-trash"></i>&nbsp;生成对象列表</button>
+                            <button type="button" id="m2m_multiple_paste_obj_button" class="btn btn-info"><i class="icon-trash"></i>&nbsp;粘贴对象列表</button>
                         </div>
                     </div>
                 </div>

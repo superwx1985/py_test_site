@@ -145,8 +145,11 @@ def detail(request, pk):
                         SuiteVsCase.objects.create(suite=obj, case=m2m_obj, order=order, creator=request.user,
                                                    modifier=request.user)
             request.session['state'] = 'success'
-            redirect = request.POST.get('redirect')
-            if redirect:
+            _redirect = request.POST.get('redirect')
+            if _redirect:
+                if _redirect == 'close':
+                    request.session['state'] = None
+                    return render(request, 'main/other/close.html')
                 if not next_:
                     next_ = reverse(list_)
                     request.session['state'] = None
@@ -208,10 +211,13 @@ def add(request):
                     SuiteVsCase.objects.create(suite=obj, case=m2m_obj, order=order, creator=request.user,
                                                modifier=request.user)
             request.session['state'] = 'success'
-            redirect = request.POST.get('redirect')
-            if redirect == 'add_another':
+            _redirect = request.POST.get('redirect')
+            if _redirect == 'add_another':
                 return HttpResponseRedirect(request.get_full_path())
-            elif redirect:
+            elif _redirect:
+                if _redirect == 'close':
+                    request.session['state'] = None
+                    return render(request, 'main/other/close.html')
                 if not next_:
                     next_ = reverse(list_)
                     request.session['state'] = None

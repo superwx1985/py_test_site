@@ -19,12 +19,12 @@ def version(request):
 
 
 @login_required
-def delete_unused(request):
+def delete_unused(_):
     pass
 
 
 @login_required
-def clear_db(request):
+def clear_db(_):
     pass
 
 

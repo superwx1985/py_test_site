@@ -19,6 +19,10 @@
         $(function () {
             // 更新导航栏
             $('#nav_variable').addClass('active');
+            // 定义sub字段
+            window.$sub_input = $('input[name=variable]');
+            // 临时列表
+            window.temp_sub_list = [];
             // 列表可调宽度
             $('th').resizable({maxHeight: 1, alsoResize: '#variable_table'});
         });
@@ -38,13 +42,13 @@
                     getList("{% url 'variable_group_variables' pk %}", window.$csrf_input.val(), init_variable);
                 {% else %}
                     // 初始化变量字段
-                    update_variable_index_and_field(true);
+                    update_variable_index_and_field();
                 {% endif %}
             {% endif %}
+            // 注册重名判断
+            $('#new_helper td[col_name] input').off('change').on('change', function () { check_new_variable() });
             // 注册添加按钮
-            $('#new_helper td[col_move]').on('click', function () {
-                add_variable();
-            });
+            $('#new_helper td[col_move]').on('click', function () { add_variable(); });
             // 注册new helper的删除按钮事件
             $('#new_helper [col_del]').off('click').on('click', function () {
                 $('#new_helper [col_name] input,#new_helper [col_value] input,#new_helper [col_description] input').val('').removeClass('is-invalid').siblings('div.invalid-feedback').remove();
@@ -57,6 +61,10 @@
             bind_sub_multiple_select_all_button();
             // 注册批量删除按钮
             bind_sub_multiple_delete_button();
+            // 注册批量复制对象按钮
+            bind_sub_multiple_copy_obj_button();
+            // 注册批量粘贴对象按钮
+            bind_sub_multiple_paste_obj_button();
         });
     </script>
 {% endblock %}

@@ -298,3 +298,12 @@ function update_mask($mask, loading_count) {
         $mask.hide();
     }
 }
+
+function copy_to_clipbroad() {
+    var input = document.getElementById('i1');
+    input.select();
+    var successful = document.execCommand('copy');
+    console.log(successful);
+    return successful;
+}
+

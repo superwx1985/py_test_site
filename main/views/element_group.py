@@ -128,28 +128,36 @@ def detail(request, pk):
                     objects.delete()
                     order = 0
                     for v in element_list:
-                        if not v or v['name'] is None or v['name'].strip() == '':
+                        _name = str(v['name']).strip()
+                        if not v or v['name'] is None or _name == '':
                             continue
                         else:
                             order += 1
-                            Element.objects.create(
-                                element_group=obj, name=v['name'].strip(), by=v['by'], locator=v['locator'],
-                                description=v['description'], order=order)
-            request.session['state'] = 'success'
-            redirect = request.POST.get('redirect')
-            if redirect:
-                if not next_:
-                    next_ = reverse(list_)
-                    request.session['state'] = None
-                return HttpResponseRedirect(next_)
-            else:
-                return HttpResponseRedirect(request.get_full_path())
-        else:
-            if element_list is not None:
-                # 暂存element列表
-                temp_dict = dict()
-                temp_dict['data'] = element_list
-                temp_list_json = json.dumps(temp_dict)
+                            try:
+                                Element.objects.create(
+                                    element_group=obj, name=_name, by=v['by'], locator=v['locator'],
+                                    description=v['description'], order=order)
+                            except Exception as e:
+                                form.add_error(None, '添加子对象[{}]时出错：{}'.format(_name, str(e)))
+            if not form.non_field_errors():
+                request.session['state'] = 'success'
+                _redirect = request.POST.get('redirect')
+                if _redirect:
+                    if _redirect == 'close':
+                        request.session['state'] = None
+                        return render(request, 'main/other/close.html')
+                    if not next_:
+                        next_ = reverse(list_)
+                        request.session['state'] = None
+                    return HttpResponseRedirect(next_)
+                else:
+                    return HttpResponseRedirect(request.get_full_path())
+
+        if element_list is not None:
+            # 暂存
+            temp_dict = dict()
+            temp_dict['data'] = element_list
+            temp_list_json = json.dumps(temp_dict)
 
         return render(request, 'main/element_group/detail.html', locals())
     else:
@@ -183,35 +191,43 @@ def add(request):
             if element_list:
                 order = 0
                 for v in element_list:
-                    if not v:
+                    _name = str(v['name']).strip()
+                    if not v or v['name'] is None or _name == '':
                         continue
                     order += 1
                     if v['name'] is None:
                         continue
                     else:
-                        Element.objects.create(
-                            element_group=obj, name=v['name'].strip(), by=v['by'], locator=v['locator'],
-                            description=v['description'], order=order)
-            request.session['state'] = 'success'
-            redirect = request.POST.get('redirect')
-            if redirect == 'add_another':
-                return HttpResponseRedirect(request.get_full_path())
-            elif redirect:
-                if not next_:
-                    next_ = reverse(list_)
-                    request.session['state'] = None
-                return HttpResponseRedirect(next_)
-            else:
-                para = ''
-                if inside:  # 如果是内嵌网页，则加上内嵌标志后再跳转
-                    para = '&inside=1&new_pk={}'.format(pk)
-                return HttpResponseRedirect('{}?next={}{}'.format(reverse(detail, args=[pk]), quote(next_), para))
-        else:
-            if element_list:
-                # 暂存element列表
-                temp_dict = dict()
-                temp_dict['data'] = element_list
-                temp_list_json = json.dumps(temp_dict)
+                        try:
+                            Element.objects.create(
+                                element_group=obj, name=_name, by=v['by'], locator=v['locator'],
+                                description=v['description'], order=order)
+                        except Exception as e:
+                            form.add_error(None, '添加子对象[{}]时出错：{}'.format(_name, str(e)))
+            if not form.non_field_errors():
+                request.session['state'] = 'success'
+                _redirect = request.POST.get('redirect')
+                if _redirect == 'add_another':
+                    return HttpResponseRedirect(request.get_full_path())
+                elif _redirect:
+                    if _redirect == 'close':
+                        request.session['state'] = None
+                        return render(request, 'main/other/close.html')
+                    if not next_:
+                        next_ = reverse(list_)
+                        request.session['state'] = None
+                    return HttpResponseRedirect(next_)
+                else:
+                    para = ''
+                    if inside:  # 如果是内嵌网页，则加上内嵌标志后再跳转
+                        para = '&inside=1&new_pk={}'.format(pk)
+                    return HttpResponseRedirect('{}?next={}{}'.format(reverse(detail, args=[pk]), quote(next_), para))
+
+        if element_list:
+            # 暂存element列表
+            temp_dict = dict()
+            temp_dict['data'] = element_list
+            temp_list_json = json.dumps(temp_dict)
 
         return render(request, 'main/element_group/detail.html', locals())
     else:

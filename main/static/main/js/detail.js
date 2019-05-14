@@ -91,7 +91,7 @@ function m2m_detail_popup(title, url, parent_project) {
 }
 
 // 更新已选m2m的序号，更新m2m field内容
-function update_m2m_selected_index_and_field($input, title) {
+function update_m2m_selected_index_and_field($input, title, multiple_select) {
 	var m2m = $('#m2m_selected_table tbody tr:not([placeholder])');
 	// var m2m_list = $('#m2m_selected_table tbody').sortable('toArray', {attribute: "pk"});  // 获取可排序对象的pk列表，不能使用该方法，因为只读页面的列表不是可排序对象
     var m2m_list = [];
@@ -108,7 +108,7 @@ function update_m2m_selected_index_and_field($input, title) {
 	if (window.editable) {
 		bind_m2m_multiple_select();
 	}
-	update_m2m_muliple_selected();
+	update_m2m_muliple_selected(multiple_select);
 }
 
 // 处理m2m拖动及排序
@@ -126,15 +126,16 @@ function m2m_handle($input, title) {
 				ui.item.removeClass('from_all_table');
 			}
             // 如果拖动的是连续的多选，将进行整体移动
-			if (!from_all_table && m2m_muliple_selected_id.length > 1 && m2m_muliple_selected_id.indexOf(ui.item.attr('order')) > -1) {
+			if (!from_all_table && m2m_muliple_selected_id.length > 1) { //  && m2m_muliple_selected_id.indexOf(ui.item.attr('order')) > -1
 				var old_muliple_selected_id = window.m2m_muliple_selected_id;
-				var old_start = parseInt(m2m_muliple_selected_id[0]);
-				var old_end = parseInt(m2m_muliple_selected_id[m2m_muliple_selected_id.length-1]);
+				var old_start = parseInt(m2m_muliple_selected_id[0].order);
+				var old_end = parseInt(m2m_muliple_selected_id[m2m_muliple_selected_id.length-1].order);
+				var old_order = parseInt(ui.item.attr('order'));
 
-				if (old_end === old_start+m2m_muliple_selected_id.length-1) {
+				if (old_start <= old_order && old_order <= old_end && old_end === old_start+m2m_muliple_selected_id.length-1) {
 					var old_selected_element = [];
 					$.each(old_muliple_selected_id, function (i, v) {
-                       	old_selected_element.push($('#m2m_selected_table tr[order=' + v + ']'))
+                       	old_selected_element.push($('#m2m_selected_table tr[order=' + v.order + ']'))
                     });
                     update_m2m_selected_index_and_field($input, title);
                     var new_order = parseInt(ui.item.attr('order'));
@@ -387,22 +388,33 @@ function copy_obj_post(copy_url, name_prefix, copy_sub_item, order) {
 function m2m_multiple_operate_button_state() {
     if (window.m2m_muliple_selected_id.length > 0) {
         $('#m2m_multiple_delete_button').removeAttr('disabled');
+        $('#m2m_multiple_copy_obj_button').removeAttr('disabled');
     } else {
         $('#m2m_multiple_delete_button').attr('disabled', true);
+        $('#m2m_multiple_copy_obj_button').attr('disabled', true);
     }
 }
 
 // m2m多选列表刷新
-function update_m2m_muliple_selected() {
-	window.m2m_muliple_selected_id = [];
-	$('#m2m_selected_table tr[pk]').each(function (i, e) {
-		if ($(e).data('selected')) {
-			window.m2m_muliple_selected_id.push($(e).attr('order'));
-			$(e).css('background-color', 'lightblue');
-		} else {
-			$(e).css('background-color', '');
-		}
-	});
+function update_m2m_muliple_selected(multiple_select) {
+	if (multiple_select) {  // 通过m2m_muliple_selected_id更新列表
+		$('#m2m_selected_table tr[pk]').data('selected', false).css('background-color', '');
+		$.each(window.m2m_muliple_selected_id, function(i, v) {
+			$('#m2m_selected_table tbody tr[order='+ v.order +']').data('selected', true).css('background-color', 'lightblue');
+		});
+	} else {  // 通过列表更新m2m_muliple_selected_id
+		window.m2m_muliple_selected_id = [];
+		$('#m2m_selected_table tr[pk]').each(function (i, e) {
+			if ($(e).data('selected')) {
+				// window.m2m_muliple_selected_id.push($(e).attr('order'));
+				var obj = {order: $(e).attr('order'), pk: $(e).attr('pk')};
+				window.m2m_muliple_selected_id.push(obj);
+				$(e).css('background-color', 'lightblue');
+			} else {
+				$(e).css('background-color', '');
+			}
+		});
+	}
 	m2m_multiple_operate_button_state()
 }
 
@@ -450,7 +462,7 @@ function bind_m2m_multiple_select() {
 // 批量删除m2m对象
 function m2m_multiple_delete() {
 	$.each(window.m2m_muliple_selected_id, function(i, v) {
-	    $('#m2m_selected_table tbody tr[order='+ v +']').attr('deleting', true)
+	    $('#m2m_selected_table tbody tr[order='+ v.order +']').attr('deleting', true)
 	});
 
 	$('#m2m_selected_table tbody tr[deleting]').fadeOut("slow", function() {
@@ -467,26 +479,117 @@ function m2m_multiple_delete() {
 function bind_m2m_multiple_delete_button() {
     $('#m2m_multiple_delete_button').off('click').click(function () {
         var msg = '要删除<span class="mark">' + window.m2m_muliple_selected_id.length + '</span>个对象吗？';
-            bootbox.confirm({
-                title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
-                message: msg,
-                size: 'large',
-                backdrop: true,
-                buttons: {
-                    confirm: {
-                        label: '<i class="icon-trash">&nbsp;</i>确定',
-                        className: 'btn-danger'
-                    },
-                    cancel: {
-                        label: '<i class="icon-undo">&nbsp;</i>取消',
-                        className: 'btn-secondary'
-                    }
+        bootbox.confirm({
+            title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
+            message: msg,
+            size: 'large',
+            backdrop: true,
+            buttons: {
+                confirm: {
+                    label: '<i class="icon-trash">&nbsp;</i>确定',
+                    className: 'btn-danger'
                 },
-                callback: function (result) {
-                    if (result === true) {
-                    	m2m_multiple_delete();
-                    }
+                cancel: {
+                    label: '<i class="icon-undo">&nbsp;</i>取消',
+                    className: 'btn-secondary'
                 }
-            });
+            },
+            callback: function (result) {
+                if (result === true) {
+                    m2m_multiple_delete();
+                }
+            }
+        });
+    });
+}
+
+// m2m批量复制对象
+function m2m_multiple_copy_obj(text) {
+    var msg = '当前选择了<span class="mark">' + window.m2m_muliple_selected_id.length + '</span>个对象，请复制下列对象文本';
+    var textarea = $('<textarea class="form-control" rows="5">').val(text);
+	var copy_button = $('<button class="btn btn-warning"><i class="icon-copy">&nbsp;</i>复制文本</button>');
+	copy_button.off('click').on('click', function () {
+		textarea.select();
+		var success = document.execCommand('copy');
+		if (success) {
+			toastr.success('复制成功');
+		} else {
+			toastr.error('浏览器不兼容，请手动复制文本');
+		}
+    });
+    var _div = $('<div>').append(textarea).append('<br>').append(copy_button);
+    var buttons = {
+		canal: {
+			label: '<i class="icon-remove">&nbsp;</i>关闭',
+			className: 'btn btn-secondary'
+		}
+	};
+    bootbox.dialog({
+		size: 'large',
+		title: '<i class="icon-exclamation-sign">&nbsp;</i>'+msg,
+		message: _div,
+		onEscape: true,
+		backdrop: true,
+		buttons: buttons
+	});
+}
+
+// 注册m2m批量复制对象按钮
+function bind_m2m_multiple_copy_obj_button() {
+    $('#m2m_multiple_copy_obj_button').off('click').click(function () {
+        m2m_multiple_copy_obj(JSON.stringify(window.m2m_muliple_selected_id));
+    });
+}
+
+// m2m添加批量对象到列表
+function add_m2m_multiple_paste_obj_to_list(data) {
+	if (!data) {
+		return false;
+	}
+	try {
+		var objs = $.parseJSON(data);
+	}
+	catch (e) {
+		toastr.error('无法识别的对象文本');
+		return false;
+    }
+	var m2m_objs = $.parseJSON(window.$m2m_input.val());
+    var last_select = m2m_objs.length;
+    if (window.m2m_muliple_selected_id.length > 0) {
+		last_select = parseInt(m2m_muliple_selected_id[m2m_muliple_selected_id.length-1].order);
+	}
+	$.each(objs, function (i, v) {
+		m2m_objs.splice(last_select, 0, v.pk);
+		last_select++;
+    });
+	window.$m2m_input.val(JSON.stringify(m2m_objs));
+	update_m2m_objects();
+}
+
+// m2m批量粘贴对象
+function m2m_multiple_paste_obj() {
+    var msg = '请粘贴对象文本然后点击确认，对象将被添加到当前选中的最后一行下面';
+    var textarea = $('<textarea class="form-control" rows="5">');
+    var buttons = {
+		accept: {
+			label: '<i class="icon-ok">&nbsp;</i>确定',
+			className: 'btn btn-primary',
+			callback: function () { add_m2m_multiple_paste_obj_to_list(textarea.val()) }
+		}
+	};
+    bootbox.dialog({
+		size: 'large',
+		title: '<i class="icon-exclamation-sign">&nbsp;</i>'+msg,
+		message: textarea,
+		onEscape: true,
+		backdrop: true,
+		buttons: buttons
+	});
+}
+
+// 注册m2m批量粘贴对象按钮
+function bind_m2m_multiple_paste_obj_button() {
+    $('#m2m_multiple_paste_obj_button').off('click').click(function () {
+        m2m_multiple_paste_obj(JSON.stringify(window.m2m_muliple_selected_id));
     });
 }
