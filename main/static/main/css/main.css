@@ -3,6 +3,7 @@ body {
 	/*font-size: 11pt;*/
 	/*width: 99%;*/
 }
+
 [form_data] textarea{
 	overflow: auto;
 	white-space: pre;
@@ -40,21 +41,25 @@ div.paginator{
 	text-align: center;
 
 }
+
 div.paginator>div{
 	float: left;
     position: relative;
     left: 50%;
 	bottom: 5px;
 }
+
 div.paginator>div>div{
     position: relative;
     left: -50%;
     opacity: 0.75;
 }
+
 div.paginator td{
 	text-align: center;
 	/*font-size: 0.8em*/
 }
+
 div.paginator input {
 	/*font-size: 1em;*/
 	/*width: 60px;*/
@@ -62,16 +67,26 @@ div.paginator input {
 	resize: vertical;
 	text-align: right;
 }
+
 /*水平垂直居中*/
 .middle {
 	text-align: center !important;
 	vertical-align: middle!important;
 }
-/*悬浮按钮*/
-.float-button {
+
+/*右下角悬浮按钮*/
+.float-button-bottom-right {
 	position: fixed;
 	bottom: 15px;
 	right: 15px;
+	z-index: 1030;
+}
+
+/*左下角悬浮按钮*/
+.float-button-bottom-left {
+	position: fixed;
+	bottom: 15px;
+	left: 15px;
 	z-index: 1030;
 }
 
@@ -81,6 +96,7 @@ div.paginator input {
 	max-width: 87%;
   }
 }
+
 @media (min-width: 1366px) {
   .modal-lg {
 	max-width: 1188px;

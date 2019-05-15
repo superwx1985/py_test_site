@@ -95,14 +95,14 @@ function getList(url, csrf_token, callback_func, condition_json) {
 }
 
 // 获取元素整体高度, 包含margin
-function get_element_full_height($e) {
-    var height = parseInt($e.css('margin-top')) + parseInt($e.css('margin-bottom')) + $e.outerHeight();
+function get_element_full_height($el) {
+    var height = parseInt($el.css('margin-top')) + parseInt($el.css('margin-bottom')) + $el.outerHeight();
     return isNaN(height) ? 0 : height
 }
 
 // 获取元素外部margin, border, padding高度
-function get_element_outside_height($e) {
-    var height = get_element_full_height($e) - $e.height();
+function get_element_outside_height($el) {
+    var height = get_element_full_height($el) - $el.height();
     return isNaN(height) ? 0 : height
 }
 
@@ -231,15 +231,15 @@ function show_reference(url, title) {
 }
 
 // 搜索时是否回到第一页
-function go_to_first_page(not_go_to_first_page, f, $e) {
+function go_to_first_page(not_go_to_first_page, f, $el) {
     if (!not_go_to_first_page) {
-        f($e)
+        f($el)
     }
 }
 
 // 修改页码为1
-function set_page_to_one($e) {
-    $e.val(1)
+function set_page_to_one($el) {
+    $el.val(1)
 }
 
 // 获取格式化时间
@@ -299,11 +299,43 @@ function update_mask($mask, loading_count) {
     }
 }
 
-function copy_to_clipbroad() {
-    var input = document.getElementById('i1');
-    input.select();
-    var successful = document.execCommand('copy');
-    console.log(successful);
-    return successful;
-}
+// 悬浮某元素，top为悬浮处到页面顶部的距离
+function float_element($el, top) {
+    if (!$el || $el.length === 0) { return false; }
+	if (!top) { top = 0; }
+    var el_top = $el.offset().top;
+    var original_style = $el.attr('style');
+    if (!original_style) { original_style = true }
+    var doing = [];
+    $(window).scroll(function () {
 
+        if (doing.length > 0) { return false; } // 防止频繁判断导致跳动
+        var el_height = get_element_full_height($el);
+        var window_height = window.innerHeight;
+
+		if (window_height > el_height + top + 10 && $(window).scrollTop() > el_top - top) {
+			if (!$el.data('float')) {
+			    // console.log('冻结', $el.attr('id'), $(window).scrollTop() , el_top - top);
+			    doing.push(true);
+                setTimeout(function () { doing.pop(); }, 50);
+                $el.css('top', top + 'px');
+                $el.css('z-index', 999);
+                $el.css('width', $el.width() + 'px');
+                $el.css('height', $el.height() + 'px');
+                $el.css('position', 'fixed');
+				$el.data('float', original_style);
+			}
+		} else {
+			var style = $el.data('float');
+			if (style) {
+			    // console.log('解除', $el.attr('id'), $(window).scrollTop() , el_top - top);
+				$el.data('float', false);
+				if (style !== true) {
+					$el.attr('style', style);
+                } else {
+					$el.removeAttr('style');
+				}
+			}
+		}
+    })
+}

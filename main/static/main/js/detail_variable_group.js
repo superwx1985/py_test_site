@@ -1,5 +1,6 @@
 // 启用排序功能
 function sortable_variable() {
+	if (!window.editable) { return }
 	$('#variable_table tbody').sortable({
 		items: "tr:not(#new_helper)",
 		distance: 15,
@@ -273,7 +274,6 @@ function sub_multiple_operate_button_state() {
 
 // 多选列表刷新
 function update_sub_muliple_selected(multiple_select) {
-	console.log(multiple_select)
 	if (multiple_select) {  // 通过sub_muliple_selected_id更新列表
 		$('#variable_table tbody tr:not(#new_helper)').data('selected', false).css('background-color', '');
 		$.each(window.sub_muliple_selected_id, function(i, v) {

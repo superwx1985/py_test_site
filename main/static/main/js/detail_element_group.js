@@ -1,5 +1,6 @@
 // 启用排序功能
 function sortable_element() {
+	if (!window.editable) { return }
 	$('#element_table tbody').sortable({
 		items: "tr:not(#new_helper)",
 		distance: 15,

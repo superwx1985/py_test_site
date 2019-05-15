@@ -343,17 +343,16 @@ function replace_m2m($input, pk, order) {
 
 // 禁用所有互动
 function disable_interaction() {
-	$('input,textarea,select').attr('disabled', true);
+	$('#object_form input, #object_form textarea, #object_form select').attr('disabled', true);
 	$('tr#new_helper').hide();
 	$('td[col_del]').empty().off('click');
 	$('td[col_move]').empty().off('click');
 	$('[j_dropdown]').each(function(){$(this).data('dropdown').changeStatus('readonly')});
-	$('#m2m_add_button').off('click').attr('disabled', true);
+    $('#m2m_selected_button_group button').off('click').attr('disabled', true);
 	$('#m2m_selected_table th, #m2m_selected_table td').off('click');
-	$('#variable_table th, #variable_table td').off('click');
-	//$('#m2m_all_table tbody tr').draggable('option', 'disabled');
-	//$('#m2m_selected_table tbody').sortable('option', 'disabled');
-	//$('#m2m_selected_table tbody').droppable('option', 'disabled');
+    $('#sub_button_group button').off('click').attr('disabled', true);
+    $('#variable_table th, #variable_table td, #variable_table input, #variable_table select').off('click').attr('disabled', true);
+	$('#element_table th, #element_table td, #element_table input, #element_table select').off('click').attr('disabled', true);
 }
 
 // 复制对象的回调函数

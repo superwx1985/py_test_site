@@ -281,7 +281,7 @@
             <form method="post" id="m2m_objects_form" novalidate onsubmit="return submit_m2m_all_objects_form('/suite', '{% url "cases_list_json" %}');">
                 <input type="hidden" name="order_by" id="id_order_by">
                 <input type="hidden" name="order_by_reverse" id="id_order_by_reverse">
-                <div style="padding-bottom: 10px">
+                <div style="padding-bottom: 10px" id="m2m_all_button_group">
                     {% include 'main/include/tools_bar_sub_list.html'%}
                 </div>
                 <div class="small" style="min-height: 310px; position: relative">
@@ -313,7 +313,7 @@
         </div>
         <div id="m2m_selected" class="col-6 text-center">
             <h5 class="ui-widget-header">已选用例列表&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="上下拖动进行排序，从待选列表拖动到拖动到已选列表进行添加，拖动回待选列表则删除"></i></h5>
-            <div style="padding-bottom: 10px">
+            <div style="padding-bottom: 10px" id="m2m_selected_button_group">
                 <div style="padding: 0" class="container-fluid">
                     <div class="row align-items-center">
                         <div class="col text-left">

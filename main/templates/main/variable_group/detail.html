@@ -65,6 +65,13 @@
             bind_sub_multiple_copy_obj_button();
             // 注册批量粘贴对象按钮
             bind_sub_multiple_paste_obj_button();
+            // 悬浮批量复制按钮组
+            var sub_button_group = $('#sub_button_group');
+            {% if inside %}
+                float_element(sub_button_group);
+            {% else %}
+                float_element(sub_button_group, 60);
+            {% endif %}
         });
     </script>
 {% endblock %}
