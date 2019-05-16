@@ -307,6 +307,7 @@ function float_element($el, top) {
     var original_style = $el.attr('style');
     if (!original_style) { original_style = true }
     var doing = [];
+    var $el_temp = [];
     $(window).scroll(function () {
 
         if (doing.length > 0) { return false; } // 防止频繁判断导致跳动
@@ -318,6 +319,7 @@ function float_element($el, top) {
 			    // console.log('冻结', $el.attr('id'), $(window).scrollTop() , el_top - top);
 			    doing.push(true);
                 setTimeout(function () { doing.pop(); }, 50);
+                $el_temp = $el.clone().insertBefore($el).css('visibility', 'hidden');  // 占位
                 $el.css('top', top + 'px');
                 $el.css('z-index', 999);
                 $el.css('width', $el.width() + 'px');
@@ -330,6 +332,7 @@ function float_element($el, top) {
 			if (style) {
 			    // console.log('解除', $el.attr('id'), $(window).scrollTop() , el_top - top);
 				$el.data('float', false);
+				if ($el_temp.length > 0) {$el_temp.remove();}  // 取消占位
 				if (style !== true) {
 					$el.attr('style', style);
                 } else {
