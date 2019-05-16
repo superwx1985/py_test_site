@@ -284,7 +284,7 @@
                 <div style="padding-bottom: 10px" id="m2m_all_button_group">
                     {% include 'main/include/tools_bar_sub_list.html'%}
                 </div>
-                <div class="small" style="min-height: 310px; position: relative">
+                <div class="small table-responsive" style="min-height: 310px; position: relative">
                     {% include 'main/include/mask.html' with mask_class='element-mask' mask_id='m2m_all_mask' %}
                     <table id="m2m_all_table" class="table table-sm table-bordered table-hover" style="width: 100%">
                         <colgroup>
@@ -298,7 +298,7 @@
                         <thead class="thead-light">
                             <tr>
                                 <th></th>
-                                <th order_by_text="name">名称</th>
+                                <th order_by_text="name" style="min-width: 150px">名称</th>
                                 <th order_by_text="keyword">关键字</th>
                                 <th order_by_text="project__name">项目</th>
                                 <th order_by_text="real_name">作者</th>
@@ -325,7 +325,7 @@
                     </div>
                 </div>
             </div>
-            <div class="small" style="min-height: 310px; position: relative">
+            <div class="small table-responsive" style="min-height: 310px; position: relative">
                 {% include 'main/include/mask.html' with mask_class='element-mask' mask_id='m2m_selected_mask' %}
                 <table id="m2m_selected_table" class="table table-sm table-bordered table-hover" style="width: 100%">
                     <colgroup>
@@ -341,7 +341,7 @@
                         <tr>
                             <th select_all data-toggle="tooltip" title="反选/全选/全不选"><i class="icon-check"></i></th>
                             <th>顺序</th>
-                            <th>名称</th>
+                            <th style="min-width: 150px">名称</th>
                             <th>关键字</th>
                             <th>项目</th>
                             <th>作者</th>

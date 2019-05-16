@@ -311,6 +311,7 @@ function float_element($el, top) {
     $(window).scroll(function () {
 
         if (doing.length > 0) { return false; } // 防止频繁判断导致跳动
+        if (!$el.data('float')) { el_top = $el.offset().top; }
         var el_height = get_element_full_height($el);
         var window_height = window.innerHeight;
 

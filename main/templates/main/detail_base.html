@@ -114,17 +114,15 @@
                     // 注册m2m批量粘贴对象按钮
                     bind_m2m_multiple_paste_obj_button();
                     // 悬浮批量复制按钮组
-                    setTimeout(function () {
-                        var m2m_all = $('#m2m_objects_form');
-                        var m2m_selected_button_group = $('#m2m_selected_button_group');
-                        {% if inside %}
-                            float_element(m2m_all);
-                            float_element(m2m_selected_button_group);
-                        {% else %}
-                            float_element(m2m_all, 60);
-                            float_element(m2m_selected_button_group, 60);
-                        {% endif %}
-                    }, 500);
+                    var m2m_all = $('#m2m_objects_form');
+                    var m2m_selected_button_group = $('#m2m_selected_button_group');
+                    {% if inside %}
+                        float_element(m2m_all);
+                        float_element(m2m_selected_button_group);
+                    {% else %}
+                        float_element(m2m_all, 60);
+                        float_element(m2m_selected_button_group, 60);
+                    {% endif %}
                 });
             </script>
         {% endblock %}

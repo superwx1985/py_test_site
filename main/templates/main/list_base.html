@@ -155,14 +155,12 @@
                     // 注册多择功能
                     bind_multiple_select();
                     // 悬浮批量复制按钮组
-                    setTimeout(function () {
-                        var list_tools_bar = $('#list_tools_bar');
-                        {% if inside %}
-                            float_element(list_tools_bar);
-                        {% else %}
-                            float_element(list_tools_bar, 60);
-                        {% endif %}
-                    }, 500);
+                    var list_tools_bar = $('#list_tools_bar');
+                    {% if inside %}
+                        float_element(list_tools_bar);
+                    {% else %}
+                        float_element(list_tools_bar, 60);
+                    {% endif %}
 
                     // 显示回到顶部按钮
                     $(window).scroll( function () {
