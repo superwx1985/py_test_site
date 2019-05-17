@@ -321,6 +321,7 @@ function float_element($el, top) {
 			    doing.push(true);
                 setTimeout(function () { doing.pop(); }, 50);
                 $el_temp = $el.clone().insertAfter($el).css('visibility', 'hidden');  // 占位
+                $el_temp.removeAttr('id').removeAttr('name').find('*').removeAttr('id').removeAttr('name');  // 防止和占位元素交互
                 $el.css('top', top + 'px');
                 $el.css('z-index', 999);
                 $el.width($el.width());
