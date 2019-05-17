@@ -310,28 +310,32 @@ function float_element($el, top) {
     var $el_temp = [];
     $(window).scroll(function () {
 
-        if (doing.length > 0) { return false; } // 防止频繁判断导致跳动
-        if (!$el.data('float')) { el_top = $el.offset().top; }
+        if (doing.length > 0) { return false; }  // 防止频繁判断导致跳动
+        if (!$el.data('float')) { el_top = $el.offset().top; }  // 未浮动时通过自身确定位置
         var el_height = get_element_full_height($el);
         var window_height = window.innerHeight;
 
 		if (window_height > el_height + top + 10 && $(window).scrollTop() > el_top - top) {
 			if (!$el.data('float')) {
-			    // console.log('冻结', $el.attr('id'), $(window).scrollTop() , el_top - top);
+			    // console.log('冻结', $(window).scrollTop() , el_top - top, $el);
 			    doing.push(true);
                 setTimeout(function () { doing.pop(); }, 50);
-                $el_temp = $el.clone().insertBefore($el).css('visibility', 'hidden');  // 占位
+                $el_temp = $el.clone().insertAfter($el).css('visibility', 'hidden');  // 占位
                 $el.css('top', top + 'px');
                 $el.css('z-index', 999);
-                $el.css('width', $el.width() + 'px');
-                $el.css('height', $el.height() + 'px');
+                $el.width($el.width());
+                $el.height($el.height());
                 $el.css('position', 'fixed');
 				$el.data('float', original_style);
-			}
+			} else {  // 浮动时通过占位元素确定大小及位置
+                $el.width($el_temp.width());
+                $el.height($el_temp.height());
+                el_top = $el_temp.offset().top;
+            }
 		} else {
 			var style = $el.data('float');
 			if (style) {
-			    // console.log('解除', $el.attr('id'), $(window).scrollTop() , el_top - top);
+			    // console.log('解除', $(window).scrollTop() , el_top - top, $el);
 				$el.data('float', false);
 				if ($el_temp.length > 0) {$el_temp.remove();}  // 取消占位
 				if (style !== true) {

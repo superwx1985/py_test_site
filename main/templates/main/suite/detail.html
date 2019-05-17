@@ -110,8 +110,8 @@
                         $('<td>').addClass('middle').append(span).appendTo(tr);
                         tbody.append(tr);
                     });
-                    // 使得步骤列表可拖动
                     if (window.editable) {
+                        // 使得步骤列表可拖动
                         tbody.find('tr').draggable({
                             appendTo: 'body',
                             connectToSortable: '#m2m_selected_table tbody',
@@ -120,7 +120,7 @@
                             distance: 15,
                             scope: "m2m_all",
                             helper: function() {
-                                var tr = $(this).clone().css('background-color', 'lightblue').removeClass('ui-draggable').addClass('from_all_table');
+                                var tr = $(this).clone().css('background-color', 'lightblue').width($(this).width()).removeClass('ui-draggable').addClass('from_all_table');
                                 tr.children('[moveable]').after($('<td index class="text-center"></td>'));
                                 return tr;
                             },
@@ -325,7 +325,7 @@
                     </div>
                 </div>
             </div>
-            <div class="small table-responsive" style="min-height: 310px; position: relative">
+            <div class="small table-responsive" style="min-height: 310px; position: relative" id="m2m_selected_table_div">
                 {% include 'main/include/mask.html' with mask_class='element-mask' mask_id='m2m_selected_mask' %}
                 <table id="m2m_selected_table" class="table table-sm table-bordered table-hover" style="width: 100%">
                     <colgroup>

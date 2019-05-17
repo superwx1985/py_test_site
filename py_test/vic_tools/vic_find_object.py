@@ -271,6 +271,24 @@ def generate_reg_flags(re_parameter):
     return flags
 
 
+# 提取re_result中的文本
+def get_first_text_in_re_result(re_result):
+    text = None
+    if isinstance(re_result, list):
+        for l in re_result:
+            if isinstance(l, str):
+                text = l
+                break
+            elif isinstance(l, tuple):
+                for t in l:
+                    if isinstance(t, str) and t != '':
+                        text = t
+                        break
+                if text:
+                    break
+    return text
+
+
 # 替换成对标识里面的特殊字符，参数f为自定义替换函数，接收成对标识之间的字符串，返回替换后的字符串
 def replace_control_character(str_, f, start_str, end_str):
     # logger = get_thread_logger()

@@ -456,7 +456,7 @@ def get_url(vic_step, print_=True):
         find_result = vic_find_object.find_with_condition(condition_value, url, logger=vic_step.logger)
         if find_result.is_matched:
             if find_result.re_result:
-                url = find_result.re_result[0]
+                url = vic_find_object.get_first_text_in_re_result(find_result.re_result)
             run_result = ['p', '找到符合条件【{}】的URL内容【{}】'.format(condition_value, url)]
         else:
             msg = '找不到符合条件【{}】的URL内容'.format(condition_value)

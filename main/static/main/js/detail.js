@@ -114,12 +114,15 @@ function update_m2m_selected_index_and_field($input, title, multiple_select) {
 // 处理m2m拖动及排序
 function m2m_handle($input, title) {
 	if (!window.editable) { return }
+	var m2m_selected_table_div = $('#m2m_selected_table_div');
 	$('#m2m_selected_table tbody').sortable({
 		items: "tr:not([placeholder])",
 		distance: 15,
 		handle: "[moveable]",
 		placeholder: 'ui-state-highlight',
+		start: function() { m2m_selected_table_div.removeClass('table-responsive') },  // 拖动时禁用列表滚动条，因为向左拖动时如果有滚动条则无法显示被拖动元素
 		stop: function( event, ui ) {
+			m2m_selected_table_div.addClass('table-responsive');
 			var from_all_table = false;
 			if (ui.item.hasClass('from_all_table')) {
 				from_all_table = true;
