@@ -85,7 +85,7 @@ def select_func(str_, variables, global_variables, logger=logging.getLogger('py_
                 if success:
                     value = str(eval_result)
                 else:
-                    value = 'Calculate Error!\nExpression:\n' + final_expression + '\n' + str(eval_result)
+                    value = '计算出错！\n表达式：\n' + final_expression + '\n' + str(eval_result)
             elif f == 'uuid':
                 value = get_uuid()
             elif f == 'slice':
@@ -114,7 +114,7 @@ def select_func(str_, variables, global_variables, logger=logging.getLogger('py_
                 except ValueError:
                     raise ValueError('无法把{}转换为时间类型，请检查数据'.format(parameter))
             else:
-                raise ValueError('[' + f + '] is an invalid functions code')
+                raise ValueError('[' + f + ']不是一个合法的操作符')
         except ValueError as e:
             msg = getattr(e, 'msg', str(e))
             raise ValueError('通过操作符【{}】转换数据时出现错误，错误原因为:{}'.format(f, msg))

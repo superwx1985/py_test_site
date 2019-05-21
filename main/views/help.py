@@ -1,5 +1,6 @@
 import logging
 import json
+import traceback
 from django.http import Http404, JsonResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
@@ -49,7 +50,8 @@ def variable_test(request):
             msg = '测试成功'
             success = True
         except Exception as e:
-            msg = getattr(e, 'msg', str(e))
+            msg = '{}\n{}'.format(getattr(e, 'msg', str(e)), traceback.format_exc())
+            traceback.format_exc()
     else:
         msg = '无测试数据'
 

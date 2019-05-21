@@ -158,7 +158,7 @@ def get_timedelta_str(timedelta_, ndigits=0):
 
 # 按月份偏移，如果偏移后日期大于那个月份的最大日期，将取最大日期
 def delta_month(date, add_month):
-    month_dict = (0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
+    month_dict = (12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11)
 
     month = date.month + add_month
     new_month = month_dict[month % 12]
