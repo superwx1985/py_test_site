@@ -573,10 +573,17 @@ function m2m_multiple_paste_obj() {
     var msg = '请粘贴对象文本然后点击确认，对象将被添加到当前选中的最后一行下面';
     var textarea = $('<textarea class="form-control" rows="5">');
     var buttons = {
-		accept: {
-			label: '<i class="icon-ok">&nbsp;</i>确定',
-			className: 'btn btn-primary',
+		copy_link: {
+			label: '<span title="批量复制子对象链接"><i class="icon-link">&nbsp;</i>复制链接</span>',
+			className: 'btn btn-warning',
 			callback: function () { add_m2m_multiple_paste_obj_to_list(textarea.val()) }
+		},
+		copy_item: {
+			label: '<span title="批量复制子对象实体"><i class="icon-plus">&nbsp;</i>复制实体</span>',
+			className: 'btn btn-warning-dark',
+			callback: function () {
+			    bootbox.alert({title: '嘿嘿', message: '这个功能还没做，请一个个复制'})
+            }
 		}
 	};
     bootbox.dialog({

@@ -163,6 +163,8 @@ def delta_month(date, add_month):
     month = date.month + add_month
     new_month = month_dict[month % 12]
     new_year = date.year + month // 12
+    if new_month == 12:
+        new_year -= 1
     new_day = date.day
     max_day = calendar.monthrange(new_year, new_month)[1]  # 获取新日期月份的最后一天
     new_day = max_day if max_day < new_day else new_day
