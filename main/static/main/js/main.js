@@ -127,7 +127,7 @@ function copy_obj(copy_url, order) {
                 callback: function () { callback_copy_obj(copy_url, $('#copy_obj_name').val(), order) }
             },
             copy_sub_item: {
-                label: '<span title="复制该对象包含的所有子对象，将生成大量数据，请耐心等待"><i class="icon-copy">&nbsp;</i>复制子对象（谨慎使用）</span>',
+                label: '<span title="复制对象包含的所有子对象，将生成大量数据，可能会耗费较长时间。请确认您了解此操作的含义。"><i class="icon-copy">&nbsp;</i>复制子对象</span>',
                 className: 'btn btn-warning-dark',
                 callback: function () { callback_copy_obj_sub_item(copy_url, $('#copy_obj_name').val(), order) }
             }

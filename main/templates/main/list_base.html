@@ -26,6 +26,10 @@
             <script src="{% static 'main/js/list.js' %}"></script>
             <script>
                 $(function () {
+                    // 标识子对象
+                    {% if has_sub_object %}
+                        window.has_sub_object = true;
+                    {% endif %}
                     window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
                     // 获取分页信息
                     window.page = {{ paginator_form.page.value|default:1 }};

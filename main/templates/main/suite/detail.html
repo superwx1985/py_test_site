@@ -19,10 +19,8 @@
             $('#nav_suite').addClass('active');
             // 定义m2m字段
             window.$m2m_input = $('input[name=case]');
-            // 标识子对象
-            {% if has_sub_object %}
-                window.has_sub_object = true;
-            {% endif %}
+            // 获取m2m批量复制地址
+            window.m2m_multiple_copy_url="{% url 'cases_multiple_copy' %}";
         })
     </script>
 {% endblock %}
@@ -318,9 +316,9 @@
                     <div class="row align-items-center">
                         <div class="col text-left">
                             <button type="button" id="m2m_add_button" class="btn btn-success"><i class="icon-plus"></i>&nbsp;新增</button>
-                            <button type="button" id="m2m_multiple_delete_button" class="btn btn-danger" disabled="disabled"><i class="icon-trash"></i>&nbsp;批量删除</button>
-                            <button type="button" id="m2m_multiple_copy_obj_button" class="btn btn-warning" disabled="disabled"><i class="icon-copy"></i>&nbsp;生成对象列表</button>
-                            <button type="button" id="m2m_multiple_paste_obj_button" class="btn btn-info"><i class="icon-paste"></i>&nbsp;粘贴对象列表</button>
+                            <button type="button" id="m2m_multiple_delete_button" class="btn btn-danger" disabled="disabled"><i class="icon-trash"></i>&nbsp;批量移除</button>
+                            <button type="button" id="m2m_multiple_copy_obj_button" class="btn btn-warning" disabled="disabled"><i class="icon-copy"></i>&nbsp;生成复制用例</button>
+                            <button type="button" id="m2m_multiple_paste_obj_button" class="btn btn-info"><i class="icon-paste"></i>&nbsp;批量粘贴用例</button>
                         </div>
                     </div>
                 </div>

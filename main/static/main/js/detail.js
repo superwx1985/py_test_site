@@ -365,7 +365,22 @@ function callback_copy_obj(copy_url, name_prefix, order) {
 
 // 复制对象及子对象的的回调函数
 function callback_copy_obj_sub_item(copy_url, name_prefix, order) {
-	copy_obj_post(copy_url, name_prefix, 1, order)
+	bootbox.dialog({
+		size: 'large',
+		title: '<i class="icon-exclamation-sign">&nbsp;</i>请再次确认',
+		message: '复制对象包含的所有子对象，将生成大量数据，可能会耗费较长时间。请确认您了解此操作的含义。',
+		buttons: {
+			cancel: {
+				label: '<i class="icon-undo">&nbsp;</i>取消',
+				className: 'btn btn-secondary'
+			},
+			confirm: {
+				label: '<i class="icon-ok">&nbsp;</i>确认',
+				className: 'btn btn-primary',
+				callback: function() { copy_obj_post(copy_url, name_prefix, 1, order) }
+			}
+		}
+	})
 }
 
 // 复制对象
@@ -477,10 +492,10 @@ function m2m_multiple_delete() {
 
 }
 
-// m2m批量删除按钮
+// m2m批量移除按钮
 function bind_m2m_multiple_delete_button() {
     $('#m2m_multiple_delete_button').off('click').click(function () {
-        var msg = '要删除<span class="mark">' + window.m2m_muliple_selected_id.length + '</span>个对象吗？';
+        var msg = '要移除<span class="mark">' + window.m2m_muliple_selected_id.length + '</span>个对象吗？（只移除链接，不会删除实体）';
         bootbox.confirm({
             title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
             message: msg,
@@ -543,9 +558,10 @@ function bind_m2m_multiple_copy_obj_button() {
     });
 }
 
-// m2m添加批量对象到列表
-function add_m2m_multiple_paste_obj_to_list(data) {
+// m2m批量添加对象链接到列表
+function m2m_multiple_paste_obj_link_to_list(data) {
 	if (!data) {
+	    toastr.error('没有填写对象文本');
 		return false;
 	}
 	try {
@@ -560,9 +576,12 @@ function add_m2m_multiple_paste_obj_to_list(data) {
     if (window.m2m_muliple_selected_id.length > 0) {
 		last_select = parseInt(m2m_muliple_selected_id[m2m_muliple_selected_id.length-1].order);
 	}
+
 	$.each(objs, function (i, v) {
-		m2m_objs.splice(last_select, 0, v.pk);
-		last_select++;
+		if (v.pk) {
+			m2m_objs.splice(last_select, 0, v.pk.toString());
+			last_select++;
+		}
     });
 	window.$m2m_input.val(JSON.stringify(m2m_objs));
 	update_m2m_objects();
@@ -570,19 +589,19 @@ function add_m2m_multiple_paste_obj_to_list(data) {
 
 // m2m批量粘贴对象
 function m2m_multiple_paste_obj() {
-    var msg = '请粘贴对象文本然后点击确认，对象将被添加到当前选中的最后一行下面';
+    var msg = '请粘贴对象文本然后点击生成，对象将被添加到当前选中的最后一行下面';
     var textarea = $('<textarea class="form-control" rows="5">');
     var buttons = {
 		copy_link: {
-			label: '<span title="批量复制子对象链接"><i class="icon-link">&nbsp;</i>复制链接</span>',
-			className: 'btn btn-warning',
-			callback: function () { add_m2m_multiple_paste_obj_to_list(textarea.val()) }
+			label: '<span title="批量生成子对象链接"><i class="icon-link">&nbsp;</i>生成链接</span>',
+			className: 'btn btn-info',
+			callback: function () { m2m_multiple_paste_obj_link_to_list(textarea.val()) }
 		},
 		copy_item: {
-			label: '<span title="批量复制子对象实体"><i class="icon-plus">&nbsp;</i>复制实体</span>',
-			className: 'btn btn-warning-dark',
+			label: '<span title="批量生成子对象实体"><i class="icon-plus">&nbsp;</i>生成实体</span>',
+			className: 'btn btn-dark',
 			callback: function () {
-			    bootbox.alert({title: '嘿嘿', message: '这个功能还没做，请一个个复制'})
+                m2m_multiple_paste_obj_item_to_list(textarea.val());
             }
 		}
 	};
@@ -600,5 +619,106 @@ function m2m_multiple_paste_obj() {
 function bind_m2m_multiple_paste_obj_button() {
     $('#m2m_multiple_paste_obj_button').off('click').click(function () {
         m2m_multiple_paste_obj(JSON.stringify(window.m2m_muliple_selected_id));
+    });
+}
+
+
+// m2m批量添加对象实体
+function m2m_multiple_paste_obj_item_to_list(data) {
+	if (!data) {
+	    toastr.error('没有填写对象文本');
+		return false;
+	}
+	try {
+		var objs = $.parseJSON(data);
+	}
+	catch (e) {
+		toastr.error('无法识别的对象文本');
+		return false;
+    }
+    var body = $('<div>').addClass('modal-body');
+    var now = new Date().Format("yyyy-MM-dd HH:mm:ss");
+    var div = $('<div>准备复制<span class="mark">' + objs.length + '</span>个对象。请输入复制后对象的名称前缀：</div>');
+    var pk_list = [];
+    $.each(objs, function (i, v) {
+		pk_list.push(v.pk);
+    });
+    pk_list = JSON.stringify(pk_list);
+
+    body.append(div);
+    body.append($('<br>'));
+    var input = $('<input class="form-control" autocomplete="off" type="text" id="copy_obj_name">').attr('value', '【' + now + ' 复制】');
+    body.append(input);
+    var url = window.m2m_multiple_copy_url;
+    var buttons = {
+        cancel: {
+            label: '<i class="icon-undo">&nbsp;</i>取消',
+            className: 'btn btn-secondary'
+        },
+        copy: {
+            label: '<i class="icon-copy">&nbsp;</i>复制',
+            className: 'btn btn-warning',
+            callback: function () { callback_m2m_multiple_copy_obj(url, $('#copy_obj_name').val(), pk_list) }
+        },
+        copy_sub_item: {
+            label: '<span title="复制对象包含的所有子对象，将生成大量数据，可能会耗费较长时间。请确认您了解此操作的含义。"><i class="icon-copy">&nbsp;</i>复制子对象</span>',
+            className: 'btn btn-warning-dark',
+            callback: function () { callback_m2m_multiple_copy_obj_sub_item(url, $('#copy_obj_name').val(), pk_list) }
+        }
+    };
+
+    bootbox.dialog({
+        size: 'large',
+        title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
+        message: body.html(),
+        onEscape: true,
+        backdrop: true,
+        buttons: buttons
+    });
+
+}
+
+// 批量复制m2m对象的回调函数
+function callback_m2m_multiple_copy_obj(url, name_prefix, pk_list) {
+    m2m_multiple_copy_obj_post(url, name_prefix, pk_list)
+}
+
+// 复制m2m对象及子对象的的回调函数
+function callback_m2m_multiple_copy_obj_sub_item(url, name_prefix, pk_list) {
+	bootbox.dialog({
+		size: 'large',
+		title: '<i class="icon-exclamation-sign">&nbsp;</i>请再次确认',
+		message: '复制对象包含的所有子对象，将生成大量数据，可能会耗费较长时间。请确认您了解此操作的含义。',
+		buttons: {
+			cancel: {
+				label: '<i class="icon-undo">&nbsp;</i>取消',
+				className: 'btn btn-secondary'
+			},
+			confirm: {
+				label: '<i class="icon-ok">&nbsp;</i>确认',
+				className: 'btn btn-primary',
+				callback: function() { m2m_multiple_copy_obj_post(url, name_prefix, pk_list, 1) }
+			}
+		}
+	})
+}
+
+// 批量复制m2m对象
+function m2m_multiple_copy_obj_post(url, name_prefix, pk_list, copy_sub_item) {
+    $('#mask').show();
+    $.post(url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name_prefix': name_prefix, 'copy_sub_item': copy_sub_item, 'pk_list': pk_list}, function(data) {
+        $('#mask').hide();
+        if (data.state === 1) {
+        	var new_pk_list = data.data;
+        	var new_obj_list = [];
+			$.each(new_pk_list, function (i, v) {
+				var obj = {"pk": v.toString()};
+				new_obj_list.push(obj);
+			});
+			new_obj_list = JSON.stringify(new_obj_list);
+            m2m_multiple_paste_obj_link_to_list(new_obj_list);
+        } else {
+            bootbox.alert('<span class="text-danger">'+data.message+'</span>');
+        }
     });
 }

@@ -11,10 +11,6 @@
             window.multiple_delete_url="{% url 'cases_multiple_delete' %}";
             // 获取批量复制地址
             window.multiple_copy_url="{% url 'cases_multiple_copy' %}";
-            // 标识子对象
-            {% if has_sub_object %}
-                window.has_sub_object = true;
-            {% endif %}
         })
     </script>
 {% endblock %}

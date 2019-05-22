@@ -203,7 +203,7 @@ function bind_multiple_copy_button() {
                     callback: function () { callback_multiple_copy_obj(url, $('#copy_obj_name').val()) }
                 },
                 copy_sub_item: {
-                    label: '<span title="复制该对象包含的所有子对象，将生成大量数据，请耐心等待"><i class="icon-copy">&nbsp;</i>复制子对象（谨慎使用）</span>',
+                    label: '<span title="复制对象包含的所有子对象，将生成大量数据，可能会耗费较长时间。请确认您了解此操作的含义。"><i class="icon-copy">&nbsp;</i>复制子对象</span>',
                     className: 'btn btn-warning-dark',
                     callback: function () { callback_multiple_copy_obj_sub_item(url, $('#copy_obj_name').val()) }
                 }
@@ -369,7 +369,22 @@ function callback_copy_obj(copy_url, name_prefix) {
 
 // 复制对象及子对象的的回调函数
 function callback_copy_obj_sub_item(copy_url, name_prefix) {
-    copy_obj_post(copy_url, name_prefix, 1)
+    bootbox.dialog({
+		size: 'large',
+		title: '<i class="icon-exclamation-sign">&nbsp;</i>请再次确认',
+		message: '复制对象包含的所有子对象，将生成大量数据，可能会耗费较长时间。请确认您了解此操作的含义。',
+		buttons: {
+			cancel: {
+				label: '<i class="icon-undo">&nbsp;</i>取消',
+				className: 'btn btn-secondary'
+			},
+			confirm: {
+				label: '<i class="icon-ok">&nbsp;</i>确认',
+				className: 'btn btn-primary',
+				callback: function() { copy_obj_post(copy_url, name_prefix, 1) }
+			}
+		}
+	})
 }
 
 // 复制对象
@@ -390,9 +405,24 @@ function callback_multiple_copy_obj(url, name_prefix) {
     multiple_copy_obj_post(url, name_prefix)
 }
 
-// 复制对象及子对象的的回调函数
+// 批量复制对象及子对象的的回调函数
 function callback_multiple_copy_obj_sub_item(url, name_prefix) {
-    multiple_copy_obj_post(url, name_prefix, 1)
+    bootbox.dialog({
+		size: 'large',
+		title: '<i class="icon-exclamation-sign">&nbsp;</i>请再次确认',
+		message: '复制对象包含的所有子对象，将生成大量数据，可能会耗费较长时间。请确认您了解此操作的含义。',
+		buttons: {
+		    cancel: {
+				label: '<i class="icon-undo">&nbsp;</i>取消',
+				className: 'btn btn-secondary'
+			},
+			confirm: {
+				label: '<i class="icon-ok">&nbsp;</i>确认',
+				className: 'btn btn-primary',
+				callback: function() { multiple_copy_obj_post(url, name_prefix, 1) }
+			}
+		}
+	})
 }
 
 // 批量复制对象

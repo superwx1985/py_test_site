@@ -455,36 +455,44 @@ def list_temp(request):
 
 # 复制操作
 def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=None):
+    if not copied_items:
+        copied_items = [dict()]
     obj = Case.objects.get(pk=pk)
+    original_obj_uuid = obj.uuid
+    if original_obj_uuid in copied_items[0]:  # 判断是否已被复制
+        return copied_items[0][original_obj_uuid]
+
     if copy_sub_item:
         recursive_id, case_list = check_recursive_call(obj)
         if recursive_id:
-            raise RecursionError('用例[ID:{}]被用例[ID:{}]递归调用，执行中止。调用顺序列表：{}'.format(
+            raise RecursionError('用例[ID:{}]被用例[ID:{}]递归调用，复制中止。调用顺序列表：{}'.format(
                 recursive_id, case_list[-1], case_list))
     m2m_objects = obj.step.filter(is_active=True).order_by('casevsstep__order') or []
+
     obj.pk = None
     if name_prefix:
         obj.name = name_prefix + obj.name
         if len(obj.name) > 100:
             obj.name = obj.name[0:97] + '...'
 
-    if not copied_items:
-        copied_items = [dict()]
     if copy_sub_item:
-        if obj.variable_group:
-            # 判断是否已被复制
-            if copied_items[0] and obj.variable_group in copied_items[0]:
-                obj.variable_group = copied_items[0][obj.variable_group]
-            else:
-                new_sub_obj = variable_group.copy_action(obj.variable_group.pk, user, name_prefix)
-                copied_items[0][obj.variable_group] = obj.variable_group = new_sub_obj
         if obj.config:
-            # 判断是否已被复制
-            if copied_items[0] and obj.config in copied_items[0]:
-                obj.config = copied_items[0][obj.config]
-            else:
-                new_sub_obj = config.copy_action(obj.config.pk, user, name_prefix)
-                copied_items[0][obj.config] = obj.config = new_sub_obj
+            # if obj.config in copied_items[0]:  # 判断是否已被复制
+            #     obj.config = copied_items[0][obj.config]
+            # else:
+            #     new_sub_obj = config.copy_action(obj.config.pk, user, name_prefix)
+            #     copied_items[0][obj.config] = obj.config = new_sub_obj
+            new_sub_obj = config.copy_action(obj.config.pk, user, name_prefix, copied_items)
+            obj.config = new_sub_obj
+        if obj.variable_group:
+            # if obj.variable_group in copied_items[0]:  # 判断是否已被复制
+            #     obj.variable_group = copied_items[0][obj.variable_group]
+            # else:
+            #     new_sub_obj = variable_group.copy_action(obj.variable_group.pk, user, name_prefix)
+            #     copied_items[0][obj.variable_group] = obj.variable_group = new_sub_obj
+            new_sub_obj = variable_group.copy_action(obj.variable_group.pk, user, name_prefix, copied_items)
+            obj.variable_group = new_sub_obj
+
     obj.creator = obj.modifier = user
     obj.uuid = uuid.uuid1()
     obj.clean_fields()
@@ -494,17 +502,20 @@ def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=Non
     for m2m_obj in m2m_objects:
         # 判断是否需要复制子对象
         if copy_sub_item:
-            # 判断是否已被复制
-            if copied_items[0] and m2m_obj in copied_items[0]:
-                m2m_obj_ = copied_items[0][m2m_obj]
-            else:
-                m2m_obj_ = step.copy_action(m2m_obj.pk, user, name_prefix, copy_sub_item, copied_items)
-                copied_items[0][m2m_obj] = m2m_obj_
+            # # 判断是否已被复制
+            # if m2m_obj in copied_items[0]:
+            #     m2m_obj_ = copied_items[0][m2m_obj]
+            # else:
+            #     m2m_obj_ = step.copy_action(m2m_obj.pk, user, name_prefix, copy_sub_item, copied_items)
+            #     copied_items[0][m2m_obj] = m2m_obj_
+            m2m_obj_ = step.copy_action(m2m_obj.pk, user, name_prefix, copy_sub_item, copied_items)
         else:
             m2m_obj_ = m2m_obj
         m2m_order += 1
         CaseVsStep.objects.create(
             case=obj, step=m2m_obj_, order=m2m_order, creator=user, modifier=user)
+
+    copied_items[0][original_obj_uuid] = obj
     return obj
 
 
@@ -533,11 +544,14 @@ def multiple_copy(request):
             pk_list = json.loads(request.POST['pk_list'])
             name_prefix = request.POST.get('name_prefix', '')
             copy_sub_item = request.POST.get('copy_sub_item')
+            copied_items = [dict()]
+            new_pk_list = list()
             for pk in pk_list:
-                _ = copy_action(pk, request.user, name_prefix, copy_sub_item)
+                new_obj = copy_action(pk, request.user, name_prefix, copy_sub_item, copied_items)
+                new_pk_list.append(new_obj.pk)
         except Exception as e:
             return JsonResponse({'state': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': new_pk_list})
     else:
         return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 

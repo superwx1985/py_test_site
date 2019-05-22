@@ -416,8 +416,9 @@ function bind_sub_multiple_copy_obj_button() {
 }
 
 // 添加批量对象到列表
-function add_sub_multiple_paste_obj_to_list(data) {
+function sub_multiple_paste_obj_link_to_list(data) {
 	if (!data) {
+	    toastr.error('没有填写对象文本');
 		return false;
 	}
 	try {
@@ -441,13 +442,13 @@ function add_sub_multiple_paste_obj_to_list(data) {
 
 // 批量粘贴对象
 function sub_multiple_paste_obj() {
-    var msg = '请粘贴对象文本然后点击确认，对象将被添加到当前选中的最后一行下面';
+    var msg = '请粘贴对象文本然后点击生成，对象将被添加到当前选中的最后一行下面';
     var textarea = $('<textarea class="form-control" rows="5">');
     var buttons = {
 		accept: {
-			label: '<i class="icon-ok">&nbsp;</i>确定',
-			className: 'btn btn-primary',
-			callback: function () { add_sub_multiple_paste_obj_to_list(textarea.val()) }
+			label: '<i class="icon-plus">&nbsp;</i>生成',
+			className: 'btn btn-info',
+			callback: function () { sub_multiple_paste_obj_link_to_list(textarea.val()) }
 		}
 	};
     bootbox.dialog({

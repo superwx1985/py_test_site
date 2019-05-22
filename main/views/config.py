@@ -268,8 +268,14 @@ def select_json(request):
 
 
 # 复制操作
-def copy_action(pk, user, name_prefix=None):
+def copy_action(pk, user, name_prefix=None, copied_items=None):
+    if not copied_items:
+        copied_items = [dict()]
     obj = Config.objects.get(pk=pk)
+    original_obj_uuid = obj.uuid
+    if original_obj_uuid in copied_items[0]:  # 判断是否已被复制
+        return copied_items[0][original_obj_uuid]
+
     obj.pk = None
     if name_prefix:
         obj.name = name_prefix + obj.name
@@ -279,6 +285,8 @@ def copy_action(pk, user, name_prefix=None):
     obj.uuid = uuid.uuid1()
     obj.clean_fields()
     obj.save()
+
+    copied_items[0][original_obj_uuid] = obj
     return obj
 
 
@@ -305,11 +313,14 @@ def multiple_copy(request):
         try:
             pk_list = json.loads(request.POST['pk_list'])
             name_prefix = request.POST.get('name_prefix', '')
+            copied_items = [dict()]
+            new_pk_list = list()
             for pk in pk_list:
-                _ = copy_action(pk, request.user, name_prefix)
+                new_obj = copy_action(pk, request.user, name_prefix, copied_items)
+                new_pk_list.append(new_obj.pk)
         except Exception as e:
             return JsonResponse({'state': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': new_pk_list})
     else:
         return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 

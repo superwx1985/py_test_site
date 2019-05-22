@@ -23,7 +23,12 @@ logger = logging.getLogger('django.request')
 # 步骤列表
 @login_required
 def list_(request):
+    if request.session.get('state', None) == 'success':
+        prompt = 'success'
+    request.session['state'] = None
+
     project_list = get_project_list()
+    has_sub_object = True
     is_admin = check_admin(request.user)
 
     page = request.GET.get('page')
@@ -99,16 +104,13 @@ def list_(request):
 
 @login_required
 def detail(request, pk):
-    if request.session.get('state', None) == 'success':
-        prompt = 'success'
-    request.session['state'] = None
-
     next_ = request.GET.get('next', '')
     inside = request.GET.get('inside')
     new_pk = request.GET.get('new_pk')
     order = request.GET.get('order')
     reference_url = reverse(reference, args=[pk])  # 被其他对象调用
     action_map_json = other.get_action_map_json()
+    has_sub_object = True
     is_admin = check_admin(request.user)
 
     try:
@@ -368,28 +370,36 @@ def list_temp(request):
 
 # 复制操作
 def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=None):
+    if not copied_items:
+        copied_items = [dict()]
     obj = Step.objects.select_related('action').get(pk=pk)
+    original_obj_uuid = obj.uuid
+    if original_obj_uuid in copied_items[0]:  # 判断是否已被复制
+        return copied_items[0][original_obj_uuid]
+
     obj.pk = None
     if name_prefix:
         obj.name = name_prefix + obj.name
         if len(obj.name) > 100:
             obj.name = obj.name[0:97] + '...'
 
-    if not copied_items:
-        copied_items = [dict()]
     if copy_sub_item and obj.action.code == 'OTHER_CALL_SUB_CASE' and obj.other_sub_case:
         # 判断是否已被复制
-        if copied_items[0] and obj.other_sub_case in copied_items[0]:
-            obj.other_sub_case = copied_items[0][obj.other_sub_case]
-        else:
-            new_sub_obj = case.copy_action(
-                obj.other_sub_case.pk, user, name_prefix, copy_sub_item, copied_items)
-            copied_items[0][obj.other_sub_case] = new_sub_obj
-            obj.other_sub_case = new_sub_obj
+        # if obj.other_sub_case in copied_items[0]:
+        #     obj.other_sub_case = copied_items[0][obj.other_sub_case]
+        # else:
+        #     new_sub_obj = case.copy_action(
+        #         obj.other_sub_case.pk, user, name_prefix, copy_sub_item, copied_items)
+        #     copied_items[0][obj.other_sub_case] = obj.other_sub_case = new_sub_obj
+        new_sub_obj = case.copy_action(obj.other_sub_case.pk, user, name_prefix, copy_sub_item, copied_items)
+        obj.other_sub_case = new_sub_obj
+
     obj.creator = obj.modifier = user
     obj.uuid = uuid.uuid1()
     obj.clean_fields()
     obj.save()
+
+    copied_items[0][original_obj_uuid] = obj
     return obj
 
 
@@ -399,8 +409,9 @@ def copy_(request, pk):
     name_prefix = request.POST.get('name_prefix', '')
     order = request.POST.get('order')
     order = change_to_positive_integer(order, 0)
+    copy_sub_item = request.POST.get('copy_sub_item')
     try:
-        obj = copy_action(pk, request.user, name_prefix)
+        obj = copy_action(pk, request.user, name_prefix, copy_sub_item)
         return JsonResponse({
             'state': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
@@ -416,11 +427,15 @@ def multiple_copy(request):
         try:
             pk_list = json.loads(request.POST['pk_list'])
             name_prefix = request.POST.get('name_prefix', '')
+            copy_sub_item = request.POST.get('copy_sub_item')
+            copied_items = [dict()]
+            new_pk_list = list()
             for pk in pk_list:
-                _ = copy_action(pk, request.user, name_prefix)
+                new_obj = copy_action(pk, request.user, name_prefix, copy_sub_item, copied_items)
+                new_pk_list.append(new_obj.pk)
         except Exception as e:
             return JsonResponse({'state': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': new_pk_list})
     else:
         return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 

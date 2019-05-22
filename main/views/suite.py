@@ -343,29 +343,47 @@ def select_json(request):
 
 
 # 复制操作
-def copy_action(pk, user, name_prefix=None, copy_sub_item=None):
+def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=None):
+    if not copied_items:
+        copied_items = [dict()]
     obj = Suite.objects.get(pk=pk)
+    original_obj_uuid = obj.uuid
+    if original_obj_uuid in copied_items[0]:  # 判断是否已被复制
+        return copied_items[0][original_obj_uuid]
     m2m_objects = obj.case.filter(is_active=True).order_by('suitevscase__order') or []
     obj.pk = None
+
     if name_prefix:
         obj.name = name_prefix + obj.name
         if len(obj.name) > 100:
             obj.name = obj.name[0:97] + '...'
 
-    copied_items = [dict()]
     if copy_sub_item:
         if obj.config:
-            new_sub_obj = config.copy_action(obj.config.pk, user, name_prefix)
-            copied_items[0][obj.config] = new_sub_obj
+            # if obj.config in copied_items[0]:  # 判断是否已被复制
+            #     obj.config = copied_items[0][obj.config]
+            # else:
+            #     new_sub_obj = config.copy_action(obj.config.pk, user, name_prefix)
+            #     copied_items[0][obj.config] = obj.config = new_sub_obj
+            new_sub_obj = config.copy_action(obj.config.pk, user, name_prefix, copied_items)
             obj.config = new_sub_obj
         if obj.variable_group:
-            new_sub_obj = variable_group.copy_action(obj.variable_group.pk, user, name_prefix)
-            copied_items[0][obj.variable_group] = new_sub_obj
+            # if obj.variable_group in copied_items[0]:  # 判断是否已被复制
+            #     obj.variable_group = copied_items[0][obj.variable_group]
+            # else:
+            #     new_sub_obj = variable_group.copy_action(obj.variable_group.pk, user, name_prefix)
+            #     copied_items[0][obj.variable_group] = obj.variable_group = new_sub_obj
+            new_sub_obj = variable_group.copy_action(obj.variable_group.pk, user, name_prefix, copied_items)
             obj.variable_group = new_sub_obj
         if obj.element_group:
-            new_sub_obj = element_group.copy_action(obj.element_group.pk, user, name_prefix)
-            copied_items[0][obj.element_group] = new_sub_obj
+            # if obj.element_group in copied_items[0]:  # 判断是否已被复制
+            #     obj.element_group = copied_items[0][obj.element_group]
+            # else:
+            #     new_sub_obj = element_group.copy_action(obj.element_group.pk, user, name_prefix)
+            #     copied_items[0][obj.element_group] = obj.element_group = new_sub_obj
+            new_sub_obj = element_group.copy_action(obj.element_group.pk, user, name_prefix, copied_items)
             obj.element_group = new_sub_obj
+
     obj.creator = obj.modifier = user
     obj.uuid = uuid.uuid1()
     obj.clean_fields()
@@ -375,22 +393,20 @@ def copy_action(pk, user, name_prefix=None, copy_sub_item=None):
     for m2m_obj in m2m_objects:
         # 判断是否需要复制子对象
         if copy_sub_item:
-            # 判断子对象是否已被复制
-            if m2m_obj in copied_items[0]:
-                m2m_obj_ = copied_items[0][m2m_obj]
-            else:
-                m2m_obj_ = case.copy_action(m2m_obj.pk, user, name_prefix, copy_sub_item, copied_items)
-                copied_items[0][m2m_obj] = m2m_obj_
-                # 合并已复制对象字典，并放入容器
-                # if copied_items and isinstance(copied_items, list):
-                #     copied_items_dict = {**copied_items_dict, **copied_items[0]}
-                #     copied_items.clear()
-                #     copied_items.append(copied_items_dict)
+            # # 判断子对象是否已被复制
+            # if m2m_obj in copied_items[0]:
+            #     m2m_obj_ = copied_items[0][m2m_obj]
+            # else:
+            #     m2m_obj_ = case.copy_action(m2m_obj.pk, user, name_prefix, copy_sub_item, copied_items)
+            #     copied_items[0][m2m_obj] = m2m_obj_
+            m2m_obj_ = case.copy_action(m2m_obj.pk, user, name_prefix, copy_sub_item, copied_items)
         else:
             m2m_obj_ = m2m_obj
         m2m_order += 1
         SuiteVsCase.objects.create(
             suite=obj, case=m2m_obj_, order=m2m_order, creator=user, modifier=user)
+
+    copied_items[0][original_obj_uuid] = obj
     return obj
 
 
@@ -419,11 +435,14 @@ def multiple_copy(request):
             pk_list = json.loads(request.POST['pk_list'])
             name_prefix = request.POST.get('name_prefix', '')
             copy_sub_item = request.POST.get('copy_sub_item')
+            copied_items = [dict()]
+            new_pk_list = list()
             for pk in pk_list:
-                _ = copy_action(pk, request.user, name_prefix, copy_sub_item)
+                new_obj = copy_action(pk, request.user, name_prefix, copy_sub_item, copied_items)
+                new_pk_list.append(new_obj.pk)
         except Exception as e:
             return JsonResponse({'state': 2, 'message': str(e), 'data': None})
-        return JsonResponse({'state': 1, 'message': 'OK', 'data': pk_list})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': new_pk_list})
     else:
         return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
 

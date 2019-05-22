@@ -40,6 +40,10 @@
         {% block general_script %}
             <script>
                 $(function () {
+                    // 标识子对象
+                    {% if has_sub_object %}
+                        window.has_sub_object = true;
+                    {% endif %}
                     if ($('#submit_button_group').attr('next_') !== '') {
                         // 导航栏跳转包含搜索参数
                         $('.nav-item.active').children('a').attr('href', '/redirect/' + window.location.search);
