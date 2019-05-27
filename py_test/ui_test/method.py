@@ -10,6 +10,20 @@ from py_test.vic_tools.vic_str_handle import change_string_to_digit
 from py_test.general import vic_variables
 
 
+# 设置UI测试驱动超时
+def set_driver_timeout(dr, timeout):
+    # 设置selenium超时时间
+    dr.implicitly_wait(timeout)
+    dr.set_page_load_timeout(timeout)
+    dr.set_script_timeout(timeout)
+    # 设置Remote Connection超时时间
+    try:
+        _conn = getattr(dr.command_executor, '_conn')
+        _conn.timeout = int(timeout + 5)
+    except AttributeError:
+        dr.command_executor.set_timeout(int(timeout + 5))
+
+
 # 获取公共元素
 def get_public_elements(vic_step):
     name = vic_step.ui_locator

@@ -33,6 +33,7 @@ class VicStep:
         self.action_code = step.action.code
 
         self.browser_alert = False
+        self.browser_alert_text = ''
 
         # timeout为0时也要取
         self.timeout = step.timeout if step.timeout is not None else vic_case.timeout
@@ -224,16 +225,7 @@ class VicStep:
 
             # 设置selenium驱动超时
             if dr:
-                # 设置selenium超时时间
-                dr.implicitly_wait(timeout)
-                dr.set_page_load_timeout(timeout)
-                dr.set_script_timeout(timeout)
-                # 设置Remote Connection超时时间
-                try:
-                    _conn = getattr(dr.command_executor, '_conn')
-                    _conn.timeout = int(timeout + 5)
-                except AttributeError:
-                    dr.command_executor.set_timeout(int(timeout + 5))
+                ui_test.method.set_driver_timeout(dr, timeout)
 
             # 如果步骤执行过程中页面元素被改变导致出现StaleElementReferenceException，将自动再次执行步骤
             start_time = time.time()
@@ -811,6 +803,14 @@ class VicStep:
                                 msg = '{}\n{}'.format(prefix_msg, msg)
                                 self.run_result = [run_result_state, msg]
 
+                                if self.save_as:
+                                    if self.run_result[0] == 'p':
+                                        verify_result = True
+                                    else:
+                                        verify_result = False
+                                    msg = var.set_variable(self.save_as, verify_result)
+                                    self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
+
                         # ===== DB =====
                         elif ac == 'DB_EXECUTE_SQL':
                             self.update_test_data(
@@ -877,15 +877,15 @@ class VicStep:
                                     if run_result[1].error_msg:
                                         '{}\n在查找过程中出现错误：{}'.format(msg, run_result[1].error_msg)
 
+                                self.run_result = [run_result_state, msg]
+
                                 if self.save_as:
-                                    if run_result_state == 'p':
+                                    if self.run_result[0] == 'p':
                                         verify_result = True
                                     else:
                                         verify_result = False
-                                    _msg = var.set_variable(self.save_as, verify_result)
-                                    msg = '{}\n{}'.format(msg, _msg)
-
-                                self.run_result = [run_result_state, msg]
+                                    msg = var.set_variable(self.save_as, verify_result)
+                                    self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
 
                         # ===== OTHER =====
                         # 等待
@@ -1084,17 +1084,32 @@ class VicStep:
                         # 判断是否出现浏览器弹窗
                         if atc == 'UI' and dr is not None:
                             try:
+                                # 防止切换窗口后页面还未加载完毕就获取弹窗导致超时
+                                if ac in ['UI_SWITCH_TO_WINDOW', 'UI_CLOSE_WINDOW']:
+                                    try:
+                                        dr.find_elements_by_tag_name('body')
+                                    except exceptions.UnexpectedAlertPresentException:
+                                        pass
+                                ui_test.method.set_driver_timeout(dr, 5)
                                 alert_ = dr.switch_to.alert
-                                self.browser_alert = alert_.text
+                                self.browser_alert = True
+                                self.browser_alert_text = alert_.text
                             except exceptions.NoAlertPresentException:
                                 pass
+                            except exceptions.TimeoutException:
+                                self.socket_no_response = True
+                                raise
+                            else:
+                                self.socket_no_response = False
+                            finally:
+                                ui_test.method.set_driver_timeout(dr, timeout)
 
                         # 获取UI验证截图
                         if 'UI_VERIFY_' in ac:
                             if self.browser_alert:
                                 logger.warning(
                                     '【{}】\t无法获取UI验证截图，因为出现浏览器弹窗导致浏览器被锁死，内容为：{}'.format(
-                                        estr, self.browser_alert))
+                                        estr, self.browser_alert_text))
                             else:
                                 if self.ui_get_ss:
                                     highlight_elements_map = {}
@@ -1185,7 +1200,8 @@ class VicStep:
         except exceptions.UnexpectedAlertPresentException:
             self.browser_alert = True
             alert_ = dr.switch_to.alert
-            msg = '出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(alert_.text)
+            self.browser_alert_text = alert_.text
+            msg = '出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(self.browser_alert_text)
             logger.error('【{}】\t{}'.format(estr, msg), exc_info=True)
             self.step_result.result_state = 3
             self.step_result.result_message = msg
@@ -1211,7 +1227,8 @@ class VicStep:
                     self.step_result.ui_last_url = last_url if last_url != 'data:,' else ''
                 except exceptions.UnexpectedAlertPresentException:
                     alert_ = dr.switch_to.alert
-                    msg = 'URL获取失败，因为出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(alert_.text)
+                    self.browser_alert_text = alert_.text
+                    msg = 'URL获取失败，因为出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(self.browser_alert_text)
                     logger.warning('【{}】\t{}'.format(estr, msg))
                     self.step_result.ui_last_url = msg
                     self.browser_alert = True
@@ -1235,7 +1252,8 @@ class VicStep:
                         self.img_list.append(img)
                 except exceptions.UnexpectedAlertPresentException:
                     alert_ = dr.switch_to.alert
-                    msg = '截图失败，因为出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(alert_.text)
+                    self.browser_alert_text = alert_.text
+                    msg = '截图失败，因为出现浏览器弹窗导致浏览器被锁死，弹窗内容：{}'.format(self.browser_alert_text)
                     logger.warning('【{}】\t{}'.format(estr, msg))
                 except:
                     logger.warning('【{}】\t截图失败'.format(estr))
