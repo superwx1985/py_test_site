@@ -474,6 +474,7 @@ class SuiteResult(models.Model):
     config = models.TextField(blank=True, null=True)
     variable_group = models.TextField(blank=True, null=True)
     element_group = models.TextField(blank=True, null=True)
+    error_handle = models.IntegerField(blank=True, null=True)
     suite = models.ForeignKey('main.Suite', on_delete=models.SET_NULL, null=True, blank=True)
 
     start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)

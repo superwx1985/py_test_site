@@ -60,6 +60,8 @@ class VicSuite:
             ui_get_ss=suite.ui_get_ss,
             log_level=suite.log_level,
             thread_count=suite.thread_count,
+            error_handle=suite.error_handle,
+
             project=suite.project,
 
             suite=suite,

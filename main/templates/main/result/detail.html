@@ -21,8 +21,10 @@
     <script>
         $(function () {
             step_result_detail_popup();
+            // 更新错误处理
+            $('#id_error_handle').val('{{ obj.error_handle|default_if_none:0 }}');
             // 更新日志级别
-            $('#id_log_level').val('{{ obj.log_level|default_if_none:20 }}');
+            $('#id_log_level').val('{{ obj.log_level|default_if_none:0 }}');
             // 关闭遮罩
             $('#mask').hide();
         });
@@ -85,15 +87,28 @@
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">自动截图&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试的验证步骤时是否自动截图"></i></div>
+        <div class="col-1 text-center font-weight-bold">自动截图&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="UI测试运行出错以及遇到验证步骤时是否自动截图"></i></div>
         <div class="col" form_data>
             <input type="checkbox" name="ui_get_ss" id="id_ui_get_ss" {% if obj.ui_get_ss %}checked{% endif %} disabled>
         </div>
     </div>
     <div class="row align-items-center">
+        <div class="col-1 text-center font-weight-bold">错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。如果用例或步骤单独设置了处理方式，将使用步骤的值"></i></div>
+        <div class="col" form_data>
+            <select name="error_handle" class="form-control" id="id_error_handle" disabled>
+              <option value="0"></option>
+              <option value="1">中止测试</option>
+              <option value="2">继续测试</option>
+              <option value="3">暂停测试</option>
+              <option value="4">跳过步骤</option>
+            </select>
+        </div>
+    </div>
+    <div class="row align-items-center">
         <div class="col-1 text-center font-weight-bold">日志级别&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试的日志详细程度，选择DEV将不会自动关闭浏览器"></i></div>
         <div class="col" form_data>
-            <select name="log_level" class="form-control" placeholder="" id="id_log_level" disabled>
+            <select name="log_level" class="form-control" id="id_log_level" disabled>
+                <option value="0"></option>
                 <option value="1">DEV</option>
                 <option value="10">DEBUG</option>
                 <option value="20">INFO</option>
