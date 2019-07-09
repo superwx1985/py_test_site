@@ -45,7 +45,7 @@ urlpatterns = [
     path('user/logout/', user.logout, name='user_logout'),
     path('user/', user.detail, name='user'),
 
-    path('home/', suite_result.list_, name='home'),
+    path('home/', suite.list_, name='home'),
 
     path('suites/', suite.list_, name='suites'),
     path('suites/multiple_delete/', suite.multiple_delete, name='suites_multiple_delete'),

@@ -2,6 +2,9 @@
     <div class="container-fluid">
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav">
+                <li class="nav-item" id="nav_suite">
+                    <a class="nav-link" href="{% url 'suites' %}">套件</a>
+                </li>
                 <li class="nav-item" id="nav_case">
                     <a class="nav-link" href="{% url 'cases' %}">用例</a>
                 </li>
@@ -16,9 +19,6 @@
                 </li>
                 <li class="nav-item" id="nav_element">
                     <a class="nav-link" href="{% url 'element_groups' %}">元素组</a>
-                </li>
-                <li class="nav-item" id="nav_suite">
-                    <a class="nav-link" href="{% url 'suites' %}">套件</a>
                 </li>
                 <li class="nav-item" id="nav_result">
                     <a class="nav-link" href="{% url 'results' %}">结果</a>
