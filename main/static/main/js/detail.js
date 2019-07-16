@@ -84,7 +84,6 @@ function update_action_dropdown(success, data) {
 	}
 }
 
-
 function m2m_detail_popup(title, url, parent_project) {
 	if (parent_project) { url=url+'&parent_project='+parent_project }
 	modal_with_iframe_max('inside_detail_modal', title, url, '', update_m2m_objects)
@@ -111,6 +110,80 @@ function update_m2m_selected_index_and_field($input, title, multiple_select) {
 	update_m2m_muliple_selected(multiple_select);
 }
 
+// 获取连续选中的行
+function get_consecutive_line(order, start, end, muliple_selected_id, table_id) {
+	var consecutive_start = order;
+	var consecutive_end = order;
+
+	var old_selected_elements_before = [];
+	var _start = order - 1;
+
+	while (_start >= start) {
+		var _break = true;
+		$.each(muliple_selected_id, function (i, v) {
+			if (parseInt(v.order)===_start) {
+				_break = false;
+				old_selected_elements_before.push($('#' + table_id +' tr[order=' + v.order + ']'));
+				return false;
+			}
+		});
+		if (_break) { break; }
+		consecutive_start = _start;
+		_start -= 1
+	}
+
+	var old_selected_elements_after = [];
+	var _end = order + 1;
+
+	while (_end <= end) {
+		var _break = true;
+		$.each(muliple_selected_id, function (i, v) {
+			if (parseInt(v.order)===_end) {
+				_break = false;
+				old_selected_elements_after.push($('#' + table_id +' tr[order=' + v.order + ']'));
+				return false;
+			}
+		});
+		if (_break) { break; }
+		consecutive_end = _end;
+		_end += 1
+	}
+	return [old_selected_elements_before, old_selected_elements_after, consecutive_start, consecutive_end]
+}
+
+// 拖动排序连续选中的行
+function order_consecutive_line(old_muliple_selected_id, item, table_id, update_function) {
+	var old_start = parseInt(old_muliple_selected_id[0].order);
+	var old_end = parseInt(old_muliple_selected_id[old_muliple_selected_id.length-1].order);
+	var old_order = parseInt(item.attr('order'));
+
+	if (old_start <= old_order && old_order <= old_end) {
+
+		var consecutive_line_result = get_consecutive_line(old_order, old_start, old_end, old_muliple_selected_id, table_id);
+		var old_selected_elements_before = consecutive_line_result[0];
+		var old_selected_elements_after = consecutive_line_result[1];
+		var consecutive_start = consecutive_line_result[2];
+		var consecutive_end = consecutive_line_result[3];
+
+		update_function();
+		var new_order = parseInt(item.attr('order'));
+
+		if (new_order < consecutive_start || new_order > consecutive_end) {
+			var target_tr = item;
+			$.each(old_selected_elements_before, function (i, v) {
+				target_tr.before(v);
+				target_tr = v;
+			});
+
+			target_tr = item;
+			$.each(old_selected_elements_after, function (i, v) {
+				target_tr.after(v);
+				target_tr = v;
+			});
+		}
+	}
+}
+
 // 处理m2m拖动及排序
 function m2m_handle($input, title) {
 	if (!window.editable) { return }
@@ -128,32 +201,12 @@ function m2m_handle($input, title) {
 				from_all_table = true;
 				ui.item.removeClass('from_all_table');
 			}
-            // 如果拖动的是连续的多选，将进行整体移动
-			if (!from_all_table && m2m_muliple_selected_id.length > 1) { //  && m2m_muliple_selected_id.indexOf(ui.item.attr('order')) > -1
-				var old_muliple_selected_id = window.m2m_muliple_selected_id;
-				var old_start = parseInt(m2m_muliple_selected_id[0].order);
-				var old_end = parseInt(m2m_muliple_selected_id[m2m_muliple_selected_id.length-1].order);
-				var old_order = parseInt(ui.item.attr('order'));
-
-				if (old_start <= old_order && old_order <= old_end && old_end === old_start+m2m_muliple_selected_id.length-1) {
-					var old_selected_element = [];
-					$.each(old_muliple_selected_id, function (i, v) {
-                       	old_selected_element.push($('#m2m_selected_table tr[order=' + v.order + ']'))
-                    });
-                    update_m2m_selected_index_and_field($input, title);
-                    var new_order = parseInt(ui.item.attr('order'));
-
-                    if (new_order < old_start || new_order > old_end) {
-						var target_tr = ui.item;
-						do {
-							var tr = old_selected_element.pop();
-							target_tr.before(tr);
-							target_tr = tr;
-						} while(old_selected_element.length);
-                    }
-				}
+			function update_function() { update_m2m_selected_index_and_field($input, title) }
+            // 如果拖动的不是新添加的，且选中了多条
+			if (!from_all_table && window.m2m_muliple_selected_id.length > 1) {
+				order_consecutive_line(window.m2m_muliple_selected_id, ui.item, 'm2m_selected_table', update_function)
 			}
-			update_m2m_selected_index_and_field($input, title);
+			update_function();
 		}
 	});
 	$('#m2m_selected_table tbody').droppable({
@@ -169,6 +222,46 @@ function m2m_handle($input, title) {
 		hoverClass: 'ui-state-hover',
 		accept: '#m2m_selected_table tr:not([placeholder])',
 		drop: function (event, ui) {
+			if (window.m2m_muliple_selected_id.length > 1) {
+                var old_muliple_selected_id = window.m2m_muliple_selected_id;
+                var old_start = parseInt(m2m_muliple_selected_id[0].order);
+                var old_end = parseInt(m2m_muliple_selected_id[m2m_muliple_selected_id.length - 1].order);
+                var old_order = parseInt(ui.draggable.attr('order'));
+				var consecutive_line_result = get_consecutive_line(old_order, old_start, old_end, old_muliple_selected_id, 'm2m_selected_table');
+				var old_selected_elements_before = consecutive_line_result[0];
+				var old_selected_elements_after = consecutive_line_result[1];
+				var other_consecutive_elements = old_selected_elements_before.length + old_selected_elements_after.length;
+				if (other_consecutive_elements > 0) {
+					var msg = '需要同时移除其余<span class="mark">' + other_consecutive_elements + '</span>个被连续选中的对象吗？';
+					bootbox.confirm({
+						title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
+						message: msg,
+						size: 'large',
+						backdrop: true,
+						buttons: {
+							confirm: {
+								label: '<i class="icon-trash">&nbsp;</i>确定',
+								className: 'btn-danger'
+							},
+							cancel: {
+								label: '<i class="icon-undo">&nbsp;</i>取消',
+								className: 'btn-secondary'
+							}
+						},
+						callback: function (result) {
+							if (result === true) {
+								$.each(old_selected_elements_before, function (i, v) {
+									v.remove();
+								});
+
+								$.each(old_selected_elements_after, function (i, v) {
+									v.remove();
+								});
+							}
+						}
+					});
+				}
+            }
 			ui.draggable.remove();
 			if ($('#m2m_selected_table tbody tr').length <= 1) {
 				$('#m2m_selected_table tbody').append($('<tr placeholder><td colspan=' + $('#m2m_selected_table thead th').length + ' class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>'));

@@ -7,32 +7,12 @@ function sortable_variable() {
 		handle: "[moveable]",
 		placeholder: 'ui-state-highlight',
 		stop: function( event, ui ) {
-			// 如果拖动的是连续的多选，将进行整体移动
+			function update_function() { update_variable_index_and_field() }
+			// 如果选中了多条
 			if (sub_muliple_selected_id.length > 1) {
-				var old_muliple_selected_id = window.sub_muliple_selected_id;
-				var old_start = parseInt(sub_muliple_selected_id[0].order);
-				var old_end = parseInt(sub_muliple_selected_id[sub_muliple_selected_id.length-1].order);
-				var old_order = parseInt(ui.item.attr('order'));
-
-				if (old_start <= old_order && old_order <= old_end && old_end === old_start+sub_muliple_selected_id.length-1) {
-					var old_selected_element = [];
-					$.each(old_muliple_selected_id, function (i, v) {
-                       	old_selected_element.push($('#variable_table tr[order=' + v.order + ']'))
-                    });
-                    update_variable_index_and_field();
-                    var new_order = parseInt(ui.item.attr('order'));
-
-                    if (new_order < old_start || new_order > old_end) {
-						var target_tr = ui.item;
-						do {
-							var tr = old_selected_element.pop();
-							target_tr.before(tr);
-							target_tr = tr;
-						} while(old_selected_element.length);
-                    }
-				}
+				order_consecutive_line(window.sub_muliple_selected_id, ui.item, 'variable_table', update_function)
 			}
-			update_variable_index_and_field();
+			update_function();
 		}
 	});
 }

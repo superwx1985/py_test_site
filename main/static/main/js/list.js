@@ -150,33 +150,33 @@ function bind_multiple_delete_button() {
         var url = window.multiple_delete_url;
         var json_str = JSON.stringify(window.muliple_selected_id);
         var msg = '要删除<span class="mark">' + window.muliple_selected_id.length + '</span>个对象吗？<span class="text-danger">（系统将自动跳过无删除权限的对象）</span>';
-            bootbox.confirm({
-                title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
-                message: msg,
-                size: 'large',
-                backdrop: true,
-                buttons: {
-                    confirm: {
-                        label: '<i class="icon-trash">&nbsp;</i>确定',
-                        className: 'btn-danger'
-                    },
-                    cancel: {
-                        label: '<i class="icon-undo">&nbsp;</i>取消',
-                        className: 'btn-secondary'
-                    }
+        bootbox.confirm({
+            title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
+            message: msg,
+            size: 'large',
+            backdrop: true,
+            buttons: {
+                confirm: {
+                    label: '<i class="icon-trash">&nbsp;</i>确定',
+                    className: 'btn-danger'
                 },
-                callback: function (result) {
-                    if (result === true) {
-                        $.post(url, {'csrfmiddlewaretoken': csrf_token, 'pk_list': json_str}, function(data) {
-                            if (data.state === 1) {
-                                $('#objects_form').submit();
-                            } else {
-                                bootbox.alert('<span class="text-danger">'+data.message+'</span>');
-                            }
-                        });
-                    }
+                cancel: {
+                    label: '<i class="icon-undo">&nbsp;</i>取消',
+                    className: 'btn-secondary'
                 }
-            });
+            },
+            callback: function (result) {
+                if (result === true) {
+                    $.post(url, {'csrfmiddlewaretoken': csrf_token, 'pk_list': json_str}, function(data) {
+                        if (data.state === 1) {
+                            $('#objects_form').submit();
+                        } else {
+                            bootbox.alert('<span class="text-danger">'+data.message+'</span>');
+                        }
+                    });
+                }
+            }
+        });
     });
 }
 
