@@ -6,7 +6,7 @@ function bind_m2m_multiple_import_button() {
 }
 
 // m2m导入对象
-function m2m_multiple_import_obj() {
+function m2m_multiple_import_obj(name_prefix, project, text, no_project) {
 	var url = window.m2m_multiple_import_url;
 
     var title = '<i class="icon-exclamation-sign">&nbsp;</i>' + '导入seleniumIDE生成的XML格式用例';
@@ -15,27 +15,49 @@ function m2m_multiple_import_obj() {
     var case_name = $('#id_name').val();
     var div = $('<div>请输入导入后对象的名称前缀</div>');
     body.append(div);
-    var input = $('<input class="form-control" autocomplete="off" type="text" id="copy_obj_name">').attr('value', '【' + now + ' 导入】' + case_name);
+    var input = $('<input class="form-control" autocomplete="off" type="text" id="copy_obj_name">');
+    if (name_prefix){
+        input.attr('value', name_prefix);
+    } else {
+        input.attr('value', '【' + now + ' 导入】' + case_name);
+    }
     body.append(input);
 
     div = $('<div>请选择导入后对象所属的项目</div>');
     body.append(div);
     var select = $('#id_project');
     var new_select = select.clone();
-    new_select.val(select.val());
-	body.append(new_select);
+    new_select.attr('id', 'new_' + new_select.attr('id'));
+    if (typeof(project)==='undefined') {
+        new_select.val(select.val());
+    } else {
+        new_select.val(project);
+    }
+    body.append(new_select);
+    if (no_project) {
+        new_select.addClass('is-invalid');
+        new_select.after($('<div class="invalid-feedback">这个字段是必填项。</div>'))
+    }
 
     body.append($('<br>'));
     div = $('<div>请粘贴seleniumIDE生成的XML格式用例，对象将被添加到当前选中的最后一行下面</div>');
     body.append(div);
-    var textarea = $('<textarea class="form-control" rows="10" wrap="off">');
+    var textarea = $('<textarea class="form-control" rows="10" wrap="off" id="aa111">');
+    if (text) { textarea.text(text) }
     body.append(textarea);
 
     var buttons = {
 		import: {
 			label: '<span title="导入步骤"><i class="icon-primary">&nbsp;</i>导入</span>',
 			className: 'btn btn-primary',
-			callback: function () { callback_m2m_multiple_import_obj(url, $('#copy_obj_name').val(), new_select.val(), textarea.val()) }
+			callback: function () {
+			    if (new_select.val()) {
+			        callback_m2m_multiple_import_obj(url, input.val(), new_select.val(), textarea.val())
+                } else {
+			        m2m_multiple_import_obj(input.val(), new_select.val(), textarea.val(), 1)
+                }
+
+			}
 		}
 	};
 
