@@ -2,6 +2,7 @@ import json
 import logging
 import copy
 import uuid
+import re
 from django.http import HttpResponseRedirect, JsonResponse, Http404
 from django.shortcuts import render
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -10,12 +11,13 @@ from django.db.models import Q, CharField, Value, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from main.models import Step
+from main.models import Step, Action, Project
 from main.forms import OrderByForm, PaginatorForm, StepForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
 from urllib.parse import quote
 from main.views import case
 from utils import other
+import xml.sax.handler
 
 logger = logging.getLogger('django.request')
 
@@ -456,3 +458,172 @@ def reference(request, pk):
         obj_['order'] = obj_['casevsstep__order']
     return render(request, 'main/include/detail_reference.html', locals())
 
+
+# 把Robot Framework的by转成本平台可以识别的by
+rf_by_dict = {
+    'id': 1,
+    'xpath': 2,
+    'link': 3,
+    'name': 5,
+    'tag name': 6,
+    'class name': 7,
+    'css selector': 8,
+}
+
+
+# 批量导入
+@login_required
+def multiple_import(request):
+    if request.method == 'POST':
+        try:
+            name_prefix = request.POST.get('name_prefix', '')
+            data_text = request.POST.get('data_text')
+            project = request.POST.get('project')
+
+            project = Project.objects.get(pk=project)
+            re_result = re.findall('<\?.*?\?>', data_text)  # 去除声明行
+            print(re_result)
+            if re_result:
+                for r in re_result:
+                    data_text = data_text.replace(r, '')
+            new_pk_list = list()
+            sxh = SeleniumXMLHandler()
+            try:
+                xml.sax.parseString(data_text, sxh)
+            except Exception as e:
+                raise ValueError('XML格式错误：{}'.format(e))
+            s_list = sxh.get_seleneses()
+            i = 0
+
+            for s in s_list:
+                i += 1
+                action = s['command']
+                name = '{}_{}_{}'.format(name_prefix, i, action)
+                s_json = json.dumps(s, indent=4, ensure_ascii=False)
+                new_step = Step(
+                    name=name, description=s_json, project=project, creator=request.user, modifier=request.user)
+
+                err = None
+                if action == 'open':
+                    new_step.action = Action.objects.get(code='UI_GO_TO_URL')
+                    new_step.ui_data = s['target']
+
+                elif action == 'click':
+                    new_step.action = Action.objects.get(code='UI_CLICK')
+                    target = s['target']
+                    target_list = target.split('=', 1)
+                    try:
+                        new_step.ui_by = rf_by_dict.get(target_list[0])
+                        if not new_step.ui_by:
+                            err = '无法识别的定位方式【{}】'.format(target_list[0])
+                        else:
+                            new_step.ui_locator = target_list[1]
+                    except IndexError:
+                        err = '缺少定位数据'
+
+                elif action == 'type':
+                    new_step.action = Action.objects.get(code='UI_ENTER')
+                    target = s['target']
+                    target_list = target.split('=', 1)
+                    try:
+                        new_step.ui_by = rf_by_dict.get(target_list[0])
+                        if not new_step.ui_by:
+                            err = '无法识别的定位方式【{}】'.format(target_list[0])
+                        else:
+                            new_step.ui_locator = target_list[1]
+                    except IndexError:
+                        err = '缺少定位数据'
+                    new_step.ui_data = s['value']
+
+                elif action == 'select':
+                    new_step.action = Action.objects.get(code='UI_SELECT')
+                    target = s['target']
+                    target_list = target.split('=', 1)
+                    try:
+                        new_step.ui_by = rf_by_dict.get(target_list[0])
+                        if not new_step.ui_by:
+                            err = '无法识别的定位方式【{}】'.format(target_list[0])
+                        else:
+                            new_step.ui_locator = target_list[1]
+                    except IndexError:
+                        err = '缺少定位数据'
+                    value = s['value']
+                    value_list = value.split('=', 1)
+                    try:
+                        value_by = value_list[0]
+                        value_value = value_list[1]
+                        select_list = list()
+                        select_dict = dict()
+                        if value_by == 'label':
+                            select_dict['select_by'] = 'text'
+                            select_dict['select_value'] = value_value
+                            select_list.append(select_dict)
+                            new_step.ui_data = json.dumps(select_list)
+                        else:
+                            err = '无法识别的选择方式'.format(value_by)
+                    except IndexError:
+                        err = '数据错误'
+
+                elif action == 'selectFrame':
+                    new_step.action = Action.objects.get(code='UI_SWITCH_TO_FRAME')
+                    target = s['target']
+                    target_list = target.split('=', 1)
+                    try:
+                        if target_list[0] == 'index':
+                            new_step.ui_index = target_list[1]
+                        elif target_list[0] == 'relative' and target_list[1] == 'parent':
+                            new_step.action = Action.objects.get(code='UI_SWITCH_TO_DEFAULT_CONTENT')
+                        else:
+                            err = '无法识别的切换框架方式'.format(target_list[0])
+                    except IndexError:
+                        err = '数据错误'
+
+                elif action == 'selectWindow':
+                    new_step.action = Action.objects.get(code='UI_SWITCH_TO_WINDOW')
+                    new_step.ui_data = s['target']
+
+                elif action == 'close':
+                    new_step.action = Action.objects.get(code='UI_CLOSE_WINDOW')
+
+                else:
+                    err = '未知动作【{}】，无法处理'.format(action)
+
+                if err:
+                    logger.warning(err)
+                    new_step.name = '{}_导入出错'.format(new_step.name)
+                    new_step.description = '{}\n{}'.format(new_step.description, err)
+                new_step.save()
+                new_pk_list.append(new_step.pk)
+
+        except Exception as e:
+            return JsonResponse({'state': 2, 'message': str(e), 'data': None})
+        return JsonResponse({'state': 1, 'message': 'OK', 'data': new_pk_list})
+    else:
+        return JsonResponse({'state': 2, 'message': 'Only accept "POST" method', 'data': []})
+
+
+# 读取selenium IDE生成的XML
+class SeleniumXMLHandler(xml.sax.handler.ContentHandler):
+
+    def __init__(self):
+        super().__init__()
+        self.selenese = dict()
+        self.seleneses = list()
+        self.buffer = ''
+
+    def startElement(self, name, attributes):
+        self.buffer = ''
+        if name == 'selenese':
+            self.selenese = dict()
+
+    def characters(self, data):
+        self.buffer += data
+
+    def endElement(self, name):
+        if name == 'selenese':
+            self.seleneses.append(self.selenese)
+        else:
+            self.selenese[name] = self.buffer
+
+    def get_seleneses(self):
+        return self.seleneses

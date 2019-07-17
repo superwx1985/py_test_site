@@ -86,6 +86,7 @@ urlpatterns = [
     path('steps/', step.list_, name='steps'),
     path('steps/multiple_delete/', step.multiple_delete, name='steps_multiple_delete'),
     path('steps/multiple_copy/', step.multiple_copy, name='steps_multiple_copy'),
+    path('steps/multiple_import/', step.multiple_import, name='steps_multiple_import'),
     path('steps/add/', step.add, name='steps_add'),
     path('steps/list_json/', step.list_json, name='steps_list_json'),
     path('steps/list_temp/', step.list_temp, name='steps_list_temp'),

@@ -461,7 +461,7 @@ function callback_copy_obj_sub_item(copy_url, name_prefix, order) {
 	bootbox.dialog({
 		size: 'large',
 		title: '<i class="icon-exclamation-sign">&nbsp;</i>请再次确认',
-		message: '复制对象包含的所有子对象，将生成大量数据，可能会耗费较长时间。请确认您了解此操作的含义。',
+		message: '复制对象包含的所有子对象，将生成大量数据，可能耗费较长时间。请确认您了解此操作的含义。',
 		buttons: {
 			cancel: {
 				label: '<i class="icon-undo">&nbsp;</i>取消',
@@ -616,7 +616,7 @@ function bind_m2m_multiple_delete_button() {
 // m2m批量复制对象
 function m2m_multiple_copy_obj(text) {
     var msg = '当前选择了<span class="mark">' + window.m2m_muliple_selected_id.length + '</span>个对象，请复制下列对象文本';
-    var textarea = $('<textarea class="form-control" rows="5">').val(text);
+    var textarea = $('<textarea class="form-control" rows="10">').val(text);
 	var copy_button = $('<button class="btn btn-warning"><i class="icon-copy">&nbsp;</i>复制文本</button>');
 	copy_button.off('click').on('click', function () {
 		textarea.select();
@@ -683,7 +683,7 @@ function m2m_multiple_paste_obj_link_to_list(data) {
 // m2m批量粘贴对象
 function m2m_multiple_paste_obj() {
     var msg = '请粘贴对象文本然后点击生成，对象将被添加到当前选中的最后一行下面';
-    var textarea = $('<textarea class="form-control" rows="5">');
+    var textarea = $('<textarea class="form-control" rows="10">');
     var buttons = {
 		copy_link: {
 			label: '<span title="批量生成子对象链接"><i class="icon-link">&nbsp;</i>生成链接</span>',
@@ -731,7 +731,7 @@ function m2m_multiple_paste_obj_item_to_list(data) {
     }
     var body = $('<div>').addClass('modal-body');
     var now = new Date().Format("yyyy-MM-dd HH:mm:ss");
-    var div = $('<div>准备复制<span class="mark">' + objs.length + '</span>个对象。请输入复制后对象的名称前缀：</div>');
+    var div = $('<div>准备复制<span class="mark">' + objs.length + '</span>个对象。请输入复制后对象的名称前缀</div>');
     var pk_list = [];
     $.each(objs, function (i, v) {
 		pk_list.push(v.pk);
@@ -739,7 +739,6 @@ function m2m_multiple_paste_obj_item_to_list(data) {
     pk_list = JSON.stringify(pk_list);
 
     body.append(div);
-    body.append($('<br>'));
     var input = $('<input class="form-control" autocomplete="off" type="text" id="copy_obj_name">').attr('value', '【' + now + ' 复制】');
     body.append(input);
     var url = window.m2m_multiple_copy_url;
@@ -754,7 +753,7 @@ function m2m_multiple_paste_obj_item_to_list(data) {
             callback: function () { callback_m2m_multiple_copy_obj(url, $('#copy_obj_name').val(), pk_list) }
         },
         copy_sub_item: {
-            label: '<span title="复制对象包含的所有子对象，将生成大量数据，可能会耗费较长时间。请确认您了解此操作的含义。"><i class="icon-copy">&nbsp;</i>复制子对象</span>',
+            label: '<span title="复制对象包含的所有子对象，将生成大量数据，可能耗费较长时间。请确认您了解此操作的含义。"><i class="icon-copy">&nbsp;</i>复制子对象</span>',
             className: 'btn btn-warning-dark',
             callback: function () { callback_m2m_multiple_copy_obj_sub_item(url, $('#copy_obj_name').val(), pk_list) }
         }
@@ -781,7 +780,7 @@ function callback_m2m_multiple_copy_obj_sub_item(url, name_prefix, pk_list) {
 	bootbox.dialog({
 		size: 'large',
 		title: '<i class="icon-exclamation-sign">&nbsp;</i>请再次确认',
-		message: '复制对象包含的所有子对象，将生成大量数据，可能会耗费较长时间。请确认您了解此操作的含义。',
+		message: '复制对象包含的所有子对象，将生成大量数据，可能耗费较长时间。请确认您了解此操作的含义。',
 		buttons: {
 			cancel: {
 				label: '<i class="icon-undo">&nbsp;</i>取消',

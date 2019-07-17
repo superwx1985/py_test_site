@@ -185,9 +185,8 @@ function bind_multiple_copy_button() {
     $('#multiple_copy_button').off('click').click(function () {
         var body = $('<div>').addClass('modal-body');
         var now = new Date().Format("yyyy-MM-dd HH:mm:ss");
-        var div = $('<div>准备复制<span class="mark">' + window.muliple_selected_id.length + '</span>个对象。请输入复制后对象的名称前缀：</div>');
+        var div = $('<div>准备复制<span class="mark">' + window.muliple_selected_id.length + '</span>个对象。请输入复制后对象的名称前缀</div>');
         body.append(div);
-        body.append($('<br>'));
         var input = $('<input class="form-control" autocomplete="off" type="text" id="copy_obj_name">').attr('value', '【' + now + ' 复制】');
         body.append(input);
         var url = window.multiple_copy_url;
@@ -203,7 +202,7 @@ function bind_multiple_copy_button() {
                     callback: function () { callback_multiple_copy_obj(url, $('#copy_obj_name').val()) }
                 },
                 copy_sub_item: {
-                    label: '<span title="复制对象包含的所有子对象，将生成大量数据，可能会耗费较长时间。请确认您了解此操作的含义。"><i class="icon-copy">&nbsp;</i>复制子对象</span>',
+                    label: '<span title="复制对象包含的所有子对象，将生成大量数据，可能耗费较长时间。请确认您了解此操作的含义。"><i class="icon-copy">&nbsp;</i>复制子对象</span>',
                     className: 'btn btn-warning-dark',
                     callback: function () { callback_multiple_copy_obj_sub_item(url, $('#copy_obj_name').val()) }
                 }
@@ -372,7 +371,7 @@ function callback_copy_obj_sub_item(copy_url, name_prefix) {
     bootbox.dialog({
 		size: 'large',
 		title: '<i class="icon-exclamation-sign">&nbsp;</i>请再次确认',
-		message: '复制对象包含的所有子对象，将生成大量数据，可能会耗费较长时间。请确认您了解此操作的含义。',
+		message: '复制对象包含的所有子对象，将生成大量数据，可能耗费较长时间。请确认您了解此操作的含义。',
 		buttons: {
 			cancel: {
 				label: '<i class="icon-undo">&nbsp;</i>取消',
@@ -410,7 +409,7 @@ function callback_multiple_copy_obj_sub_item(url, name_prefix) {
     bootbox.dialog({
 		size: 'large',
 		title: '<i class="icon-exclamation-sign">&nbsp;</i>请再次确认',
-		message: '复制对象包含的所有子对象，将生成大量数据，可能会耗费较长时间。请确认您了解此操作的含义。',
+		message: '复制对象包含的所有子对象，将生成大量数据，可能耗费较长时间。请确认您了解此操作的含义。',
 		buttons: {
 		    cancel: {
 				label: '<i class="icon-undo">&nbsp;</i>取消',

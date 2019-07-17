@@ -379,7 +379,7 @@ function bind_sub_multiple_delete_button() {
 // 批量复制对象
 function sub_multiple_copy_obj(text) {
     var msg = '当前选择了<span class="mark">' + window.sub_muliple_selected_id.length + '</span>个对象，请复制下列对象文本';
-    var textarea = $('<textarea class="form-control" rows="5">').val(text);
+    var textarea = $('<textarea class="form-control" rows="10">').val(text);
 	var copy_button = $('<button class="btn btn-warning"><i class="icon-copy">&nbsp;</i>复制文本</button>');
 	copy_button.off('click').on('click', function () {
 		textarea.select();
@@ -442,7 +442,7 @@ function sub_multiple_paste_obj_link_to_list(data) {
 // 批量粘贴对象
 function sub_multiple_paste_obj() {
     var msg = '请粘贴对象文本然后点击生成，对象将被添加到当前选中的最后一行下面';
-    var textarea = $('<textarea class="form-control" rows="5">');
+    var textarea = $('<textarea class="form-control" rows="10">');
     var buttons = {
 		accept: {
 			label: '<i class="icon-plus">&nbsp;</i>生成',

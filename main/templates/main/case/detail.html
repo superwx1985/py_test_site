@@ -1,4 +1,5 @@
 {% extends 'main/detail_base.html' %}
+{% load staticfiles %}
 {% block title %}
     {% if form.initial.name %}
         {{ form.initial.name }} - 用例 - {{ block.super }}
@@ -21,8 +22,11 @@
             window.$m2m_input = $('input[name=step]');
             // 获取m2m批量复制地址
             window.m2m_multiple_copy_url="{% url 'steps_multiple_copy' %}";
+            // 获取m2m导入地址
+            window.m2m_multiple_import_url="{% url 'steps_multiple_import' %}";
         })
     </script>
+    <script src="{% static 'main/js/detail_case.js' %}"></script>
 {% endblock %}
 
 {% block script %}
@@ -61,6 +65,8 @@
             $('#clear_button').off('click').on('click', function() { window.not_go_to_first_page = 0; $('input[name=search_text]').val(''); $('select[name=search_project]').val(''); $('#search_button').click() });
             // 如果手动修改了页码，提交时不返回首页
             $('input[name=page]').off('change').on('change', function() { window.not_go_to_first_page = 1 });
+            // 注册m2m导入按钮
+            bind_m2m_multiple_import_button();
         });
         // 获取变量组下拉项
         function variable_group_select(selected_pk) {
@@ -284,6 +290,7 @@
                             <button type="button" id="m2m_multiple_delete_button" class="btn btn-danger" disabled="disabled"><i class="icon-trash"></i>&nbsp;批量移除</button>
                             <button type="button" id="m2m_multiple_copy_obj_button" class="btn btn-warning" disabled="disabled"><i class="icon-copy"></i>&nbsp;批量复制步骤</button>
                             <button type="button" id="m2m_multiple_paste_obj_button" class="btn btn-info"><i class="icon-paste"></i>&nbsp;批量生成步骤</button>
+                            <button type="button" id="m2m_multiple_import_button" class="btn btn-success"><i class="icon-upload"></i>&nbsp;导入XML格式用例</button>
                         </div>
                     </div>
                 </div>
