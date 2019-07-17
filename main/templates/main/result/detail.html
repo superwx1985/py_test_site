@@ -47,25 +47,25 @@
     <form method="post" id="object_form" novalidate>
         {% csrf_token %}
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">名称</div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.name.required %}*{% endif %}名称</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.name %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">描述</div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.description.required %}*{% endif %}描述</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.description rows='3' %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">关键字</div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.keyword.required %}*{% endif %}关键字</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.keyword %}
             </div>
         </div>
         <div class="row align-items-center" base>
-            <div class="col-1 text-center font-weight-bold">项目</div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.project.required %}*{% endif %}项目</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.project %}
             </div>
@@ -96,7 +96,7 @@
         <div class="col-1 text-center font-weight-bold">错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。如果用例或步骤单独设置了处理方式，将使用步骤的值"></i></div>
         <div class="col" form_data>
             <select name="error_handle" class="form-control" id="id_error_handle" disabled>
-              <option value="0"></option>
+              <option value="0">继承上级</option>
               <option value="1">中止测试</option>
               <option value="2">继续测试</option>
               <option value="3">暂停测试</option>

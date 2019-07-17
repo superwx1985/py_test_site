@@ -13,7 +13,7 @@ result_state_list = (
 )
 
 error_handle_list_ = (
-    (0, '', None),
+    (0, '继承上级', None),
     (1, '中止测试', 'stop'),
     (2, '继续测试', 'continue'),
     (3, '暂停测试', 'pause'),

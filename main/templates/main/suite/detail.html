@@ -175,49 +175,49 @@
     <form method="post" id="object_form" novalidate>
         {% csrf_token %}
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">名称</div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.name.required %}*{% endif %}名称</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.name %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">描述</div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.description.required %}*{% endif %}描述</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.description rows='3' %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">关键字</div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.keyword.required %}*{% endif %}关键字</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.keyword %}
             </div>
         </div>
         <div class="row align-items-center" base>
-            <div class="col-1 text-center font-weight-bold">项目</div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.project.required %}*{% endif %}项目</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.project %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。如果用例或步骤单独设置了处理方式，将使用步骤的值"></i></div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.error_handle.required %}*{% endif %}错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。如果用例或步骤单独设置了处理方式，将使用步骤的值"></i></div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.error_handle %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该套件内每一步骤的默认超时值（单位：秒）。如果用例或步骤单独设置了超时值，将使用用例或步骤的值"></i></div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.timeout.required %}*{% endif %}超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该套件内每一步骤的默认超时值（单位：秒）。如果用例或步骤单独设置了超时值，将使用用例或步骤的值"></i></div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.timeout %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。如果用例或步骤单独设置了间隔时间，将使用用例或步骤的值"></i></div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.ui_step_interval.required %}*{% endif %}UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。如果用例或步骤单独设置了间隔时间，将使用用例或步骤的值"></i></div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.ui_step_interval %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">自动截图&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="UI测试运行出错以及遇到验证步骤时是否自动截图"></i></div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.ui_get_ss.required %}*{% endif %}自动截图&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="UI测试运行出错以及遇到验证步骤时是否自动截图"></i></div>
             <div class="col" form_data>
                 {{ form.ui_get_ss }}
                 {% for error in form.ui_get_ss.errors %}
@@ -226,19 +226,19 @@
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">日志级别&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试的日志详细程度，选择DEV将不会自动关闭浏览器"></i></div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.log_level.required %}*{% endif %}日志级别&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试的日志详细程度，选择DEV将不会自动关闭浏览器"></i></div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.log_level %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">测试线程数&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="并发运行的用例数量，可加快测试速度，但会打乱用例执行顺序，导致一些意外情况。此设置还受限于服务器设置的最大线程数，所有用户将共享测试线程池"></i></div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.thread_count.required %}*{% endif %}测试线程数&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="并发运行的用例数量，可加快测试速度，但会打乱用例执行顺序，导致一些意外情况。此设置还受限于服务器设置的最大线程数，所有用户将共享测试线程池"></i></div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.thread_count %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">测试配置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的配置项，如果用例单独设置了配置，将使用用例的值"></i></div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.config.required %}*{% endif %}测试配置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的配置项，如果用例单独设置了配置，将使用用例的值"></i></div>
             <div class="col" form_data>
                 <div id="config_dropdown" name="config"></div>
                 {% for error in form.config.errors %}
@@ -247,7 +247,7 @@
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">公共变量组&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的公共变量组。如果用例中单独设置了变量组，或测试过程中定义了同名变量，将使用用例变量代替公共变量"></i></div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.variable_group.required %}*{% endif %}公共变量组&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的公共变量组。如果用例中单独设置了变量组，或测试过程中定义了同名变量，将使用用例变量代替公共变量"></i></div>
             <div class="col" form_data>
                 <div id="variable_group_dropdown" name="variable_group"></div>
                 {% for error in form.variable_group.errors %}
@@ -256,7 +256,7 @@
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">公共元素组&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的公共元素组。"></i></div>
+            <div class="col-1 text-center font-weight-bold">{% if form.fields.element_group.required %}*{% endif %}公共元素组&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的公共元素组。"></i></div>
             <div class="col" form_data>
                 <div id="element_group_dropdown" name="element_group"></div>
                 {% for error in form.element_group.errors %}
