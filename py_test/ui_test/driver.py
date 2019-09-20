@@ -1,5 +1,4 @@
 import logging
-import threading
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.remote.remote_connection import RemoteConnection
@@ -10,12 +9,14 @@ def get_driver_(config, execute_str, logger=logging.getLogger('py_test')):
     dr = None
     try:
         chrome_options = webdriver.ChromeOptions()
-        chrome_options._arguments = [
-            'test-type',
-            "start-maximized",
-            "no-default-browser-check",
-            "disable-infobars",
-        ]
+        chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'],)
+        chrome_options.add_argument('start-maximized')
+        # chrome_options._arguments = [
+        #     'test-type',
+        #     "start-maximized",
+        #     "no-default-browser-check",
+        #     "disable-infobars",
+        # ]
         if config.ui_selenium_client == 1:  # 本地
             if config.ui_driver_type == 1:  # Chrome
                 dr = webdriver.Chrome(options=chrome_options)

@@ -18,7 +18,7 @@ if not os.path.exists(LOG_DIR):
 SECRET_KEY = '-8=0r94)m^&x^v7)886@@&iq$2aa*#8@d)dji+x)o(5l1a4dui'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
@@ -74,29 +74,29 @@ WSGI_APPLICATION = 'py_test_site.wsgi.application'
 
 # sqlite3 数据库
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'debug_db/db.sqlite3'),
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'debug_db/db.sqlite3'),
+    }
+}
 
 # mysql 数据库
 
-import pymysql
-pymysql.install_as_MySQLdb()  # mysql改用pymysql驱动
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'py_test_site',
-        'HOST': '127.0.0.1',
-        # 'HOST': '192.192.185.140',
-        'PORT': '3306',
-        'USER': 'py_test_site',
-        'PASSWORD': 'py_test_site',
-    }
-}
+# import pymysql
+# pymysql.install_as_MySQLdb()  # mysql改用pymysql驱动
+#
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'py_test_site',
+#         'HOST': '127.0.0.1',
+#         # 'HOST': '192.192.185.140',
+#         'PORT': '3306',
+#         'USER': 'py_test_site',
+#         'PASSWORD': 'py_test_site',
+#     }
+# }
 
 
 # Password validation
@@ -290,7 +290,7 @@ LOGGING = {
         # 'django.channels': {
         #     'level': log_level,
         # },
-        # daphne服务日志
+        # daphne日志
         'daphne': {
             'handlers': ['server', 'console_normal', 'console_warning'],
             'level': log_level,
@@ -309,10 +309,10 @@ LOGGING = {
 ASGI_APPLICATION = 'py_test_site.routing.application'
 
 # 站点名称
-SITE_NAME = '汇智自动化测试平台'
+SITE_NAME = 'VIC自动化测试平台'
 
 # 站点版本
-SITE_VERSION = 'V1.14.20190717.01'
+SITE_VERSION = 'V1.14.20190920.01'
 
 # 最大并行测试线程数
 SUITE_MAX_CONCURRENT_EXECUTE_COUNT = 8
