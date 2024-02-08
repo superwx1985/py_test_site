@@ -3,7 +3,7 @@ import json
 import datetime
 import threading
 import logging
-import cx_Oracle
+import oracledb
 import pymysql
 from py_test.vic_tools import vic_find_object
 
@@ -21,25 +21,26 @@ def makedict(cursor):
 def get_sql_result(vic_step):
     select_result = list()
     if vic_step.db_type == 'oracle':
-        if vic_step.db_lang:
-            os.environ['NLS_LANG'] = vic_step.db_lang
-        database_connect_string = '{}:{}/{}'.format(vic_step.db_host, vic_step.db_port, vic_step.db_name)
-        with cx_Oracle.connect(vic_step.db_user, vic_step.db_password, database_connect_string) as conn:
-            timer = threading.Timer(vic_step.timeout, conn.cancel)
-            cursor = conn.cursor()
-            # 启动定时器，到达超时值后执行conn.cancel
-            timer.start()
-            raw_result = cursor.execute(vic_step.db_sql)
-            # 如果是查询操作，cursor.description不为空
-            if cursor.description:
-                cursor.rowfactory = makedict(cursor)
-                select_result = raw_result.fetchall()
-                sql_result = '查询到{}条数据'.format(cursor.rowcount)
-            else:
-                sql_result = '影响行数{}'.format(cursor.rowcount)
-            # 关闭定时器
-            timer.cancel()
-            cursor.close()
+        pass
+        # if vic_step.db_lang:
+        #     os.environ['NLS_LANG'] = vic_step.db_lang
+        # database_connect_string = '{}:{}/{}'.format(vic_step.db_host, vic_step.db_port, vic_step.db_name)
+        # with cx_Oracle.connect(vic_step.db_user, vic_step.db_password, database_connect_string) as conn:
+        #     timer = threading.Timer(vic_step.timeout, conn.cancel)
+        #     cursor = conn.cursor()
+        #     # 启动定时器，到达超时值后执行conn.cancel
+        #     timer.start()
+        #     raw_result = cursor.execute(vic_step.db_sql)
+        #     # 如果是查询操作，cursor.description不为空
+        #     if cursor.description:
+        #         cursor.rowfactory = makedict(cursor)
+        #         select_result = raw_result.fetchall()
+        #         sql_result = '查询到{}条数据'.format(cursor.rowcount)
+        #     else:
+        #         sql_result = '影响行数{}'.format(cursor.rowcount)
+        #     # 关闭定时器
+        #     timer.cancel()
+        #     cursor.close()
     elif vic_step.db_type == 'mysql':
         if vic_step.db_lang:
             charset = vic_step.db_lang

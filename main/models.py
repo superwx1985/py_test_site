@@ -468,7 +468,7 @@ class SuiteResult(models.Model):
 
     timeout = models.FloatField(blank=True, null=True)
     ui_step_interval = models.FloatField(blank=True, null=True)
-    ui_get_ss = models.NullBooleanField(blank=True, null=True)
+    ui_get_ss = models.BooleanField(blank=True, null=True)
     log_level = models.IntegerField(blank=True, null=True)
     thread_count = models.IntegerField(blank=True, null=True)
     config = models.TextField(blank=True, null=True)

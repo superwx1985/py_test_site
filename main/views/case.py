@@ -83,10 +83,9 @@ def list_(request):
         o['reference_count'] = reference_count1.get(o['pk'], 0) + reference_count2.get(o['pk'], 0)
 
     # 排序
-    if objects:
-        if order_by not in objects[0]:
-            order_by = 'pk'
-        objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
+    if objects and order_by not in objects[0]:
+        order_by = 'pk'
+    objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
     # 分页
     paginator = Paginator(objects, size)
     try:

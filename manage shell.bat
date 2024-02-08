@@ -1,1 +1,1 @@
-manage shell
+python manage.py shell

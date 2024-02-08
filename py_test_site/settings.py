@@ -20,6 +20,11 @@ SECRET_KEY = '-8=0r94)m^&x^v7)886@@&iq$2aa*#8@d)dji+x)o(5l1a4dui'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# 在 Django 中关闭 X-Frame-Options: DENY
+X_FRAME_OPTIONS = 'SAMEORIGIN'
+# 显示指定自增主键的类型
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
 ALLOWED_HOSTS = ['*']
 
 

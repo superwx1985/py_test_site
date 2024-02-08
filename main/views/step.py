@@ -481,8 +481,7 @@ def multiple_import(request):
             project = request.POST.get('project')
 
             project = Project.objects.get(pk=project)
-            re_result = re.findall('<\?.*?\?>', data_text)  # 去除声明行
-            print(re_result)
+            re_result = re.findall('<\\?.*?\\?>', data_text)  # 去除声明行
             if re_result:
                 for r in re_result:
                     data_text = data_text.replace(r, '')

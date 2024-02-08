@@ -1,3 +1,3 @@
 @echo off
-manage collectstatic
+python manage.py collectstatic
 pause
