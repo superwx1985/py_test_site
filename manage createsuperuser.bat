@@ -1,3 +1,3 @@
 @echo off
-manage createsuperuser
+python manage.py createsuperuser
 pause

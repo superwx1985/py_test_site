@@ -10,7 +10,7 @@ class VicServer(Server):
         """
         # if self.action_logger:
         #     self.action_logger(protocol, action, details)
-
+        msg = None
         # HTTP requests
         if protocol == "http" and action == "complete":
             msg = "HTTP %(method)s %(path)s %(status)s [%(time_taken).2f, %(client)s]\n" % details
@@ -24,7 +24,7 @@ class VicServer(Server):
         elif protocol == "websocket" and action == "rejected":
             msg = "WebSocket REJECT %(path)s [%(client)s]\n" % details
 
-        if msg[-1] == '\n':
+        if msg and msg[-1] == '\n':
             msg = msg[0:-1]
         logger.info(msg)
 

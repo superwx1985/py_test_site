@@ -1,9 +1,13 @@
+from django.core.asgi import get_asgi_application
+# Initialize Django ASGI application early to ensure the AppRegistry
+# is populated before importing code that may import ORM models.
+django_asgi_app = get_asgi_application()
+
+
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
-# from django.conf.urls import url
+from channels.security.websocket import AllowedHostsOriginValidator
 from django.urls import path
-
-
 from main.views import websocket
 
 websocket_urlpatterns = [
@@ -13,10 +17,10 @@ websocket_urlpatterns = [
 ]
 
 application = ProtocolTypeRouter({
-    # (http->django views is added by default)
-    'websocket': AuthMiddlewareStack(
-            URLRouter(
-                websocket_urlpatterns,
-            )
+    "http": django_asgi_app,
+    "websocket": AllowedHostsOriginValidator(
+        AuthMiddlewareStack(
+            URLRouter(websocket_urlpatterns)
+        )
     ),
 })

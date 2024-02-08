@@ -1,4 +1,4 @@
 @echo off
-manage makemigrations
-manage migrate
+python manage.py makemigrations
+python manage.py manage migrate
 pause

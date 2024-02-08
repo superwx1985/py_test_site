@@ -4,5 +4,5 @@ from channels.routing import get_default_application
 
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "py_test_site.settings")
-django.setup()
+# django.setup()
 application = get_default_application()

@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     'channels',
 
     'django.contrib.admin',
@@ -76,6 +77,9 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'py_test_site.wsgi.application'
+# Channels
+ASGI_APPLICATION = 'py_test_site.routing.application'
+# ASGI_APPLICATION = 'py_test_site.asgi.application'
 
 # sqlite3 数据库
 
@@ -310,8 +314,6 @@ LOGGING = {
     },
 }
 
-# Channels
-ASGI_APPLICATION = 'py_test_site.routing.application'
 
 # 站点名称
 SITE_NAME = 'VIC自动化测试平台'

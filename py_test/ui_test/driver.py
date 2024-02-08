@@ -1,7 +1,9 @@
 import logging
+import os
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.remote.remote_connection import RemoteConnection
+import py_test.config as py_test_config
 
 
 # 获取浏览器driver
@@ -9,16 +11,14 @@ def get_driver_(config, execute_str, logger=logging.getLogger('py_test')):
     dr = None
     try:
         chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'],)
-        chrome_options.add_argument('start-maximized')
-        # chrome_options._arguments = [
-        #     'test-type',
-        #     "start-maximized",
-        #     "no-default-browser-check",
-        #     "disable-infobars",
-        # ]
+        chrome_options.add_experimental_option("useAutomationExtension", False)  # 隐藏“正由自动化软件控制”提示
+        chrome_options.add_experimental_option('excludeSwitches', ['enable-automation', 'enable-logging'])  # 隐藏“正由自动化软件控制”提示，不打印driver日志
+        chrome_options.add_argument('start-maximized')  # 最大化
+        chrome_options.add_argument("disable-cache")  # 禁用缓存
         if config.ui_selenium_client == 1:  # 本地
             if config.ui_driver_type == 1:  # Chrome
+                chrome_options.binary_location = py_test_config.CHROME_BINARY_LOCATION
+                os.environ["webdriver.chrome.driver"] = py_test_config.WEBDRIVER_CHROME_DRIVER  # 指定chrome驱动位置
                 dr = webdriver.Chrome(options=chrome_options)
             elif config.ui_driver_type == 2:  # IE
                 dr = webdriver.Ie()

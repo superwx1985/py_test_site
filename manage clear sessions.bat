@@ -1,3 +1,3 @@
 @echo off
-manage clearsessions
+python manage.py clearsessions
 pause
