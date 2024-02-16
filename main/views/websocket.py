@@ -7,6 +7,8 @@ from django.urls import reverse
 from django.template.loader import render_to_string
 from django.utils import timezone
 from utils.system import RUNNING_SUITES
+from django.contrib.sessions.models import Session
+from django.contrib.auth.models import User
 
 
 class SuiteConsumer(WebsocketConsumer):
@@ -70,11 +72,41 @@ class SuiteConsumer(WebsocketConsumer):
             self.send(text_data=json.dumps({'type': 'error', 'data': 'token无效'}), close=True)
 
     def get_user(self):
-        user = self.scope['user']
-        if user.is_authenticated:
+        user = self.scope.get('user', None)
+        # debug模式scope没有user信息，只能通过session查找user
+        if user and user.is_authenticated:
             return user
         else:
-            return None
+            try:
+                headers = self.scope["headers"]
+                session_id = None
+                for _ in headers:
+                    if b"cookie" == _[0]:
+                        cookie_string = _[1].decode('utf-8')
+                        start_index = cookie_string.find("sessionid=")
+                        if start_index != -1:
+                            # sessionid 子字符串的起始位置是等号的后一个位置
+                            start_index += len("sessionid=")
+                            # 找到 sessionid 子字符串的结束位置（分号的位置）
+                            end_index = cookie_string.find(";", start_index)
+                            # 如果没有找到分号，说明 sessionid 是字符串的最后一个部分
+                            if end_index == -1:
+                                session_id = cookie_string[start_index:]
+                            else:
+                                session_id = cookie_string[start_index:end_index]
+                            break
+                session = Session.objects.get(session_key=session_id)
+                # 获取会话数据中存储的用户ID
+                user_id = session.get_decoded().get('_auth_user_id')
+                # 根据用户ID获取用户对象
+                user = User.objects.get(pk=user_id)
+                return user
+            except Session.DoesNotExist:
+                return None
+            except User.DoesNotExist:
+                return None
+            except:
+                raise
 
     def get_pk(self):
         return self.scope['url_route']['kwargs']['suite_pk']

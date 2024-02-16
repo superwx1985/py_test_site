@@ -1,7 +1,7 @@
 from django import forms
 from main.models import *
 from django.contrib.auth import password_validation
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext_lazy
 from py_test_site.settings import SUITE_MAX_CONCURRENT_EXECUTE_COUNT
 
 
@@ -28,7 +28,7 @@ class UserForm(forms.Form):
     # def clean(self):
     #     new_password = self.cleaned_data.get('new_password')
     #     if new_password and self.cleaned_data['new_password'] != self.cleaned_data['confirm_password']:
-    #         raise forms.ValidationError(_("The two password fields didn't match."))
+    #         raise forms.ValidationError(gettext_lazy("The two password fields didn't match."))
     #         # raise forms.ValidationError('两次输入的密码不一致')
     #     else:
     #         cleaned_data = super(UserForm, self).clean()
@@ -44,7 +44,7 @@ class UserForm(forms.Form):
         new_password = self.cleaned_data.get('new_password')
         confirm_password = self.cleaned_data.get('confirm_password')
         if new_password and new_password != confirm_password:
-            raise forms.ValidationError(_("The two password fields didn't match."))
+            raise forms.ValidationError(gettext_lazy("The two password fields didn't match."))
         return confirm_password
 
 
