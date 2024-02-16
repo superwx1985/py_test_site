@@ -90,7 +90,7 @@
                         {% else %}
                             <td class="middle"><span class="badge badge-pill badge-danger">{{ obj.result_state_str }}</span></td>
                         {% endif %}
-                        <td col_name='real_name' class="middle">{{ obj.real_name }}</td>
+                        <td col_name='real_name' class="middle">{{ obj.real_name|default:obj.creator__username }}</td>
                         <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
                         <td class="middle">
                             <div>

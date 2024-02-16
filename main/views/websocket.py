@@ -1,5 +1,5 @@
-from channels.generic.websocket import WebsocketConsumer
 import json
+from channels.generic.websocket import WebsocketConsumer
 from urllib.parse import parse_qs
 from main.models import Suite, Token
 from py_test.general.vic_suite import VicSuite
@@ -44,6 +44,8 @@ class SuiteConsumer(WebsocketConsumer):
                     except Suite.DoesNotExist:
                         self.send(text_data=json.dumps({'type': 'error', 'data': '找不到对应的测试套件'}), close=True)
                     else:
+                        print("=========================")
+                        print(suite_, type(suite_))
                         vic_suite = VicSuite(suite_, user, execute_uuid, self.sender)
                         vic_suite.execute()
                         data_dict = self.get_result_data(vic_suite.suite_result)

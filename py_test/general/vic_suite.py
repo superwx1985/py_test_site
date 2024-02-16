@@ -172,10 +172,10 @@ class VicSuite:
 
                 futures = list()
 
-                with VicThreadPoolExecutor(self.thread_count) as pool:  # 保证线程池被关闭
+                with VicThreadPoolExecutor(max_workers=self.thread_count) as pool:  # 保证线程池被关闭
 
                     for vic_case in self.vic_cases:
-                        futures.append(pool.submit(self.add_vic_case_into_pool, vic_case))
+                        futures.append(pool.submit(self.add_vic_case_into_pool, vic_case, self.timeout))
                     future_results = wait(futures)
 
                     for future_result in future_results.done:
@@ -240,14 +240,15 @@ class VicSuite:
 
         return self
 
-    def add_vic_case_into_pool(self, vic_case, check_interval=10, timeout=None):
+    def add_vic_case_into_pool(self, vic_case, timeout=None):
         task = get_pool(self.logger).submit(vic_case.execute)
-        self.logger.debug('【{}】\t用例【{}】进入队列'.format(vic_case.execute_str, vic_case.name))
-
+        self.logger.info('【{}】\t用例【{}】进入队列'.format(vic_case.execute_str, vic_case.name))
+        # import pdb
+        # pdb.set_trace()
         start_time = time.time()
         while True:
             try:
-                task.result(timeout=check_interval)
+                task.result(timeout=timeout)
             except CancelledError:
                 elapsed_time = time.time() - start_time
                 self.logger.warning('【{}】\t用例【{}】已在队列{:.1f}秒，已被取消'.format(

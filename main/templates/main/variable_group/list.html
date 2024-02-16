@@ -53,7 +53,7 @@
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='variable_count' class="middle">{{ obj.variable_count }}</td>
                         <td col_name='reference_count' class="middle"><a href="javascript:show_reference('{% url "variable_group_reference" obj.pk %}', '<span class=\'mark small\'>{{ obj.name }}</span>被调用情况')"><span class="font-weight-bold">{{ obj.reference_count }}</span></a></td>
-                        <td col_name='real_name' class="middle">{{ obj.real_name }}</td>
+                        <td col_name='real_name' class="middle">{{ obj.real_name|default:obj.creator__username }}</td>
                         <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
                         <td class="middle">
                             <div>

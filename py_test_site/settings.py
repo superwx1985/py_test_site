@@ -18,7 +18,7 @@ if not os.path.exists(LOG_DIR):
 SECRET_KEY = '-8=0r94)m^&x^v7)886@@&iq$2aa*#8@d)dji+x)o(5l1a4dui'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # 在 Django 中关闭 X-Frame-Options: DENY
 X_FRAME_OPTIONS = 'SAMEORIGIN'
@@ -78,8 +78,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'py_test_site.wsgi.application'
 # Channels
-ASGI_APPLICATION = 'py_test_site.routing.application'
-# ASGI_APPLICATION = 'py_test_site.asgi.application'
+# ASGI_APPLICATION = 'py_test_site.routing.application'
+ASGI_APPLICATION = 'py_test_site.asgi.application'
 
 # sqlite3 数据库
 
@@ -219,7 +219,8 @@ LOGGING = {
             'when': 'D',                # 时间间隔单位
             'interval': 1,              # 时间间隔值
             'backupCount': 30,          # 保留日志数量
-            'formatter': 'standard',      # 使用哪种formatters日志格式
+            'formatter': 'standard',    # 使用哪种formatters日志格式
+            'encoding': 'utf-8',        # 使用utf-8编码
         },
         # # 服务器错误日志文件
         # 'server_error': {
@@ -263,6 +264,7 @@ LOGGING = {
             'interval': 1,
             'backupCount': 30,
             'formatter': 'detail',
+            'encoding': 'utf-8',
         },
         # 测试执行错误日志文件
         # 'py_test_error': {
@@ -329,3 +331,10 @@ LOOP_ITERATIONS_LIMIT = 100
 
 # 出错后暂停的最大时间（秒）
 ERROR_PAUSE_TIMEOUT = 600
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
