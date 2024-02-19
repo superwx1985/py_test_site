@@ -2,8 +2,7 @@
 {% load static %}
 <html>
     <head>
-        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+        {% include 'main/include/common_header.html' %}
         <title>{% block title %}列表{% endblock %}</title>
         {% block general_style %}
             {% include 'main/include/general_css.html' %}
