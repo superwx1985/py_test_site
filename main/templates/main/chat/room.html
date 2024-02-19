@@ -15,7 +15,11 @@
         const chatSocket = new WebSocket(
             'ws://'
             + window.location.host
-            + '/ws/chat/'
+            {% if "chat_sync" in request.path %}
+                + '/ws/chat_sync/'
+            {% else %}
+                + '/ws/chat/'
+            {% endif %}
             + roomName
             + '/'
         );

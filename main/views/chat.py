@@ -1,11 +1,14 @@
+import time
+
 from django.shortcuts import render
 import json
 import asyncio
 from asgiref.sync import async_to_sync, sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
-from main.views.websocket import SuiteConsumer
+from .websocket import SuiteConsumer
 from django.contrib.auth.decorators import login_required
 from channels.db import database_sync_to_async
+from utils.thread_pool import VicThreadPoolExecutor, get_pool
 
 
 @login_required
@@ -34,9 +37,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Receive message from WebSocket
     async def receive(self, text_data=None, bytes_data=None):
-        print(f"receive text_data = {text_data}")
+
+        print(f"{time.time()}receive text_data = {text_data}")
+        # await do_something()
+        await asyncio.sleep(5)
         text_data_json = json.loads(text_data)
-        user = await database_sync_to_async(SuiteConsumer.get_user)(self)
+        # 异步代码使用Django ORM
+        user = await sync_to_async(SuiteConsumer.get_user)(self)
+        # user = await database_sync_to_async(SuiteConsumer.get_user)(self)
         message = f"{user.username}: {text_data_json["message"]}"
         if user.username == "admin":
             await self.channel_layer.group_send(
@@ -62,3 +70,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = event["message"]
         text_data = json.dumps({"message": f"管理员信息！{message}"})
         await self.send(text_data)
+
+
+def do_something(_time: int = 10):
+    for i in range(_time):
+        print(i)
+        time.sleep(1)

@@ -1,20 +1,6 @@
 from django.urls import path
-import main.views.general as general
-import main.views.user as user
-import main.views.case as case
-import main.views.step as step
-import main.views.config as config
-import main.views.variable_group as variable_group
-import main.views.element_group as element_group
-import main.views.suite as suite
-import main.views.suite_result as suite_result
-import main.views.case_result as case_result
-import main.views.step_result as step_result
-import main.views.help as help_
-import main.views.maintenance as maintenance
-import main.views.websocket as ws
-import main.views.action as action
-import main.views.chat as chat
+from main.views import (general, user, case, step, config, variable_group, element_group, suite, suite_result,
+                        case_result, step_result, help as help_, maintenance, websocket as ws, action, chat, chat_sync)
 
 
 urlpatterns = [
@@ -144,4 +130,6 @@ urlpatterns = [
 
     path("chat/", chat.index, name="chat_index"),
     path("chat/<str:room_name>/", chat.room, name="chat_room"),
+    path("chat_sync/", chat_sync.index, name="chat_sync_index"),
+    path("chat_sync/<str:room_name>/", chat_sync.room, name="chat_sync_room"),
 ]
