@@ -272,7 +272,8 @@ class VicSuite:
                             vic_case.execute_str, vic_case.name, elapsed_time))
                         _success = task.cancel()
                         vic_case.case_result.result_state = 3
-                        vic_case.case_result.result_error = '线程等待超时，可能由于服务器线程池队列已满，用例被取消执行'
+                        vic_case.case_result.result_message = "超时"
+                        vic_case.case_result.result_error = '线程等待超时，可能由于服务器线程池已满，且套件超时设置过短，测试被取消执行'
                         vic_case.case_result.end_date = datetime.datetime.now()
                         vic_case.case_result.save()
                         if not _success:

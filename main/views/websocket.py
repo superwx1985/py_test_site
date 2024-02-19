@@ -1,4 +1,6 @@
 import json
+from threading import Thread
+
 from channels.generic.websocket import WebsocketConsumer
 from urllib.parse import parse_qs
 from main.models import Suite, Token
@@ -27,7 +29,7 @@ class SuiteConsumer(WebsocketConsumer):
         except KeyError:
             pass
 
-    def receive(self, text_data=None, bytes_data=None):
+    def _receive(self, text_data=None):
         user = self.get_user()
         if user:
             text_data_json = json.loads(text_data)
@@ -46,8 +48,6 @@ class SuiteConsumer(WebsocketConsumer):
                     except Suite.DoesNotExist:
                         self.send(text_data=json.dumps({'type': 'error', 'data': '找不到对应的测试套件'}), close=True)
                     else:
-                        print("=========================")
-                        print(suite_, type(suite_))
                         vic_suite = VicSuite(suite_, user, execute_uuid, self.sender)
                         vic_suite.execute()
                         data_dict = self.get_result_data(vic_suite.suite_result)
@@ -70,6 +70,10 @@ class SuiteConsumer(WebsocketConsumer):
                 self.send(text_data=json.dumps({'type': 'message', 'message': msg}), close=True)
         else:
             self.send(text_data=json.dumps({'type': 'error', 'data': 'token无效'}), close=True)
+
+    def receive(self, text_data=None, bytes_data=None):
+        thread = Thread(target=self._receive, args=(text_data,))
+        thread.start()
 
     def get_user(self):
         user = self.scope.get('user', None)
