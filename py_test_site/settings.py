@@ -2,6 +2,7 @@ import os
 import sys
 from django.urls import reverse_lazy
 from manage import PROJECT_ROOT
+import psycopg
 
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -81,17 +82,19 @@ WSGI_APPLICATION = 'py_test_site.wsgi.application'
 # ASGI_APPLICATION = 'py_test_site.routing.application'
 ASGI_APPLICATION = 'py_test_site.asgi.application'
 
-# sqlite3 数据库
+# 数据库保持连接（秒），0-每次请求结束时关闭数据库连接，None-无限制的持久连接
+CONN_MAX_AGE = 60
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'debug_db/db.sqlite3'),
-    }
-}
+# 数据库迁移 https://docs.djangoproject.com/zh-hans/5.0/topics/migrations/
+# sqlite3数据库
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'debug_db/db.sqlite3'),
+#     }
+# }
 
-# mysql 数据库
-
+# mysql数据库
 # import pymysql
 # pymysql.install_as_MySQLdb()  # mysql改用pymysql驱动
 #
@@ -107,21 +110,39 @@ DATABASES = {
 #     }
 # }
 
+# PostgreSQL数据库
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "py_test_site",
+        "USER": "postgres",
+        "PASSWORD": "admin",
+        "HOST": '',
+        "PORT": 5432,
+    }
+}
 
-# Password validation
 
+# 用户密码复杂度校验规则
+# UserAttributeSimilarityValidator 检查密码和一组用户属性集合之间的相似性。
+# MinimumLengthValidator 用来检查密码是否符合最小长度。这个验证器可以自定义设置长度，默认8个字符。
+# CommonPasswordValidator 检查密码是否在常用密码列表中。默认情况下，它会与列表中的2000个常用密码作比较。
+# NumericPasswordValidator 检查密码是否是完全是数字的。
 AUTH_PASSWORD_VALIDATORS = [
     # {
-    #     'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    #     "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     # },
     # {
-    #     'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    #     "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+    #     "OPTIONS": {
+    #         "min_length": 9,
+    #     },
     # },
     # {
-    #     'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    #     "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     # },
     # {
-    #     'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    #     "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     # },
 ]
 
