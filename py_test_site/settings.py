@@ -87,12 +87,12 @@ CONN_MAX_AGE = 60
 
 # 数据库迁移 https://docs.djangoproject.com/zh-hans/5.0/topics/migrations/
 # sqlite3数据库
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'debug_db/db.sqlite3'),
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'debug_db/db.sqlite3'),
+    }
+}
 
 # mysql数据库
 # import pymysql
@@ -111,16 +111,16 @@ CONN_MAX_AGE = 60
 # }
 
 # PostgreSQL数据库
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": "py_test_site",
-        "USER": "postgres",
-        "PASSWORD": "admin",
-        "HOST": '',
-        "PORT": 5432,
-    }
-}
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.postgresql",
+#         "NAME": "py_test_site",
+#         "USER": "postgres",
+#         "PASSWORD": "admin",
+#         "HOST": '',
+#         "PORT": 5432,
+#     }
+# }
 
 
 # 用户密码复杂度校验规则
