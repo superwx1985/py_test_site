@@ -19,7 +19,7 @@ if not os.path.exists(LOG_DIR):
 SECRET_KEY = '-8=0r94)m^&x^v7)886@@&iq$2aa*#8@d)dji+x)o(5l1a4dui'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 # 在 Django 中关闭 X-Frame-Options: DENY
 X_FRAME_OPTIONS = 'SAMEORIGIN'
@@ -82,46 +82,52 @@ WSGI_APPLICATION = 'py_test_site.wsgi.application'
 # ASGI_APPLICATION = 'py_test_site.routing.application'
 ASGI_APPLICATION = 'py_test_site.asgi.application'
 
-# 数据库保持连接（秒），0-每次请求结束时关闭数据库连接，None-无限制的持久连接
-CONN_MAX_AGE = 60
+
+def get_database_settings(database) -> {}:
+    _DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'debug_db/db.sqlite3'),
+        }
+    }
+    if database == "mysql":
+        import pymysql
+        pymysql.install_as_MySQLdb()  # mysql改用pymysql驱动
+
+        _DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': 'py_test_site',
+                'HOST': '127.0.0.1',
+                # 'HOST': '192.192.185.140',
+                'PORT': '3306',
+                'USER': 'py_test_site',
+                'PASSWORD': 'py_test_site',
+            }
+        }
+    elif database == "postgresql":
+        _DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": "py_test_site",
+                "USER": "postgres",
+                "PASSWORD": "admin",
+                "HOST": '',
+                "PORT": 5432,
+            }
+        }
+    else:
+        print(f"Cannot found the setting of {database}, use sqlite3 instead")
+
+    return _DATABASES
+
 
 # 数据库迁移 https://docs.djangoproject.com/zh-hans/5.0/topics/migrations/
-# sqlite3数据库
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'debug_db/db.sqlite3'),
-    }
-}
+databases = {1: "sqlite", 2: "mysql", 3: "postgresql"}
+DATABASES = get_database_settings(databases[3])
 
-# mysql数据库
-# import pymysql
-# pymysql.install_as_MySQLdb()  # mysql改用pymysql驱动
-#
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'py_test_site',
-#         'HOST': '127.0.0.1',
-#         # 'HOST': '192.192.185.140',
-#         'PORT': '3306',
-#         'USER': 'py_test_site',
-#         'PASSWORD': 'py_test_site',
-#     }
-# }
-
-# PostgreSQL数据库
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql",
-#         "NAME": "py_test_site",
-#         "USER": "postgres",
-#         "PASSWORD": "admin",
-#         "HOST": '',
-#         "PORT": 5432,
-#     }
-# }
-
+# 数据库保持连接（秒），0-每次请求结束时关闭数据库连接，None-无限制的持久连接
+CONN_MAX_AGE = 60
 
 # 用户密码复杂度校验规则
 # UserAttributeSimilarityValidator 检查密码和一组用户属性集合之间的相似性。
@@ -339,10 +345,10 @@ LOGGING = {
 
 
 # 站点名称
-SITE_NAME = 'VIC自动化测试平台'
+SITE_NAME = '自动化测试平台'
 
 # 站点版本
-SITE_VERSION = 'V1.14.20190920.01'
+SITE_VERSION = 'V2.0.20200220.01'
 
 # 最大并行测试线程数
 SUITE_MAX_CONCURRENT_EXECUTE_COUNT = 8
@@ -353,9 +359,21 @@ LOOP_ITERATIONS_LIMIT = 100
 # 出错后暂停的最大时间（秒）
 ERROR_PAUSE_TIMEOUT = 600
 
-
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    },
-}
+# 设置channel使用的通道层
+if DEBUG:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                # "hosts": ["redis://:{密码}@{地址}:{端口}/{数据库编号}"],
+                "hosts": ["redis://:123456@localhost:6379/1"],
+                "symmetric_encryption_keys": [SECRET_KEY],
+            },
+        },
+    }

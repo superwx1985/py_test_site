@@ -11,8 +11,9 @@ def get_driver_(config, execute_str, logger=logging.getLogger('py_test')):
     dr = None
     try:
         chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_experimental_option("useAutomationExtension", False)  # 隐藏“正由自动化软件控制”提示
+        chrome_options.add_experimental_option("useAutomationExtension", False)  # 去掉开发者警告
         chrome_options.add_experimental_option('excludeSwitches', ['enable-automation', 'enable-logging'])  # 隐藏“正由自动化软件控制”提示，不打印driver日志
+        chrome_options.add_experimental_option("prefs", {"credentials_enable_service": False, "profile.password_manager_enabled": False})  #禁用“保存密码”弹出窗口
         chrome_options.add_argument('start-maximized')  # 最大化
         chrome_options.add_argument("disable-cache")  # 禁用缓存
         if config.ui_selenium_client == 1:  # 本地

@@ -104,7 +104,7 @@ class VicSuite:
         # 记录开始执行时的时间
         self.start_date = self.suite_result.start_date = datetime.datetime.now()
         self.status = 1
-        self.logger.info('开始测试，套件ID[{}]'.format(self.suite_result.pk))
+        self.logger.info('开始测试，结果ID[{}]'.format(self.suite_result.pk))
         RUNNING_SUITES.add_suite(self.execute_uuid, self)
 
         try:
@@ -220,7 +220,7 @@ class VicSuite:
             RUNNING_SUITES.remove_suite(self.execute_uuid)
             safety_shutdown_pool(self.logger)
 
-            self.logger.info('测试执行完毕，套件ID[{}]'.format(self.suite_result.pk))
+            self.logger.info('测试执行完毕，结果ID[{}]'.format(self.suite_result.pk))
             self.logger.info('========================================')
             if self.suite_result.result_state == 3:
                 self.logger.error(self.suite_result.result_message)
