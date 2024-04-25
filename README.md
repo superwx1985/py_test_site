@@ -71,3 +71,6 @@ python manage.py collectstatic
 ```
 python other\vic_daphne_server.py py_test_site.asgi:application -p 8001
 ```
+
+## 访问网站
+http://127.0.0.1:80/user/login/

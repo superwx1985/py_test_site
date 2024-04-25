@@ -170,9 +170,6 @@ DATE_FORMAT = 'Y-m-d'
 # 使用时区
 USE_TZ = False
 
-
-# Static files (CSS, JavaScript, Images)
-
 # 静态文件地址
 STATIC_URL = '/static/'
 
