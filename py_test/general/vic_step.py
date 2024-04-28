@@ -220,7 +220,7 @@ class VicStep:
             self.pause_()
 
             # selenium驱动初始化检查
-            if atc == 'UI' and dr is None:
+            if atc == 'WEB-UI' and dr is None:
                 raise exceptions.WebDriverException('浏览器未初始化，请检查是否配置有误或浏览器被意外关闭')
 
             # 设置selenium驱动超时
@@ -1082,7 +1082,7 @@ class VicStep:
                             raise exceptions.UnknownMethodException('未知的动作代码【{}】'.format(ac))
 
                         # 判断是否出现浏览器弹窗
-                        if atc == 'UI' and dr is not None:
+                        if atc == 'WEB-UI' and dr is not None:
                             try:
                                 # 防止切换窗口后页面还未加载完毕就获取弹窗导致超时
                                 if ac in ['UI_SWITCH_TO_WINDOW', 'UI_CLOSE_WINDOW']:
@@ -1146,7 +1146,7 @@ class VicStep:
                                         ui_test.method.highlight_for_a_moment(dr, self.fail_elements, 'red', sleep=0.5)
 
                         # 通过添加步骤间等待时间控制UI测试执行速度
-                        if atc == 'UI' and self.ui_step_interval:
+                        if atc == 'WEB-UI' and self.ui_step_interval:
                             _timeout = math.modf(float(self.ui_step_interval))
                             x = int(_timeout[1])
                             for i in range(x):
@@ -1216,7 +1216,7 @@ class VicStep:
             self.step_result.result_message = msg
             self.step_result.result_error = traceback.format_exc()
 
-        if atc == 'UI' and dr is not None:
+        if atc == 'WEB-UI' and dr is not None:
             if self.socket_no_response:
                 self.step_result.ui_last_url = '由于浏览器响应超时，URL获取失败'
                 logger.warning('【{}】\t由于浏览器响应超时，无法获取报错时的URL和截图'.format(estr))

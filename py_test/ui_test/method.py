@@ -8,6 +8,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from py_test.vic_tools import vic_find_object, vic_eval
 from py_test.vic_tools.vic_str_handle import change_string_to_digit
 from py_test.general import vic_variables
+from selenium.webdriver.common.by import By
 
 
 # 设置UI测试驱动超时
@@ -96,10 +97,10 @@ def wait_for_text_present(vic_step, print_=True):
         elements.clear()
         fail_elements.clear()
         if not vic_step.ui_by and not vic_step.ui_locator:
-            _body = vic_step.dr.find_element_by_tag_name('body')
+            _body = vic_step.dr.find_element(By.TAG_NAME, 'body')
             find_result = vic_find_object.find_with_condition(text, _body.text, logger=vic_step.logger)
             if find_result.is_matched:
-                elements_temp = vic_step.dr.find_elements_by_xpath('//body//*[contains(text(),"' + text + '")]')
+                elements_temp = vic_step.dr.find_elements(By.XPATH, '//body//*[contains(text(),"' + text + '")]')
                 for element in elements_temp:
                     if element.is_displayed():
                         elements.append(element)
