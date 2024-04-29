@@ -8,7 +8,17 @@ from selenium.webdriver.common.action_chains import ActionChains
 from py_test.vic_tools import vic_find_object, vic_eval
 from py_test.vic_tools.vic_str_handle import change_string_to_digit
 from py_test.general import vic_variables
+from py_test.web_ui_test import driver
 from selenium.webdriver.common.by import By
+
+
+def check_web_driver(step):
+    if not step.drs.get("web_dr", None):
+        # 初始化driver
+        step.logger.info('【{}】\t启动浏览器...'.format(step.execute_str))
+        dr = driver.get_driver(step.config, step.execute_str, 3, logger=step.logger)
+        step.drs["web_dr"] = dr
+        # raise exceptions.WebDriverException('浏览器未初始化，请检查是否配置有误或浏览器被意外关闭')
 
 
 # 设置UI测试驱动超时
@@ -91,16 +101,16 @@ def wait_for_text_present(vic_step, print_=True):
     _full_msg = ''
     msg = '没找到期望文字【{}】'.format(text)
     msg_format = '经过{:.1f}秒 - {}'
-    vic_step.dr.implicitly_wait(0)
+    vic_step.drs['web_dr'].implicitly_wait(0)
     last_print_time = start_time = time.time()
     while (time.time() - start_time - pause_time) <= vic_step.timeout and not vic_step.force_stop:
         elements.clear()
         fail_elements.clear()
         if not vic_step.ui_by and not vic_step.ui_locator:
-            _body = vic_step.dr.find_element(By.TAG_NAME, 'body')
+            _body = vic_step.drs['web_dr'].find_element(By.TAG_NAME, 'body')
             find_result = vic_find_object.find_with_condition(text, _body.text, logger=vic_step.logger)
             if find_result.is_matched:
-                elements_temp = vic_step.dr.find_elements(By.XPATH, '//body//*[contains(text(),"' + text + '")]')
+                elements_temp = vic_step.drs['web_dr'].find_elements(By.XPATH, '//body//*[contains(text(),"' + text + '")]')
                 for element in elements_temp:
                     if element.is_displayed():
                         elements.append(element)
@@ -132,7 +142,7 @@ def wait_for_text_present(vic_step, print_=True):
                 _error_msg = None
                 if index_ is None:
                     for element_temp in elements_temp:
-                        # element_text = vic_step.dr.execute_script(
+                        # element_text = vic_step.drs['web_dr'].execute_script(
                         #     'return arguments[0].textContent||arguments[0].innerText||arguments[0].value',
                         #     element_temp)
                         element_text = element_temp.get_attribute('value') or element_temp.text
@@ -150,7 +160,7 @@ def wait_for_text_present(vic_step, print_=True):
                     raise ValueError('找到{}个元素，但指定的索引【{}】超出可用范围（0到{}）'.format(
                         len(elements), index_, len(elements) - 1))
                 else:
-                    element_text = vic_step.dr.execute_script(
+                    element_text = vic_step.drs['web_dr'].execute_script(
                         'return arguments[0].textContent||arguments[0].innerText||arguments[0].value',
                         elements_temp[index_])
                     find_result = vic_find_object.find_with_condition(text, element_text, logger=vic_step.logger)
@@ -186,7 +196,7 @@ def wait_for_text_present(vic_step, print_=True):
         run_result = ['p', full_msg]
     else:
         run_result = ['f', full_msg]
-    vic_step.dr.implicitly_wait(vic_step.timeout)
+    vic_step.drs['web_dr'].implicitly_wait(vic_step.timeout)
     return run_result, elements, fail_elements, elapsed_time, pause_time
 
 
@@ -199,7 +209,7 @@ def wait_for_element_present(vic_step, timeout=None, print_=True):
         timeout = vic_step.timeout
     msg = '未找到期望元素【By:{}|Locator:{}】'.format(vic_step.ui_by, vic_step.ui_locator)
     msg_format = '经过{:.1f}秒 - {}'
-    vic_step.dr.implicitly_wait(0)
+    vic_step.drs['web_dr'].implicitly_wait(0)
     last_print_time = start_time = time.time()
     while (time.time() - start_time - pause_time) <= timeout and not vic_step.force_stop:
         if vic_step.variable_elements:
@@ -208,7 +218,7 @@ def wait_for_element_present(vic_step, timeout=None, print_=True):
             if isinstance(vic_step.ui_base_element, WebElement):
                 elements = vic_step.ui_base_element.find_elements(vic_step.ui_by, vic_step.ui_locator)
             else:
-                elements = vic_step.dr.find_elements(vic_step.ui_by, vic_step.ui_locator)
+                elements = vic_step.drs['web_dr'].find_elements(vic_step.ui_by, vic_step.ui_locator)
 
         msg = '找到期望元素【By:{}|Locator:{}】{}个'.format(vic_step.ui_by, vic_step.ui_locator, len(elements))
 
@@ -231,7 +241,7 @@ def wait_for_element_present(vic_step, timeout=None, print_=True):
         run_result = ['p', full_msg]
     else:
         run_result = ['f', full_msg]
-    vic_step.dr.implicitly_wait(timeout)
+    vic_step.drs['web_dr'].implicitly_wait(timeout)
     return run_result, elements, elapsed_time, pause_time
 
 
@@ -273,7 +283,7 @@ def wait_for_element_visible(vic_step, timeout=None, print_=True):
     _full_msg = ''
     msg = '未找到期望元素【By:{}|Locator:{}】'.format(vic_step.ui_by, vic_step.ui_locator)
     msg_format = '经过{:.1f}秒 - {}'
-    vic_step.dr.implicitly_wait(0)
+    vic_step.drs['web_dr'].implicitly_wait(0)
     last_print_time = start_time = time.time()
     while (time.time() - start_time - pause_time) <= timeout and not vic_step.force_stop:
         visible_elements.clear()
@@ -283,7 +293,7 @@ def wait_for_element_visible(vic_step, timeout=None, print_=True):
             if isinstance(vic_step.ui_base_element, WebElement):
                 elements = vic_step.ui_base_element.find_elements(vic_step.ui_by, vic_step.ui_locator)
             else:
-                elements = vic_step.dr.find_elements(vic_step.ui_by, vic_step.ui_locator)
+                elements = vic_step.drs['web_dr'].find_elements(vic_step.ui_by, vic_step.ui_locator)
         if elements:
             for element in elements:
                 if element.is_displayed():
@@ -323,7 +333,7 @@ def wait_for_element_visible(vic_step, timeout=None, print_=True):
         run_result = ['p', full_msg]
     else:
         run_result = ['f', full_msg]
-    vic_step.dr.implicitly_wait(timeout)
+    vic_step.drs['web_dr'].implicitly_wait(timeout)
     return run_result, visible_elements, elements, elapsed_time, pause_time
 
 
@@ -366,7 +376,7 @@ def wait_for_element_disappear(vic_step, print_=True):
     _full_msg = ''
     msg = '未找到期望元素【By:{}|Locator:{}】'.format(vic_step.ui_by, vic_step.ui_locator)
     msg_format = '经过{:.1f}秒 - {}'
-    vic_step.dr.implicitly_wait(0)
+    vic_step.drs['web_dr'].implicitly_wait(0)
     last_print_time = start_time = time.time()
     while (time.time() - start_time - pause_time) <= vic_step.timeout and not vic_step.force_stop:
         visible_elements = list()
@@ -376,7 +386,7 @@ def wait_for_element_disappear(vic_step, print_=True):
             if isinstance(vic_step.ui_base_element, WebElement):
                 elements = vic_step.ui_base_element.find_elements(vic_step.ui_by, vic_step.ui_locator)
             else:
-                elements = vic_step.dr.find_elements(vic_step.ui_by, vic_step.ui_locator)
+                elements = vic_step.drs['web_dr'].find_elements(vic_step.ui_by, vic_step.ui_locator)
 
         if not elements:
             _success = True
@@ -409,14 +419,14 @@ def wait_for_element_disappear(vic_step, print_=True):
         run_result = ['p', full_msg]
     else:
         run_result = ['f', full_msg]
-    vic_step.dr.implicitly_wait(vic_step.timeout)
+    vic_step.drs['web_dr'].implicitly_wait(vic_step.timeout)
     return run_result, visible_elements, elapsed_time, pause_time
 
 
 # 跳转到url
 def go_to_url(vic_step):
     url = vic_step.ui_data
-    vic_step.dr.get(url)
+    vic_step.drs['web_dr'].get(url)
     run_result = ['p', '成功打开URL【{}】'.format(url)]
     return run_result
 
@@ -431,7 +441,7 @@ def wait_for_page_redirect(vic_step, print_=True):
     last_print_time = start_time = time.time()
     _error_msg = None
     while (time.time() - start_time - pause_time) <= vic_step.timeout and not vic_step.force_stop:
-        current_url = vic_step.dr.current_url
+        current_url = vic_step.drs['web_dr'].current_url
         find_result = vic_find_object.find_with_condition(vic_step.ui_data, current_url, logger=vic_step.logger)
         if find_result.is_matched:
             msg = '新URL符合期望【{}】'.format(vic_step.ui_data)
@@ -464,7 +474,7 @@ def wait_for_page_redirect(vic_step, print_=True):
 
 # 获取URL
 def get_url(vic_step, print_=True):
-    url = vic_step.dr.current_url
+    url = vic_step.drs['web_dr'].current_url
     condition_value = vic_step.ui_data
 
     if condition_value:
@@ -534,9 +544,9 @@ def try_to_do(vic_step, func, print_=True):
     pause_time += _pause_time
 
     if element:
-        vic_step.dr.implicitly_wait(0)
+        vic_step.drs['web_dr'].implicitly_wait(0)
         timeout = vic_step.timeout - _elapsed_time if vic_step.timeout - _elapsed_time > 1 else 1
-        highlight_for_a_moment(vic_step.dr, [element], 'outline: 2px dotted yellow; border: 1px solid yellow;')
+        highlight_for_a_moment(vic_step.drs['web_dr'], [element], 'outline: 2px dotted yellow; border: 1px solid yellow;')
         last_print_time = start_time = time.time()
         while (time.time() - start_time - pause_time) <= timeout and not vic_step.force_stop:
             err = None
@@ -578,7 +588,7 @@ def try_to_do(vic_step, func, print_=True):
 
             if _success:
                 break
-        vic_step.dr.implicitly_wait(vic_step.timeout)
+        vic_step.drs['web_dr'].implicitly_wait(vic_step.timeout)
     else:
         err = exceptions.NoSuchElementException(err_msg)
         msg = err_msg
@@ -602,7 +612,7 @@ def try_to_do(vic_step, func, print_=True):
 # 尝试选择
 def try_to_select(vic_step, print_=True):
     element, el_msg, _, elapsed_time, pause_time = get_visible_element(vic_step, print_=print_)
-    highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
+    highlight_for_a_moment(vic_step.drs['web_dr'], (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     select = Select(element)
     # 如果data为空则全不选
     if not vic_step.ui_data:
@@ -691,7 +701,7 @@ def perform_special_action(vic_step, update_test_data=False, print_=True):
     else:
         element, el_msg, _, elapsed_time, pause_time = get_element(vic_step, print_=print_)
 
-    dr = vic_step.dr
+    dr = vic_step.drs['web_dr']
     sp = vic_step.ui_special_action
 
     msg = '特殊动作执行完毕'
@@ -794,8 +804,8 @@ def perform_special_action(vic_step, update_test_data=False, print_=True):
 # 尝试滚动到元素位置
 def try_to_scroll_into_view(vic_step, print_=True):
     element, el_msg, _, elapsed_time, pause_time = get_element(vic_step, print_=print_)
-    highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
-    vic_step.dr.execute_script('arguments[0].scrollIntoView()', element)
+    highlight_for_a_moment(vic_step.drs['web_dr'], (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
+    vic_step.drs['web_dr'].execute_script('arguments[0].scrollIntoView()', element)
     run_result = ['p', '移动窗口到元素{}的位置'.format(el_msg)]
     if print_:
         vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, run_result[1]))
@@ -810,7 +820,7 @@ def alert_handle(vic_step, print_=True):
     msg = 'N/A'
     msg_format = '经过{:.1f}秒 - {}'
     alert_text = ''
-    dr = vic_step.dr
+    dr = vic_step.drs['web_dr']
     last_print_time = start_time = time.time()
     while (time.time() - start_time - pause_time) <= vic_step.timeout and not vic_step.force_stop:
         try:
@@ -862,15 +872,15 @@ def try_to_switch_to_window(vic_step, current_window_handle=None, print_=True):
     new_window_handle = None
     if not current_window_handle:
         try:
-            current_window_handle = vic_step.dr.current_window_handle
+            current_window_handle = vic_step.drs['web_dr'].current_window_handle
         except exceptions.NoSuchWindowException:
             vic_step.logger.warning('【{}】\t无法获取当前窗口'.format(vic_step.execute_str), exc_info=True)
             current_window_handle = 'N/A'
     last_print_time = start_time = time.time()
     while (time.time() - start_time - pause_time) <= vic_step.timeout and not vic_step.force_stop:
-        for window_handle in vic_step.dr.window_handles:
+        for window_handle in vic_step.drs['web_dr'].window_handles:
             if window_handle != current_window_handle:
-                vic_step.dr.switch_to.window(window_handle)
+                vic_step.drs['web_dr'].switch_to.window(window_handle)
                 # 如果定位信息不全，且没有ui_data，则直接切换到这个窗口
                 if (not vic_step.ui_by or not vic_step.ui_locator) and not vic_step.ui_data:
                     new_window_handle = window_handle
@@ -934,7 +944,7 @@ def try_to_switch_to_frame(vic_step, print_=True):
                 vic_step, timeout=1, print_=False, necessary=False)
             pause_time += _pause_time
             if frame:
-                vic_step.dr.switch_to.frame(frame)
+                vic_step.drs['web_dr'].switch_to.frame(frame)
                 _success = True
                 msg = '切换到元素{}对应的框架'.format(el_msg)
             else:
@@ -942,7 +952,7 @@ def try_to_switch_to_frame(vic_step, print_=True):
         else:
             index_ = vic_step.ui_index if vic_step.ui_index else 0
             try:
-                vic_step.dr.switch_to.frame(index_)
+                vic_step.drs['web_dr'].switch_to.frame(index_)
                 _success = True
                 msg = '已切换到索引为{}的框架'.format(index_)
             except exceptions.NoSuchFrameException:
@@ -975,7 +985,7 @@ def run_js(vic_step, print_=True):
     elapsed_time = 0
     pause_time = 0
     if vic_step.ui_by in (None, ''):
-        js_result = vic_step.dr.execute_script(vic_step.ui_data)
+        js_result = vic_step.drs['web_dr'].execute_script(vic_step.ui_data)
     else:
         if vic_step.variable_elements:
             elements = vic_step.variable_elements
@@ -984,12 +994,12 @@ def run_js(vic_step, print_=True):
             if run_result_temp[0] == 'f':
                 raise exceptions.NoSuchElementException(run_result_temp[1])
         if vic_step.ui_index is None:
-            js_result = vic_step.dr.execute_script(vic_step.ui_data, elements)
+            js_result = vic_step.drs['web_dr'].execute_script(vic_step.ui_data, elements)
         elif vic_step.ui_index > (len(elements) - 1):
             raise ValueError('找到{}个元素，但指定的索引【{}】超出可用范围（0到{}）'.format(
                 len(elements), vic_step.ui_index, len(elements) - 1))
         else:
-            js_result = vic_step.dr.execute_script(vic_step.ui_data, elements[vic_step.ui_index])
+            js_result = vic_step.drs['web_dr'].execute_script(vic_step.ui_data, elements[vic_step.ui_index])
     if isinstance(js_result, WebElement):
         js_result = [js_result]
     run_result = ['p', 'JavaScript执行完毕，返回值为：\n{}'.format(js_result)]
@@ -1001,7 +1011,7 @@ def run_js(vic_step, print_=True):
 # 获取元素文本
 def get_element_text(vic_step, print_=True):
     element, el_msg, _, elapsed_time, pause_time = get_element(vic_step, print_=print_)
-    highlight_for_a_moment(vic_step.dr, (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
+    highlight_for_a_moment(vic_step.drs['web_dr'], (element,), 'outline: 2px dotted yellow; border: 1px solid yellow;')
     text = element.text
     run_result = ['p', '获取了元素{}的文本：{}'.format(el_msg, text)]
     if print_:
@@ -1012,7 +1022,7 @@ def get_element_text(vic_step, print_=True):
 # 获取元素属性
 def get_element_attr(vic_step, print_=True):
     element, el_msg, _, elapsed_time, pause_time = get_element(vic_step, print_=print_)
-    highlight_for_a_moment(vic_step.dr, [element], 'outline: 2px dotted yellow; border: 1px solid yellow;')
+    highlight_for_a_moment(vic_step.drs['web_dr'], [element], 'outline: 2px dotted yellow; border: 1px solid yellow;')
     attr = element.get_attribute(vic_step.ui_data)
     if attr:
         run_result = ['p', '获取了元素{}的【{}】属性值：{}'.format(el_msg, vic_step.ui_data, attr)]

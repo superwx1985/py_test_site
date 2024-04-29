@@ -60,8 +60,10 @@ class RunningSuites:
                         elif suite.status == 2:
                             success = True
                             msg = '套件已暂停'
-                        else:
+                        elif suite.status == 4:
                             msg = '套件已结束'
+                        else:
+                            msg = f'套件状态为{suite.status}，可能正在切换用例'
                     else:
                         msg = '该用户无中止执行权限'
 
@@ -87,8 +89,10 @@ class RunningSuites:
                                 msg = '已发送继续信号'
                             else:
                                 msg = '套件没有暂停中的用例'
-                        else:
+                        elif suite.status == 4:
                             msg = '套件已结束'
+                        else:
+                            msg = f'套件状态为{suite.status}，可能正在切换用例'
                     else:
                         msg = '该用户无中止执行权限'
 

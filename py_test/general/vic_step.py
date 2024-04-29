@@ -9,7 +9,7 @@ from django.forms.models import model_to_dict
 from selenium.common import exceptions
 from py_test.general import vic_variables, vic_method
 from py_test.vic_tools import vic_find_object
-from py_test import ui_test
+from py_test import web_ui_test
 from py_test.api_test import method as api_method
 from py_test.db_test import method as db_method
 from py_test.vic_tools import vic_eval, vic_date_handle
@@ -58,7 +58,7 @@ class VicStep:
         self.img_list = list()  # 截图列表
         self.status = 0
         self.force_stop_signal = False  # 强制停止信号
-        self.dr = None
+        self.drs = None # driver容器
         self.socket_no_response = False  # 驱动停止响应标志
         self.variable_elements = None
         self.run_result = ['p', '执行成功']
@@ -186,7 +186,7 @@ class VicStep:
             if self.ui_by == 'variable':
                 self.variable_elements = vic_variables.get_elements(self.ui_locator, var, gvar)
             elif self.ui_by == 'public element':
-                self.ui_by, self.ui_locator = ui_test.method.get_public_elements(self)
+                self.ui_by, self.ui_locator = web_ui_test.method.get_public_elements(self)
 
     # 解析表达式
     def analysis_expression(self):
@@ -205,7 +205,8 @@ class VicStep:
 
         self.step_result.loop_id = self.loop_id  # 记录循环迭代次数
         self.step_result.save()  # 暂存，防止子用例设置调用步骤时报错
-        dr = self.dr = self.vic_case.driver_container[0]  # 获取运行时driver
+        drs = self.drs = self.vic_case.driver_container  # 获取运行时driver
+        dr = drs.get("web_dr", None)
         # 简称
         estr = self.execute_str
         vc = self.vic_case
@@ -220,12 +221,10 @@ class VicStep:
             self.pause_()
 
             # selenium驱动初始化检查
-            if atc == 'WEB-UI' and dr is None:
-                raise exceptions.WebDriverException('浏览器未初始化，请检查是否配置有误或浏览器被意外关闭')
-
-            # 设置selenium驱动超时
-            if dr:
-                ui_test.method.set_driver_timeout(dr, timeout)
+            if atc == 'WEB-UI':
+                web_ui_test.method.check_web_driver(self)
+                dr = drs.get("web_dr", None)
+                web_ui_test.method.set_driver_timeout(dr, timeout)
 
             # 如果步骤执行过程中页面元素被改变导致出现StaleElementReferenceException，将自动再次执行步骤
             start_time = time.time()
@@ -395,7 +394,7 @@ class VicStep:
                         elif ac == 'UI_ALERT_HANDLE':
                             if re_run_count == 0:
                                 self.update_test_data('ui_alert_handle_text')
-                            self.run_result, _, _, _pause_time = ui_test.method.alert_handle(self)
+                            self.run_result, _, _, _pause_time = web_ui_test.method.alert_handle(self)
                             pause_time += _pause_time
 
                         # 打开URL
@@ -404,7 +403,7 @@ class VicStep:
                                 self.update_test_data('ui_data')
                             if not self.ui_data:
                                 raise ValueError('请提供要打开的URL地址')
-                            self.run_result = ui_test.method.go_to_url(self)
+                            self.run_result = web_ui_test.method.go_to_url(self)
 
                         # 刷新页面
                         elif ac == 'UI_REFRESH':
@@ -422,7 +421,7 @@ class VicStep:
                         elif ac == 'UI_SCREENSHOT':
                             if re_run_count == 0:
                                 self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
-                            self.run_result, img, _, _pause_time = ui_test.screenshot.get_screenshot(self)
+                            self.run_result, img, _, _pause_time = web_ui_test.screenshot.get_screenshot(self)
                             pause_time += _pause_time
                             if img:
                                 self.img_list.append(img)
@@ -431,7 +430,7 @@ class VicStep:
                         elif ac == 'UI_SWITCH_TO_FRAME':
                             if re_run_count == 0:
                                 self.update_test_data('ui_locator', 'ui_base_element')
-                            self.run_result, _, _pause_time = ui_test.method.try_to_switch_to_frame(self)
+                            self.run_result, _, _pause_time = web_ui_test.method.try_to_switch_to_frame(self)
                             pause_time += _pause_time
 
                         # 退出frame
@@ -443,7 +442,7 @@ class VicStep:
                             if re_run_count == 0:
                                 self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                             self.run_result, new_window_handle, _, _pause_time \
-                                = ui_test.method.try_to_switch_to_window(self)
+                                = web_ui_test.method.try_to_switch_to_window(self)
                             pause_time += _pause_time
 
                         # 关闭当前浏览器窗口或标签并切换至其他窗口或标签
@@ -460,7 +459,7 @@ class VicStep:
                                 current_window_handle = 'N/A'
                             dr.close()
                             self.run_result, new_window_handle, _, _pause_time \
-                                = ui_test.method.try_to_switch_to_window(self, current_window_handle)
+                                = web_ui_test.method.try_to_switch_to_window(self, current_window_handle)
                             pause_time += _pause_time
 
                         # 重置浏览器
@@ -472,8 +471,8 @@ class VicStep:
                                     logger.warning('【{}】\t有一个浏览器无法关闭，请手动关闭'.format(estr), exc_info=True)
                                 del dr
                                 self.logger.info('【{}】\t启动浏览器...'.format(estr))
-                                self.dr = dr = ui_test.driver.get_driver(self.config, estr, 3, logger=logger)
-                                vc.driver_container[0] = dr
+                                self.dr = dr = web_ui_test.driver.get_driver(self.config, estr, 3, logger=logger)
+                                vc.driver_container["web_dr"] = dr
 
                         # 单击
                         elif ac == 'UI_CLICK':
@@ -482,7 +481,7 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, element, _, _pause_time = ui_test.method.try_to_click(self)
+                            self.run_result, element, _, _pause_time = web_ui_test.method.try_to_click(self)
                             pause_time += _pause_time
                             self.elements = [element]
                             if self.save_as:
@@ -495,7 +494,7 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, element, _, _pause_time = ui_test.method.try_to_enter(self)
+                            self.run_result, element, _, _pause_time = web_ui_test.method.try_to_enter(self)
                             pause_time += _pause_time
                             self.elements = [element]
                             if self.save_as:
@@ -508,7 +507,7 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, element, _, _pause_time = ui_test.method.try_to_clear(self)
+                            self.run_result, element, _, _pause_time = web_ui_test.method.try_to_clear(self)
                             pause_time += _pause_time
                             self.elements = [element]
                             if self.save_as:
@@ -521,7 +520,7 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, element, _, _pause_time = ui_test.method.try_to_select(self)
+                            self.run_result, element, _, _pause_time = web_ui_test.method.try_to_select(self)
                             pause_time += _pause_time
                             self.elements = [element]
                             if self.save_as:
@@ -535,7 +534,7 @@ class VicStep:
                             else:
                                 _update_test_data = False
                             self.run_result, element, _, _pause_time \
-                                = ui_test.method.perform_special_action(self, _update_test_data)
+                                = web_ui_test.method.perform_special_action(self, _update_test_data)
                             pause_time += _pause_time
                             self.elements = [element]
                             if self.save_as:
@@ -548,7 +547,7 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, element, _, _pause_time = ui_test.method.try_to_scroll_into_view(self)
+                            self.run_result, element, _, _pause_time = web_ui_test.method.try_to_scroll_into_view(self)
                             pause_time = _pause_time
                             self.elements = [element]
                             if self.save_as:
@@ -561,7 +560,7 @@ class VicStep:
                             if not self.ui_data:
                                 raise ValueError('无验证内容')
                             else:
-                                self.run_result, _, _pause_time = ui_test.method.wait_for_page_redirect(self)
+                                self.run_result, _, _pause_time = web_ui_test.method.wait_for_page_redirect(self)
                             pause_time += _pause_time
                             if self.save_as:
                                 if self.run_result[0] == 'p':
@@ -578,7 +577,7 @@ class VicStep:
                             if not self.ui_data:
                                 raise ValueError('请提供要验证的文字')
                             self.run_result, self.elements, self.fail_elements, _, _pause_time \
-                                = ui_test.method.wait_for_text_present(self)
+                                = web_ui_test.method.wait_for_text_present(self)
                             pause_time += _pause_time
                             if self.save_as:
                                 if self.run_result[0] == 'p':
@@ -596,7 +595,7 @@ class VicStep:
                                 raise ValueError('无效的定位方式或定位符')
 
                             self.run_result, self.elements, _, _, _pause_time \
-                                = ui_test.method.wait_for_element_visible(self)
+                                = web_ui_test.method.wait_for_element_visible(self)
                             pause_time += _pause_time
 
                             if self.save_as:
@@ -615,7 +614,7 @@ class VicStep:
                                 raise ValueError('无效的定位方式或定位符')
 
                             self.run_result, self.fail_elements, _, _pause_time \
-                                = ui_test.method.wait_for_element_disappear(self)
+                                = web_ui_test.method.wait_for_element_disappear(self)
                             pause_time += _pause_time
 
                             if self.save_as:
@@ -633,7 +632,7 @@ class VicStep:
                             if not self.ui_data:
                                 raise ValueError('未提供javascript代码')
 
-                            self.run_result, js_result, _, _pause_time = ui_test.method.run_js(self)
+                            self.run_result, js_result, _, _pause_time = web_ui_test.method.run_js(self)
                             pause_time += _pause_time
                             if self.save_as:
                                 msg = var.set_variable(self.save_as, js_result)
@@ -646,7 +645,7 @@ class VicStep:
                             if not self.ui_data:
                                 raise ValueError('未提供javascript代码')
 
-                            self.run_result, js_result, _, _pause_time = ui_test.method.run_js(self)
+                            self.run_result, js_result, _, _pause_time = web_ui_test.method.run_js(self)
                             pause_time += _pause_time
                             if js_result is not True:
                                 self.run_result = ['f', self.run_result[1]]
@@ -667,7 +666,7 @@ class VicStep:
                                 raise ValueError('无效的定位方式或定位符')
 
                             self.run_result, self.elements, _, _pause_time \
-                                = ui_test.method.wait_for_element_present(self)
+                                = web_ui_test.method.wait_for_element_present(self)
                             pause_time += _pause_time
 
                             if self.run_result[0] == 'p':
@@ -683,7 +682,7 @@ class VicStep:
                             if not self.save_as:
                                 raise ValueError('没有提供变量名')
 
-                            self.run_result, data_ = ui_test.method.get_url(self)
+                            self.run_result, data_ = web_ui_test.method.get_url(self)
 
                             if self.run_result[0] == 'p':
                                 msg = var.set_variable(self.save_as, data_)
@@ -700,7 +699,7 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, text, _, _pause_time= ui_test.method.get_element_text(self)
+                            self.run_result, text, _, _pause_time= web_ui_test.method.get_element_text(self)
                             pause_time += _pause_time
 
                             if self.run_result[0] == 'p':
@@ -718,7 +717,7 @@ class VicStep:
                             if not self.ui_by or not self.ui_locator:
                                 raise ValueError('无效的定位方式或定位符')
 
-                            self.run_result, text, _, _pause_time = ui_test.method.get_element_attr(self)
+                            self.run_result, text, _, _pause_time = web_ui_test.method.get_element_attr(self)
                             pause_time += _pause_time
 
                             if self.run_result[0] == 'p':
@@ -1056,7 +1055,7 @@ class VicStep:
                                 sub_case.execute()
                                 case_result_ = sub_case.case_result
                                 # 更新driver
-                                dr = vc.driver_container[0]
+                                self.drs = self.vic_case.driver_container = sub_case.driver_container
                                 self.step_result.has_sub_case = True
                                 if case_result_.error_count or case_result_.result_error:
                                     self.run_result = ['e', '子用例执行出错，请查看子用例中步骤的执行结果']
@@ -1090,7 +1089,7 @@ class VicStep:
                                         dr.find_elements_by_tag_name('body')
                                     except exceptions.UnexpectedAlertPresentException:
                                         pass
-                                ui_test.method.set_driver_timeout(dr, 5)
+                                web_ui_test.method.set_driver_timeout(dr, 5)
                                 alert_ = dr.switch_to.alert
                                 self.browser_alert = True
                                 self.browser_alert_text = alert_.text
@@ -1102,7 +1101,7 @@ class VicStep:
                             else:
                                 self.socket_no_response = False
                             finally:
-                                ui_test.method.set_driver_timeout(dr, timeout)
+                                web_ui_test.method.set_driver_timeout(dr, timeout)
 
                         # 获取UI验证截图
                         if 'UI_VERIFY_' in ac:
@@ -1114,11 +1113,11 @@ class VicStep:
                                 if self.ui_get_ss:
                                     highlight_elements_map = {}
                                     if self.elements:
-                                        highlight_elements_map = ui_test.method.highlight(dr, self.elements, 'green')
+                                        highlight_elements_map = web_ui_test.method.highlight(dr, self.elements, 'green')
                                     if self.fail_elements:
                                         highlight_elements_map = {
                                             **highlight_elements_map,
-                                            **ui_test.method.highlight(dr, self.fail_elements, 'red')
+                                            **web_ui_test.method.highlight(dr, self.fail_elements, 'red')
                                         }
                                     _start_time = time.time()
                                     _pause_time = 0
@@ -1127,7 +1126,7 @@ class VicStep:
                                         _ui_locator = self.ui_locator
                                         self.ui_by = None
                                         self.ui_locator = None
-                                        _, img, _, _pause_time = ui_test.screenshot.get_screenshot(self)
+                                        _, img, _, _pause_time = web_ui_test.screenshot.get_screenshot(self)
                                         if img:
                                             self.img_list.append(img)
                                         self.ui_by = _ui_by
@@ -1138,12 +1137,12 @@ class VicStep:
                                     finally:
                                         pause_time += _pause_time
                                     if highlight_elements_map:
-                                        ui_test.method.cancel_highlight(dr, highlight_elements_map)
+                                        web_ui_test.method.cancel_highlight(dr, highlight_elements_map)
                                 else:
                                     if self.elements:
-                                        ui_test.method.highlight_for_a_moment(dr, self.elements, 'green', sleep=0.5)
+                                        web_ui_test.method.highlight_for_a_moment(dr, self.elements, 'green', sleep=0.5)
                                     if self.fail_elements:
-                                        ui_test.method.highlight_for_a_moment(dr, self.fail_elements, 'red', sleep=0.5)
+                                        web_ui_test.method.highlight_for_a_moment(dr, self.fail_elements, 'red', sleep=0.5)
 
                         # 通过添加步骤间等待时间控制UI测试执行速度
                         if atc == 'WEB-UI' and self.ui_step_interval:
@@ -1247,7 +1246,7 @@ class VicStep:
                 try:
                     self.ui_by = None
                     self.ui_locator = None
-                    self.run_result, img, _, _ = ui_test.screenshot.get_screenshot(self)
+                    self.run_result, img, _, _ = web_ui_test.screenshot.get_screenshot(self)
                     if img:
                         self.img_list.append(img)
                 except exceptions.UnexpectedAlertPresentException:

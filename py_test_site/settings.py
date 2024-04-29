@@ -19,7 +19,7 @@ if not os.path.exists(LOG_DIR):
 SECRET_KEY = '-8=0r94)m^&x^v7)886@@&iq$2aa*#8@d)dji+x)o(5l1a4dui'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 # 在 Django 中关闭 X-Frame-Options: DENY
 X_FRAME_OPTIONS = 'SAMEORIGIN'
@@ -91,6 +91,8 @@ def get_database_settings(database) -> {}:
         }
     }
     if database == "mysql":
+        pass
+    elif database == "mysql":
         import pymysql
         pymysql.install_as_MySQLdb()  # mysql改用pymysql驱动
 
@@ -123,8 +125,8 @@ def get_database_settings(database) -> {}:
 
 
 # 数据库迁移 https://docs.djangoproject.com/zh-hans/5.0/topics/migrations/
-databases = {1: "sqlite", 2: "mysql", 3: "postgresql"}
-DATABASES = get_database_settings(databases[3])
+databases = {1: "sqlite3", 2: "mysql", 3: "postgresql"}
+DATABASES = get_database_settings(databases[1])
 
 # 数据库保持连接（秒），0-每次请求结束时关闭数据库连接，None-无限制的持久连接
 CONN_MAX_AGE = 60

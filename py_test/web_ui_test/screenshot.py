@@ -8,7 +8,7 @@ from selenium.common import exceptions
 from PIL import Image
 from main.models import Image as db_Image
 from django.core.files.uploadedfile import UploadedFile
-from py_test.ui_test import method
+from py_test.web_ui_test import method
 
 
 def get_screenshot(vic_step):
@@ -28,7 +28,7 @@ def get_screenshot(vic_step):
             run_result = ['f', '截图失败，指定的截取元素未找到，{}'.format(run_result_temp[1])]
     if not run_result:
         try:
-            run_result, img = _get_screenshot(vic_step.dr, element)
+            run_result, img = _get_screenshot(vic_step.drs['web_dr'], element)
         except Exception as e:
             run_result = ['f', '截图失败，原因为{}'.format(getattr(e, 'msg', str(e)))]
     return run_result, img, elapsed_time, pause_time
@@ -144,9 +144,9 @@ def get_image_on_element(dr, element):
 
 
 # 下拉加载更多内容
-def scroll_down_for_loading(driver, wait_time=30, print_=True, logger=logging.getLogger('py_test')):
-    # driver.execute_script("arguments[0].scrollIntoView();")
-    driver.execute_script("""
+def scroll_down_for_loading(dr, wait_time=30, print_=True, logger=logging.getLogger('py_test')):
+    # dr.execute_script("arguments[0].scrollIntoView();")
+    dr.execute_script("""
         (function () {
             var y = scrollY;
             var step = 100;
@@ -169,7 +169,7 @@ def scroll_down_for_loading(driver, wait_time=30, print_=True, logger=logging.ge
 
     start_time = time.time()
     for i in range(wait_time):
-        if "scroll-done" in driver.title:
+        if "scroll-done" in dr.title:
             return
         time.sleep(1)
         if print_:

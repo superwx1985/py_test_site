@@ -4,7 +4,6 @@ import traceback
 import time
 import math
 from py_test.general import vic_variables, vic_method
-from py_test import ui_test
 from main.models import CaseResult, Step, error_handle_dict
 from django.forms.models import model_to_dict
 from .public_items import status_str_dict
@@ -124,7 +123,7 @@ class VicCase:
         )
 
         # driver容器，用于在运行过程中更换driver
-        self.driver_container = driver_container or [None]
+        self.driver_container = driver_container or dict()
 
     # 强制停止标志
     @property
@@ -195,7 +194,7 @@ class VicCase:
         execute_str = self.execute_str
         
         # 从容器中获取driver
-        dr = self.driver_container[0]
+        web_dr = self.driver_container.get("web_dr", None)
 
         if not self.force_stop:
             # 用例初始化
@@ -208,12 +207,6 @@ class VicCase:
                 if recursive_id:
                     raise RecursionError('用例[ID:{}]被用例[ID:{}]递归调用，执行中止。调用顺序列表：{}'.format(
                             recursive_id, case_list[-1], case_list))
-
-                # 初始化driver
-                if not dr and self.config.ui_selenium_client != 0:
-                    self.logger.info('【{}】\t启动浏览器...'.format(step_execute_str))
-                    dr = ui_test.driver.get_driver(self.config, execute_str, 3, logger=self.logger)
-                    self.driver_container[0] = dr
 
                 # 读取本地变量
                 if self.variables is None:
@@ -276,7 +269,7 @@ class VicCase:
                     self.socket_no_response = step_.socket_no_response
 
                     # 更新driver
-                    dr = self.driver_container[0]
+                    web_dr = self.driver_container.get("web_dr", None)
 
                     # 处理循环标志
                     if self.loop_active:
@@ -329,7 +322,7 @@ class VicCase:
                 execute_str, len(self.loop_list)))
 
         # 如果不是子用例，且浏览器未关闭，则关闭浏览器
-        if dr and not self.vic_step:
+        if web_dr and not self.vic_step:
             # 如果logging level小于10，保留浏览器以供调试
             if self.logger.level < 10:
                 self.logger.warning('【{}】\t由于日志级别为DEV，将保留浏览器以供调试，请自行关闭'.format(execute_str))
@@ -338,16 +331,17 @@ class VicCase:
                     if self.socket_no_response:
                         # 设置Remote Connection超时时间
                         try:
-                            _conn = getattr(dr.command_executor, '_conn')
+                            _conn = getattr(web_dr.command_executor, '_conn')
                             _conn.timeout = 5
                         except AttributeError:
-                            dr.command_executor.set_timeout(5)
+                            web_dr.command_executor.set_timeout(5)
                     self.logger.info('【{}】\t关闭浏览器...'.format(execute_str))
-                    dr.quit()
+                    web_dr.quit()
                     self.logger.info('【{}】\t已关闭'.format(execute_str))
                 except:
                     self.logger.warning('【{}】\t有一个浏览器无法关闭，请手动关闭'.format(execute_str), exc_info=True)
-            del dr
+            del web_dr
+            self.driver_container.pop("web_dr", None)
 
         if self.force_stop:
             self.case_result.result_state = 4
