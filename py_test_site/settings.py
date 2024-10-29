@@ -90,7 +90,7 @@ def get_database_settings(database) -> {}:
             'NAME': os.path.join(BASE_DIR, 'debug_db/db.sqlite3'),
         }
     }
-    if database == "mysql":
+    if database == "sqlite3":
         pass
     elif database == "mysql":
         import pymysql

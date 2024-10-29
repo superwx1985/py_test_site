@@ -32,7 +32,7 @@ pip install "psycopg[binary]"
 ### Windows
 ```
 #启动
-start nginx  
+start nginx
 #关闭
 nginx -s stop
 #重启
@@ -73,4 +73,8 @@ python other\vic_daphne_server.py py_test_site.asgi:application -p 8001
 ```
 
 ## 访问网站
-http://127.0.0.1:80/user/login/
+http://127.0.0.1:80/user/login/  
+管理员账号：admin/abcd123!  
+QA1：vic/123456  
+QA2：vic2/123456  
+QA Lead：vic_admin/123456
