@@ -1,33 +1,23 @@
 import datetime
-import httplib2
+import requests
 import json
-import socket
 import logging
 from py_test.vic_tools import vic_find_object
+from py_test.vic_test.vic_http_request import request
 
 
 # 发送http请求
 def send_http_request(vic_step):
-    h = httplib2.Http(timeout=vic_step.timeout)
     response_start_time = datetime.datetime.now()
     try:
-        response, content = h.request(
-            uri=vic_step.api_url, method=vic_step.api_method.upper(), headers=vic_step.api_headers,
-            body=vic_step.api_body)
-        response_end_time = datetime.datetime.now()
-    except socket.timeout as e:
-        response_end_time = datetime.datetime.now()
+        response = request(vic_step.api_method.upper(), vic_step.api_url, headers=vic_step.api_headers, files=None,
+                           data=vic_step.api_body, params=None, auth=None, cookies=None, hooks=None, json=None,
+                           _logger=None, highlight_error=False, timeout=(vic_step.timeout, vic_step.timeout))
+    except requests.exceptions.Timeout as e:
         response = e
-        response_body = getattr(e, 'msg', str(e))
-    else:
-        response_body = ''
-        if content:
-            try:
-                decode = vic_step.api_decode if vic_step.api_decode else 'utf-8'
-                response_body = content.decode(decode)  # 处理中文乱码
-            except UnicodeDecodeError:
-                response_body = str(content)
-    return response, response_body, response_start_time, response_end_time
+    response_end_time = datetime.datetime.now()
+
+    return response, response_start_time, response_end_time
 
 
 # 验证http请求
@@ -90,7 +80,7 @@ def verify_http_response(expect, response, logger=logging.getLogger('py_test')):
                     str_f += '\n*** Keyword ' + str(j) + ' ***\n' + generate_keyword_str(v[2])
             fail_group_str = fail_group_str + str_p + str_f
     if isinstance(response_object, (tuple, list, dict)):
-        response = str(response) + '\n\nResponse in json view:\n' + json.dumps(response_object, indent=1,
+        response = str(response) + '\n\nResponse in json view:\n' + json.dumps(response_object, indent=2,
                                                                                ensure_ascii=False)
 
     if is_pass:

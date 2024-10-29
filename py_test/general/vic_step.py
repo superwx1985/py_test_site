@@ -5,6 +5,8 @@ import traceback
 import socket
 import math
 from socket import timeout as socket_timeout_error
+
+import requests
 from django.forms.models import model_to_dict
 from selenium.common import exceptions
 from py_test.general import vic_variables, vic_method
@@ -740,21 +742,21 @@ class VicStep:
                                         getattr(e, 'msg', str(e))))
                             else:
                                 self.api_headers = dict()
-                            response, response_body, _, _ = api_method.send_http_request(self)
-                            if isinstance(response, socket.timeout):
+                            response, _, _ = api_method.send_http_request(self)
+                            if isinstance(response, requests.exceptions.Timeout):
                                 self.run_result = ['f', '请求超时']
                             else:
                                 try:
-                                    pretty_request_header = json.dumps(self.api_headers, indent=1, ensure_ascii=False)
+                                    pretty_request_header = json.dumps(self.api_headers, indent=2, ensure_ascii=False)
                                 except TypeError:
                                     pretty_request_header = str(self.api_headers)
-                                pretty_response_header = json.dumps(response, indent=1, ensure_ascii=False)
+                                pretty_response_header = json.dumps(dict(response.headers), indent=2, ensure_ascii=False)
 
                                 run_result_state = 'p'
-                                response_body_msg = response_body
+                                response_body_msg = response.text
                                 if self.api_data:
                                     run_result, response_body_msg = api_method.verify_http_response(
-                                        self.api_data, response_body, logger)
+                                        self.api_data, response.text, logger)
                                     if run_result[0] == 'p':
                                         prefix_msg = '请求发送完毕，结果验证通过'
                                     else:
@@ -775,13 +777,13 @@ class VicStep:
                                       '响应状态：\n{} {}\n' \
                                       '响应头：\n{}\n' \
                                       '响应体：\n{}\n{}'.format(
-                                        self.api_url,
-                                        self.api_method,
-                                        pretty_request_header,
-                                        self.api_body,
-                                        response.status, response.reason,
-                                        pretty_response_header,
-                                        response_body_msg, suffix_msg)
+                                    self.api_url,
+                                    self.api_method,
+                                    pretty_request_header,
+                                    self.api_body,
+                                    response.status_code, response.reason,
+                                    pretty_response_header,
+                                    response_body_msg, suffix_msg)
 
                                 if self.save_as and self.api_data:
                                     if self.run_result[0] == 'p':
@@ -793,7 +795,7 @@ class VicStep:
 
                                 if self.api_save and self.api_save != '[]':
                                     success, msg_ = api_method.save_http_response(
-                                        response, response_body, self.api_save, var, logger=logger)
+                                        response, response.text, self.api_save, var, logger=logger)
                                     msg = '{}\n响应内容保存情况：\n{}'.format(msg, msg_)
                                     if not success:
                                         run_result_state = 'f'
@@ -825,7 +827,7 @@ class VicStep:
                             else:
                                 try:
                                     pretty_result = json.dumps(
-                                        select_result, indent=1, ensure_ascii=False, cls=db_method.JsonDatetimeEncoder)
+                                        select_result, indent=2, ensure_ascii=False, cls=db_method.JsonDatetimeEncoder)
                                 except TypeError:
                                     pretty_result = str(select_result)
                                 if len(pretty_result) > 10000:
@@ -857,7 +859,7 @@ class VicStep:
                             else:
                                 try:
                                     pretty_result = json.dumps(
-                                        select_result, indent=1, ensure_ascii=False, cls=db_method.JsonDatetimeEncoder)
+                                        select_result, indent=2, ensure_ascii=False, cls=db_method.JsonDatetimeEncoder)
                                 except TypeError:
                                     pretty_result = str(select_result)
                                 if len(pretty_result) > 10000:
