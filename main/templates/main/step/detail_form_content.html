@@ -134,6 +134,12 @@
     </div>
 </div>
 <div class="row align-items-center" api>
+    <div class="col-1 text-center font-weight-bold">期望返回码</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=form.api_response_status %}
+    </div>
+</div>
+<div class="row align-items-center" api>
     <div class="col-1 text-center font-weight-bold">待验证内容</div>
     <div class="col" form_data>
         {% include 'main/include/form_textarea.html' with field=form.api_data rows='2' %}

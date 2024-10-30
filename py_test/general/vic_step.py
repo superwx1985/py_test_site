@@ -9,6 +9,7 @@ from socket import timeout as socket_timeout_error
 import requests
 from django.forms.models import model_to_dict
 from selenium.common import exceptions
+from selenium.webdriver.common.by import By
 from py_test.general import vic_variables, vic_method
 from py_test.vic_tools import vic_find_object
 from py_test import web_ui_test
@@ -101,6 +102,7 @@ class VicStep:
             self.api_headers = step.api_headers
             self.api_body = step.api_body
             self.api_decode = step.api_decode
+            self.api_response_status = step.api_response_status
             self.api_data = step.api_data
             self.api_save = step.api_save
 
@@ -754,9 +756,10 @@ class VicStep:
 
                                 run_result_state = 'p'
                                 response_body_msg = response.text
-                                if self.api_data:
+
+                                if self.api_response_status or self.api_data:
                                     run_result, response_body_msg = api_method.verify_http_response(
-                                        self.api_data, response.text, logger)
+                                        self.api_response_status, self.api_data, response, logger)
                                     if run_result[0] == 'p':
                                         prefix_msg = '请求发送完毕，结果验证通过'
                                     else:
@@ -1088,7 +1091,7 @@ class VicStep:
                                 # 防止切换窗口后页面还未加载完毕就获取弹窗导致超时
                                 if ac in ['UI_SWITCH_TO_WINDOW', 'UI_CLOSE_WINDOW']:
                                     try:
-                                        dr.find_elements_by_tag_name('body')
+                                        dr.find_elements(By.TAG_NAME, 'body')
                                     except exceptions.UnexpectedAlertPresentException:
                                         pass
                                 web_ui_test.method.set_driver_timeout(dr, 5)

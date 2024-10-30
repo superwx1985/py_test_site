@@ -180,6 +180,7 @@ class Step(models.Model):
     api_headers = models.TextField(blank=True)
     api_body = models.TextField(blank=True)
     api_decode = models.CharField(max_length=255, blank=True)
+    api_response_status = models.CharField(max_length=255, blank=True)
     api_data = models.TextField(blank=True)
     api_save = models.TextField(blank=True)
     other_data = models.TextField(blank=True)
