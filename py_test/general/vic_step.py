@@ -262,7 +262,7 @@ class VicStep:
                                 vc.step_active = _result
                             else:
                                 _result = None
-                                self.run_result = ['s', '跳过步骤']
+                                self.run_result = ['i', '忽略（不记录错误）']
 
                             # 创建分支对象
                             if_object = {'result': _result, 'active': _step_active}
@@ -284,7 +284,7 @@ class VicStep:
                                         vc.step_active = False
                                     # 如之前的分支已匹配成功
                                     elif if_object['result']:
-                                        self.run_result = ['s', '已有符合条件的分支被执行，本分支将被跳过']
+                                        self.run_result = ['i', '已有符合条件的分支被执行，本分支将被跳过']
                                         vc.step_active = False
                                     else:
                                         # 解析表达式
@@ -302,7 +302,7 @@ class VicStep:
                                         # 匹配成功则开始执行后续步骤
                                         vc.step_active = _result
                                 else:
-                                    self.run_result = ['s', '跳过步骤']
+                                    self.run_result = ['i', '忽略（不记录错误）']
                             else:
                                 msg = '出现多余的“ELSE_IF”步骤，可能会导致意外的错误，请检查用例'
                                 logger.warning('【{}】\t{}'.format(estr, msg))
@@ -323,14 +323,14 @@ class VicStep:
                                     else:
                                         # 反转激活标志
                                         if if_object['result']:
-                                            self.run_result = ['s', '已有符合条件的分支被执行，else分支将被跳过']
+                                            self.run_result = ['i', '已有符合条件的分支被执行，else分支将被跳过']
                                         else:
                                             self.run_result = ['p', '没有找到符合条件的分支，else分支将被执行']
                                         vc.step_active = not if_object['result']
                                         # 在分支对象中添加else标记
                                         if_object['else'] = True
                                 else:
-                                    self.run_result = ['s', '跳过步骤']
+                                    self.run_result = ['i', '忽略（不记录错误）']
                             else:
                                 logger.warning('【{}】\t{}'.format(estr, msg))
                                 self.run_result = ['f', msg]
@@ -344,7 +344,7 @@ class VicStep:
                                     # 后续步骤重置为激活状态
                                     vc.step_active = True
                                 else:
-                                    self.run_result = ['s', '跳过步骤']
+                                    self.run_result = ['i', '忽略（不记录错误）']
                             else:
                                 msg = '出现多余的“END_IF”步骤，可能会导致意外的错误，请检查用例'
                                 logger.warning('【{}】\t{}'.format(estr, msg))
@@ -474,7 +474,7 @@ class VicStep:
                                 except:
                                     logger.warning('【{}】\t有一个浏览器无法关闭，请手动关闭'.format(estr), exc_info=True)
                                 del dr
-                                self.logger.info('【{}】\t启动浏览器...'.format(estr))
+                                logger.info('【{}】\t启动浏览器...'.format(estr))
                                 self.dr = dr = web_ui_test.driver.get_driver(self.config, estr, 3, logger=logger)
                                 vc.driver_container["web_dr"] = dr
 
@@ -1067,7 +1067,7 @@ class VicStep:
                                 elif case_result_.fail_count:
                                     self.run_result = ['f', '子用例验证失败，请查看子用例中步骤的执行结果']
                                 elif case_result_.execute_count == 0:
-                                    self.run_result = ['s', '子用例未执行']
+                                    self.run_result = ['i', '子用例未执行']
                                 else:
                                     self.run_result = ['p', '子用例执行成功']
 
@@ -1161,7 +1161,7 @@ class VicStep:
                                 logger.info('【{}】\t步骤间已停顿{}秒，剩余{}秒'.format(estr, y, x-y))
                             time.sleep(_timeout[0])  # 补上小数部分
                     else:
-                        self.run_result = ['s', '跳过步骤']
+                        self.run_result = ['i', '忽略（不记录错误）']
                 # 如果遇到元素过期，将尝试重跑该步骤，直到超时
                 except (exceptions.StaleElementReferenceException, exceptions.WebDriverException) as e:
                     if self.force_stop or (time.time() - start_time - pause_time) > timeout:
@@ -1177,7 +1177,7 @@ class VicStep:
             if self.force_stop:
                 self.step_result.result_state = 4
                 self.run_result[1] = '执行中止，中止前信息如下：\n{}'.format(self.run_result[1])
-            elif self.run_result[0] == 's':
+            elif self.run_result[0] == 'i':
                 self.step_result.result_state = 0
             elif self.run_result[0] == 'p':
                 self.step_result.result_state = 1

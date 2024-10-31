@@ -178,3 +178,8 @@ class EvalObject:
                     if self.logger.level < 10:
                         raise
         return success, eval_result, final_expression
+
+
+if __name__ == '__main__':
+    eo = EvalObject('admin', variable_dict={'x': 1})
+    print(eo.get_eval_result())

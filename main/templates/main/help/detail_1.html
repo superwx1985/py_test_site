@@ -91,6 +91,9 @@
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#operate_11">time或datetime</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#operate_12">cal</a>
+                    </li>
                 </ul>
                 <div class="tab-content bg-light">
                     <div id="operate_1" class="tab-pane active" style="padding: 1em">
@@ -406,6 +409,21 @@
                             <p>代表输入的时间格式，参见<a href="javascript:$('a[href=\'#operate_2\']').click()">操作符t</a>的参数2。</p>
                             <p class="font-weight-bold">参数3及参数4</p>
                             <p>参数3代表时间位移单位，参数4代表时间位移量，参见<a href="javascript:$('a[href=\'#operate_2\']').click()">操作符t</a>的参数3及参数4。</p>
+                        </div>
+                    </div>
+                    <div id="operate_12" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">尝试把表达式当做python代码执行</p>
+                            <p class="font-weight-bold">参数1</p>
+                            <p>python表达式。</p>
+                            <p>例：
+                                <br>
+                                <span class="mark">${cal|1+2}$</span>，返回<span class="text-info">3</span>
+                                <br>
+                                <span class="mark">${cal|1+2==4}$</span>，返回<span class="text-info">False</span>
+                                <br>
+                                <span class="mark">${cal|(1+2==4)==False}$</span>，返回<span class="text-info">True</span>
+                            </p>
                         </div>
                     </div>
                 </div>

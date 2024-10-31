@@ -75,13 +75,13 @@
         {% include 'main/include/submit_button_group.html' %}
     </form>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该套件内每一步骤的默认超时值（单位：秒）。如果用例或步骤单独设置了超时值，将使用用例或步骤的值"></i></div>
+        <div class="col-1 text-center font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该套件内每一步骤的默认超时值（单位：秒）。会被下级的设置覆盖"></i></div>
         <div class="col" form_data>
             <span class="text-info">{{ obj.timeout }}</span>
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。如果用例或步骤单独设置了间隔时间，将使用用例或步骤的值"></i></div>
+        <div class="col-1 text-center font-weight-bold">UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。会被下级的设置覆盖"></i></div>
         <div class="col" form_data>
             <span class="text-info">{{ obj.ui_step_interval }}</span>
         </div>
@@ -93,14 +93,14 @@
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。如果用例或步骤单独设置了处理方式，将使用步骤的值"></i></div>
+        <div class="col-1 text-center font-weight-bold">错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。会被下级的设置覆盖"></i></div>
         <div class="col" form_data>
             <select name="error_handle" class="form-control" id="id_error_handle" disabled>
               <option value="0">继承上级</option>
               <option value="1">中止测试</option>
               <option value="2">继续测试</option>
               <option value="3">暂停测试</option>
-              <option value="4">跳过步骤</option>
+              <option value="4">忽略（不记录错误）</option>
             </select>
         </div>
     </div>
@@ -154,7 +154,7 @@
         <div class="col-1 text-center font-weight-bold">测试结果</div>
         <div class="col">
             {% if obj.result_state == 0 %}
-                <div class="text-secondary">{{ obj.result_message|default:'跳过' }}</div>
+                <div class="text-secondary">{{ obj.result_message|default:'忽略' }}</div>
             {% elif obj.result_state == 1 %}
                 <div class="text-success">{{ obj.result_message|default:'通过' }}</div>
             {% elif obj.result_state == 2 %}

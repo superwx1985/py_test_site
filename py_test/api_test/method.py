@@ -29,10 +29,10 @@ def verify_http_response(expect_status, expect, response, logger=logging.getLogg
     response_text = response.text
 
     if expect_status and expect_status != str(response.status_code):
-        fail_group_str = f'Expected status code is {expect_status}, but got {response.status_code}\n'
+        fail_group_str = f'Expected status code is [{expect_status}], but got [{response.status_code}].\n'
     else:
         status_pass = True
-        pass_group_str = f'The expected status code and the actual value are the same, both are {expect_status}\n'
+        pass_group_str = f'The expected status code and the actual value are the same, both are [{expect_status}].\n'
 
     if expect:
 
@@ -51,7 +51,7 @@ def verify_http_response(expect_status, expect, response, logger=logging.getLogg
             return str_
 
         if 0 < len(pass_group):
-            pass_group_str = '\n===== Pass Group [%s/%s] =====\n' % (len(pass_group), condition_count)
+            pass_group_str += '\n===== Pass Group [%s/%s] =====\n' % (len(pass_group), condition_count)
             for group_i in pass_group:
                 pass_group_str += '----- Group %s [%s/%s] -----\n' % (
                     group_i[0], len(group_i[1]), len(group_i[1]) + len(group_i[2]))
@@ -72,7 +72,7 @@ def verify_http_response(expect_status, expect, response, logger=logging.getLogg
                 pass_group_str = pass_group_str + str_p + str_f
 
         if 0 < len(fail_group):
-            fail_group_str = '\n===== Fail Group [%s/%s] =====\n' % (len(fail_group), condition_count)
+            fail_group_str += '\n===== Fail Group [%s/%s] =====\n' % (len(fail_group), condition_count)
             for group_i in fail_group:
                 fail_group_str += '----- Group %s [%s/%s] -----\n' % (
                     group_i[0], len(group_i[1]), len(group_i[1]) + len(group_i[2]))
@@ -94,6 +94,8 @@ def verify_http_response(expect_status, expect, response, logger=logging.getLogg
         if isinstance(response_object, (tuple, list, dict)):
             response_text = response_text + '\n\nResponse in json view:\n' + json.dumps(response_object, indent=2,
                                                                                    ensure_ascii=False)
+    else:
+        content_pass = True
 
     if status_pass and content_pass:
         run_result = ['p', 'PASS\n' + pass_group_str + fail_group_str]

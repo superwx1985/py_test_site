@@ -78,14 +78,6 @@ def select_func(str_, variables, global_variables, logger=logging.getLogger('py_
                 value = timestamp_to_time_str_func(parameter)
             elif f == 'url':
                 value = encode_url_func(parameter)
-            elif f == 'cal':
-                eo = vic_eval.EvalObject(
-                    parameter, vic_variables.get_variable_dict(variables, global_variables), logger)
-                success, eval_result, final_expression = eo.get_eval_result()
-                if success:
-                    value = str(eval_result)
-                else:
-                    value = '计算出错！\n表达式：\n' + final_expression + '\n' + str(eval_result)
             elif f == 'uuid':
                 value = get_uuid()
             elif f == 'slice':
@@ -113,6 +105,14 @@ def select_func(str_, variables, global_variables, logger=logging.getLogger('py_
                     value = get_time_func(parameter)
                 except ValueError:
                     raise ValueError('无法把{}转换为时间类型，请检查数据'.format(parameter))
+            elif f == 'cal':
+                eo = vic_eval.EvalObject(
+                    parameter, vic_variables.get_variable_dict(variables, global_variables), logger)
+                success, eval_result, final_expression = eo.get_eval_result()
+                if success:
+                    value = str(eval_result)
+                else:
+                    value = '计算出错！\n表达式：\n' + final_expression + '\n' + str(eval_result)
             else:
                 raise ValueError('[' + f + ']不是一个合法的操作符')
         except ValueError as e:
@@ -280,3 +280,10 @@ def encode_url_func(str_):
     except Exception as e:
         raise ValueError('Cannot encode [' + str_ + ']. ' + str(e))
     return value
+
+
+if __name__ == '__main__':
+    a = replace_special_value('${t|2000-10-1,,,,date}$')
+    print(a)
+    a = replace_special_value('${t|2020-02-29 11:12:13.1123,,year,-1,full}$')
+    print(a)

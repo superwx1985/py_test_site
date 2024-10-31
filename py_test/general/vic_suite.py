@@ -191,7 +191,7 @@ class VicSuite:
                         elif case_result.result_state == 4:
                             self.suite_result.stop_count += 1
 
-            skip_count = (self.suite_result.execute_count - self.suite_result.pass_count - self.suite_result.fail_count
+            ignore_count = (self.suite_result.execute_count - self.suite_result.pass_count - self.suite_result.fail_count
                           - self.suite_result.error_count - self.suite_result.stop_count)
 
             if self.suite_result.error_count:
@@ -200,14 +200,14 @@ class VicSuite:
                 self.suite_result.result_state = 2
             elif self.force_stop or self.suite_result.stop_count:
                 self.suite_result.result_state = 4
-            elif self.suite_result.execute_count == skip_count:
+            elif self.suite_result.execute_count == ignore_count:
                 self.suite_result.result_state = 0
             else:
                 self.suite_result.result_state = 1
 
-            self.suite_result.result_message = '执行: {} | 通过: {} | 失败: {} | 出错: {} | 中止: {} | 跳过: {}'.format(
+            self.suite_result.result_message = '执行: {} | 通过: {} | 失败: {} | 出错: {} | 中止: {} | 忽略: {}'.format(
                 self.suite_result.execute_count, self.suite_result.pass_count, self.suite_result.fail_count,
-                self.suite_result.error_count, self.suite_result.stop_count, skip_count)
+                self.suite_result.error_count, self.suite_result.stop_count, ignore_count)
             self.suite_result.end_date = datetime.datetime.now()
             self.suite_result.save()
         except Exception as e:

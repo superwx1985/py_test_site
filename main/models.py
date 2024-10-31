@@ -5,7 +5,7 @@ import uuid
 from py_test.vic_tools.vic_date_handle import get_timedelta_str
 
 result_state_list = (
-    (0, '跳过'),
+    (0, '忽略'),
     (1, '成功'),
     (2, '失败'),
     (3, '异常'),
@@ -17,7 +17,7 @@ error_handle_list_ = (
     (1, '中止测试', 'stop'),
     (2, '继续测试', 'continue'),
     (3, '暂停测试', 'pause'),
-    (4, '跳过步骤', 'skip'),
+    (4, '忽略（不记录错误）', 'ignore'),
 )
 error_handle_dict = {i[0]: i[2] for i in error_handle_list_}
 error_handle_list = [(i[0], i[1]) for i in error_handle_list_]

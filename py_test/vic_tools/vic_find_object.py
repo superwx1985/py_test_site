@@ -698,3 +698,28 @@ def find_with_multiple_condition_intersection(
                 data_object = single_result.data_object
 
     return p, f, data_object
+
+
+if __name__ == '__main__':
+    # from py_test.vic_tools.vic_find_object import find_with_condition, FindObject
+    from py_test.general import vic_log
+    import json
+    import logging
+
+    logger = logging.getLogger('debug')
+    logger.setLevel(10)
+    sh = logging.StreamHandler()
+    sh.setLevel(10)
+    sh.setFormatter(vic_log.format_standard)
+    logger.addHandler(sh)
+
+    logger.info("sssss试试")
+
+    j1 = '#{json}#{"b": "#{json|l}#[1, 2, \\"#{json}#[4, 5, \\"#{json|l}#[5,5]\\"]\\"]"}'
+    j1 = '#{json}#{"b": "#{json|l}#[1, 2, \\"#{json}#[4, 5, \\\\"#{json|l}#[5,5]\\\\"]\\"]"}'
+    o2 = {"a": "a1", "b": [1, 2, ["abc试试", 4, 5, [5, 5]]], "c": {"1": 1, "2": 2}}
+    j2 = json.dumps(o2)
+    print(j2)
+
+    r = find_with_condition(j1, j2, logger=logger)
+    print(r)

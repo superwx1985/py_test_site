@@ -279,7 +279,7 @@ class VicCase:
                     # 统计步骤结果
                     self.case_result.execute_count += 1
                     if step_result_.result_state == 0:
-                        self.logger.info('【{}】\t跳过'.format(step_execute_str))
+                        self.logger.info('【{}】\t忽略'.format(step_execute_str))
                     elif step_result_.result_state == 1:
                         self.case_result.pass_count += 1
                         self.logger.info('【{}】\t执行成功'.format(step_execute_str))
@@ -291,14 +291,16 @@ class VicCase:
                         else:
                             self.logger.error('【{}】\t执行出错'.format(step_execute_str))
 
-                        if step_.error_handle == 'skip':
-                            skip_msg = '因为本步骤被设置为遇到错误跳过，所以执行结果更改为跳过'
-                            self.logger.warning('【{}】\t{}'.format(step_execute_str, skip_msg))
+                        if step_.error_handle == 'ignore':
+                            ignore_msg = '因为本步骤被设置为遇到错误忽略，所以执行结果更改为忽略'
+                            self.logger.warning('【{}】\t{}'.format(step_execute_str, ignore_msg))
                             step_result_.result_state = 0
                             step_result_.result_message = '{}\n==========\n{}'.format(
-                                step_result_.result_message, skip_msg)
+                                step_result_.result_message, ignore_msg)
                             step_result_.save()
                         else:
+                            if self.error_handle == 'stop':
+                                self.vic_suite.force_stop_signal = True  # 向套件发送中止信号
                             if step_result_.result_state == 2:
                                 self.case_result.fail_count += 1
                             else:
@@ -352,7 +354,7 @@ class VicCase:
             self.case_result.result_message = '失败'
         elif self.case_result.execute_count == 0:
             self.case_result.result_state = 0
-            self.case_result.result_message = '跳过'
+            self.case_result.result_message = '忽略'
         else:
             self.case_result.result_state = 1
             self.case_result.result_message = '通过'

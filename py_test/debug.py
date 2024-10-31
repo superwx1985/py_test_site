@@ -1,34 +1,20 @@
-# from py_test.general import vic_method
-
-# a = vic_method.replace_special_value('${t|2000-10-1,,,,date}$')
-# print(a)
-# a = vic_method.replace_special_value('${t|2020-02-29 11:12:13.1123,,year,-1,full}$')
-# print(a)
-
-
-# from py_test.vic_tools.vic_eval import EvalObject
-#
-# eo = EvalObject('admin', variable_dict={'x': 1})
-#
-# print(eo.get_eval_result())
-
-
-from py_test.vic_tools.vic_find_object import find_with_condition, FindObject
-from py_test.general import vic_log
+import base64
 import json
-import logging
-logger = logging.getLogger('debug')
-logger.setLevel(10)
-sh = logging.StreamHandler()
-sh.setLevel(10)
-sh.setFormatter(vic_log.format_standard)
-logger.addHandler(sh)
+import jwt  # PyJWT库，用于验证签名
 
-j1 = '#{json}#{"b": "#{json|l}#[1, 2, \\"#{json}#[4, 5, \\"#{json|l}#[5,5]\\"]\\"]"}'
-j1 = '#{json}#{"b": "#{json|l}#[1, 2, \\"#{json}#[4, 5, \\\\"#{json|l}#[5,5]\\\\"]\\"]"}'
-o2 = {"a": "a1", "b": [1, 2, ["abc", 4, 5, [5, 5]]], "c": {"1": 1, "2": 2}}
-j2 = json.dumps(o2)
+# 假设我们有一个 JWT
+encoded_jwt = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjRCOTFBM0ZGM0IxOEYxQTIzOTc4MzY0OUJCMUFFNkJCMkUxQzFBNTVSUzI1NiIsInR5cCI6ImF0K2p3dCIsIng1dCI6IlM1R2pfenNZOGFJNWVEWkp1eHJtdXk0Y0dsVSJ9.eyJuYmYiOjE3MzAyODI3ODEsImV4cCI6MTczMDI4OTk4MSwiaXNzIjoiaHR0cHM6Ly9ndWMuZXUuZ2xvYmUtZ3JvdXBzLmNvbSIsImF1ZCI6WyJFcnJvclNlcnZpY2VBcGkiLCJnQ29ubmVjdEFwcEFwaSIsImdDb25uZWN0SW9URGV2aWNlIiwiZ0Nvbm5lY3RPcGVuQXBpIiwiTGljZW5zZVNlcnZpY2VBcGkiLCJHdWNBcGkiXSwiY2xpZW50X2lkIjoiQ3JhbWVyQ29ubmVjdEFpQ29uaWMiLCJzdWIiOiJmMjMyNzNmZi1hNzM0LTRiOWEtYjQ4NC05MmM2N2M2ZTdlNmUiLCJhdXRoX3RpbWUiOjE3MzAyODI3ODEsImlkcCI6ImxvY2FsIiwiQWNjZXNzaWJsZUFwcGxpY2F0aW9uIjoiQ3JhbWVyQ29ubmVjdEFpQ29uaWMiLCJUZW5hbnQiOiJHTEIiLCJCYXNlTG9jYXRpb24iOiJTV0UiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiVXNlcl9jOTQxNWU1MWM4MDg0OTQzYjk2MDIxMmI4MmJjZjJmYyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6InZpY3dhbmd0ZXN0MDAxQDEyNi5jb20iLCJJc0VtYWlsQ29uZmlybWVkIjp0cnVlLCJQYXNzd29yZEhhc2giOiJBUUFBQUFFQUFDY1FBQUFBRU8yRnB1K2EveU85UWs3elIrTVMzYlo5MWlidC9sSlA5K1E2aXVvRnd4VDlBb1VVdzByRm5aRys4SnBIUFdJem9RPT0iLCJqdGkiOiI5OUU5OTJDOEE2M0JEMDNCRTAwQzVDQUY0RDE2NkFGOSIsImlhdCI6MTczMDI4Mjc4MSwic2NvcGUiOiJFcnJvclNlcnZpY2VBcGkgZ0Nvbm5lY3RBcHBBcGkuQVBQUHVzaC5SZWFkIGdDb25uZWN0QXBwQXBpLkFQUFB1c2guV3JpdGUgZ0Nvbm5lY3RBcHBBcGkuQXNzb2NpYXRlZERldmljZS5Xcml0ZSBnQ29ubmVjdEFwcEFwaS5EYXRhUG9pbnQuUmVhZCBnQ29ubmVjdEFwcEFwaS5EZXZpY2VSZWdpc3RyYXRpb24uUmVhZCBnQ29ubmVjdEFwcEFwaS5GaXJtd2FyZVVwZ3JhZGUuUmVhZCBnQ29ubmVjdEFwcEFwaS5GaXJtd2FyZVVwZ3JhZGUuV3JpdGUgZ0Nvbm5lY3RBcHBBcGkuTXVsdGlab25lLlJlYWQgZ0Nvbm5lY3RBcHBBcGkuTXVsdGlab25lLldyaXRlIGdDb25uZWN0QXBwQXBpLlBhaXJpbmcuUmVhZCBnQ29ubmVjdEFwcEFwaS5QYWlyaW5nLldyaXRlIGdDb25uZWN0SW90RGV2aWNlLkRldmljZS5SZWFkIGdDb25uZWN0SW90RGV2aWNlLkRldmljZS5Xcml0ZSBnQ29ubmVjdElvdERldmljZS5EZXZpY2VFeHRlbnNpb24uUmVhZCBnQ29ubmVjdElvdERldmljZS5EZXZpY2VFeHRlbnNpb24uV3JpdGUgZ0Nvbm5lY3RJb3REZXZpY2UuRGV2aWNlU2hhcmUuUmVhZCBnQ29ubmVjdElvdERldmljZS5EZXZpY2VTaGFyZS5Xcml0ZSBnQ29ubmVjdElvdERldmljZS5STE0uUmVhZCBnQ29ubmVjdElvdERldmljZS5STE0uV3JpdGUgZ0Nvbm5lY3RJb3REZXZpY2UuVXNlckV4dGVuc2lvbi5SZWFkIGdDb25uZWN0SW90RGV2aWNlLlVzZXJFeHRlbnNpb24uV3JpdGUgZ0Nvbm5lY3RPcGVuQXBpIExpY2Vuc2VTZXJ2aWNlQXBpIG9wZW5pZCBwcm9maWxlIHVzZXIuYmFzaWMgb2ZmbGluZV9hY2Nlc3MiLCJhbXIiOlsicHdkIl19.Nuz2Iu3nxC3RISpOe6X-O7YgCZZOFe89xFJ4TW1OAEZUtayDQ2tXQ4ItrCzfGh7wJnyVB1fKIIdZrexvZuQna7CvLiAX_6KMjPiSUcx5u6vQYayyvWxxPCqrlziMKk3Gr6VRlS3-VzolXUz7eNuFpbkyinOTPpzTGfZFKz7Vz4S_F3fuUGzPUSulnGGj1gOidLifs7MfuZAZ-s0-AoLbLaVgUKN14IkWD_i8ofsz-oUzeZzibcL-sCRUFdZud4fl-NukmzNW4ukHWSalGWAd-fvTrMsHRFJnk9wlcvMIkQYHgvJ9dotEIFj-fN0oTNF5Y6oTV3WDnZLGb-5dkksoPg"
+
+# 1. 将 JWT 拆分成三个部分
+header_encoded, payload_encoded, signature = encoded_jwt.split('.')
+
+# 2. Base64 解码头部和有效载荷
+header = json.loads(base64.urlsafe_b64decode(header_encoded + "=="))
+payload = json.loads(base64.urlsafe_b64decode(payload_encoded + "=="))
+
+# 输出头部和有效载荷内容
+print("Header:", header)
+print("Payload:", payload)
 
 
-r = find_with_condition(j1, j2, logger=logger)
-print(r)
+
