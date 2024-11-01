@@ -475,7 +475,7 @@ class VicStep:
                                     logger.warning('【{}】\t有一个浏览器无法关闭，请手动关闭'.format(estr), exc_info=True)
                                 del dr
                                 logger.info('【{}】\t启动浏览器...'.format(estr))
-                                self.dr = dr = web_ui_test.driver.get_driver(self.config, estr, 3, logger=logger)
+                                self.dr = dr = web_ui_test.driver.get_driver(self.config, estr, 3, self.timeout, logger=logger)
                                 vc.driver_container["web_dr"] = dr
 
                         # 单击
@@ -1091,6 +1091,7 @@ class VicStep:
                                 # 防止切换窗口后页面还未加载完毕就获取弹窗导致超时
                                 if ac in ['UI_SWITCH_TO_WINDOW', 'UI_CLOSE_WINDOW']:
                                     try:
+                                        logger.debug(f"======= {dr.command_executor.get_timeout()=} ========")
                                         dr.find_elements(By.TAG_NAME, 'body')
                                     except exceptions.UnexpectedAlertPresentException:
                                         pass

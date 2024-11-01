@@ -12,7 +12,7 @@ def send_http_request(vic_step):
     try:
         response = request(vic_step.api_method.upper(), vic_step.api_url, headers=vic_step.api_headers, files=None,
                            data=vic_step.api_body, params=None, auth=None, cookies=None, hooks=None, json=None,
-                           _logger=None, highlight_error=False, timeout=(vic_step.timeout, vic_step.timeout))
+                           _logger=vic_step.logger, highlight_error=False, timeout=(vic_step.timeout, vic_step.timeout))
     except requests.exceptions.Timeout as e:
         response = e
     response_end_time = datetime.datetime.now()

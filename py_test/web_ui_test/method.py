@@ -16,7 +16,7 @@ def check_web_driver(step):
     if not step.drs.get("web_dr", None):
         # 初始化driver
         step.logger.info('【{}】\t启动浏览器...'.format(step.execute_str))
-        dr = driver.get_driver(step.config, step.execute_str, 3, logger=step.logger)
+        dr = driver.get_driver(step.config, step.execute_str, 3, step.timeout, logger=step.logger)
         step.drs["web_dr"] = dr
         # raise exceptions.WebDriverException('浏览器未初始化，请检查是否配置有误或浏览器被意外关闭')
 
@@ -28,11 +28,7 @@ def set_driver_timeout(dr, timeout):
     dr.set_page_load_timeout(timeout)
     dr.set_script_timeout(timeout)
     # 设置Remote Connection超时时间
-    try:
-        _conn = getattr(dr.command_executor, '_conn')
-        _conn.timeout = int(timeout + 5)
-    except AttributeError:
-        dr.command_executor.set_timeout(int(timeout + 5))
+    dr.command_executor.set_timeout(int(timeout + 5))
 
 
 # 获取公共元素

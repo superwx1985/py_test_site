@@ -423,12 +423,13 @@
                                 <span class="mark">${cal|1+2==4}$</span>，返回<span class="text-info">False</span>
                                 <br>
                                 <span class="mark">${cal|(1+2==4)==False}$</span>，返回<span class="text-info">True</span>
+                                <br>
+                                假设已有变量a，值为字符串10。<span class="mark">${cal|${int|${a}$}$==10}$</span>，返回<span class="text-info">True</span>
                             </p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-
     </body>
 </html>

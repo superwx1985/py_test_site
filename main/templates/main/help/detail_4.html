@@ -40,7 +40,7 @@
                 };
                 $("#test_button").off("click").on("click", function () {
                     $("#result_mask").show();
-                    var condition_json = '{"variable_str": "' + $("#test_textarea").val() + '", "variable_group_pk": "' + $("select[name=variable_group]").val() +'"}';
+                    let condition_json = JSON.stringify({variable_str: $("#test_textarea").val(), variable_group_pk: $("select[name=variable_group]").val()});
                     console.log(condition_json)
                     getList("{% url "variable_test" %}", window.$csrf_input.val(), update_result_div, condition_json);
                 });
