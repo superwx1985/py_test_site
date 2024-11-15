@@ -1,5 +1,7 @@
 import logging
 import uuid
+import base64
+import json
 from random import random
 from urllib.parse import quote
 from py_test.general import vic_variables
@@ -105,6 +107,11 @@ def select_func(str_, variables, global_variables, logger=logging.getLogger('py_
                     value = get_time_func(parameter)
                 except ValueError:
                     raise ValueError('无法把{}转换为时间类型，请检查数据'.format(parameter))
+            elif f == 'jwt':
+                try:
+                    value = decode_jwt_func(parameter)
+                except Exception as e:
+                    raise ValueError(f'[{parameter}]无法作为JWT解密，请检查数据')
             elif f == 'cal':
                 eo = vic_eval.EvalObject(
                     parameter, vic_variables.get_variable_dict(variables, global_variables), logger)
@@ -282,8 +289,23 @@ def encode_url_func(str_):
     return value
 
 
+def decode_jwt_func(str_: str) -> (dict, dict):
+    header_encoded, payload_encoded, signature = str_.split('.')
+
+    # 解码 Base64 URL 编码的字符串
+    def decode_base64_url(data):
+        # Base64 URL 编码需要补齐等号
+        padding = "=" * ((4 - len(data) % 4) % 4)
+        decoded_bytes = base64.urlsafe_b64decode(data + padding)
+        return decoded_bytes.decode("utf-8")
+
+    header = decode_base64_url(header_encoded)
+    payload = decode_base64_url(payload_encoded)
+    return f'''{{"header": {header}, "payload": {payload}}}'''
+
+
 if __name__ == '__main__':
-    a = replace_special_value('${t|2000-10-1,,,,date}$')
-    print(a)
+    a = replace_special_value('${jwt|eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c}$')
+    print(type(a))
     a = replace_special_value('${t|2020-02-29 11:12:13.1123,,year,-1,full}$')
     print(a)

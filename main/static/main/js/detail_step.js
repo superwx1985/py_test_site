@@ -163,11 +163,12 @@ function show_action_field($actionSelect) {
         $('div[name=other_data] .col-1').text('类型');
         $('div[name=save_as] .col-1').html('变量名&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="需要转换的变量名称"></i>');;
 		$('div[name=save_as],div[name=other_data]').show();
-	} else if (select_value === 'OTHER_GET_VALUE_WITH_RE') {
-		introduce.children('div').text('通过正则表达式截取变量并重新保存，使用方法请参考帮助文档《文本验证操作符》的re操作符。其中需要截取的内容用小括号括起');
-		introduce.append($('<div>例：如果原变量的值为<span class="mark">cid=123&tid=456</span>，正则表达式为<span class="mark">#{re}#tid=(.*)&|tid=(.*)$</span>，那么变量将变为<span class="text-info">"456"</span></div>'));
-        $('div[name=other_data] .col-1').text('表达式');
-		$('div[name=save_as],div[name=other_data]').show();
+	} else if (select_value === 'OTHER_TEXT_PROCESSING') {
+		introduce.children('div').text('通过文本验证操作符处理文本并保存为变量，使用方法请参考帮助文档《文本验证操作符》。如使用re操作符，需要获取的内容用小括号括起');
+		introduce.append($('<div>例：如果待处理的文本为<span class="mark">cid=123&tid=456</span>，文本验证操作符为<span class="mark">#{re}#tid=(.*)&|tid=(.*)$</span>，将返回<span class="text-info">"456"</span></div>'));
+		introduce.append($('<div>例：如果待处理的文本为<span class="mark">{"a": {"a1": "123", "a2": "456"}, "b": "9"}</span>，文本验证操作符为<span class="mark">#{json}#{"a": {"a2": "#{re}#(\d*)"}}</span>，将返回<span class="text-info">"123"</span></div>'));
+        $('div[name=other_data] .col-1').text('文本验证操作符');
+		$('div[name=save_as],div[name=other_data],div[name=other_input]').show();
 	} else if (select_value === 'OTHER_VERIFY_EXPRESSION') {
 		introduce.children('div').html('验证表达式，条件为真（表达式的计算结果为<span class="text-info">True</span>）时验证通过，否则验证失败');
 		introduce.append($('<div>如果想在表达式中使用字符串，请添加<span class="text-danger">英文双引号</span>。例：<span class="mark">"123"</span>不会转换为整型<span class="text-info">123</span>，而是被保存为字符串<span class="text-info">"123"</span></div>'));

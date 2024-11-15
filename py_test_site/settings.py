@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'py_test_site.wsgi.application'
 ASGI_APPLICATION = 'py_test_site.asgi.application'
 
 
-def get_database_settings(database) -> {}:
+def get_database_settings(database) -> dict:
     _DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -100,8 +100,8 @@ def get_database_settings(database) -> {}:
             'default': {
                 'ENGINE': 'django.db.backends.mysql',
                 'NAME': 'py_test_site',
-                'HOST': '127.0.0.1',
-                # 'HOST': '192.192.185.140',
+                # 'HOST': '127.0.0.1',
+                'HOST': '10.0.16.144',
                 'PORT': '3306',
                 'USER': 'py_test_site',
                 'PASSWORD': 'py_test_site',
@@ -126,7 +126,7 @@ def get_database_settings(database) -> {}:
 
 # 数据库迁移 https://docs.djangoproject.com/zh-hans/5.0/topics/migrations/
 databases = {1: "sqlite3", 2: "mysql", 3: "postgresql"}
-DATABASES = get_database_settings(databases[1])
+DATABASES = get_database_settings(databases[2])
 
 # 数据库保持连接（秒），0-每次请求结束时关闭数据库连接，None-无限制的持久连接
 CONN_MAX_AGE = 60
@@ -347,7 +347,7 @@ LOGGING = {
 SITE_NAME = '自动化测试平台'
 
 # 站点版本
-SITE_VERSION = 'V2.0.20200220.01'
+SITE_VERSION = 'V3.0.20241115.01'
 
 # 最大并行测试线程数
 SUITE_MAX_CONCURRENT_EXECUTE_COUNT = 8
@@ -360,12 +360,14 @@ ERROR_PAUSE_TIMEOUT = 600
 
 # 设置channel使用的通道层
 if DEBUG:
+    # 调试时使用内置的Channel Layer
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
         },
     }
 else:
+    # 正式部署时建议使用Redis
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",

@@ -106,6 +106,7 @@ class VicStep:
             self.api_data = step.api_data
             self.api_save = step.api_save
 
+            self.other_input = step.other_input
             self.other_data = step.other_data
             self.other_sub_case = step.other_sub_case
 
@@ -987,30 +988,25 @@ class VicStep:
                                 msg = '{}，{}'.format(_msg, msg)
                                 self.run_result = ['p', msg]
 
-                        # 使用正则表达式截取变量
-                        elif ac == 'OTHER_GET_VALUE_WITH_RE':
+                        # 使用文本操作符处理文本
+                        elif ac == 'OTHER_TEXT_PROCESSING':
                             if re_run_count == 0:
+                                self.update_test_data('other_input')
                                 self.update_test_data('other_data')
                             if self.other_data == '':
-                                raise ValueError('没有提供表达式')
-                            found, variable = vic_variables.get_variable(self.save_as, var, gvar)
-                            if not found:
-                                raise ValueError('找不到名为【{}】的变量'.format(self.save_as))
-                            find_result = vic_find_object.find_with_condition(self.other_data, variable, logger=logger)
-                            if find_result.is_matched and find_result.re_result:
-                                variable = vic_find_object.get_first_str_in_re_result(find_result.re_result)
-                                msg = '变量【{}】被截取为【{}】'.format(self.save_as, variable)
-                                if found == 'local':
-                                    var.set_variable(self.save_as, variable)
-                                else:
-                                    gvar.set_variable(self.save_as, variable)
-                                    msg = '全局{}'.format(msg)
+                                msg = f'用例{var.set_variable(self.save_as, self.other_input)}'
                                 self.run_result = ['p', msg]
                             else:
-                                msg = '无法匹配给定的正则表达式，所以变量【{}】的值没有改变'.format(self.save_as, variable)
-                                if find_result.error_msg:
-                                    msg = '{}\n在查找过程中出现错误：{}'.format(msg, find_result.error_msg)
-                                self.run_result = ['f', msg]
+                                find_result = vic_find_object.find_with_condition(self.other_data, self.other_input, logger=logger)
+                                if find_result.is_matched and find_result.re_result:
+                                    variable = vic_find_object.get_first_str_in_re_result(find_result.re_result)
+                                    msg = f'用例{var.set_variable(self.save_as, variable)}'
+                                    self.run_result = ['p', msg]
+                                else:
+                                    msg = f'变量【{self.other_input}】无法匹配给定的文本操作符【{self.other_data}】'
+                                    if find_result.error_msg:
+                                        msg = '{}\n在查找过程中出现错误：{}'.format(msg, find_result.error_msg)
+                                    self.run_result = ['f', msg]
 
                         # 验证表达式
                         elif ac == 'OTHER_VERIFY_EXPRESSION':

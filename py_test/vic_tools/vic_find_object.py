@@ -713,7 +713,6 @@ if __name__ == '__main__':
     sh.setFormatter(vic_log.format_standard)
     logger.addHandler(sh)
 
-    logger.info("sssss试试")
 
     j1 = '#{json}#{"b": "#{json|l}#[1, 2, \\"#{json}#[4, 5, \\"#{json|l}#[5,5]\\"]\\"]"}'
     j1 = '#{json}#{"b": "#{json|l}#[1, 2, \\"#{json}#[4, 5, \\\\"#{json|l}#[5,5]\\\\"]\\"]"}'
@@ -721,5 +720,8 @@ if __name__ == '__main__':
     j2 = json.dumps(o2)
     print(j2)
 
-    r = find_with_condition(j1, j2, logger=logger)
+    # r = find_with_condition(j1, j2, logger=logger)
+    # print(r)
+
+    r = find_with_multiple_condition('#json#{"message":"Email is required"}', '{"message":"Email is required","statusCode":1001}')
     print(r)

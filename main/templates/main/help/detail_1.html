@@ -5,7 +5,7 @@
         {% include 'main/include/common_header.html' %}
         <title>变量说明</title>
         {% include 'main/include/general_css.html' %}
-        <style type='text/css' media='screen'>
+        <style media='screen'>
             div.row {
                 padding: 5px 0;
                 {#min-height: 2em;#}
@@ -92,7 +92,10 @@
                         <a class="nav-link" data-toggle="tab" href="#operate_11">time或datetime</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_12">cal</a>
+                        <a class="nav-link" data-toggle="tab" href="#operate_12">jwt</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#operate_13">cal</a>
                     </li>
                 </ul>
                 <div class="tab-content bg-light">
@@ -412,6 +415,17 @@
                         </div>
                     </div>
                     <div id="operate_12" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">解密JWT（JSON Web Tokens）</p>
+                            <p class="font-weight-bold">参数1</p>
+                            <p>加密的JWT</p>
+                            <p>例：
+                                <br>
+                                <div class="mark" style="display: inline-block; word-break: break-word;">${jwt|eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c}$</div>，返回<div class="text-info">{"header": {"alg":"HS256","typ":"JWT"}, "payload": {"sub":"1234567890","name":"John Doe","iat":1516239022}}</div>
+                            </p>
+                        </div>
+                    </div>
+                    <div id="operate_13" class="tab-pane" style="padding: 1em">
                         <div>
                             <p class="lead">尝试把表达式当做python代码执行</p>
                             <p class="font-weight-bold">参数1</p>

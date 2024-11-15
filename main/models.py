@@ -183,6 +183,7 @@ class Step(models.Model):
     api_response_status = models.CharField(max_length=255, blank=True)
     api_data = models.TextField(blank=True)
     api_save = models.TextField(blank=True)
+    other_input = models.CharField(blank=True, max_length=100)
     other_data = models.TextField(blank=True)
     other_sub_case = models.ForeignKey(
         'main.Case', on_delete=models.SET_NULL, blank=True, null=True, related_name='step_sub_case')
@@ -333,7 +334,7 @@ class Config(models.Model):
         (1, 'Chrome'),
         (2, 'IE'),
         (3, 'FireFox'),
-        (4, 'PhantomJS'),
+        (4, 'Edge'),
     )
     ui_driver_type = models.IntegerField(choices=ui_driver_list, default=1)
     ui_window_size_list = (
