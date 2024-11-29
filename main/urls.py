@@ -115,6 +115,7 @@ urlpatterns = [
     path("helps/", help_.list_, name="helps"),
     path("help/<int:pk>/", help_.detail, name="help"),
     path("help/variable_test/", help_.variable_test, name="variable_test"),
+    path("help/text_verification_test/", help_.text_verification_test, name="text_verification_test"),
 
     path("maintenance/", maintenance.detail, name="maintenance"),
 

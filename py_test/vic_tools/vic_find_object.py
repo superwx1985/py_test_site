@@ -440,9 +440,28 @@ def find_with_condition(
 
         # 处理有操作符的条件
         else:
-            parameter_list = []
+            parameter_list = list()
             if len(operator_list) > 1:
-                parameter_list = operator_list[1].split(sep=',')  # 这里故意不去掉参数两端的空格及换行，有些参数需要保留这些内容
+                operator_list_str = operator_list[1]
+                # 提取re[...]中的...另行处理，防止...中包含逗号导致分割出错
+                re_operator = re.findall(r'(?:^|,)re\[((?:[^\[\]]|\[[^\[\]]*\])*)\](?=,|$)', operator_list_str, 0)
+                replaced_re_operator_list = dict()
+                if re_operator:
+                    i = 0
+                    for _ in re_operator:
+                        replacement = f"$#re{i}#$"
+                        operator_list_str = operator_list_str.replace(_, replacement, 1)
+                        replaced_re_operator_list[replacement] = _
+                        i += 1
+                _parameter_list = operator_list_str.split(sep=',')  # 这里故意不去掉参数两端的空格及换行，有些参数需要保留这些内容
+
+                for _ in _parameter_list:
+                    new_parameter = _
+                    for k, v in replaced_re_operator_list.items():
+                        if k in _:
+                            new_parameter = _.replace(k, v, 1)
+                            break
+                    parameter_list.append(new_parameter)
 
             # 处理数量匹配
             if first_operator == 'count':
@@ -554,13 +573,18 @@ def find_with_condition(
             # 正则表达式比较
             elif first_operator == 're':
                 re_parameter = ''
-                if parameter_list:
+                match_index = None
+                if len(parameter_list) >= 1:
                     re_parameter = parameter_list[0]
+                if len(parameter_list) == 2:
+                    match_index = int(parameter_list[1]) if parameter_list[1].isdigit() else None
                 flags = generate_reg_flags(re_parameter)
-                re_result = re.findall(condition_value, str(data), flags)
-                match_count = len(re_result)
+                _re_result = re.findall(condition_value, str(data), flags)
+                match_count = len(_re_result)
                 if match_count > 0:
                     is_matched = True
+                if match_index is not None and match_index < len(_re_result):
+                    re_result = [_re_result[match_index]]
 
             # json比较
             elif first_operator == 'json':
@@ -713,15 +737,16 @@ if __name__ == '__main__':
     sh.setFormatter(vic_log.format_standard)
     logger.addHandler(sh)
 
-
-    j1 = '#{json}#{"b": "#{json|l}#[1, 2, \\"#{json}#[4, 5, \\"#{json|l}#[5,5]\\"]\\"]"}'
-    j1 = '#{json}#{"b": "#{json|l}#[1, 2, \\"#{json}#[4, 5, \\\\"#{json|l}#[5,5]\\\\"]\\"]"}'
-    o2 = {"a": "a1", "b": [1, 2, ["abc试试", 4, 5, [5, 5]]], "c": {"1": 1, "2": 2}}
-    j2 = json.dumps(o2)
-    print(j2)
+    # j1 = '#{json}#{"b": "#{json|l}#[1, 2, \\"#{json}#[4, 5, \\"#{json|l}#[5,5]\\"]\\"]"}'
+    # j1 = '#{json}#{"b": "#{json|l}#[1, 2, \\"#{json}#[4, 5, \\\\"#{json|l}#[5,5]\\\\"]\\"]"}'
+    # o2 = {"a": "a1", "b": [1, 2, ["abc试试", 4, 5, [5, 5]]], "c": {"1": 1, "2": 2}}
+    # j2 = json.dumps(o2)
+    # # print(j2)
 
     # r = find_with_condition(j1, j2, logger=logger)
-    # print(r)
 
-    r = find_with_multiple_condition('#json#{"message":"Email is required"}', '{"message":"Email is required","statusCode":1001}')
+    # r = find_with_multiple_condition('#json#{"message":"Email is required"}', '{"message":"Email is required","statusCode":1001}')
+
+    # r = find_with_condition('#{json}#{"a": "#{re}#.*", "b": "#{re|,0}#(.*)"}', '{"a": "1", "b": 2}')
+    r = find_with_condition(r'#{re|}#vic\.(.*)@', 'Vic.wang@test.com')
     print(r)

@@ -3,7 +3,7 @@
 <html>
     <head>
         {% include 'main/include/common_header.html' %}
-        <title>变量测试</title>
+        <title>文本验证测试</title>
         {% include 'main/include/general_css.html' %}
         <style media='screen'>
             div.row {
@@ -40,9 +40,9 @@
                 };
                 $("#test_button").off("click").on("click", function () {
                     $("#result_mask").show();
-                    let condition_json = JSON.stringify({variable_str: $("#variable_str").val(), variable_group_pk: $("select[name=variable_group]").val()});
+                    let condition_json = JSON.stringify({test_input: $("#test_input").val(), text_expression: $("#text_expression").val(), variable_group_pk: $("select[name=variable_group]").val()});
                     console.log(condition_json)
-                    getList("{% url "variable_test" %}", window.$csrf_input.val(), update_result_div, condition_json);
+                    getList("{% url "text_verification_test" %}", window.$csrf_input.val(), update_result_div, condition_json);
                 });
                 // 获取变量组下拉项
                 variable_group_select();
@@ -54,8 +54,8 @@
                 if (success) {
                     if (data.state === 1) {
                         toastr.success('测试成功');
-                        result_div.append($("<pre>").addClass("text-success").text(data.data.value));
-                        result_div.append($("<pre>").addClass("text-info").text("类型：" + data.data.value_type));
+                        result_div.append($("<pre>").addClass("text-success").text("输入的文本为：" + data.data.value));
+                        result_div.append($("<pre>").addClass("text-info").text("文本验证结果为：" + data.data.find_result));
                     } else {
                         toastr.error('测试出错');
                         var div = $("<pre>").addClass("text-danger").text(data.message);
@@ -78,7 +78,7 @@
         {% csrf_token %}
         {% include 'main/include/navbar.html' %}
         <div class="container" style="padding-top: 60px; padding-bottom: 200px">
-            <h2 class="text-center">变量测试</h2>
+            <h2 class="text-center">文本验证测试</h2>
             <div class="row align-items-center">
                 <div class="col-2 text-center font-weight-bold">测试变量组</div>
                 <div class="col" form_data>
@@ -86,7 +86,11 @@
                 </div>
             </div>
             <div>
-                <textarea class="form-control" id="variable_str" rows="5" placeholder="请输入要测试的变量，例如：${t|now}$"></textarea>
+                <textarea class="form-control" id="test_input" rows="5" placeholder="请输入要测试的文本或变量"></textarea>
+            </div>
+            <br>
+            <div>
+                <textarea class="form-control" id="text_expression" rows="5" placeholder="请输入文本验证表达式"></textarea>
             </div>
             <br>
             <div><button class="btn btn-primary" id="test_button">测试</button></div>
