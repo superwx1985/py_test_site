@@ -2,9 +2,9 @@
 {% load static %}
 {% block title %}
     {% if form.initial.name %}
-        {{ form.initial.name }} - 步骤 - {{ block.super }}
+        步骤{{ block.super }} | {{ form.initial.name }}
     {% else %}
-        新步骤 - {{ block.super }}
+        新步骤{{ block.super }}
     {% endif %}
 {% endblock %}
 

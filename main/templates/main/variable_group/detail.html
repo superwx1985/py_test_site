@@ -2,9 +2,9 @@
 {% load static %}
 {% block title %}
     {% if form.initial.name %}
-        {{ form.initial.name }} - 变量组 - {{ block.super }}
+        变量组{{ block.super }} | {{ form.initial.name }}
     {% else %}
-        新变量组 - {{ block.super }}
+        新变量组{{ block.super }}
     {% endif %}
 {% endblock %}
 

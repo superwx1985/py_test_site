@@ -2,9 +2,9 @@
 {% load static %}
 {% block title %}
     {% if form.initial.name %}
-        {{ form.initial.name }} - 用例 - {{ block.super }}
+        用例{{ block.super }} | {{ form.initial.name }}
     {% else %}
-        新用例 - {{ block.super }}
+        新用例{{ block.super }}
     {% endif %}
 {% endblock %}
 

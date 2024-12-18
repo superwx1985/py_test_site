@@ -2,9 +2,9 @@
 {% load static %}
 {% block title %}
     {% if form.initial.name %}
-        {{ form.initial.name }} - 配置 - {{ block.super }}
+        配置{{ block.super }} | {{ form.initial.name }}
     {% else %}
-        新配置 - {{ block.super }}
+        新配置{{ block.super }}
     {% endif %}
 {% endblock %}
 

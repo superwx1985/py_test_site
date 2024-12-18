@@ -2,9 +2,9 @@
 {% load static %}
 {% block title %}
     {% if form.initial.name %}
-        {{ form.initial.name }} - 元素组 - {{ block.super }}
+        元素组{{ block.super }} | {{ form.initial.name }}
     {% else %}
-        新元素组 - {{ block.super }}
+        新元素组{{ block.super }}
     {% endif %}
 {% endblock %}
 

@@ -1,9 +1,9 @@
 {% extends 'main/detail_base.html' %}
 {% block title %}
     {% if form.initial.name %}
-        {{ form.initial.name }} - 套件 - {{ block.super }}
+        套件{{ block.super }} | {{ form.initial.name }}
     {% else %}
-        新套件 - {{ block.super }}
+        新套件{{ block.super }}
     {% endif %}
 {% endblock %}
 
