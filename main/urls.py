@@ -1,7 +1,7 @@
 from django.urls import path
-from main.views import (general, user, case, step, config, variable_group, element_group, suite, suite_result,
-                        case_result, step_result, help as help_, maintenance, websocket as ws, action, chat, chat_sync)
-
+from main.views import (general, user, case, step, config, variable_group, element_group, data_set, suite, suite_result,
+                        case_result, step_result, help as help_, maintenance, websocket as ws, action, chat, chat_sync,
+                        gtm)
 
 urlpatterns = [
     path("", user.login_redirect),
@@ -97,16 +97,31 @@ urlpatterns = [
     path("element_group/<str:pk>/copy/", element_group.copy_, name="element_group_copy"),
     path("element_group/<str:pk>/reference/", element_group.reference, name="element_group_reference"),
 
+    path("data_sets/", data_set.list_, name="data_sets"),
+    path("data_sets/multiple_delete/", data_set.multiple_delete, name="data_sets_multiple_delete"),
+    path("data_sets/multiple_copy/", data_set.multiple_copy, name="data_sets_multiple_copy"),
+    # path("data_set/add/", data_set.detail, name="data_set_add"),
+    path("data_sets/select_json/", data_set.select_json, name="data_sets_select_json"),
+    path("data_set/<str:pk>/", data_set.detail, name="data_set"),
+    path("data_set/<str:pk>/delete/", data_set.delete, name="data_set_delete"),
+    path("data_set/<str:pk>/quick_update/", data_set.quick_update, name="data_set_quick_update"),
+    path("data_set/<str:pk>/", data_set.data_set_data, name="data_set_data"),
+    path("data_set/<str:pk>/copy/", data_set.copy_, name="data_set_copy"),
+    path("data_set/<str:pk>/reference/", data_set.reference, name="data_set_reference"),
+
     path("results/", suite_result.list_, name="results"),
     path("results/multiple_delete/", suite_result.multiple_delete, name="results_multiple_delete"),
     path("result/<str:pk>/", suite_result.detail, name="result"),
     path("result/<str:pk>/delete/", suite_result.delete, name="result_delete"),
     path("result/<str:pk>/quick_update/", suite_result.quick_update, name="result_quick_update"),
     path("result/<str:pk>/config_snapshot", suite_result.config_snapshot, name="config_snapshot"),
-    path("result/<str:pk>/variable_group_snapshot", suite_result.variable_group_snapshot, name="suite_variable_group_snapshot"),
-    path("result/<str:pk>/element_group_snapshot", suite_result.element_group_snapshot, name="suite_element_group_snapshot"),
+    path("result/<str:pk>/variable_group_snapshot", suite_result.variable_group_snapshot,
+         name="suite_variable_group_snapshot"),
+    path("result/<str:pk>/element_group_snapshot", suite_result.element_group_snapshot,
+         name="suite_element_group_snapshot"),
 
-    path("case_result/<str:pk>/variable_group_snapshot", case_result.variable_group_snapshot, name="case_variable_group_snapshot"),
+    path("case_result/<str:pk>/variable_group_snapshot", case_result.variable_group_snapshot,
+         name="case_variable_group_snapshot"),
 
     path("step_result/<str:pk>/", step_result.detail, name="step_result"),
     path("step_result/<str:pk>/detail_json", step_result.detail_json, name="step_result_detail_json"),
@@ -133,4 +148,6 @@ urlpatterns = [
     path("chat/<str:room_name>/", chat.room, name="chat_room"),
     path("chat_sync/", chat_sync.index, name="chat_sync_index"),
     path("chat_sync/<str:room_name>/", chat_sync.room, name="chat_sync_room"),
+
+    path("get_gtm_data/", gtm.get_gtm_data, name="get_gtm_data"),
 ]

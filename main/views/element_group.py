@@ -104,7 +104,7 @@ def detail(request, pk):
     try:
         obj = ElementGroup.objects.select_related('creator', 'modifier').get(pk=pk)
     except ElementGroup.DoesNotExist:
-        raise Http404('Step does not exist')
+        raise Http404('Element Group does not exist')
 
     if request.method == 'POST' and (is_admin or request.user == obj.creator):
         obj_temp = copy.deepcopy(obj)
@@ -417,7 +417,7 @@ def reference(request, pk):
     try:
         obj = ElementGroup.objects.get(pk=pk)
     except ElementGroup.DoesNotExist:
-        raise Http404('ElementGroup does not exist')
+        raise Http404('Element Group does not exist')
     objects = Suite.objects.filter(is_active=True, element_group=obj).order_by('-modified_date').values(
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))

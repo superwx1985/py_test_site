@@ -131,16 +131,6 @@
         {% endblock %}
         {% block script %}
         {% endblock %}
-        {% block postpositive_script %}
-            <script>
-                $(function () {
-                    if (!window.editable) {
-                        // 禁用所有互动
-                        disable_interaction();
-                    }
-                })
-            </script>
-        {% endblock %}
     </head>
     <body>
         {% include 'main/include/mask.html' %}
@@ -172,5 +162,15 @@
             {% block detail_inner_list %}
             {% endblock %}
         </div>
+        {% block postpositive_script %}
+            <script>
+                $(function () {
+                    if (!window.editable) {
+                        // 禁用所有互动
+                        disable_interaction();
+                    }
+                })
+            </script>
+        {% endblock %}
     </body>
 </html>

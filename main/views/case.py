@@ -122,7 +122,7 @@ def detail(request, pk):
     try:
         obj = Case.objects.select_related('creator', 'modifier').get(pk=pk)
     except Case.DoesNotExist:
-        raise Http404('Step does not exist')
+        raise Http404('Case does not exist')
 
     if request.method == 'POST' and (is_admin or request.user == obj.creator):
         obj_temp = copy.deepcopy(obj)

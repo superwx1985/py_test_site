@@ -15,7 +15,7 @@ def variable_group_snapshot(request, pk):
     try:
         obj = CaseResult.objects.get(pk=pk)
     except CaseResult.DoesNotExist:
-        raise Http404('SuiteResult does not exist')
+        raise Http404('Case Result does not exist')
     try:
         snapshot_obj = json.loads(obj.variable_group)
         variables_json = json.dumps({'data': snapshot_obj['variables']})

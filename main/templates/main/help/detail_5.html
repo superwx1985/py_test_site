@@ -42,7 +42,7 @@
                     $("#result_mask").show();
                     let condition_json = JSON.stringify({test_input: $("#test_input").val(), text_expression: $("#text_expression").val(), variable_group_pk: $("select[name=variable_group]").val()});
                     console.log(condition_json)
-                    getList("{% url "text_verification_test" %}", window.$csrf_input.val(), update_result_div, condition_json);
+                    getData("{% url "text_verification_test" %}", window.$csrf_input.val(), update_result_div, condition_json);
                 });
                 // 获取变量组下拉项
                 variable_group_select();
@@ -70,7 +70,7 @@
             }
             function variable_group_select(selected_pk) {
                 if (!selected_pk) { selected_pk = $("select[name=variable_group]").val() }
-                getList("{% url 'variable_groups_select_json' %}", window.$csrf_input.val(), update_variable_group_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'变量组详情\', \'%url%?inside=1\',null, variable_group_select);", "url_replacer": "%url%"}');
+                getData("{% url 'variable_groups_select_json' %}", window.$csrf_input.val(), update_variable_group_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'变量组详情\', \'%url%?inside=1\',null, variable_group_select);", "url_replacer": "%url%"}');
             }
         </script>
     </head>

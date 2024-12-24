@@ -44,11 +44,11 @@
             $('#m2m_all_table th[order_by_text]').on('dblclick', function () {m2m_sort($(this).attr('order_by_text'))});
             {% if temp_list_json %}
                 // 获取暂存m2m
-                getList("{% url 'cases_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, "{{ temp_list_json|escapejs }}");
+                getData("{% url 'cases_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, "{{ temp_list_json|escapejs }}");
             {% else %}
                 {% if pk %}
                     // 获取m2m
-                    getList("{% url 'suite_cases' pk %}", window.$csrf_input.val(), m2m_list_selected_update);
+                    getData("{% url 'suite_cases' pk %}", window.$csrf_input.val(), m2m_list_selected_update);
                 {% else %}
                     // 初始化m2m字段
                     m2m_list_selected_update(true, {'data': []});
@@ -68,25 +68,25 @@
         function config_select(selected_pk) {
             update_mask($('#mask'), 1);
             if (!selected_pk) { selected_pk = $("select[name=config]").val() }
-            getList("{% url 'configs_select_json' %}", window.$csrf_input.val(), update_config_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'配置详情\', \'%url%?inside=1\',null, config_select);", "url_replacer": "%url%"}');
+            getData("{% url 'configs_select_json' %}", window.$csrf_input.val(), update_config_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'配置详情\', \'%url%?inside=1\',null, config_select);", "url_replacer": "%url%"}');
         }
         // 获取变量组下拉项
         function variable_group_select(selected_pk) {
             update_mask($('#mask'), 1);
             if (!selected_pk) { selected_pk = $("select[name=variable_group]").val() }
-            getList("{% url 'variable_groups_select_json' %}", window.$csrf_input.val(), update_variable_group_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'变量组详情\', \'%url%?inside=1\',null, variable_group_select);", "url_replacer": "%url%"}');
+            getData("{% url 'variable_groups_select_json' %}", window.$csrf_input.val(), update_variable_group_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'变量组详情\', \'%url%?inside=1\',null, variable_group_select);", "url_replacer": "%url%"}');
         }
         // 获取元素组下拉项
         function element_group_select(selected_pk) {
             update_mask($('#mask'), 1);
             if (!selected_pk) { selected_pk = $("select[name=element_group]").val() }
-            getList("{% url 'element_groups_select_json' %}", window.$csrf_input.val(), update_element_group_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'元素组详情\', \'%url%?inside=1\',null, element_group_select);", "url_replacer": "%url%"}');
+            getData("{% url 'element_groups_select_json' %}", window.$csrf_input.val(), update_element_group_dropdown, '{"selected_pk": "'+selected_pk+'", "url_format": "javascript:modal_with_iframe_max(\'inside_detail_modal\', \'元素组详情\', \'%url%?inside=1\',null, element_group_select);", "url_replacer": "%url%"}');
         }
         // 回调更新m2m
         function update_m2m_objects() {
             submit_m2m_all_objects_form('/suite', '{% url "cases_list_json" %}', get_cookie('last_condition_json'));
             var temp_list_json = window.$m2m_input.val();
-            getList("{% url 'cases_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, temp_list_json);
+            getData("{% url 'cases_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, temp_list_json);
         }
         // 更新待选m2m列表
         function update_m2m_list_all(success, data) {

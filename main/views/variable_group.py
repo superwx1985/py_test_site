@@ -106,7 +106,7 @@ def detail(request, pk):
     try:
         obj = VariableGroup.objects.select_related('creator', 'modifier').get(pk=pk)
     except VariableGroup.DoesNotExist:
-        raise Http404('Step does not exist')
+        raise Http404('Variable Group does not exist')
 
     if request.method == 'POST' and (is_admin or request.user == obj.creator):
         obj_temp = copy.deepcopy(obj)
@@ -420,7 +420,7 @@ def reference(request, pk):
     try:
         obj = VariableGroup.objects.get(pk=pk)
     except VariableGroup.DoesNotExist:
-        raise Http404('VariableGroup does not exist')
+        raise Http404('Variable Group does not exist')
     objects = Case.objects.filter(is_active=True, variable_group=obj).order_by('-modified_date').values(
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))

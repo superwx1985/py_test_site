@@ -17,7 +17,7 @@ def detail(request, pk):
     try:
         obj = StepResult.objects.get(pk=pk)
     except StepResult.DoesNotExist:
-        raise Http404('StepResult does not exist')
+        raise Http404('Step Result does not exist')
     step_url = reverse('step', args=[obj.step.pk])
     step_snapshot_url = reverse('step_snapshot', args=[pk])
 
@@ -42,7 +42,7 @@ def detail_json(_, pk):
     try:
         obj = StepResult.objects.get(pk=pk)
     except StepResult.DoesNotExist:
-        raise Http404('StepResult does not exist')
+        raise Http404('Step Result does not exist')
     data_dict = dict()
     data_dict['pk'] = pk
     data_dict['name'] = obj.name
@@ -79,7 +79,7 @@ def snapshot(request, pk):
     try:
         obj = StepResult.objects.get(pk=pk)
     except StepResult.DoesNotExist:
-        raise Http404('StepResult does not exist')
+        raise Http404('Step Result does not exist')
     try:
         snapshot_obj = json.loads(obj.snapshot)
     except:

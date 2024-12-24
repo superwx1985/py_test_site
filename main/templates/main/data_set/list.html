@@ -1,0 +1,70 @@
+{% extends 'main/list_base.html' %}
+{% block title %}数据组{{ block.super }}{% endblock %}
+{% block script %}
+    <script>
+        $(function () {
+            // 更新导航栏
+            $('#nav_data_set').addClass('active');
+            // 获取添加地址
+            window.addUrl="{% url 'data_set' 'add' %}";
+            // 获取批量删除地址
+            window.multiple_delete_url="{% url 'data_sets_multiple_delete' %}";
+            // 获取批量复制地址
+            window.multiple_copy_url="{% url 'data_sets_multiple_copy' %}";
+        })
+    </script>
+{% endblock %}
+{% block result_table %}
+    <div class="table-responsive" id='result_div'>
+        <table class="table table-bordered table-hover result-table" id='result_table'>
+            <colgroup>
+                <col style='width: 60px;'>
+                <col style='width: 60px;'>
+                <col>
+                <col style='width: 200px;'>
+                <col style='width: 150px;'>
+                <col style='width: 130px;'>
+                <col style='width: 105px;'>
+                <col style='width: 180px;'>
+                <col style='width: 120px;'>
+            </colgroup>
+            <thead class="thead-light middle">
+                <tr>
+                    <th data-toggle="tooltip" title="反选/全选/全不选" select_all>序号</th>
+                    <th order_by_text="pk">ID</th>
+                    <th order_by_text="name" style="min-width: 300px">名称</th>
+                    <th order_by_text="keyword" style="min-width: 100px">关键字</th>
+                    <th order_by_text="project__name">项目</th>
+                    <th order_by_text="reference_count">被调用次数</th>
+                    <th order_by_text="real_name">作者</th>
+                    <th order_by_text="modified_date">修改时间</th>
+                    <th style="min-width: 120px">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for obj in objects %}
+                    <tr pk="{{ obj.pk }}" uuid="{{ obj.uuid }}" edit_url="{% url 'data_set' obj.pk %}" quick_update_url="{% url 'data_set_quick_update' obj.pk %}" del_url="{% url 'data_set_delete' obj.pk %}">
+                        <td col_name='index' class="middle small"></td>
+                        <td col_name='pk' class="middle small">{{ obj.pk }}</td>
+                        <td col_name='name' class="align-middle">{{ obj.name }}</td>
+                        <td col_name='keyword' class="middle">{{ obj.keyword }}</td>
+                        <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
+                        <td col_name='reference_count' class="middle"><a href="javascript:show_reference('{% url "data_set_reference" obj.pk %}', '<span class=\'mark small\'>{{ obj.name }}</span>被调用情况')"><span class="font-weight-bold">{{ obj.reference_count }}</span></a></td>
+                        <td col_name='real_name' class="middle">{{ obj.real_name|default:obj.creator__username }}</td>
+                        <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
+                        <td class="middle">
+                            <div>
+                                <button copy_url="{% url 'data_set_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
+                                <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除" {% if request.user.pk != obj.creator and not is_admin %}disabled="disabled"{% endif %}><i class="icon-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="10" class="text-center bg-secondary"><span class="text-white">无数据</span></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

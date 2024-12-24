@@ -138,7 +138,7 @@ function multiple_select($td) {
     update_muliple_selected();
 }
 
-// 注册多择功能
+// 注册多选功能
 function bind_multiple_select() {
 	$('#result_table tbody tr td[col_name=index]').off('click').on('click', function() { multiple_select($(this)) });
 }

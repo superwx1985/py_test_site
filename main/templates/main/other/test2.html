@@ -13,9 +13,7 @@
         <script>
             $(function () {
                 window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
-                getList("{% url 'cases_select_json' %}", window.$csrf_input.val(), update_div_dropdown, '{"selected_pk":"15"}');
-
-
+                getData("{% url 'cases_select_json' %}", window.$csrf_input.val(), update_div_dropdown, '{"selected_pk":"15"}');
 
                 {#var chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/');#}
                 {##}

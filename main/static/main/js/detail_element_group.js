@@ -329,7 +329,7 @@ function sub_multiple_select($td) {
     update_sub_muliple_selected();
 }
 
-// 注册多择功能
+// 注册多选功能
 function bind_sub_multiple_select() {
 	$('#element_table td[moveable]').off('click').on('click', function() { sub_multiple_select($(this)) });
 }

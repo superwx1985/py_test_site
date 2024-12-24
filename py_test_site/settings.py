@@ -101,10 +101,14 @@ def get_database_settings(database) -> dict:
                 'ENGINE': 'django.db.backends.mysql',
                 'NAME': 'py_test_site',
                 # 'HOST': '127.0.0.1',
-                'HOST': '10.0.16.144',
+                # 'HOST': '10.0.16.144',
+                # 'PORT': '3306',
+                # 'USER': 'py_test_site',
+                # 'PASSWORD': 'py_test_site',
+                'HOST': '52.82.80.187',
                 'PORT': '3306',
-                'USER': 'py_test_site',
-                'PASSWORD': 'py_test_site',
+                'USER': 'root',
+                'PASSWORD': 'Pass@word1',
             }
         }
     elif database == "postgresql":
@@ -126,7 +130,7 @@ def get_database_settings(database) -> dict:
 
 # 数据库迁移 https://docs.djangoproject.com/zh-hans/5.0/topics/migrations/
 databases = {1: "sqlite3", 2: "mysql", 3: "postgresql"}
-DATABASES = get_database_settings(databases[2])
+DATABASES = get_database_settings(databases[1])
 
 # 数据库保持连接（秒），0-每次请求结束时关闭数据库连接，None-无限制的持久连接
 CONN_MAX_AGE = 60
@@ -378,3 +382,5 @@ else:
             },
         },
     }
+
+GLB = {"GTM_BASE_URL": "https://gtm.greenworkstools.com.cn:991"}

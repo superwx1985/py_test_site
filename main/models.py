@@ -87,7 +87,7 @@ class Case(models.Model):
     config = models.ForeignKey('main.Config', on_delete=models.SET_NULL, blank=True, null=True)
     variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.SET_NULL, blank=True, null=True)
     error_handle = models.IntegerField(choices=error_handle_list, default=0)
-
+    data_set = models.ForeignKey('main.DataSet', on_delete=models.SET_NULL, blank=True, null=True)
     step = models.ManyToManyField('Step', through='CaseVsStep', through_fields=('case', 'step'))
 
     class Meta:
@@ -636,3 +636,55 @@ class Token(models.Model):
 
     class Meta:
         unique_together = ('value',)
+
+
+class DataSet(models.Model):
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(blank=True, max_length=100)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='data_set_creator', on_delete=models.SET_NULL, blank=True,
+        null=True)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='data_set_modifier', on_delete=models.SET_NULL, blank=True,
+        null=True)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_active = models.BooleanField(default=True)
+    data = models.JSONField(null=True, blank=True)
+
+    def natural_key(self):  # 序列化时，可以用此值代替外键ID
+        return self.name
+
+    class Meta:
+        ordering = ['-modified_date']
+
+    def __str__(self):
+        return self.name
+
+
+# class DataSetRow(models.Model):
+#     uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
+#     row_number = models.IntegerField(default=1)
+#     remark = models.TextField(blank=True)
+#     data_set = models.ForeignKey('main.DataSet', on_delete=models.CASCADE, related_name="rows")
+#
+#     def __str__(self):
+#         return f"Table: {self.data_set.name}, Row: {self.row_number}"
+#
+#     class Meta:
+#         unique_together = ('row_number', 'data_set')
+#
+#
+# class DataSetCell(models.Model):
+#     uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
+#     row_number = models.IntegerField(default=1)
+#     remark = models.TextField(blank=True)
+#     row = models.ForeignKey(DataSetRow, on_delete=models.CASCADE, related_name="cells")
+#     column_name = models.CharField(max_length=255)
+#     value = models.TextField(blank=True)
+#
+#     def __str__(self):
+#         return f"Row: {self.row_number}, Column {self.column_name}, Value {self.value}"

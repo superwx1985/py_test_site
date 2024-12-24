@@ -390,7 +390,7 @@ function submit_m2m_all_objects_form(cookie_path, json_url, last_condition_json)
 		condition_json = JSON.stringify(condition);
 	}
 	set_cookie('last_condition_json', condition_json, 0, cookie_path);
-	getList(json_url, window.$csrf_input.val(), update_m2m_list_all, condition_json);
+	getData(json_url, window.$csrf_input.val(), update_m2m_list_all, condition_json);
 	return false;
 }
 

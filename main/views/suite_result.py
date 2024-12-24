@@ -121,7 +121,7 @@ def detail(request, pk):
     try:
         obj = SuiteResult.objects.select_related('creator', 'modifier').get(pk=pk)
     except SuiteResult.DoesNotExist:
-        raise Http404('SuiteResult does not exist')
+        raise Http404('Suite Result does not exist')
     sub_objects = obj.caseresult_set.filter(step_result=None)
 
     if request.method == 'POST' and (is_admin or request.user == obj.creator):
@@ -225,7 +225,7 @@ def config_snapshot(request, pk):
     try:
         obj = SuiteResult.objects.get(pk=pk)
     except SuiteResult.DoesNotExist:
-        raise Http404('SuiteResult does not exist')
+        raise Http404('Suite Result does not exist')
     try:
         snapshot_obj = json.loads(obj.config)
     except:
@@ -242,7 +242,7 @@ def variable_group_snapshot(request, pk):
     try:
         obj = SuiteResult.objects.get(pk=pk)
     except SuiteResult.DoesNotExist:
-        raise Http404('SuiteResult does not exist')
+        raise Http404('Suite Result does not exist')
     try:
         snapshot_obj = json.loads(obj.variable_group)
         variables_json = json.dumps({'data': snapshot_obj['variables']})
@@ -260,7 +260,7 @@ def element_group_snapshot(request, pk):
     try:
         obj = SuiteResult.objects.get(pk=pk)
     except SuiteResult.DoesNotExist:
-        raise Http404('SuiteResult does not exist')
+        raise Http404('Suite Result does not exist')
     try:
         snapshot_obj = json.loads(obj.element_group)
         elements_json = json.dumps({'data': snapshot_obj['elements']})

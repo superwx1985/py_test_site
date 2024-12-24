@@ -177,6 +177,20 @@ class ElementGroupForm(forms.ModelForm):
         ]
 
 
+class DataSetForm(forms.ModelForm):
+    # 限制project为必选
+    project = forms.ModelChoiceField(queryset=Project.objects, required=True)
+
+    class Meta:
+        model = DataSet
+        fields = '__all__'
+        exclude = [
+            'is_active',
+            'creator',
+            'created_date',
+        ]
+
+
 class SuiteForm(forms.ModelForm):
     # 限制线程数最大值
     thread_count = forms.IntegerField(initial=1, min_value=1, max_value=int(SUITE_MAX_CONCURRENT_EXECUTE_COUNT))
