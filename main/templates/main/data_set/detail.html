@@ -25,9 +25,6 @@
         }
 
     </style>
-    <link rel="stylesheet" href="{% static 'handsontable/handsontable.full.min.css' %}">
-    <link href="https://cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.2.0/b-colvis-3.2.0/b-html5-3.2.0/cr-2.0.4/fc-5.0.4/fh-4.0.1/kt-2.12.1/r-3.0.3/rr-1.5.0/sl-2.1.0/sr-1.4.1/datatables.min.css"
-          rel="stylesheet">
 {% endblock %}
 
 {% block prepare_script %}
@@ -47,12 +44,6 @@
 {% endblock %}
 
 {% block script %}
-    {#    <script src="{% static 'handsontable/handsontable.full.min.js' %}"></script>#}
-    {##}
-    {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>#}
-    {#    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>#}
-    <script src="https://cdn.datatables.net/v/bs4/jszip-3.10.1/dt-2.1.8/af-2.7.0/b-3.2.0/b-colvis-3.2.0/b-html5-3.2.0/cr-2.0.4/fc-5.0.4/fh-4.0.1/kt-2.12.1/r-3.0.3/rr-1.5.0/sl-2.1.0/sr-1.4.1/datatables.min.js"></script>
-
 
     <script>
         $(function () {
@@ -62,8 +53,6 @@
             {% else %}
 
             {% endif %}
-            
-
             // 注册添加行按钮
             bind_sub_add_row_button();
             // 注册添加列按钮
@@ -75,21 +64,19 @@
             {% else %}
                 float_element(sub_button_group, 60);
             {% endif %}
-            $('#mask').hide();
         });
         $(document).ready(function () {
             let data_set_str = $('#data_set_data').val();
-
-            let data_set = {data: null};
-
+            window.data_set = {data: null, gtm: null};
             try {
-                data_set = JSON.parse(data_set_str); // 转换字符串为 JSON 对象
+                window.data_set = JSON.parse(data_set_str); // 转换字符串为 JSON 对象
             } catch (error) {
                 console.error("Invalid JSON string:", error);
             }
-
-            create_table_and_register_event(baseColumns, data_set.data);
+            create_table_and_register_event(true);
+            $('#mask').hide();
         });
+        
     </script>
 {% endblock %}
 
@@ -112,4 +99,11 @@
 
 {% block postpositive_script %}
     {{ block.super }}
+    <script>
+    $(function () {
+        // 确保GTM按钮启用
+        check_and_set_whether_the_table_is_interactive();  
+    });
+    
+    </script>
 {% endblock %}

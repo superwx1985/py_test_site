@@ -25,7 +25,7 @@ function check_unsaved() {
     if (unsaved) {
 
     } else {
-        update_data_input();
+        update_data_set_input();
         $('#object_form').removeAttr('onsubmit').submit();
     }
     return false;
@@ -90,7 +90,7 @@ function get_tableSettings(baseColumns, data) {
             cancelable: true,
             selector: 'td:first-child',
             update: false,
-            snapX: 5,
+            snapX: 2,
         },
         // colReorder: {
         //     columns: ':gt(1)'
@@ -106,22 +106,26 @@ function get_tableSettings(baseColumns, data) {
         },
         select: {
             style: 'os', // 选择样式 ('os', 'multi', 'single', 'api')
-            items: 'cell', // 指定选择的是行,
+            items: 'cell', // 指定选择的是单元格
             selector: 'td:nth-child(n+3)'
         }
     };
 }
 
 // 创建表格，注册事件
-function create_table_and_register_event(baseColumns, data) {
+function create_table_and_register_event(is_init) {
     // 确保data已保存
-    update_data_input(data);
-    if (window.table) {
+    // update_data_set_input();
+    if ("$table" in window) {
         // 销毁现有表格
-        table.destroy();
+        $table.destroy();
         $('#myTable').empty(); // 必须有这步，否则会导致无法调整列宽
     }
-    window.table = $('#myTable').DataTable(get_tableSettings(baseColumns, data));
+    if (data_set.gtm && is_init) {
+        get_data_from_gtm();
+        return;
+    }
+    window.$table = $('#myTable').DataTable(get_tableSettings(baseColumns, data_set.data));
 
     // 列表可调宽度
     $('#myTable th:not(:nth-child(1)):not(:nth-child(2))').resizable({
@@ -130,15 +134,15 @@ function create_table_and_register_event(baseColumns, data) {
     });
 
     // 行排序
-    table.off('row-reorder');
-    table.on('row-reorder', function (e, details, edit) {
+    $table.off('row-reorder');
+    $table.on('row-reorder', function (e, details, edit) {
         if (details.length) {
-            let original_data = table.rows().data()
+            let original_data = $table.rows().data()
             details.forEach((item, index) => {
-                table.row(item.newPosition).data(original_data[item.oldPosition])
+                $table.row(item.newPosition).data(original_data[item.oldPosition])
             });
             // 更新表格显示
-            table.draw(false);
+            $table.draw(false);
         }
     });
     bing_row_data_change();
@@ -147,6 +151,8 @@ function create_table_and_register_event(baseColumns, data) {
     bind_sub_delete_row_button();
     bind_sub_delete_col_button();
     bind_sub_gtm_button();
+    check_and_set_whether_the_table_is_interactive();
+    $('#table_selected_mask').hide();
 }
 
 // 修改data，更新并重绘datatable，重新绑定事件
@@ -156,7 +162,7 @@ function bing_row_data_change() {
     td_textarea.off('change');
     td_textarea.on('change', function () {
         const newValue = $(this).val();
-        const cell = table.cell($(this).closest('td'));
+        const cell = $table.cell($(this).closest('td'));
         // 更新单元格数据到 DataTables 内部
         cell.data(newValue);
         console.log('Cell updated:', {
@@ -164,7 +170,7 @@ function bing_row_data_change() {
             column: cell.index().column,
             newValue: newValue
         });
-        table.draw(false);
+        $table.draw(false);
         bing_row_data_change();
     });
 }
@@ -175,7 +181,7 @@ function change_col_name(newName, oldName) {
         return;
     }
     // 获取列的索引
-    let columnIdx = table.settings()[0].aoColumns.findIndex(col => col.data === oldName);
+    let columnIdx = $table.settings()[0].aoColumns.findIndex(col => col.data === oldName);
 
     if (columnIdx === -1) {
         console.error(`Column with name "${oldName}" not found.`);
@@ -183,11 +189,11 @@ function change_col_name(newName, oldName) {
     }
 
     // 获取表格当前数据
-    let updatedData = table.rows().data().toArray().map(row => {
+    let updatedData = $table.rows().data().toArray().map(row => {
         const reorderedRow = {};
 
         // 重新排列数据顺序，保持列位置
-        table.settings()[0].aoColumns.forEach((col, idx) => {
+        $table.settings()[0].aoColumns.forEach((col, idx) => {
             if (idx === columnIdx) {
                 reorderedRow[newName] = row[oldName]; // 使用新列名
             } else if (col.data in row) {
@@ -197,38 +203,30 @@ function change_col_name(newName, oldName) {
         return reorderedRow;
     });
 
+    data_set.data=updatedData;
     // 重新初始化表格
-    create_table_and_register_event(baseColumns, updatedData);
+    create_table_and_register_event();
 }
 
 // 序列化data，更新data_set_data input
-function update_data_input(data) {
+function update_data_set_input() {
     let json_str;
-    let data_set = {"data": null};
-    if (!data || data === "") {
-        data_set.data = table.rows().data().toArray();
-    } else {
-        data_set.data = data
-    }
+    data_set.data = $table.rows().data().toArray();
     json_str = JSON.stringify(data_set);
     $('#data_set_data').val(json_str);
 }
 
 function create_new_row(row_data) {
-    let data = table.rows().data().toArray()
-    let emptyObject = {};
-    if (!row_data || row_data === "") {
-        data.forEach(item => {
+    if (!row_data || typeof row_data === 'undefined' || row_data === "") {
+        row_data = {}
+        data_set.data.forEach(item => {
             for (let key in item) {
-                emptyObject[key] = '';  // 设置空值
+                row_data[key] = '';  // 设置空值
             }
         });
-
-    } else {
-
     }
-    data.push(emptyObject);
-    create_table_and_register_event(baseColumns, data);
+    data_set.data.push(row_data);
+    create_table_and_register_event();
 }
 
 function bind_sub_add_row_button() {
@@ -293,7 +291,7 @@ function check_col_name(newName, oldName) {
     let msg = "Passed"
     if (newName !== null && newName.trim() !== '' && newName.trim() !== oldName) {
         if (!startsWithNumber(newName)) {
-            let titles = table.columns().titles().toArray()
+            let titles = $table.columns().titles().toArray()
             if (isStringNotInArray(newName, titles)) {
                 passed = true;
             } else {
@@ -328,13 +326,11 @@ function create_new_col(columnName) {
     if (!check_col_name(columnName)) {
         return;
     }
-    let data = table.rows().data().toArray()
-
-    data.forEach(row => {
+    data_set.data.forEach(row => {
         row[columnName] = ''; // 添加新列，值为空
     });
     // 重新初始化表格
-    create_table_and_register_event(baseColumns, data);
+    create_table_and_register_event();
     $('html, body').animate({
         scrollLeft: $(document).width()
     }, 500);
@@ -355,27 +351,31 @@ function bind_change_col_name() {
 }
 
 // 选中事件
-function bind_select_event() {
-    table.off('select').on('select', function (e, dt, type, indexes) {
-        $("#sub_delete_row_button, #sub_delete_col_button").removeAttr("disabled");
-    });
-    table.off('deselect').on('deselect', function (e, dt, type, indexes) {
-        $("#sub_delete_row_button, #sub_delete_col_button").attr("disabled", true);
-    });
+function bind_select_event(disable) {
+    if (disable) {
+        $table.off('select').off('deselect');
+    } else {
+        $table.off('select').on('select', function (e, dt, type, indexes) {
+            $("#sub_delete_row_button, #sub_delete_col_button").removeAttr("disabled");
+        });
+        $table.off('deselect').on('deselect', function (e, dt, type, indexes) {
+            $("#sub_delete_row_button, #sub_delete_col_button").attr("disabled", true);
+        });
+    }
 }
 
 function delete_row(indexes) {
     indexes = JSON.parse(indexes);
     indexes.forEach(item => {
-        table.row(item - 1).remove();
+        $table.row(item - 1).remove();
     });
-    let data = table.rows().data().toArray();
-    create_table_and_register_event(baseColumns, data);
+    data_set.data = $table.rows().data().toArray();
+    create_table_and_register_event();
 }
 
 function bind_sub_delete_row_button() {
     $("#sub_delete_row_button").off("click").on("click", function () {
-        const selected = table.cells('.selected').toArray()[0];
+        const selected = $table.cells('.selected').toArray()[0];
         const uniqueRows = [...new Set(selected.map(item => item.row + 1))];
         popup("删除行", "确认要删除以下行吗", JSON.stringify(uniqueRows), true, delete_row);
     });
@@ -383,24 +383,23 @@ function bind_sub_delete_row_button() {
 
 function delete_col(indexes) {
     indexes = JSON.parse(indexes);
-    let data = table.rows().data().toArray();
-    data.forEach(obj => {
+    data_set.data.forEach(obj => {
         indexes.forEach(key => {
             delete obj[key]; // 删除对象中的 key
         });
     });
-    create_table_and_register_event(baseColumns, data)
+    create_table_and_register_event();
 }
 
 function bind_sub_delete_col_button() {
     $("#sub_delete_col_button").off("click").on("click", function () {
-        const selected = table.cells('.selected').toArray()[0]
+        const selected = $table.cells('.selected').toArray()[0]
         let uniqueCols = []
         let indexes = []
         selected.forEach(item => {
             if (!indexes.includes(item.column)) {
                 indexes.push(item.column);
-                uniqueCols.push(table.column(item.column).title());
+                uniqueCols.push($table.column(item.column).title());
             }
         })
         popup("删除列", "确认要删除以下列吗", JSON.stringify(uniqueCols), true, delete_col)
@@ -409,65 +408,97 @@ function bind_sub_delete_col_button() {
 
 
 function create_table_from_gtm_data(success, data) {
-    console.log(data);
-    create_table_and_register_event(baseColumns, data.data)
+    if (success) {
+        data_set.data = data.data;
+        create_table_and_register_event();
+        update_mask($('#table_selected_mask'), -1);
+    } else {
+        console.error(data);
+        if (!window.errs) { window.errs = [] }
+		window.errs.push("cannot get gtm data");
+    }
 }
 
-function get_data_from_gtm(tcNumber, version) {
-    let gtm = {tcNumber: tcNumber, version: version};
-    console.log(gtm);
-    getData(get_gtm_data_url, $csrf_input.val(), create_table_from_gtm_data, JSON.stringify(gtm))
+function get_data_from_gtm() {
+    update_mask($('#table_selected_mask'), 1);
+    getData(get_gtm_data_url, $csrf_input.val(), create_table_from_gtm_data, JSON.stringify(data_set.gtm))
 }
 
 function bind_sub_gtm_button() {
-    $("#sub_gtm_button").off("click").on("click", function () {
-        let data_set_str = $('#data_set_data').val();
-
-        let data_set = {gtm: null};
-
-        try {
-            data_set = JSON.parse(data_set_str); // 转换字符串为 JSON 对象
-        } catch (error) {
-            console.error("Invalid JSON string:", error);
-        }
-
-        let tcNumber = '';
-        let version = '';
-        if (data_set.gtm) {
-            tcNumber = data_set.gtm.tcNumber
-            version = data_set.gtm.version
+    $("#sub_gtm_button").removeAttr('disabled').off("click").on("click", function () {
+        if (!data_set.gtm) {
+            data_set.gtm = {};
+            data_set.gtm.tcNumber = "";
+            data_set.gtm.version = "";
         }
 
         let body = $('<div>').addClass('modal-body');
         let div = $('<div>tcNumber</div>');
         body.append(div);
-        let input = $('<input class="form-control" autocomplete="off" type="text" id="tcNumber">').attr('value', tcNumber);
+        let input = $('<input class="form-control" autocomplete="off" type="text" id="tcNumber">').attr('value', data_set.gtm.tcNumber);
         body.append(input);
         div = $('<div>version</div>');
         body.append(div);
-        input = $('<input class="form-control" autocomplete="off" type="text" id="version">').attr('value', version);
+        input = $('<input class="form-control" autocomplete="off" type="text" id="version">').attr('value', data_set.gtm.version);
         body.append(input);
         let buttons = {
             cancel: {
                 label: '<i class="icon-undo">&nbsp;</i>取消',
                 className: 'btn btn-secondary'
             },
+            reset: {
+                label: '<i class="icon-undo">&nbsp;</i>取消关联',
+                className: 'btn btn-danger',
+                callback: function () {
+                    delete data_set.gtm;
+                    create_table_and_register_event();
+                }
+            },
             ok: {
-                label: '<i class="icon-ok">&nbsp;</i>确认',
+                label: '<i class="icon-ok">&nbsp;</i>关联',
                 className: 'btn btn-primary',
                 callback: function () {
-                    get_data_from_gtm($('#tcNumber').val(), $('#version').val())
+                    data_set.gtm.tcNumber = $('#tcNumber').val();
+                    data_set.gtm.version = $('#version').val();
+                    if (data_set.gtm.tcNumber && data_set.gtm.version) {
+                        get_data_from_gtm();
+                    }
                 }
             }
+        }
+        if (!window.editable) {
+            body.find("input").attr('disabled', true);
+            delete buttons.reset;
+            delete buttons.ok;
         }
 
         bootbox.dialog({
             size: 'large',
-            title: '<i class="icon-exclamation-sign">&nbsp;</i>获取GTM数据',
+            title: '<i class="icon-exclamation-sign">&nbsp;</i>关联GTM用例',
             message: body.html(),
             onEscape: true,
             backdrop: true,
             buttons: buttons
         });
     });
+}
+
+function check_and_set_whether_the_table_is_interactive() {
+    // 禁用表格交互
+    if (!window.editable || data_set.gtm) {
+		$('#dataTableContainer').find('input, textarea, select').off().attr('disabled', true);
+        if ("$table" in window) {
+            $table.rowReorder.disable();
+            $('#sub_button_group button:not(#sub_gtm_button)').off('click').attr('disabled', true);
+            bind_select_event(true);
+        }
+    }
+    // 允许非作者查看GTM信息
+    if (!window.editable) {
+        bind_sub_gtm_button();
+    }
+    // 取消GTM绑定后，启用行列添加按钮
+    if (window.editable && !data_set.gtm) {
+        $('#sub_add_row_button, #sub_add_col_button').removeAttr("disabled");
+    }
 }

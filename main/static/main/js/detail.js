@@ -449,6 +449,7 @@ function disable_interaction() {
     $('#sub_button_group button').off('click').attr('disabled', true);
     $('#variable_table th, #variable_table td, #variable_table input, #variable_table select').off('click').attr('disabled', true);
 	$('#element_table th, #element_table td, #element_table input, #element_table select').off('click').attr('disabled', true);
+	$('#dataTableContainer').find('th, td, input, textarea, select').off().attr('disabled', true);
 }
 
 // 复制对象的回调函数
