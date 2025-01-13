@@ -93,64 +93,6 @@ def list_(request):
 
 
 @login_required
-def _detail(request, pk):
-    next_ = request.GET.get('next', '')
-    inside = request.GET.get('inside')
-    new_pk = request.GET.get('new_pk')
-    reference_url = reverse(reference, args=[pk])  # 被其他对象调用
-    is_admin = check_admin(request.user)
-
-    if pk == "add":
-        form = DataSetForm()
-        if request.session.get('state', None) == 'success':
-            prompt = 'success'
-        request.session['state'] = None
-        return render(request, 'main/data_set/detail.html', locals())
-    else:
-        try:
-            obj = DataSet.objects.select_related('creator', 'modifier').get(pk=pk)
-        except DataSet.DoesNotExist:
-            raise Http404('Data Set does not exist')
-
-    if request.method == 'POST' and (is_admin or request.user == obj.creator):
-        obj_temp = copy.deepcopy(obj)
-        form = DataSetForm(data=request.POST, instance=obj_temp)
-        try:
-            variable_list = json.loads(request.POST.get('variable', 'null'))
-        except json.decoder.JSONDecodeError:
-            logger.warning('无法获取m2m值', exc_info=True)
-            variable_list = None
-        if form.is_valid():
-            obj_temp = form.save(commit=False)
-            obj_temp.modifier = request.user
-            obj_temp.save()
-            form.save_m2m()
-
-            if not form.non_field_errors():
-                request.session['state'] = 'success'
-                _redirect = request.POST.get('redirect')
-                if _redirect:
-                    if _redirect == 'close':
-                        request.session['state'] = None
-                        return render(request, 'main/other/close.html')
-                    if not next_:
-                        next_ = reverse(list_)
-                        request.session['state'] = None
-                    return HttpResponseRedirect(next_)
-                else:
-                    return HttpResponseRedirect(request.get_full_path())
-
-        return render(request, 'main/data_set/detail.html', locals())
-    else:
-        form = DataSetForm(instance=obj)
-        name = obj.name
-        if request.session.get('state', None) == 'success':
-            prompt = 'success'
-        request.session['state'] = None
-        return render(request, 'main/data_set/detail.html', locals())
-
-
-@login_required
 def detail(request, pk):
     next_ = request.GET.get('next', '')
     inside = request.GET.get('inside')

@@ -520,6 +520,7 @@ class CaseResult(models.Model):
     ui_step_interval = models.FloatField(blank=True, null=True)
     config = models.TextField(blank=True, null=True)
     variable_group = models.TextField(blank=True, null=True)
+    # data_set = models.TextField(blank=True, null=True)
 
     suite_result = models.ForeignKey('main.SuiteResult', on_delete=models.CASCADE)
     step_result = models.ForeignKey('main.StepResult', on_delete=models.CASCADE, null=True, blank=True)

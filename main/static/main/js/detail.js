@@ -46,6 +46,22 @@ function update_config_dropdown(success, data) {
 	}
 }
 
+// 更新数据组下拉项
+function update_data_set_dropdown(success, data) {
+	if (success) {
+		if (window.editable) {
+			update_dropdown(data, $("#data_set_dropdown"));
+		} else {
+			update_dropdown(data, $("#data_set_dropdown"), true);
+		}
+		update_mask($('#mask'), -1);
+    } else {
+		console.log(data);
+		if (!window.errs) { window.errs = [] }
+		window.errs.push(data);
+	}
+}
+
 // 更新子用例下拉项
 function update_other_sub_case_dropdown(success, data) {
 	if (success) {

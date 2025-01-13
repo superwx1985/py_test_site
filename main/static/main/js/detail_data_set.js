@@ -145,9 +145,12 @@ function create_table_and_register_event(is_init) {
             $table.draw(false);
         }
     });
+
     bing_row_data_change();
     bind_change_col_name();
     bind_select_event();
+    bind_sub_add_row_button();
+    bind_sub_add_col_button();
     bind_sub_delete_row_button();
     bind_sub_delete_col_button();
     bind_sub_gtm_button();
@@ -326,6 +329,10 @@ function create_new_col(columnName) {
     if (!check_col_name(columnName)) {
         return;
     }
+    // 如果没有任何数据，先添加一行
+    if (data_set.data === null || (Array.isArray(data_set.data) && data_set.data.length === 0)) {
+        create_new_row()
+    }
     data_set.data.forEach(row => {
         row[columnName] = ''; // 添加新列，值为空
     });
@@ -365,6 +372,7 @@ function bind_select_event(disable) {
 }
 
 function delete_row(indexes) {
+    $table.cells().deselect(); // 取消选择
     indexes = JSON.parse(indexes);
     indexes.forEach(item => {
         $table.row(item - 1).remove();
@@ -377,11 +385,12 @@ function bind_sub_delete_row_button() {
     $("#sub_delete_row_button").off("click").on("click", function () {
         const selected = $table.cells('.selected').toArray()[0];
         const uniqueRows = [...new Set(selected.map(item => item.row + 1))];
-        popup("删除行", "确认要删除以下行吗", JSON.stringify(uniqueRows), true, delete_row);
+        popup("删除行", "确认要删除以下行吗？（注意：删除全部行会清空列名！）", JSON.stringify(uniqueRows), true, delete_row);
     });
 }
 
 function delete_col(indexes) {
+    $table.cells().deselect(); // 取消选择
     indexes = JSON.parse(indexes);
     data_set.data.forEach(obj => {
         indexes.forEach(key => {
@@ -402,7 +411,7 @@ function bind_sub_delete_col_button() {
                 uniqueCols.push($table.column(item.column).title());
             }
         })
-        popup("删除列", "确认要删除以下列吗", JSON.stringify(uniqueCols), true, delete_col)
+        popup("删除列", "确认要删除以下列吗？", JSON.stringify(uniqueCols), true, delete_col)
     });
 }
 
@@ -458,9 +467,11 @@ function bind_sub_gtm_button() {
                 label: '<i class="icon-ok">&nbsp;</i>关联',
                 className: 'btn btn-primary',
                 callback: function () {
-                    data_set.gtm.tcNumber = $('#tcNumber').val();
-                    data_set.gtm.version = $('#version').val();
-                    if (data_set.gtm.tcNumber && data_set.gtm.version) {
+                    let tcNumber = $('#tcNumber').val().trim();
+                    let version = $('#version').val().trim();
+                    if (tcNumber || version) {
+                        data_set.gtm.tcNumber = tcNumber;
+                        data_set.gtm.version = version;
                         get_data_from_gtm();
                     }
                 }
@@ -500,5 +511,9 @@ function check_and_set_whether_the_table_is_interactive() {
     // 取消GTM绑定后，启用行列添加按钮
     if (window.editable && !data_set.gtm) {
         $('#sub_add_row_button, #sub_add_col_button').removeAttr("disabled");
+    }
+    // 添加行按钮应该在添加列后激活
+    if (data_set.data === null || (Array.isArray(data_set.data) && data_set.data.length === 0)) {
+        $('#sub_add_row_button').attr('disabled', true)
     }
 }

@@ -3,6 +3,8 @@ import json
 import traceback
 import time
 import math
+
+from main.views.gtm import get_gtm_data_
 from py_test.general import vic_variables, vic_method
 from main.models import CaseResult, Step, error_handle_dict
 from django.forms.models import model_to_dict
@@ -15,7 +17,7 @@ from py_test_site.settings import ERROR_PAUSE_TIMEOUT
 class VicCase:
     def __init__(
             self, case, case_order, vic_suite, execute_str, variables=None, vic_step=None, parent_case_pk_list=None,
-            driver_container=None):
+            driver_container=None, data_set_dict=None):
         self.logger = vic_suite.logger
 
         self.case = case
@@ -125,6 +127,12 @@ class VicCase:
         # driver容器，用于在运行过程中更换driver
         self.driver_container = driver_container or dict()
 
+        # 数据组
+        self.data_set_dict = data_set_dict
+        # 根据数据组修改用例名称
+        if self.data_set_dict:
+            self.case_result.name = self.data_set_dict['2_name']
+
     # 强制停止标志
     @property
     def force_stop(self):
@@ -217,14 +225,44 @@ class VicCase:
                         value = vic_method.replace_special_value(
                             variable.value, self.variables, self.global_variables, self.logger)
                         self.variables.set_variable(variable.name, value)
+                # 读取数据组覆盖本地变量
+                if self.data_set_dict:
+                    for k, v in self.data_set_dict.items():
+                        value = vic_method.replace_special_value(str(v), self.variables, self.global_variables, self.logger)
+                        self.variables.set_variable(k, value)
 
                 # 读取测试步骤数据
                 steps = Step.objects.filter(case=self.case, is_active=True).order_by(
                     'casevsstep__order').select_related('action', 'action__type')
                 step_order = 0
                 for step in steps:
-                    step_order += 1
-                    self.steps.append(VicStep(step=step, vic_case=self, step_order=step_order))
+                    if step.action.code == "OTHER_CALL_SUB_CASE":
+                        case = step.other_sub_case
+                        if case.data_set and case.data_set.is_active:
+                            if case.data_set.data.get('gtm'):
+                                try:
+                                    case.data_set.data["data"] = get_gtm_data_(
+                                        case.data_set.data['gtm']['tcNumber'],
+                                        case.data_set.data['gtm']['version']
+                                    )["data"]
+                                    case.data_set.save()
+                                except Exception as e:
+                                    self.logger.warning(f"Cannot get latest test data from GTM! The error is [{e}]")
+                            data_set_list = case.data_set.data.get("data", [])
+                            i = 0
+                            for data_set_dict in data_set_list:
+                                i += 1
+                                data_set_dict['0_id'] = i
+                                data_set_dict['1_remark'] = data_set_dict.get('remark')
+                                data_set_dict['2_name'] = f"{case.name} ({data_set_dict['0_id']} - {data_set_dict['1_remark']})" if data_set_dict['1_remark'] else f"{case.name} ({data_set_dict['0_id']})"
+                                step_order += 1
+                                self.steps.append(VicStep(step=step, vic_case=self, step_order=step_order, data_set_dict=data_set_dict))
+                        else:
+                            step_order += 1
+                            self.steps.append(VicStep(step=step, vic_case=self, step_order=step_order))
+                    else:
+                        step_order += 1
+                        self.steps.append(VicStep(step=step, vic_case=self, step_order=step_order))
 
             except Exception as e:
                 self.logger.error('【{}】\t初始化出错'.format(step_execute_str), exc_info=True)

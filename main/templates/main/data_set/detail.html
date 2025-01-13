@@ -67,9 +67,11 @@
         });
         $(document).ready(function () {
             let data_set_str = $('#data_set_data').val();
-            window.data_set = {data: null, gtm: null};
+            window.data_set = {data: [], gtm: null};
             try {
-                window.data_set = JSON.parse(data_set_str); // 转换字符串为 JSON 对象
+                if (data_set_str !== "null") {
+                    window.data_set = JSON.parse(data_set_str); // 转换字符串为 JSON 对象
+                }
             } catch (error) {
                 console.error("Invalid JSON string:", error);
             }

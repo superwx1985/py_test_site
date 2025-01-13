@@ -21,7 +21,7 @@ from py_test_site.settings import LOOP_ITERATIONS_LIMIT, ERROR_PAUSE_TIMEOUT
 
 
 class VicStep:
-    def __init__(self, step, vic_case, step_order):
+    def __init__(self, step, vic_case, step_order, data_set_dict=None):
         self.logger = vic_case.logger
 
         self.step = step
@@ -67,6 +67,7 @@ class VicStep:
         self.run_result = ['p', '执行成功']
         self.elements = list()
         self.fail_elements = list()
+        self.data_set_dict = data_set_dict # 调用子用例前分解子用例的data set
 
         # 初始化result数据库对象
         self.step_result = StepResult(
@@ -734,10 +735,10 @@ class VicStep:
                         # ===== API =====
                         elif ac == 'API_SEND_HTTP_REQUEST':
                             self.update_test_data(
-                                'api_url', 'api_headers', 'api_headers', 'api_body', 'api_decode', 'api_data')
+                                'api_url', 'api_headers', 'api_headers', 'api_body', 'api_decode', 'api_response_status', 'api_data')
                             if not self.api_url:
                                 raise ValueError('请提供请求地址')
-                            if self.api_headers:
+                            if isinstance(self.api_headers, str) and self.api_headers:
                                 try:
                                     self.api_headers = json.loads(self.api_headers)
                                 except json.decoder.JSONDecodeError as e:
@@ -1042,6 +1043,10 @@ class VicStep:
                                 raise RecursionError('子用例[ID:{}]【{}】被递归调用'.format(
                                     self.other_sub_case.pk, self.other_sub_case.name))
                             else:
+                                if self.data_set_dict:
+                                    self.step_result.name = f"{self.step_result.name} -> {self.data_set_dict['2_name']}"
+                                else:
+                                    self.step_result.name = f"{self.step_result.name} -> {self.other_sub_case.name}"
                                 from .vic_case import VicCase
                                 sub_case = VicCase(
                                     case=self.other_sub_case,
@@ -1051,7 +1056,8 @@ class VicStep:
                                     variables=var,
                                     vic_step=self,
                                     parent_case_pk_list=vc.parent_case_pk_list,
-                                    driver_container=vc.driver_container
+                                    driver_container=vc.driver_container,
+                                    data_set_dict=self.data_set_dict
                                 )
                                 sub_case.execute()
                                 case_result_ = sub_case.case_result

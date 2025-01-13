@@ -5,6 +5,8 @@ import traceback
 import logging
 import uuid
 import threading
+
+from main.views.gtm import get_gtm_data_
 from py_test.general import vic_variables, vic_public_elements, vic_log, vic_method
 from .public_items import status_str_dict
 from .vic_case import VicCase
@@ -155,18 +157,27 @@ class VicSuite:
                 raise ValueError('配置读取出错，请检查配置是否已被删除')
 
             if cases:
-
                 self.logger.info('准备运行下列{}个用例:'.format(len(cases)))
                 case_order = 0
                 case_order_list = list()
                 for case in cases:
-                    case_order += 1
-                    case_order_list.append(str(case_order))
-                    self.vic_cases.append(
-                        VicCase(case=case, case_order=case_order, vic_suite=self, execute_str=str(case_order))
-                    )
-
-                    self.logger.info('【{}】\tID:{} | {}'.format(case_order, case.pk, case.name))
+                    if case.data_set and case.data_set.is_active:
+                        if case.data_set.data.get('gtm'):
+                            try:
+                                case.data_set.data["data"] = get_gtm_data_(case.data_set.data['gtm']['tcNumber'], case.data_set.data['gtm']['version'])["data"]
+                                case.data_set.save()
+                            except Exception as e:
+                                self.logger.warning(f"Cannot get latest test data from GTM! The error is [{e}]")
+                        data_set_list = case.data_set.data.get("data", [])
+                        i = 0
+                        for data_set_dict in data_set_list:
+                            i += 1
+                            data_set_dict['0_id'] = i
+                            data_set_dict['1_remark'] = data_set_dict.get('remark')
+                            data_set_dict['2_name'] = f"{case.name} ({data_set_dict['0_id']} - {data_set_dict['1_remark']})" if data_set_dict['1_remark'] else f"{case.name} ({data_set_dict['0_id']})"
+                            case_order, case_order_list = self.add_case(case_order, case_order_list, case, data_set_dict)
+                    else:
+                        case_order, case_order_list = self.add_case(case_order, case_order_list, case, None)
 
                 self.logger.info('========================================')
 
@@ -288,6 +299,17 @@ class VicSuite:
                 break
 
         return vic_case
+
+    def add_case(self, case_order, case_order_list, case, data_set_dict):
+        case_order += 1
+        case_order_list.append(str(case_order))
+        self.vic_cases.append(
+            VicCase(case=case, case_order=case_order, vic_suite=self, execute_str=str(case_order),
+                    data_set_dict=data_set_dict)
+        )
+        name = data_set_dict['2_name'] if data_set_dict else case.name
+        self.logger.info('【{}】\tID:{} | {}'.format(case_order, case.pk, name))
+        return case_order, case_order_list
 
 
 if __name__ == '__main__':
