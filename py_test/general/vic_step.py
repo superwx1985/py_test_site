@@ -67,7 +67,7 @@ class VicStep:
         self.run_result = ['p', '执行成功']
         self.elements = list()
         self.fail_elements = list()
-        self.data_set_dict = data_set_dict # 调用子用例前分解子用例的data set
+        self.data_set_dict = data_set_dict  # 调用子用例前分解子用例的data set
 
         # 初始化result数据库对象
         self.step_result = StepResult(
@@ -84,8 +84,9 @@ class VicStep:
             result_message='',
             result_error='',
             ui_last_url='',
+            runtime_variables=vic_variables.get_variable_dict(self.variables, self.global_variables),
 
-            snapshot=json.dumps(model_to_dict(step)) if step else None,
+            snapshot=model_to_dict(step) if step else None,
         )
 
         try:
@@ -1269,6 +1270,7 @@ class VicStep:
         for img in self.img_list:
             self.step_result.imgs.add(img)
 
+        self.step_result.runtime_variables = vic_variables.get_variable_dict(self.variables, self.global_variables)
         self.step_result.end_date = datetime.datetime.now()
         self.step_result.save()
 

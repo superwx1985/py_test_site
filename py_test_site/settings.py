@@ -2,6 +2,7 @@ import os
 import sys
 from django.urls import reverse_lazy
 from manage import PROJECT_ROOT
+from py_test_site.version import SITE_VERSION
 import psycopg
 
 
@@ -346,12 +347,8 @@ LOGGING = {
     },
 }
 
-
 # 站点名称
 SITE_NAME = '自动化测试平台'
-
-# 站点版本
-SITE_VERSION = 'V3.0.20241129.01'
 
 # 最大并行测试线程数
 SUITE_MAX_CONCURRENT_EXECUTE_COUNT = 8

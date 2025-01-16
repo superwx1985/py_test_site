@@ -16,6 +16,7 @@
             $(function () {
                 // 获取action映射表
                 window.action_map = $.parseJSON('{{ action_map_json|escapejs }}');
+                window.is_snapshot = true;
             })
         </script>
         <script>
@@ -27,7 +28,7 @@
                     show_special_action_field($(this));
                 });
                 // 触发展示action相关内容
-                show_action_field($('select[name="action"]'));
+                show_action_field($('select[name="action"]'), true);
                 // 禁用所有互动
                 disable_interaction();
             });
@@ -39,9 +40,8 @@
 
     </head>
     <body>
-        <div class="container-fluid" style="padding-bottom: 50px; {% if not inside %}padding-top: 50px;{% endif %}" name="detail_content" id="object_form">
+        <div class="container-fluid" name="detail_content" id="object_form">
             {% include 'main/step/detail_form_content.html' with snapshot=1 %}
         </div>
     </body>
 </html>
-

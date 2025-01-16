@@ -76,6 +76,9 @@ class VicCase:
         else:
             self.config = self.vic_suite.config
 
+        # 数据组
+        self.data_set_dict = data_set_dict
+
         self.force_stop_signal = False  # 强制停止信号
         self.pause_signal = False  # 暂停信号
         self.pause_from_suite = 0
@@ -92,12 +95,21 @@ class VicCase:
         self.loop_active = False
 
         # 获取变量组json
-        variable_group_json = None
+        variable_group_dict = None
         if case.variable_group and case.variable_group.is_active:
             v_list = list(case.variable_group.variable_set.all().values('pk', 'name', 'description', 'value', 'order'))
             variable_group_dict = model_to_dict(case.variable_group)
             variable_group_dict['variables'] = v_list
-            variable_group_json = json.dumps(variable_group_dict)
+
+        # 获取数据组json
+        _data_set_dict = None
+        if case.data_set and case.data_set.is_active:
+            _data_set_dict = model_to_dict(case.data_set)
+            # 去掉数字开头的key
+            cleaned_data = [
+                {key: value for key, value in record.items() if not key[0].isdigit()} for record in _data_set_dict['data']['data']
+            ]
+            _data_set_dict['data']['data'] = cleaned_data
 
         # 驱动停止响应标志
         self.socket_no_response = False
@@ -110,7 +122,8 @@ class VicCase:
 
             timeout=case.timeout,
             ui_step_interval=case.ui_step_interval,
-            variable_group=variable_group_json,
+            variable_group=variable_group_dict,
+            data_set=_data_set_dict,
 
             suite_result=vic_suite.suite_result,
             step_result=vic_step.step_result if vic_step else None,
@@ -124,14 +137,12 @@ class VicCase:
             error_count=0,
         )
 
-        # driver容器，用于在运行过程中更换driver
-        self.driver_container = driver_container or dict()
-
-        # 数据组
-        self.data_set_dict = data_set_dict
         # 根据数据组修改用例名称
         if self.data_set_dict:
             self.case_result.name = self.data_set_dict['2_name']
+
+        # driver容器，用于在运行过程中更换driver
+        self.driver_container = driver_container or dict()
 
     # 强制停止标志
     @property

@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE HTML>
+<html>
+    <head>
+        {% include 'main/include/common_header.html' %}
+        {% include 'main/include/general_css.html' %}
+        <style media='screen'>
+            div.row {
+                padding: 5px 0;
+                {#min-height: 2em;#}
+            }
+            #myTable {
+                max-width: none; /* 移除宽度限制，允许出现滚动条 */
+            }
+            /* 悬浮表头 */
+            #myTable th {
+                background: darkgrey; /* 表头背景色 */
+                position: sticky;    /* 启用粘性定位 */
+                top: 0;              /* 表头粘在顶部 */
+                z-index: 10;         /* 保证表头位于内容之上 */
+            }
+        </style>
+        {% include 'main/include/general_script.html' %}
+        <script src="{% static 'main/js/detail.js' %}"></script>
+        <script>
+            $(function () {
+                window.runtime_variables_dict = {{ runtime_variables_dict|safe }};
+                // 获取 runtime_variables_dict 并按键名排序
+                const sortedKeys = Object.keys(window.runtime_variables_dict).sort();
+    
+                // 创建表格元素
+                const table = $('#myTable');
+                const colgroup = $('<colgroup><col style="width: 40px;"><col style="width: 100px;"><col></colgroup>');
+                const thead = $('<thead><tr style="width: 100%;"><th class="middle" style="width: 40px;">#</th><th style="width: 100px;">Key</th><th style="width: 100%;">Value</th></tr></thead>');
+                const tbody = $('<tbody></tbody>');
+    
+                // 添加排序后的键值对到表格
+                let i = 1;
+                sortedKeys.forEach(key => {
+                    const number = i++;
+                    const value = window.runtime_variables_dict[key];
+                    const row = $('<tr></tr>');
+                    row.append(`<td class="middle">${number}</td>`);
+                    row.append(`<td class="vertical-align-middle">${key}</td>`);
+                    row.append(`<td><textarea style="width: 100%; display: block;">${value}</textarea></td>`);
+                    tbody.append(row);
+                });
+    
+                // 拼接表头和表体
+                table.append(colgroup);
+                table.append(thead);
+                table.append(tbody);
+                
+                // 列表可调宽度
+                table_col_resizable($('#myTable'), 'th:not(:nth-child(1))');
+                // 关闭遮罩
+                $('#mask').hide();
+                // 禁用所有互动
+                disable_interaction();
+                // 禁用表格编辑
+                $('input, textarea, select').off().attr('disabled', true);
+            });
+        </script>
+
+        <script src="{% static 'main/js/detail_data_set.js' %}"></script>
+
+    </head>
+    <body>
+        <div class="container-fluid" name="detail_content">
+            <div class="row">
+                <div class="col text-center">
+                    <div id="dataTableContainer" class="text-left small">
+                        <table id="myTable" class="table table-sm table-bordered"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

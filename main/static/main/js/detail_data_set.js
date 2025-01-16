@@ -1,15 +1,3 @@
-// 验证名称
-function check_variable_name(name, variable_name_list_) {
-    if (!name || '' === name.trim()) {
-        return '名称不能为空'
-    }
-    let index = $.inArray(name, variable_name_list_);
-    if (index >= 0) {
-        return '与第[' + (index + 1) + ']行重名'
-    }
-    return true;
-}
-
 // 生成带错误提示的输入框
 function get_invalid_input($input, check_result) {
     $input.removeClass('is-invalid');
@@ -37,7 +25,7 @@ window.baseColumns = [
         type: 'html',
         defaultContent: '<div class="icon-sort icon-2x"></div>',
         width: '30px',
-        className: 'text-center no-lef-right-padding vertical-align-middle',
+        className: 'text-center no-lef-right-padding middle',
         orderable: false
     },
     {
@@ -51,7 +39,7 @@ window.baseColumns = [
             }
         },
         width: '30px',
-        className: 'text-center vertical-align-middle'
+        className: 'text-center middle'
     },
 ];
 
@@ -128,10 +116,7 @@ function create_table_and_register_event(is_init) {
     window.$table = $('#myTable').DataTable(get_tableSettings(baseColumns, data_set.data));
 
     // 列表可调宽度
-    $('#myTable th:not(:nth-child(1)):not(:nth-child(2))').resizable({
-        maxHeight: 1,
-        alsoResize: '#myTable'
-    });
+    table_col_resizable($('#myTable'), 'th:not(:nth-child(1)):not(:nth-child(2))');
 
     // 行排序
     $table.off('row-reorder');
@@ -497,7 +482,9 @@ function bind_sub_gtm_button() {
 function check_and_set_whether_the_table_is_interactive() {
     // 禁用表格交互
     if (!window.editable || data_set.gtm) {
-		$('#dataTableContainer').find('input, textarea, select').off().attr('disabled', true);
+        let tableContainer = $('#dataTableContainer')
+        tableContainer.find('th').off('dblclick').attr('disabled', true);
+		tableContainer.find('td, input, textarea, select').off().attr('disabled', true);
         if ("$table" in window) {
             $table.rowReorder.disable();
             $('#sub_button_group button:not(#sub_gtm_button)').off('click').attr('disabled', true);

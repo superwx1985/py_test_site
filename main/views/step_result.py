@@ -20,6 +20,7 @@ def detail(request, pk):
         raise Http404('Step Result does not exist')
     step_url = reverse('step', args=[obj.step.pk])
     step_snapshot_url = reverse('step_snapshot', args=[pk])
+    runtime_variables_url = reverse('runtime_variables', args=[pk])
 
     if obj.has_sub_case:
         try:
@@ -80,11 +81,19 @@ def snapshot(request, pk):
         obj = StepResult.objects.get(pk=pk)
     except StepResult.DoesNotExist:
         raise Http404('Step Result does not exist')
-    try:
-        snapshot_obj = json.loads(obj.snapshot)
-    except:
-        logger.warning('快照数据损坏，无法展示。', exc_info=True)
-        return HttpResponse('<div style="color: red;">快照数据损坏，无法展示。</div>')
     else:
-        form = StepForm(initial=snapshot_obj)
+        form = StepForm(initial=obj.snapshot)
         return render(request, 'main/step/snapshot.html', locals())
+
+
+# 执行时变量
+@login_required
+def runtime_variables(request, pk):
+    runtime_variables_dict = None
+    try:
+        obj = StepResult.objects.get(pk=pk)
+    except StepResult.DoesNotExist:
+        raise Http404('Step Result does not exist')
+    else:
+        runtime_variables_dict = obj.runtime_variables
+        return render(request, 'main/result/runtime_variables.html', locals())

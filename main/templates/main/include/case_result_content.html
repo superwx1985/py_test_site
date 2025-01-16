@@ -21,6 +21,16 @@
 </div>
 <div class="row">
     <div class="col">
+        <span class="font-weight-bold">数据组：</span>
+        {% if case_result.data_set %}
+            <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '用例数据组快照', '{% url "case_data_set_snapshot" case_result.pk %}')"><i class="icon-time"></i>&nbsp;查看快照</button>
+        {% else %}
+            <span class="text-info">【未配置】</span>
+        {% endif %}
+    </div>
+</div>
+<div class="row">
+    <div class="col">
         <span class="font-weight-bold">超时设置：</span>
         <span class="text-info">{{ case_result.timeout|default_if_none:"【未配置】" }}</span>
     </div>

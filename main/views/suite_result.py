@@ -226,13 +226,8 @@ def config_snapshot(request, pk):
         obj = SuiteResult.objects.get(pk=pk)
     except SuiteResult.DoesNotExist:
         raise Http404('Suite Result does not exist')
-    try:
-        snapshot_obj = json.loads(obj.config)
-    except:
-        logger.warning('快照数据损坏，无法展示。', exc_info=True)
-        return HttpResponse('<div style="color: red;">快照数据损坏，无法展示。</div>')
     else:
-        form = ConfigForm(initial=snapshot_obj)
+        form = ConfigForm(initial=obj.config)
         return render(request, 'main/config/snapshot.html', locals())
 
 
@@ -243,14 +238,9 @@ def variable_group_snapshot(request, pk):
         obj = SuiteResult.objects.get(pk=pk)
     except SuiteResult.DoesNotExist:
         raise Http404('Suite Result does not exist')
-    try:
-        snapshot_obj = json.loads(obj.variable_group)
-        variables_json = json.dumps({'data': snapshot_obj['variables']})
-    except:
-        logger.warning('快照数据损坏，无法展示。', exc_info=True)
-        return HttpResponse('<div style="color: red;">快照数据损坏，无法展示。</div>')
     else:
-        form = VariableGroupForm(initial=snapshot_obj)
+        variables_json = json.dumps({'data': obj.variable_group['variables']})
+        form = VariableGroupForm(initial=obj.variable_group)
         return render(request, 'main/variable_group/snapshot.html', locals())
 
 
@@ -261,13 +251,8 @@ def element_group_snapshot(request, pk):
         obj = SuiteResult.objects.get(pk=pk)
     except SuiteResult.DoesNotExist:
         raise Http404('Suite Result does not exist')
-    try:
-        snapshot_obj = json.loads(obj.element_group)
-        elements_json = json.dumps({'data': snapshot_obj['elements']})
-    except:
-        logger.warning('快照数据损坏，无法展示。', exc_info=True)
-        return HttpResponse('<div style="color: red;">快照数据损坏，无法展示。</div>')
     else:
-        form = ElementGroupForm(initial=snapshot_obj)
+        elements_json = json.dumps({'data': obj.element_group['elements']})
         by_list_json = json.dumps(Step.ui_by_list)
+        form = ElementGroupForm(initial=obj.element_group)
         return render(request, 'main/element_group/snapshot.html', locals())

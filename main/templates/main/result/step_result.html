@@ -70,9 +70,12 @@
                 </div>
                 {% include 'main/include/case_result_content.html' %}
             {% endif %}
-            <div class="row">
-                <div class="col">
+            <div class="row justify-content-between">
+                <div class="col-auto">
                     <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '步骤快照', '{{ step_snapshot_url }}')"><i class="icon-time"></i>&nbsp;步骤快照</button>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-info" onclick="modal_with_iframe_max('runtime_variables', '执行时变量', '{{ runtime_variables_url }}')"><i class="icon-time"></i>&nbsp;执行时变量</button>
                 </div>
             </div>
             {% if obj.ui_last_url or imgs %}

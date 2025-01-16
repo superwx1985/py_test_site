@@ -451,6 +451,33 @@ class Element(models.Model):
         unique_together = ('name', 'element_group')
 
 
+class DataSet(models.Model):
+    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    keyword = models.CharField(blank=True, max_length=100)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    creator = models.ForeignKey(
+        User, verbose_name='创建人', related_name='data_set_creator', on_delete=models.SET_NULL, blank=True,
+        null=True)
+    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
+    modifier = models.ForeignKey(
+        User, verbose_name='修改人', related_name='data_set_modifier', on_delete=models.SET_NULL, blank=True,
+        null=True)
+    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
+    is_active = models.BooleanField(default=True)
+    data = models.JSONField(null=True, blank=True)
+
+    def natural_key(self):  # 序列化时，可以用此值代替外键ID
+        return self.name
+
+    class Meta:
+        ordering = ['-modified_date']
+
+    def __str__(self):
+        return self.name
+
+
 # suite测试结果
 class SuiteResult(models.Model):
     uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
@@ -473,9 +500,9 @@ class SuiteResult(models.Model):
     ui_get_ss = models.BooleanField(blank=True, null=True)
     log_level = models.IntegerField(blank=True, null=True)
     thread_count = models.IntegerField(blank=True, null=True)
-    config = models.TextField(blank=True, null=True)
-    variable_group = models.TextField(blank=True, null=True)
-    element_group = models.TextField(blank=True, null=True)
+    config = models.JSONField(null=True, blank=True)
+    variable_group = models.JSONField(null=True, blank=True)
+    element_group = models.JSONField(null=True, blank=True)
     error_handle = models.IntegerField(blank=True, null=True)
     suite = models.ForeignKey('main.Suite', on_delete=models.SET_NULL, null=True, blank=True)
 
@@ -518,9 +545,9 @@ class CaseResult(models.Model):
 
     timeout = models.FloatField(blank=True, null=True)
     ui_step_interval = models.FloatField(blank=True, null=True)
-    config = models.TextField(blank=True, null=True)
-    variable_group = models.TextField(blank=True, null=True)
-    # data_set = models.TextField(blank=True, null=True)
+    config = models.JSONField(null=True, blank=True)
+    variable_group = models.JSONField(null=True, blank=True)
+    data_set = models.JSONField(null=True, blank=True)
 
     suite_result = models.ForeignKey('main.SuiteResult', on_delete=models.CASCADE)
     step_result = models.ForeignKey('main.StepResult', on_delete=models.CASCADE, null=True, blank=True)
@@ -566,6 +593,7 @@ class StepResult(models.Model):
     step = models.ForeignKey('main.Step', on_delete=models.SET_NULL, null=True, blank=True)
     step_order = models.IntegerField(blank=True, null=True)
     loop_id = models.CharField(blank=True, max_length=100)
+    runtime_variables = models.JSONField(null=True, blank=True)
 
     creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.SET_NULL, blank=True, null=True)
     start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
@@ -575,7 +603,7 @@ class StepResult(models.Model):
     result_message = models.TextField(blank=True)
     result_error = models.TextField(blank=True)
 
-    snapshot = models.TextField(blank=True, null=True)
+    snapshot = models.JSONField(null=True, blank=True)
     has_sub_case = models.BooleanField(default=False)
 
     ui_last_url = models.TextField(blank=True)
@@ -637,55 +665,3 @@ class Token(models.Model):
 
     class Meta:
         unique_together = ('value',)
-
-
-class DataSet(models.Model):
-    uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True)
-    keyword = models.CharField(blank=True, max_length=100)
-    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
-    creator = models.ForeignKey(
-        User, verbose_name='创建人', related_name='data_set_creator', on_delete=models.SET_NULL, blank=True,
-        null=True)
-    created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
-    modifier = models.ForeignKey(
-        User, verbose_name='修改人', related_name='data_set_modifier', on_delete=models.SET_NULL, blank=True,
-        null=True)
-    modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
-    is_active = models.BooleanField(default=True)
-    data = models.JSONField(null=True, blank=True)
-
-    def natural_key(self):  # 序列化时，可以用此值代替外键ID
-        return self.name
-
-    class Meta:
-        ordering = ['-modified_date']
-
-    def __str__(self):
-        return self.name
-
-
-# class DataSetRow(models.Model):
-#     uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
-#     row_number = models.IntegerField(default=1)
-#     remark = models.TextField(blank=True)
-#     data_set = models.ForeignKey('main.DataSet', on_delete=models.CASCADE, related_name="rows")
-#
-#     def __str__(self):
-#         return f"Table: {self.data_set.name}, Row: {self.row_number}"
-#
-#     class Meta:
-#         unique_together = ('row_number', 'data_set')
-#
-#
-# class DataSetCell(models.Model):
-#     uuid = models.UUIDField(auto_created=True, default=uuid.uuid1, editable=False, unique=True)
-#     row_number = models.IntegerField(default=1)
-#     remark = models.TextField(blank=True)
-#     row = models.ForeignKey(DataSetRow, on_delete=models.CASCADE, related_name="cells")
-#     column_name = models.CharField(max_length=255)
-#     value = models.TextField(blank=True)
-#
-#     def __str__(self):
-#         return f"Row: {self.row_number}, Column {self.column_name}, Value {self.value}"

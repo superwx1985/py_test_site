@@ -10,7 +10,9 @@
 
 {% block style %}
     <style media='screen'>
-
+        #variable_table {
+            max-width: none; /* 移除宽度限制，允许出现滚动条 */
+        }
     </style>
 {% endblock %}
 
@@ -24,7 +26,7 @@
             // 临时列表
             window.temp_sub_list = [];
             // 列表可调宽度
-            $('th').resizable({maxHeight: 1, alsoResize: '#variable_table'});
+            table_col_resizable($('#variable_table'), 'th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3))');
         });
     </script>
     <script src="{% static 'main/js/detail_variable_group.js' %}"></script>
@@ -66,7 +68,7 @@
             // 注册批量粘贴对象按钮
             bind_sub_multiple_paste_obj_button();
             // 悬浮批量复制按钮组
-            var sub_button_group = $('#sub_button_group');
+            let sub_button_group = $('#sub_button_group');
             {% if inside %}
                 float_element(sub_button_group);
             {% else %}

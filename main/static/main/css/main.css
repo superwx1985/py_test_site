@@ -74,6 +74,11 @@ div.paginator input {
 	vertical-align: middle!important;
 }
 
+/*垂直居中*/
+.vertical-align-middle {
+	vertical-align: middle!important;
+}
+
 /*右下角悬浮按钮*/
 .float-button-bottom-right {
 	position: fixed;

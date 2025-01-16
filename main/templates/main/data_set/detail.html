@@ -13,17 +13,11 @@
         td[contenteditable="true"]:focus {
             outline: 2px solid #4CAF50;
         }
-
+        /* 移除MOVE图标左右的内边距 */
         td.no-lef-right-padding {
             padding-left: 0;
             padding-right: 0;
         }
-
-        td.vertical-align-middle {
-            vertical-align: middle;
-            text-align: center;
-        }
-
     </style>
 {% endblock %}
 
@@ -32,10 +26,6 @@
         $(function () {
             // 更新导航栏
             $('#nav_data_set').addClass('active');
-            // 定义sub字段
-            window.$sub_input = $('input[name=row]');
-            // 临时列表
-            window.temp_sub_list = [];
             // 获取gtm数据地址
             window.get_gtm_data_url="{% url 'get_gtm_data' %}";
         });
@@ -44,28 +34,16 @@
 {% endblock %}
 
 {% block script %}
-
     <script>
         $(function () {
-            {% if pk and pk != "add" %}
-                // 获取变量
-                {#getData("{% url 'data_set' pk %}", window.$csrf_input.val(), init_data_set);#}
-            {% else %}
-
-            {% endif %}
-            // 注册添加行按钮
-            bind_sub_add_row_button();
-            // 注册添加列按钮
-            bind_sub_add_col_button();
-            // 悬浮批量复制按钮组
-            var sub_button_group = $('#sub_button_group');
+            // 悬浮按钮组
+            let sub_button_group = $('#sub_button_group');
             {% if inside %}
                 float_element(sub_button_group);
             {% else %}
                 float_element(sub_button_group, 60);
             {% endif %}
-        });
-        $(document).ready(function () {
+            
             let data_set_str = $('#data_set_data').val();
             window.data_set = {data: [], gtm: null};
             try {
@@ -104,7 +82,7 @@
     <script>
     $(function () {
         // 确保GTM按钮启用
-        check_and_set_whether_the_table_is_interactive();  
+        check_and_set_whether_the_table_is_interactive();
     });
     
     </script>

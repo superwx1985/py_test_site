@@ -119,13 +119,15 @@ urlpatterns = [
          name="suite_variable_group_snapshot"),
     path("result/<str:pk>/element_group_snapshot", suite_result.element_group_snapshot,
          name="suite_element_group_snapshot"),
-
     path("case_result/<str:pk>/variable_group_snapshot", case_result.variable_group_snapshot,
          name="case_variable_group_snapshot"),
+    path("case_result/<str:pk>/data_set_snapshot", case_result.data_set_snapshot,
+         name="case_data_set_snapshot"),
 
     path("step_result/<str:pk>/", step_result.detail, name="step_result"),
     path("step_result/<str:pk>/detail_json", step_result.detail_json, name="step_result_detail_json"),
     path("step_result/<str:pk>/snapshot", step_result.snapshot, name="step_snapshot"),
+    path("step_result/<str:pk>/runtime_variables", step_result.runtime_variables, name="runtime_variables"),
 
     path("helps/", help_.list_, name="helps"),
     path("help/<int:pk>/", help_.detail, name="help"),

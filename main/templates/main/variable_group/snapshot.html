@@ -9,13 +9,18 @@
                 padding: 5px 0;
                 {#min-height: 2em;#}
             }
+            #variable_table {
+                max-width: none; /* 移除宽度限制，允许出现滚动条 */
+            }
         </style>
         {% include 'main/include/general_script.html' %}
         <script src="{% static 'main/js/detail.js' %}"></script>
         <script>
             $(function () {
+                // 定义sub字段
+                window.$sub_input = $('input[name=variable]');
                 // 列表可调宽度
-                $('th').resizable({maxHeight: 1, alsoResize: '#element_table'});
+                table_col_resizable($('#variable_table'), 'th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3))');
             })
         </script>
         <script>
@@ -26,6 +31,7 @@
                 $('#mask').hide();
                 // 禁用所有互动
                 disable_interaction();
+                $('#sub_button_group').remove();
             });
         </script>
 
@@ -33,7 +39,7 @@
 
     </head>
     <body>
-        <div class="container-fluid" style="padding-bottom: 50px; {% if not inside %}padding-top: 50px;{% endif %}" name="detail_content">
+        <div class="container-fluid" name="detail_content">
             {% include 'main/variable_group/detail_form_content.html' %}
             {% include 'main/variable_group/detail_list_content.html' %}
         </div>

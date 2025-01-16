@@ -112,7 +112,7 @@ class VicSuite:
         try:
             # 获取配置json
             if self.config:
-                self.suite_result.config = json.dumps(model_to_dict(self.suite.config))
+                self.suite_result.config = model_to_dict(self.suite.config)
 
             # 初始化全局变量, 获取变量组json
             self.suite_result.variable_group = None
@@ -125,7 +125,7 @@ class VicSuite:
                     self.suite.variable_group.variable_set.all().values('pk', 'name', 'description', 'value', 'order'))
                 variable_group_dict = model_to_dict(self.suite.variable_group)
                 variable_group_dict['variables'] = v_list
-                self.suite_result.variable_group = json.dumps(variable_group_dict)
+                self.suite_result.variable_group = variable_group_dict
 
             # 初始化公共元素组，获取元素组json
             self.suite_result.element_group = None
@@ -141,7 +141,7 @@ class VicSuite:
                         'pk', 'name', 'description', 'by', 'locator', 'order'))
                 element_group_dict = model_to_dict(self.suite.element_group)
                 element_group_dict['elements'] = v_list
-                self.suite_result.element_group = json.dumps(element_group_dict)
+                self.suite_result.element_group = element_group_dict
 
             # 限制进程数
             s_count = SUITE_MAX_CONCURRENT_EXECUTE_COUNT

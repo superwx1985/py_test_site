@@ -9,17 +9,22 @@
                 padding: 5px 0;
                 {#min-height: 2em;#}
             }
+            #element_table {
+                max-width: none; /* 移除宽度限制，允许出现滚动条 */
+            }
         </style>
         {% include 'main/include/general_script.html' %}
         <script src="{% static 'main/js/detail.js' %}"></script>
         <script>
             $(function () {
+                // 定义sub字段
+                window.$sub_input = $('input[name=element]');
                 // 获取by list
                 window.by_list = $.parseJSON("{{ by_list_json|escapejs }}");
                 // 初始化by选项
                 $('td[col_by]').empty().append(generate_select(window.by_list));
                 // 列表可调宽度
-                $('th').resizable({maxHeight: 1, alsoResize: '#element_table'});
+                $('th').resizable({maxHeight: 1});
             })
         </script>
         <script>
@@ -30,6 +35,7 @@
                 $('#mask').hide();
                 // 禁用所有互动
                 disable_interaction();
+                $('#sub_button_group').remove();
             });
         </script>
 

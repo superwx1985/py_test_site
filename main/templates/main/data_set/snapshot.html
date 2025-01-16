@@ -14,28 +14,31 @@
         <script src="{% static 'main/js/detail.js' %}"></script>
         <script>
             $(function () {
-                // 列表可调宽度
-                $('th').resizable({maxHeight: 1, alsoResize: '#element_table'});
-            })
-        </script>
-        <script>
-            $(function () {
-                // 获取变量
-                init_variable(true, $.parseJSON("{{ variables_json|escapejs }}"));
+                let data_set_str = $('#data_set_data').val();
+                window.data_set = {data: [], gtm: null};
+                try {
+                    if (data_set_str !== "null") {
+                        window.data_set = JSON.parse(data_set_str); // 转换字符串为 JSON 对象
+                    }
+                } catch (error) {
+                    console.error("Invalid JSON string:", error);
+                }
+                create_table_and_register_event(true);
                 // 关闭遮罩
                 $('#mask').hide();
                 // 禁用所有互动
                 disable_interaction();
+                $('#sub_button_group').remove();
             });
         </script>
 
-        <script src="{% static 'main/js/detail_variable_group.js' %}"></script>
+        <script src="{% static 'main/js/detail_data_set.js' %}"></script>
 
     </head>
     <body>
-        <div class="container-fluid" style="padding-bottom: 50px; {% if not inside %}padding-top: 50px;{% endif %}" name="detail_content">
-            {% include 'main/variable_group/detail_form_content.html' %}
-            {% include 'main/variable_group/detail_list_content.html' %}
+        <div class="container-fluid" name="detail_content">
+            {% include 'main/data_set/detail_form_content.html' %}
+            {% include 'main/data_set/detail_list_content.html' %}
         </div>
     </body>
 </html>

@@ -1,8 +1,8 @@
 // 展示Action相关内容
-function show_action_field($actionSelect) {
-    reset_action_field();
+function show_action_field($actionSelect, init) {
+    reset_action_field(init);
 	window.select_value = window.action_map[$actionSelect.val()];
-	var introduce = $('#introduce');
+	let introduce = $('#introduce');
 	if (select_value === 'UI_ALERT_HANDLE') {
 		introduce.children('div').text('处理浏览器弹窗（非页面元素弹窗），如：alert，confirm，prompt');
 		$('div[name=ui_alert_handle],div[name=ui_alert_handle_text],div[name=timeout],div[name=ui_step_interval]').show();
@@ -179,7 +179,10 @@ function show_action_field($actionSelect) {
 	} else if (select_value === 'OTHER_CALL_SUB_CASE') {
 		introduce.children('div').text('调用一个子用例。子用例会继承母用例的变量和配置项。如果出现递归调用，系统将会中断执行');
 		$('div[name=other_sub_case],div[name=save_as]').show();
-		$('[name=detail_content]').css('padding-bottom', '350px');
+		// 快照页面无需增加底边距容纳下拉列表
+		if (!("is_snapshot" in window)) {
+			$('[name=detail_content]').css('padding-bottom', '350px');
+		}
 	} else if (select_value === 'OTHER_IF') {
 		introduce.children('div').html('开始一个条件判断分支。如果条件为真（表达式的计算结果为<span class="text-info">True</span>），将执行后续的步骤');
 		introduce.append($('<div>如果想在表达式中使用字符串，请添加<span class="text-danger">英文双引号</span>。例：<span class="mark">"123"</span>不会转换为整型<span class="text-info">123</span>，而是被保存为字符串<span class="text-info">"123"</span></div>'));
@@ -237,7 +240,7 @@ function show_action_field($actionSelect) {
 }
 
 // 还原Action相关内容
-function reset_action_field() {
+function reset_action_field(init) {
     $('[temp]').remove();
 	$('#introduce').empty().append($('<div>').text('请选择动作'));
 	$('div[name=ui_data] .col-1').html('数据');
@@ -248,7 +251,10 @@ function reset_action_field() {
 	// $('[api]').hide();
 	// $('[db]').hide();
 	// $('[other]').hide();
-	$('[name=detail_content]').css('padding-bottom', '100px');
+	// 初始化时无需设置底边距，否则快照页面底部会出现多余的空白
+	if (!init) {
+		$('[name=detail_content]').css('padding-bottom', '100px');
+	}
 	$('div[name=other_data] .col-1').html('表达式');
 	$('div[name=other_data] textarea').attr('name', 'other_data').show();
 	$('div[name=save_as] .col-1').html('保存为&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="填入要保存为的变量名称，不能包含 ${  }$"></i>');

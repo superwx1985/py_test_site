@@ -465,7 +465,6 @@ function disable_interaction() {
     $('#sub_button_group button').off('click').attr('disabled', true);
     $('#variable_table th, #variable_table td, #variable_table input, #variable_table select').off('click').attr('disabled', true);
 	$('#element_table th, #element_table td, #element_table input, #element_table select').off('click').attr('disabled', true);
-	$('#dataTableContainer').find('th, td, input, textarea, select').off().attr('disabled', true);
 }
 
 // 复制对象的回调函数
@@ -830,4 +829,9 @@ function m2m_multiple_copy_obj_post(url, name_prefix, pk_list, copy_sub_item) {
             bootbox.alert('<span class="text-danger">'+data.message+'</span>');
         }
     });
+}
+
+// 列表可调宽度
+function table_col_resizable($table, col_selector) {
+	$table.find(col_selector).resizable({handles: 'e', maxHeight: 1, alsoResize: $table});
 }
