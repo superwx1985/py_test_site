@@ -9,7 +9,7 @@ from django.db.models import Q, CharField, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from main.models import SuiteResult, Step, Suite, result_state_list
+from main.models import SuiteResult, Step, Suite, result_state_list, Project
 from main.forms import OrderByForm, PaginatorForm, SuiteResultForm, ConfigForm, VariableGroupForm, ElementGroupForm
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
 from py_test.vic_tools.vic_date_handle import get_timedelta_str
@@ -146,6 +146,16 @@ def detail(request, pk):
         return render(request, 'main/result/detail.html', locals())
     else:
         _project = obj.project.pk if obj.project is not None else None
+        projects = {project['id']: project for project in Project.objects.values()}
+        if obj.variable_group:
+            obj.variable_group["fullname"] = f"{obj.variable_group["name"]} | {projects[obj.variable_group["project"]]["name"]}"
+        if obj.element_group:
+            obj.element_group["fullname"] = f"{obj.element_group["name"]} | {projects[obj.element_group["project"]]["name"]}"
+        for _ in sub_objects:
+            if _.variable_group:
+                _.variable_group["fullname"] = f"{_.variable_group["name"]} | {projects[_.variable_group["project"]]["name"]}"
+            if _.data_set:
+                _.data_set["fullname"] = f"{_.data_set["name"]} | {projects[_.data_set["project"]]["name"]}"
         form = SuiteResultForm(instance=obj)
         if request.session.get('state', None) == 'success':
             prompt = 'success'

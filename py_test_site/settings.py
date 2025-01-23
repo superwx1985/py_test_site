@@ -102,14 +102,14 @@ def get_database_settings(database) -> dict:
                 'ENGINE': 'django.db.backends.mysql',
                 'NAME': 'py_test_site',
                 # 'HOST': '127.0.0.1',
-                # 'HOST': '10.0.16.144',
-                # 'PORT': '3306',
-                # 'USER': 'py_test_site',
-                # 'PASSWORD': 'py_test_site',
-                'HOST': '52.82.80.187',
+                'HOST': '10.0.16.144',
                 'PORT': '3306',
-                'USER': 'root',
-                'PASSWORD': 'Pass@word1',
+                'USER': 'py_test_site',
+                'PASSWORD': 'py_test_site',
+                # 'HOST': '52.82.80.187',
+                # 'PORT': '3306',
+                # 'USER': 'root',
+                # 'PASSWORD': 'Pass@word1',
             }
         }
     elif database == "postgresql":

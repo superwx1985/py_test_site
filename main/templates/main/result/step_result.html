@@ -14,18 +14,26 @@
 
         <script>
             $(function () {
-                step_result_detail_popup();
+                // step_result_detail_popup();
                 // 提示框
                 $('[data-toggle=tooltip]').tooltip();
                 // 关闭遮罩
                 $('#mask').hide();
+                related_items_popup($('[name=related_items]'));
             });
             // 步骤详情弹窗
-            function step_result_detail_popup() {
-                $('[name=step_result]').off('click').on('click', function() {
-                    var url = $(this).parents('tr').attr('step_result_url');
-                    var title = $(this).text();
-                    modal_with_iframe_max('step_result_modal', title, url);
+            // function step_result_detail_popup() {
+            //     $('[name=step_result]').off('click').on('click', function() {
+            //         var url = $(this).parents('tr').attr('step_result_url');
+            //         var title = $(this).text();
+            //         modal_with_iframe_max('step_result_modal', title, url);
+            //     });
+            // }
+            // 关联项弹窗
+            function related_items_popup($e) {
+                $e.off('click').on('click', function() {
+                    let url = $(this).attr('url') + "?inside=1";
+                    modal_with_iframe_max('inside_detail_modal', "关联项详情", url);
                 });
             }
         </script>
@@ -41,9 +49,23 @@
 {#            </div>#}
             {% include 'main/include/result_time.html' with start_date=obj.start_date end_date=obj.end_date elapsed_time_str=obj.elapsed_time_str %}
             <hr>
+            <div class="row align-items-center">
+                <div class="col-auto font-weight-bold">步骤名称</div>
+                <div class="col"><a name="related_items" url={% url "step" obj.pk %} href="javascript:">{{ obj.name }}</a></div>
+            </div>
+            <div class="row">
+                <div class="col-auto">
+                    <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '步骤快照', '{{ step_snapshot_url }}')"><i class="icon-time"></i>&nbsp;快照</button>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-info" onclick="modal_with_iframe_max('runtime_variables', '执行时变量', '{{ runtime_variables_url }}')"><i class="icon-time"></i>&nbsp;执行时变量</button>
+                </div>
+            </div>
+            <hr>
             <div class="row">
                 <div class="col">
                     <span class="font-weight-bold">执行情况：</span>
+                    <br>
                     <br>
                     {% if obj.result_state == 0 %}
                         <pre class="text-secondary">{{ obj.result_message }}</pre>
@@ -70,14 +92,6 @@
                 </div>
                 {% include 'main/include/case_result_content.html' %}
             {% endif %}
-            <div class="row justify-content-between">
-                <div class="col-auto">
-                    <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '步骤快照', '{{ step_snapshot_url }}')"><i class="icon-time"></i>&nbsp;步骤快照</button>
-                </div>
-                <div class="col-auto">
-                    <button class="btn btn-info" onclick="modal_with_iframe_max('runtime_variables', '执行时变量', '{{ runtime_variables_url }}')"><i class="icon-time"></i>&nbsp;执行时变量</button>
-                </div>
-            </div>
             {% if obj.ui_last_url or imgs %}
                 <hr>
             {% endif %}

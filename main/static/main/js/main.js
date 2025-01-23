@@ -228,7 +228,7 @@ function modal_with_iframe(modal_name, modal_class, modal_style, modal_body_styl
     return show_my_modal(modal_name, modal_class, modal_style, modal_body_style, modal_title, $modal_body_div, modal_option, callback)
 }
 
-// 弹出内嵌页面最大化
+// 弹出内嵌页面最大化，如果modal_name叫inside_detail_modal，那么点击iframe中的返回就会关闭它
 function modal_with_iframe_max(modal_name, modal_title, url, modal_option, callback) {
     return modal_with_iframe(modal_name, 'modal-max', '', 'min-height: 600px', modal_title, url, modal_option, callback)
 }

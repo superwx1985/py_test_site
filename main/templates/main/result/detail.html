@@ -27,13 +27,20 @@
             $('#id_log_level').val('{{ obj.log_level|default_if_none:0 }}');
             // 关闭遮罩
             $('#mask').hide();
+            related_items_popup($('[name=related_items]'));
         });
         // 步骤详情弹窗
         function step_result_detail_popup() {
             $('[name=step_result]').off('click').on('click', function() {
-                var url = $(this).parents('tr').attr('step_result_url');
-                var title = $(this).text();
-                modal_with_iframe_max('step_result_modal', title, url);
+                let url = $(this).parents('tr').attr('step_result_url');
+                modal_with_iframe_max('step_result_modal', "步骤执行结果", url);
+            });
+        }
+        // 关联项弹窗
+        function related_items_popup($e) {
+            $e.off('click').on('click', function() {
+                let url = $(this).attr('url') + "?inside=1";
+                modal_with_iframe_max('inside_detail_modal', "关联项详情", url);
             });
         }
     </script>
@@ -127,14 +134,16 @@
     <div class="row align-items-center">
         <div class="col-1 text-center font-weight-bold">测试配置</div>
         <div class="col">
-            <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '配置快照', '{% url "config_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;查看快照</button>
+            <a name="related_items" url={% url "config" obj.config.id %} href="javascript:">{{ obj.config.name }}</a>
+            <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '配置快照', '{% url "config_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;快照</button>
         </div>
     </div>
     <div class="row align-items-center">
         <div class="col-1 text-center font-weight-bold">公共变量组</div>
         <div class="col">
             {% if obj.variable_group %}
-                <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '公共变量组快照', '{% url "suite_variable_group_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;查看快照</button>
+                <a name="related_items" url={% url "variable_group" obj.variable_group.id %} href="javascript:">{{ obj.variable_group.fullname }}</a>
+                <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '公共变量组快照', '{% url "suite_variable_group_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;快照</button>
             {% else %}
                 <span class="text-info">【未配置】</span>
             {% endif %}
@@ -144,7 +153,8 @@
         <div class="col-1 text-center font-weight-bold">公共元素组</div>
         <div class="col">
             {% if obj.element_group %}
-                <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '公共元素组快照', '{% url "suite_element_group_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;查看快照</button>
+                <a name="related_items" url={% url "element_group" obj.element_group.id %} href="javascript:">{{ obj.element_group.fullname }}</a>
+                <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '公共元素组快照', '{% url "suite_element_group_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;快照</button>
             {% else %}
                 <span class="text-info">【未配置】</span>
             {% endif %}
