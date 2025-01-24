@@ -53,18 +53,20 @@ class VicSuite:
         self.error_handle = error_handle_dict.get(suite.error_handle, 'stop')
 
         # 初始化suite result
+        _snapshot = model_to_dict(suite) if suite else None
+        _snapshot['case'] = [x.pk for x in _snapshot['case']]
         self.suite_result = SuiteResult.objects.create(
             name=suite.name,
             description=suite.description,
             keyword=suite.keyword,
-            timeout=suite.timeout,
-            ui_step_interval=suite.ui_step_interval,
-            ui_get_ss=suite.ui_get_ss,
-            log_level=suite.log_level,
-            thread_count=suite.thread_count,
-            error_handle=suite.error_handle,
-
             project=suite.project,
+
+            # timeout=suite.timeout,
+            # ui_step_interval=suite.ui_step_interval,
+            # ui_get_ss=suite.ui_get_ss,
+            # log_level=suite.log_level,
+            # thread_count=suite.thread_count,
+            # error_handle=suite.error_handle,
 
             suite=suite,
             creator=user,
@@ -75,6 +77,8 @@ class VicSuite:
             fail_count=0,
             error_count=0,
             stop_count=0,
+
+            snapshot=_snapshot,
         )
 
     # 强制停止标志
@@ -216,7 +220,7 @@ class VicSuite:
             else:
                 self.suite_result.result_state = 1
 
-            self.suite_result.result_message = '执行: {} | 通过: {} | 失败: {} | 出错: {} | 中止: {} | 忽略: {}'.format(
+            self.suite_result.result_message = '执行: {} | 通过: {} | 失败: {} | 异常: {} | 中止: {} | 忽略: {}'.format(
                 self.suite_result.execute_count, self.suite_result.pass_count, self.suite_result.fail_count,
                 self.suite_result.error_count, self.suite_result.stop_count, ignore_count)
             self.suite_result.end_date = datetime.datetime.now()

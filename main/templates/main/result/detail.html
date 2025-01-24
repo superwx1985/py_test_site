@@ -22,9 +22,9 @@
         $(function () {
             step_result_detail_popup();
             // 更新错误处理
-            $('#id_error_handle').val('{{ obj.error_handle|default_if_none:0 }}');
+            $('#id_error_handle').val('{{ obj.snapshot.error_handle|default_if_none:0 }}');
             // 更新日志级别
-            $('#id_log_level').val('{{ obj.log_level|default_if_none:0 }}');
+            $('#id_log_level').val('{{ obj.snapshot.log_level|default_if_none:0 }}');
             // 关闭遮罩
             $('#mask').hide();
             related_items_popup($('[name=related_items]'));
@@ -54,25 +54,25 @@
     <form method="post" id="object_form" novalidate>
         {% csrf_token %}
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.name.required %}*{% endif %}名称</div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.name.required %}*{% endif %}名称</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.name %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.description.required %}*{% endif %}描述</div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.description.required %}*{% endif %}描述</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.description rows='3' %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.keyword.required %}*{% endif %}关键字</div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.keyword.required %}*{% endif %}关键字</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.keyword %}
             </div>
         </div>
         <div class="row align-items-center" base>
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.project.required %}*{% endif %}项目</div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.project.required %}*{% endif %}项目</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.project %}
             </div>
@@ -82,25 +82,72 @@
         {% include 'main/include/submit_button_group.html' %}
     </form>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该套件内每一步骤的默认超时值（单位：秒）。会被下级的设置覆盖"></i></div>
-        <div class="col" form_data>
-            <span class="text-info">{{ obj.timeout }}</span>
+        <div class="col-1 text-right font-weight-bold">测试结果</div>
+        <div class="col">
+            {% if obj.result_state == 0 %}
+                <span class="text-secondary font-weight-bold">忽略</span><span> 【{{ obj.result_message }}】</span>
+            {% elif obj.result_state == 1 %}
+                <span class="text-success font-weight-bold">通过</span><span> 【{{ obj.result_message }}】</span>
+            {% elif obj.result_state == 2 %}
+                <span class="text-warning font-weight-bold">失败</span><span> 【{{ obj.result_message }}】</span>
+            {% elif obj.result_state == 3 %}
+                <span class="text-danger font-weight-bold">异常</span><span> 【{{ obj.result_message }}】</span>
+            {% elif obj.result_state == 4 %}
+                <span class="text-secondary font-weight-bold">中止</span><span> 【{{ obj.result_message }}】</span>
+            {% else %}
+                <span class="text-danger font-weight-bold">N/A</span><span> 【{{ obj.result_message }}】</span>
+            {% endif %}
+            {% if obj.result_error %}
+                <div class="row">
+                    <div class="col"><pre class="text-danger pre-scrollable">{{ obj.result_error }}</pre></div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col text-center">
+            <h5 class="text-center ui-widget-header">套件快照&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="快照保存的是执行测试时的设置和数据"></i></h5>
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。会被下级的设置覆盖"></i></div>
+{#        <div class="col-1 text-right font-weight-bold">测试时间&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="包含系统自身耗时（例如初始化驱动，逻辑运算，读写数据库等）"></i></div>#}
+        <div class="col">
+            {% include 'main/include/result_time.html' with start_date=obj.start_date end_date=obj.end_date elapsed_time_str=obj.elapsed_time_str%}
+        </div>
+    </div>
+    <hr>
+    <div class="row align-items-center">
+        <div class="col-1 text-right font-weight-bold">名称</div>
+        <div class="col"><a name="related_items" url={% url "suite" obj.suite.pk %} href="javascript:">{{ obj.snapshot.name }}</a></div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-right font-weight-bold">描述</div>
+        <div class="col"><textarea class="form-control" rows="3" disabled>{{ obj.snapshot.description }}</textarea></div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-right font-weight-bold">关键字</div>
+        <div class="col"><input class="form-control" value="{{ obj.snapshot.keyword }}" disabled></div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-right font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该套件内每一步骤的默认超时值（单位：秒）。会被下级的设置覆盖"></i></div>
         <div class="col" form_data>
-            <span class="text-info">{{ obj.ui_step_interval }}</span>
+            <span class="text-info">{{ obj.snapshot.timeout }}</span>
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">自动截图&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="UI测试运行出错以及遇到验证步骤时是否自动截图"></i></div>
+        <div class="col-1 text-right font-weight-bold">UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。会被下级的设置覆盖"></i></div>
         <div class="col" form_data>
-            <input type="checkbox" name="ui_get_ss" id="id_ui_get_ss" {% if obj.ui_get_ss %}checked{% endif %} disabled>
+            <span class="text-info">{{ obj.snapshot.ui_step_interval }}</span>
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。会被下级的设置覆盖"></i></div>
+        <div class="col-1 text-right font-weight-bold">自动截图&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="UI测试运行出错以及遇到验证步骤时是否自动截图"></i></div>
+        <div class="col" form_data>
+            <input type="checkbox" name="ui_get_ss" id="id_ui_get_ss" {% if obj.snapshot.ui_get_ss %}checked{% endif %} disabled>
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-right font-weight-bold">错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。会被下级的设置覆盖"></i></div>
         <div class="col" form_data>
             <select name="error_handle" class="form-control" id="id_error_handle" disabled>
               <option value="0">继承上级</option>
@@ -112,7 +159,7 @@
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">日志级别&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试的日志详细程度，选择DEV将不会自动关闭浏览器"></i></div>
+        <div class="col-1 text-right font-weight-bold">日志级别&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试的日志详细程度，选择DEV将不会自动关闭浏览器"></i></div>
         <div class="col" form_data>
             <select name="log_level" class="form-control" id="id_log_level" disabled>
                 <option value="0"></option>
@@ -126,20 +173,20 @@
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">测试线程数&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="可同时运行的用例数量。设置更高的值可以加快测试速度，但会打乱用例执行顺序，导致一些意外情况。"></i></div>
+        <div class="col-1 text-right font-weight-bold">测试线程数&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="可同时运行的用例数量。设置更高的值可以加快测试速度，但会打乱用例执行顺序，导致一些意外情况。"></i></div>
         <div class="col" form_data>
-            <span class="text-info">{{ obj.thread_count }}</span>
+            <span class="text-info">{{ obj.snapshot.thread_count }}</span>
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">测试配置</div>
+        <div class="col-1 text-right font-weight-bold">测试配置</div>
         <div class="col">
             <a name="related_items" url={% url "config" obj.config.id %} href="javascript:">{{ obj.config.name }}</a>
             <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '配置快照', '{% url "config_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;快照</button>
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">公共变量组</div>
+        <div class="col-1 text-right font-weight-bold">公共变量组</div>
         <div class="col">
             {% if obj.variable_group %}
                 <a name="related_items" url={% url "variable_group" obj.variable_group.id %} href="javascript:">{{ obj.variable_group.fullname }}</a>
@@ -150,7 +197,7 @@
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">公共元素组</div>
+        <div class="col-1 text-right font-weight-bold">公共元素组</div>
         <div class="col">
             {% if obj.element_group %}
                 <a name="related_items" url={% url "element_group" obj.element_group.id %} href="javascript:">{{ obj.element_group.fullname }}</a>
@@ -160,37 +207,13 @@
             {% endif %}
         </div>
     </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">测试结果</div>
-        <div class="col">
-            {% if obj.result_state == 0 %}
-                <div class="text-secondary">{{ obj.result_message|default:'忽略' }}</div>
-            {% elif obj.result_state == 1 %}
-                <div class="text-success">{{ obj.result_message|default:'通过' }}</div>
-            {% elif obj.result_state == 2 %}
-                <div class="text-warning">{{ obj.result_message|default:'失败' }}</div>
-            {% elif obj.result_state == 3 %}
-                <div class="text-danger">{{ obj.result_message|default:'出错' }}</div>
-            {% elif obj.result_state == 4 %}
-                <div class="text-dark">{{ obj.result_message|default:'中止' }}</div>
-            {% else %}
-                <div class="text-danger">{{ obj.result_message|default:'N/A' }}</div>
-            {% endif %}
-            {% if obj.result_error %}
-                <div class="row">
-                    <div class="col"><pre class="text-danger pre-scrollable">{{ obj.result_error }}</pre></div>
-                </div>
-            {% endif %}
+    <div class="row">
+        <div class="col text-center">
+            <h5 class="text-center ui-widget-header">用例快照&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="快照保存的是执行测试时的设置和数据"></i></h5>
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">测试时间&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="包含系统自身耗时（例如初始化驱动，逻辑运算，读写数据库等）"></i></div>
-        <div class="col">
-            {% include 'main/include/result_time.html' with start_date=obj.start_date end_date=obj.end_date elapsed_time_str=obj.elapsed_time_str%}
-        </div>
-    </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-center font-weight-bold">用例执行情况</div>
+{#        <div class="col-1 text-right font-weight-bold">用例执行情况</div>#}
         <div class="col">
             {% if sub_objects %}
                 <ul class="nav nav-tabs" role="tablist">

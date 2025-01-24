@@ -219,7 +219,7 @@ class SuiteResultForm(forms.ModelForm):
     name = forms.CharField(max_length=100)
     description = forms.CharField(required=False, widget=forms.Textarea())
     keyword = forms.CharField(required=False, max_length=100)
-    project = forms.ModelChoiceField(queryset=Project.objects, required=False)
+    project = forms.ModelChoiceField(queryset=Project.objects, required=True)
 
     class Meta:
         model = SuiteResult
@@ -247,4 +247,5 @@ class SuiteResultForm(forms.ModelForm):
             'result_state',
             'result_message',
             'result_error',
+            'snapshot',
         ]

@@ -1,23 +1,23 @@
 <div class="row align-items-center">
-    <div class="col-1 text-center font-weight-bold">{% if form.fields.name.required %}*{% endif %}名称</div>
+    <div class="col-1 text-right font-weight-bold">{% if form.fields.name.required %}*{% endif %}名称</div>
     <div class="col" form_data>
         {% include 'main/include/form_input.html' with field=form.name %}
     </div>
 </div>
 <div class="row align-items-center">
-    <div class="col-1 text-center font-weight-bold">{% if form.fields.description.required %}*{% endif %}描述</div>
+    <div class="col-1 text-right font-weight-bold">{% if form.fields.description.required %}*{% endif %}描述</div>
     <div class="col" form_data>
         {% include 'main/include/form_textarea.html' with field=form.description rows='3' %}
     </div>
 </div>
 <div class="row align-items-center">
-    <div class="col-1 text-center font-weight-bold">{% if form.fields.keyword.required %}*{% endif %}关键字</div>
+    <div class="col-1 text-right font-weight-bold">{% if form.fields.keyword.required %}*{% endif %}关键字</div>
     <div class="col" form_data>
         {% include 'main/include/form_input.html' with field=form.keyword %}
     </div>
 </div>
 <div class="row align-items-center">
-    <div class="col-1 text-center font-weight-bold">{% if form.fields.project.required %}*{% endif %}项目</div>
+    <div class="col-1 text-right font-weight-bold">{% if form.fields.project.required %}*{% endif %}项目</div>
     <div class="col" form_data>
         {% include 'main/include/form_input.html' with field=form.project %}
     </div>

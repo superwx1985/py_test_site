@@ -1,19 +1,19 @@
 {% include 'main/include/result_time.html' with start_date=case_result.start_date end_date=case_result.end_date elapsed_time_str=case_result.elapsed_time_str%}
 <hr>
 <div class="row align-items-center">
-    <div class="col-auto font-weight-bold">名称</div>
+    <div class="col-1 text-right font-weight-bold">用例</div>
     <div class="col"><a name="related_items" url={% url "case" case_result.case.pk %} href="javascript:">{{ case_result.name }}</a></div>
 </div>
 <div class="row align-items-center">
-    <div class="col-auto font-weight-bold">描述</div>
+    <div class="col-1 text-right font-weight-bold">描述</div>
     <div class="col"><textarea class="form-control" rows="3" disabled>{{ case_result.description }}</textarea></div>
 </div>
 <div class="row align-items-center">
-    <div class="col-auto font-weight-bold">关键字</div>
+    <div class="col-1 text-right font-weight-bold">关键字</div>
     <div class="col"><input class="form-control" value="{{ case_result.keyword }}" disabled></div>
 </div>
 <div class="row align-items-center">
-    <div class="col-auto font-weight-bold">变量组</div>
+    <div class="col-1 text-right font-weight-bold">变量组</div>
     <div class="col">
         {% if case_result.variable_group %}
             <a name="related_items" url={% url "variable_group" case_result.variable_group.id %} href="javascript:">{{ case_result.variable_group.fullname }}</a>
@@ -24,7 +24,7 @@
     </div>
 </div>
 <div class="row align-items-center">
-    <div class="col-auto font-weight-bold">数据组</div>
+    <div class="col-1 text-right font-weight-bold">数据组</div>
     <div class="col">
         {% if case_result.data_set %}
             <a name="related_items" url={% url "data_set" case_result.data_set.id %} href="javascript:">{{ case_result.data_set.fullname }}</a>
@@ -35,13 +35,13 @@
     </div>
 </div>
 <div class="row align-items-center">
-    <div class="col-auto font-weight-bold">超时设置</div>
+    <div class="col-1 text-right font-weight-bold">超时设置</div>
     <div class="col">
         <span class="text-info">{{ case_result.timeout|default_if_none:"【未配置】" }}</span>
     </div>
 </div>
 <div class="row align-items-center">
-    <div class="col-auto font-weight-bold">UI测试间隔</div>
+    <div class="col-1 text-right font-weight-bold">UI测试间隔</div>
     <div class="col">
         <span class="text-info">{{ case_result.ui_step_interval|default_if_none:"【未配置】" }}</span>
     </div>

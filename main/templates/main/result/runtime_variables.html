@@ -14,7 +14,7 @@
             }
             /* 悬浮表头 */
             #myTable th {
-                background: darkgrey; /* 表头背景色 */
+                background: lightgrey; /* 表头背景色 */
                 position: sticky;    /* 启用粘性定位 */
                 top: 0;              /* 表头粘在顶部 */
                 z-index: 10;         /* 保证表头位于内容之上 */
@@ -31,7 +31,7 @@
                 // 创建表格元素
                 const table = $('#myTable');
                 const colgroup = $('<colgroup><col style="width: 40px;"><col style="width: 100px;"><col></colgroup>');
-                const thead = $('<thead><tr style="width: 100%;"><th class="middle" style="width: 40px;">#</th><th style="width: 100px;">Key</th><th style="width: 100%;">Value</th></tr></thead>');
+                const thead = $('<thead><tr><th class="middle">#</th><th>Key</th><th>Value</th></tr></thead>');
                 const tbody = $('<tbody></tbody>');
     
                 // 添加排序后的键值对到表格
@@ -57,8 +57,6 @@
                 $('#mask').hide();
                 // 禁用所有互动
                 disable_interaction();
-                // 禁用表格编辑
-                $('input, textarea, select').off().attr('disabled', true);
             });
         </script>
 

@@ -455,7 +455,8 @@ function replace_m2m($input, pk, order) {
 
 // 禁用所有互动
 function disable_interaction() {
-	$('#object_form input, #object_form textarea, #object_form select').attr('disabled', true);
+	// $('#object_form input, #object_form textarea, #object_form select').attr('disabled', true);
+	$('input, textarea, select').attr('disabled', true);
 	$('tr#new_helper').hide();
 	$('td[col_del]').empty().off('click');
 	$('td[col_move]').empty().off('click');

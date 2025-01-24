@@ -495,15 +495,13 @@ class SuiteResult(models.Model):
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
 
-    timeout = models.FloatField(blank=True, null=True)
-    ui_step_interval = models.FloatField(blank=True, null=True)
-    ui_get_ss = models.BooleanField(blank=True, null=True)
-    log_level = models.IntegerField(blank=True, null=True)
-    thread_count = models.IntegerField(blank=True, null=True)
+    snapshot = models.JSONField(null=True, blank=True)
+
     config = models.JSONField(null=True, blank=True)
     variable_group = models.JSONField(null=True, blank=True)
     element_group = models.JSONField(null=True, blank=True)
     error_handle = models.IntegerField(blank=True, null=True)
+
     suite = models.ForeignKey('main.Suite', on_delete=models.SET_NULL, null=True, blank=True)
 
     start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)

@@ -183,49 +183,49 @@
     <form method="post" id="object_form" novalidate>
         {% csrf_token %}
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.name.required %}*{% endif %}名称</div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.name.required %}*{% endif %}名称</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.name %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.description.required %}*{% endif %}描述</div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.description.required %}*{% endif %}描述</div>
             <div class="col" form_data>
                 {% include 'main/include/form_textarea.html' with field=form.description rows='3' %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.keyword.required %}*{% endif %}关键字</div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.keyword.required %}*{% endif %}关键字</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.keyword %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.project.required %}*{% endif %}项目</div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.project.required %}*{% endif %}项目</div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.project %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.error_handle.required %}*{% endif %}错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。会被下级的设置覆盖"></i></div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.error_handle.required %}*{% endif %}错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。会被下级的设置覆盖"></i></div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.error_handle %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.timeout.required %}*{% endif %}超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该用例内每一步骤的默认超时值（单位：秒）。会被下级的设置覆盖"></i></div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.timeout.required %}*{% endif %}超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该用例内每一步骤的默认超时值（单位：秒）。会被下级的设置覆盖"></i></div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.timeout %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.ui_step_interval.required %}*{% endif %}UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。会被下级的设置覆盖"></i></div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.ui_step_interval.required %}*{% endif %}UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。会被下级的设置覆盖"></i></div>
             <div class="col" form_data>
                 {% include 'main/include/form_input.html' with field=form.ui_step_interval %}
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.config.required %}*{% endif %}测试配置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的配置项"></i></div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.config.required %}*{% endif %}测试配置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的配置项"></i></div>
             <div class="col" form_data>
                 <div id="config_dropdown" name="config"></div>
                 {% for error in form.config.errors %}
@@ -234,7 +234,7 @@
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.variable_group.required %}*{% endif %}变量组&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="如果用例中单独设置了变量组，或测试过程中定义了同名变量，将使用用例变量代替公共变量"></i></div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.variable_group.required %}*{% endif %}变量组&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="如果用例中单独设置了变量组，或测试过程中定义了同名变量，将使用用例变量代替公共变量"></i></div>
             <div class="col" form_data>
                 <div id="variable_group_dropdown" name="variable_group"></div>
                 {% for error in form.variable_group.errors %}
@@ -243,7 +243,7 @@
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-center font-weight-bold">{% if form.fields.data_set.required %}*{% endif %}数据组&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="使用数据组中各行数据循环执行"></i></div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.data_set.required %}*{% endif %}数据组&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="使用数据组中各行数据循环执行"></i></div>
             <div class="col" form_data>
                 <div id="data_set_dropdown" name="data_set"></div>
                 {% for error in form.data_set.errors %}
