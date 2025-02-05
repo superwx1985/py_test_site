@@ -95,5 +95,5 @@ def runtime_variables(request, pk):
     except StepResult.DoesNotExist:
         raise Http404('Step Result does not exist')
     else:
-        runtime_variables_dict = obj.runtime_variables
+        runtime_variables_dict_json = json.dumps(obj.runtime_variables)
         return render(request, 'main/result/runtime_variables.html', locals())

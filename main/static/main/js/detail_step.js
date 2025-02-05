@@ -1,3 +1,11 @@
+// 一些公用说明
+function show_expression_introduce($introduce) {
+	$introduce.append($('<div>如果想在表达式中使用字符串，请添加<span class="text-danger">英文双引号</span>。例：<span class="mark">"123"</span>不会转换为整型<span class="text-info">123</span>，而是被保存为字符串<span class="text-info">123</span></div>'));
+	$introduce.append($('<div>如果想在表达式中调用变量，请使用<span class="mark">$[变量名]$</span>格式。例：假设已有变量x=3，那么<span class="mark">$[x]$+1</span>结果为<span class="text-info">4</span>；<span class="mark">$[x]$==3</span>结果为布尔变量<span class="text-info">True</span></div>'));
+	$introduce.append($('<div>如果想在表达式中使用特殊变量，请使用<span class="mark">${特殊变量表达式}$</span>格式。注意：特殊变量返回值会被认为是表达式的一部分，所以应该添加双引号把它转为文本再进行保存，否则会被认为是无效的表达式。如果想把当前时间保存为变量，那么<span class="text-success">正确示例：</span><span class="mark">"${t|now}$"</span>结果为字符串<span class="text-info">2025-02-05 12:55:58</span>；<span class="mark">"现在时间: "+"${t|now}$"</span>结果为字符串<span class="text-info">现在时间: 2025-02-05 12:55:58</span><span class="text-danger">。错误示例：</span><span class="mark">${t|now}$</span></div>'));
+	$introduce.append($('<div>复杂用法的示例。验证字符串的最后一位是数字4：<span class="mark">${int|${slice|abcd1234,-1}$}$==4</span>结果为布尔变量<span class="text-info">True</span></div>'));
+}
+
 // 展示Action相关内容
 function show_action_field($actionSelect, init) {
     reset_action_field(init);
@@ -136,15 +144,11 @@ function show_action_field($actionSelect, init) {
 		$('div[name=other_data]').show();
 	} else if (select_value === 'OTHER_SAVE_CASE_VARIABLE') {
 		introduce.children('div').text('把数值，字符串或表达式的值保存为用例级别的局部变量。在子用例中保存的局部变量可以被调用它的上级用例访问。例：依次运行2个用例，A和B；A调用子用例C，C运行时定义了局部变量bar=1，那么A访问bar得到1；若B也调用C，C运行时定义了局部变量bar=2，那么B访问bar得到2，A访问bar还是1');
-		introduce.append($('<div>如果想在表达式中使用字符串，请添加<span class="text-danger">英文双引号</span>。例：<span class="mark">"123"</span>不会转换为整型<span class="text-info">123</span>，而是被保存为字符串<span class="text-info">"123"</span></div>'));
-		introduce.append($('<div>如果想在表达式中调用变量，请使用<span class="mark">$[变量名]$</span>格式。例：假设已有变量x=3，那么<span class="mark">$[x]$+1</span>结果为<span class="text-info">4</span>；<span class="mark">$[x]$==3</span>结果为<span class="text-info">True</span></div>'));
-		introduce.append($('<div>注意：无法在表达式中使用特殊变量。<span class="text-danger">错误示例</span>：<span class="mark">${int|3}$==3</span>；<span class="text-success">正确示例</span>：在赋值给x时使用特殊变量<span class="mark">${int|3}$</span>，然后在表达式中使用<span class="mark">$[x]$==3</span></div>'));
+		show_expression_introduce(introduce)
 		$('div[name=save_as],div[name=other_data]').show();
 	} else if (select_value === 'OTHER_SAVE_GLOBAL_VARIABLE') {
 		introduce.children('div').text('把数值，字符串或表达式的值保存为全局变量。全局变量定义后可以被本次测试的所有用例访问。例：依次运行2个用例，A和B；A调用子用例C，C运行时定义了局部变量bar=1，那么A访问bar得到1；若B也调用C，C运行时定义了局部变量bar=2，那么B访问bar得到2，A访问bar得到2');
-		introduce.append($('<div>如果想在表达式中使用字符串，请添加<span class="text-danger">英文双引号</span>。例：<span class="mark">"123"</span>不会转换为整型<span class="text-info">123</span>，而是被保存为字符串<span class="text-info">"123"</span></div>'));
-		introduce.append($('<div>如果想在表达式中调用变量，请使用<span class="mark">$[变量名]$</span>格式。例：假设已有变量x=3，那么<span class="mark">$[x]$+1</span>结果为<span class="text-info">4</span>；<span class="mark">$[x]$==3</span>结果为<span class="text-info">True</span></div>'));
-		introduce.append($('<div>注意：无法在表达式中使用特殊变量。<span class="text-danger">错误示例</span>：<span class="mark">${int|3}$==3</span>；<span class="text-success">正确示例</span>：在赋值给x时使用特殊变量<span class="mark">${int|3}$</span>，然后在表达式中使用<span class="mark">$[x]$==3</span></div>'));
+		show_expression_introduce(introduce)
 		introduce.append($('<div><span class="text-danger">如果运行时选择了多线程模式，由于执行顺序不可预期，要考虑全局变量在多个用例中被多次更改的情况</span></div>'));
 		$('div[name=save_as],div[name=other_data]').show();
 	} else if (select_value === 'OTHER_CHANGE_VARIABLE_TYPE') {
@@ -171,9 +175,7 @@ function show_action_field($actionSelect, init) {
 		$('div[name=save_as],div[name=other_data],div[name=other_input]').show();
 	} else if (select_value === 'OTHER_VERIFY_EXPRESSION') {
 		introduce.children('div').html('验证表达式，条件为真（表达式的计算结果为<span class="text-info">True</span>）时验证通过，否则验证失败');
-		introduce.append($('<div>如果想在表达式中使用字符串，请添加<span class="text-danger">英文双引号</span>。例：<span class="mark">"123"</span>不会转换为整型<span class="text-info">123</span>，而是被保存为字符串<span class="text-info">"123"</span></div>'));
-		introduce.append($('<div>如果想在表达式中调用变量，请使用<span class="mark">$[变量名]$</span>格式。例：假设已有变量x=3，那么<span class="mark">$[x]$+1</span>结果为<span class="text-info">4</span>；<span class="mark">$[x]$==3</span>结果为<span class="text-info">True</span></div>'));
-		introduce.append($('<div>注意：无法在表达式中使用特殊变量。<span class="text-danger">错误示例</span>：<span class="mark">${int|3}$==3</span>；<span class="text-success">正确示例</span>：在赋值给x时使用特殊变量<span class="mark">${int|3}$</span>，然后在表达式中使用<span class="mark">$[x]$==3</span></div>'));
+		show_expression_introduce(introduce)
 		introduce.append($('<div>如果填写了“保存为”，验证结果将被保存为变量</div>'));
 		$('div[name=save_as],div[name=other_data]').show();
 	} else if (select_value === 'OTHER_CALL_SUB_CASE') {
@@ -185,15 +187,11 @@ function show_action_field($actionSelect, init) {
 		}
 	} else if (select_value === 'OTHER_IF') {
 		introduce.children('div').html('开始一个条件判断分支。如果条件为真（表达式的计算结果为<span class="text-info">True</span>），将执行后续的步骤');
-		introduce.append($('<div>如果想在表达式中使用字符串，请添加<span class="text-danger">英文双引号</span>。例：<span class="mark">"123"</span>不会转换为整型<span class="text-info">123</span>，而是被保存为字符串<span class="text-info">"123"</span></div>'));
-		introduce.append($('<div>如果想在表达式中调用变量，请使用<span class="mark">$[变量名]$</span>格式。例：假设已有变量x=3，那么<span class="mark">$[x]$+1</span>结果为<span class="text-info">4</span>；<span class="mark">$[x]$==3</span>结果为<span class="text-info">True</span></div>'));
-		introduce.append($('<div>注意：无法在表达式中使用特殊变量。<span class="text-danger">错误示例</span>：<span class="mark">${int|3}$==3</span>；<span class="text-success">正确示例</span>：在赋值给x时使用特殊变量<span class="mark">${int|3}$</span>，然后在表达式中使用<span class="mark">$[x]$==3</span></div>'));
+		show_expression_introduce(introduce)
 		$('div[name=other_data]').show();
 	} else if (select_value === 'OTHER_ELSE_IF') {
 		introduce.children('div').html('在条件分支中判断额外条件。如果条件为真（表达式的计算结果为<span class="text-info">True</span>），将执行后续的步骤');
-		introduce.append($('<div>如果想在表达式中使用字符串，请添加<span class="text-danger">英文双引号</span>。例：<span class="mark">"123"</span>不会转换为整型<span class="text-info">123</span>，而是被保存为字符串<span class="text-info">"123"</span></div>'));
-		introduce.append($('<div>如果想在表达式中调用变量，请使用<span class="mark">$[变量名]$</span>格式。例：假设已有变量x=3，那么<span class="mark">$[x]$+1</span>结果为<span class="text-info">4</span>；<span class="mark">$[x]$==3</span>结果为<span class="text-info">True</span></div>'));
-		introduce.append($('<div>注意：无法在表达式中使用特殊变量。<span class="text-danger">错误示例</span>：<span class="mark">${int|3}$==3</span>；<span class="text-success">正确示例</span>：在赋值给x时使用特殊变量<span class="mark">${int|3}$</span>，然后在表达式中使用<span class="mark">$[x]$==3</span></div>'));
+		show_expression_introduce(introduce)
 		$('div[name=other_data]').show();
 	} else if (select_value === 'OTHER_ELSE') {
 		introduce.children('div').text('条件判断分支的否则分支。如果条件为假，将执行后续的步骤');
@@ -203,9 +201,7 @@ function show_action_field($actionSelect, init) {
 		introduce.children('div').text('循环开始标志');
 	} else if (select_value === 'OTHER_END_LOOP') {
 		introduce.children('div').html('根据条件判断是否返回循环开始。如果条件为真（表达式的计算结果为<span class="text-info">True</span>），将返回对应的循环开始标志');
-		introduce.append($('<div>如果想在表达式中使用字符串，请添加<span class="text-danger">英文双引号</span>。例：<span class="mark">"123"</span>不会转换为整型<span class="text-info">123</span>，而是被保存为字符串<span class="text-info">"123"</span></div>'));
-		introduce.append($('<div>如果想在表达式中调用变量，请使用<span class="mark">$[变量名]$</span>格式。例：假设已有变量x=3，那么<span class="mark">$[x]$+1</span>结果为<span class="text-info">4</span>；<span class="mark">$[x]$==3</span>结果为<span class="text-info">True</span></div>'));
-		introduce.append($('<div>注意：无法在表达式中使用特殊变量。<span class="text-danger">错误示例</span>：<span class="mark">${int|3}$==3</span>；<span class="text-success">正确示例</span>：在赋值给x时使用特殊变量<span class="mark">${int|3}$</span>，然后在表达式中使用<span class="mark">$[x]$==3</span></div>'));
+		show_expression_introduce(introduce)
 		$('div[name=other_data]').show();
 	} else if (select_value === 'DB_EXECUTE_SQL') {
 		introduce.children('div').text('执行SQL。如果是select操作且填写了“保存为”，结果集将被保存为变量');
@@ -214,7 +210,7 @@ function show_action_field($actionSelect, init) {
 		$('div[db],div[name=save_as]').show();
 		$('div[name="db_data"]').hide();
 	} else if (select_value === 'DB_VERIFY_SQL_RESULT') {
-		introduce.children('div').text('执行SQL，并将对执行结果进行验证。如果填写了“保存为”，验证结果将被保存为变量');
+		introduce.children('div').text('执行SQL，并对查询操作的结果集(转换为json格式)进行验证。如果填写了“保存为”，验证结果将被保存为变量');
 		$('div[db],div[name=save_as]').show();
 	} else if (select_value === 'API_SEND_HTTP_REQUEST') {
 		introduce.children('div').text('发送HTTP请求。如果提供了待验证内容，将对执行结果进行验证。如果填写了“保存响应内容”，将把匹配的内容保存为变量。如果填写了“保存为”，验证结果将被保存为变量');

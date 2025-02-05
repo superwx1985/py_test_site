@@ -24,7 +24,7 @@
         <script src="{% static 'main/js/detail.js' %}"></script>
         <script>
             $(function () {
-                window.runtime_variables_dict = {{ runtime_variables_dict|safe }};
+                window.runtime_variables_dict = {{ runtime_variables_dict_json|safe }};
                 // 获取 runtime_variables_dict 并按键名排序
                 const sortedKeys = Object.keys(window.runtime_variables_dict).sort();
     

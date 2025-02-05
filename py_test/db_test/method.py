@@ -5,6 +5,8 @@ import threading
 import logging
 import oracledb
 import pymysql
+
+from py_test.db_test.mysql_test import execute_sql_query as mysql_query
 from py_test.vic_tools import vic_find_object
 
 
@@ -19,8 +21,23 @@ def makedict(cursor):
 
 # 获取查询结果
 def get_sql_result(vic_step):
-    select_result = list()
+    select_result = []
+
+    # 数据库连接信息
+    db_config = {
+        "host": vic_step.db_host,
+        "port": vic_step.db_port,
+        "user": vic_step.db_user,
+        "password": vic_step.db_password,
+        "database": vic_step.db_name,
+        "charset": vic_step.db_lang,
+    }
+
+    # SQL 查询语句
+    query_sql = vic_step.db_sql
+
     if vic_step.db_type == 'oracle':
+        sql_result = 'oracle 查询暂时禁用'
         pass
         # if vic_step.db_lang:
         #     os.environ['NLS_LANG'] = vic_step.db_lang
@@ -43,23 +60,34 @@ def get_sql_result(vic_step):
         #     cursor.close()
     elif vic_step.db_type == 'mysql':
         if vic_step.db_lang:
-            charset = vic_step.db_lang
+            db_config["charset"] = vic_step.db_lang
         else:
-            charset = ''
+            db_config["charset"] = 'utf8mb4'
         if isinstance(vic_step.db_port, str) and vic_step.db_port.isdigit():
-            port = int(vic_step.db_port)
+            db_config["port"] = int(vic_step.db_port)
         else:
-            port = 3306
-        with pymysql.connect(host=vic_step.db_host, user=vic_step.db_user, password=vic_step.db_password,
-                             database=vic_step.db_name, port=port, cursorclass=pymysql.cursors.DictCursor,
-                             charset=charset, connect_timeout=vic_step.timeout) as cursor:
-            cursor.execute(vic_step.db_sql)
-            # 如果是查询操作，cursor.description不为空
-            if cursor.description:
-                select_result = cursor.fetchall()
-                sql_result = '查询到{}行数据'.format(cursor.rowcount)
-            else:
-                sql_result = '影响行数{}'.format(cursor.rowcount)
+            db_config["port"] = 3306
+
+        # 执行查询
+        sql_result = mysql_query(**db_config, sql=query_sql)
+        rowcount = sql_result.get("count")
+        if sql_result.get("desc"):
+            select_result = sql_result.get("result")
+            sql_result = '查询到{}条数据'.format(rowcount)
+        else:
+            sql_result = '影响行数{}'.format(rowcount)
+
+
+        # with pymysql.connect(host=vic_step.db_host, user=vic_step.db_user, password=vic_step.db_password,
+        #                      database=vic_step.db_name, port=port, cursorclass=pymysql.cursors.DictCursor,
+        #                      charset=charset, connect_timeout=vic_step.timeout) as cursor:
+        #     cursor.execute(vic_step.db_sql)
+        #     # 如果是查询操作，cursor.description不为空
+        #     if cursor.description:
+        #         select_result = cursor.fetchall()
+        #         sql_result = '查询到{}行数据'.format(cursor.rowcount)
+        #     else:
+        #         sql_result = '影响行数{}'.format(cursor.rowcount)
     else:
         raise ValueError('不支持的数据库类型')
     return sql_result, select_result

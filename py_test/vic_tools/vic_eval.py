@@ -6,10 +6,10 @@ from copy import deepcopy
 
 class EvalObject:
     def __init__(self, eval_expression, variable_dict=None, logger=logging.getLogger('py_test')):
-        if isinstance(eval_expression, str):
-            self.__eval_expression = eval_expression.replace('\n', '').replace('\r', '').strip()
-        else:
-            raise ValueError('Eval expression should be str class')
+        if not isinstance(eval_expression, str):
+            logger.error('Eval expression should be a string')
+            str(eval_expression)
+        self.__eval_expression = eval_expression.replace('\n', '').replace('\r', '').strip()
         # 不建议把__valid_operator_list作为参数开放给调用者
         # =======================================================================
         # if isinstance(valid_operator_list, list):
