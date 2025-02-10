@@ -20,9 +20,9 @@
             window.multiple_copy_url="{% url 'suites_multiple_copy' %}";
             // 运行
             $('[name=execute_button]').on('click', function () {
-                var url = $(this).parents('tr').attr('exe_url');
-                var name = $(this).parents('tr').find('td[col_name="name"]').text();
-                var msg = '开始执行<span class="mark">' + name + '</span>？';
+                let url = $(this).parents('tr').attr('exe_url');
+                let name = $(this).parents('tr').find('td[col_name="name"]').text();
+                let msg = '开始执行<span class="mark">' + name + '</span>？';
                 bootbox.confirm({
                     title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
                     message: msg,
@@ -40,41 +40,41 @@
                     },
                     callback: function (result) {
                         if (result === true) {
-                            var $modal_body_div = $('<div>').addClass('text-center');
-                            var execute_name_div = $('<div id="execute_name_div" class="text-left"></div>');
+                            let $modal_body_div = $('<div>').addClass('text-center');
+                            let execute_name_div = $('<div id="execute_name_div" class="text-left"></div>');
                             execute_name_div.append($('<span>').addClass('font-weight-bold lead').text('套件名称：')).append($('<span>').addClass('text-info lead').text(name));
                             $modal_body_div.append(execute_name_div);
-                            var execute_result_div = $('<div id="execute_result_div"></div>');
+                            let execute_result_div = $('<div id="execute_result_div"></div>');
                             $modal_body_div.append(execute_result_div);
-                            var execute_button_div = $('<div id="execute_button_div" style="padding: 0 0 10px 0" class="btn-group"></div>');
-                            var pause_button = $('<button id="pause_button" class="btn btn-warning"><i class="icon-pause"></i>&nbsp;暂停</button>');
-                            var stop_button = $('<button id="stop_button" class="btn btn-danger"><i class="icon-stop"></i>&nbsp;中止</button>');
+                            let execute_button_div = $('<div id="execute_button_div" style="padding: 0 0 10px 0" class="btn-group"></div>');
+                            let pause_button = $('<button id="pause_button" class="btn btn-warning"><i class="icon-pause"></i>&nbsp;暂停</button>');
+                            let stop_button = $('<button id="stop_button" class="btn btn-danger"><i class="icon-stop"></i>&nbsp;中止</button>');
                             $modal_body_div.append(execute_button_div.append(pause_button).append(stop_button));
-                            var execute_log_outer_div = $('<div class="jumbotron" style="padding: 10px 0 10px 10px"></div>');
-                            var execute_log_div = $('<div id="execute_log_div" class="text-left small" style="height: 400px; overflow-y: auto;"></div>');
+                            let execute_log_outer_div = $('<div class="jumbotron" style="padding: 10px 0 10px 10px"></div>');
+                            let execute_log_div = $('<div id="execute_log_div" class="text-left small" style="height: 400px; overflow-y: auto;"></div>');
                             $modal_body_div.append(execute_log_outer_div.append(execute_log_div));
-                            var my_modal = show_my_modal('execute_modal', 'modal-max', '', 'overflow-y: auto;', '<i class="icon-spinner icon-spin"></i>&nbsp;执行中...', $modal_body_div, {backdrop:'static'}, function() {$('#objects_form').submit()});
+                            let my_modal = show_my_modal('execute_modal', 'modal-max', '', 'overflow-y: auto;', '<i class="icon-spinner icon-spin"></i>&nbsp;执行中...', $modal_body_div, {backdrop:'static'}, function() {$('#objects_form').submit()});
 
-                            var ws_scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
-                            var websocket_url = ws_scheme + '://' + window.location.host + url + '/';
-                            var suite_socket = new WebSocket(websocket_url);
-                            var execute_uuid = guid();
+                            let ws_scheme = window.location.protocol === 'https:' ? 'wss' : 'ws';
+                            let websocket_url = ws_scheme + '://' + window.location.host + url + '/';
+                            let suite_socket = new WebSocket(websocket_url);
+                            let execute_uuid = guid();
 
-                            var auto_scroll = true;
+                            let auto_scroll = true;
                             execute_log_div.scroll(function () {
                                 auto_scroll = (execute_log_div.get(0).scrollHeight - execute_log_div.height() <= execute_log_div.scrollTop() + 1);
                             });
 
                             function continue_button_f(button, websocket_url) {
                                 button.attr('disabled', true).off('click');
-                                var ws = new WebSocket(websocket_url);
+                                let ws = new WebSocket(websocket_url);
                                 ws.onmessage = function (data) {
-                                    var type = JSON.parse(data.data)['type'];
+                                    let type = JSON.parse(data.data)['type'];
                                     if (type === 'ready') {
                                         ws.send(JSON.stringify({'command': 'continue', 'execute_uuid': execute_uuid}));
                                     } else if (type === 'message') {
-                                        var message = JSON.parse(data.data)['message'];
-                                        var pre = $('<pre>').text(message).addClass('text-info');
+                                        let message = JSON.parse(data.data)['message'];
+                                        let pre = $('<pre>').text(message).addClass('text-info');
                                         execute_log_div.append(pre);
                                         execute_log_div.scrollTop(execute_log_div.get(0).scrollHeight);
                                     } else if (type === 'continue'){
@@ -87,14 +87,14 @@
 
                             function pause_button_f(button, websocket_url) {
                                 button.attr('disabled', true).off('click');
-                                var ws = new WebSocket(websocket_url);
+                                let ws = new WebSocket(websocket_url);
                                 ws.onmessage = function(data) {
-                                    var type = JSON.parse(data.data)['type'];
+                                    let type = JSON.parse(data.data)['type'];
                                     if (type === 'ready'){
                                         ws.send(JSON.stringify({'command': 'pause', 'execute_uuid': execute_uuid}));
                                     } else if (type === 'message'){
-                                        var message = JSON.parse(data.data)['message'];
-                                        var pre = $('<pre>').text(message).addClass('text-info');
+                                        let message = JSON.parse(data.data)['message'];
+                                        let pre = $('<pre>').text(message).addClass('text-info');
                                         execute_log_div.append(pre);
                                         execute_log_div.scrollTop(execute_log_div.get(0).scrollHeight);
                                     } else if (type === 'pause'){
@@ -111,14 +111,14 @@
 
                             stop_button.off('click').on('click', function () {
                                 pause_button.attr('disabled', true).off('click');
-                                var ws = new WebSocket(websocket_url);
+                                let ws = new WebSocket(websocket_url);
                                 ws.onmessage = function(data) {
-                                    var type = JSON.parse(data.data)['type'];
+                                    let type = JSON.parse(data.data)['type'];
                                     if (type === 'ready'){
                                         ws.send(JSON.stringify({'command': 'stop', 'execute_uuid': execute_uuid}));
                                     } else if (type === 'message'){
-                                        var message = JSON.parse(data.data)['message'];
-                                        var pre = $('<pre>').text(message).addClass('text-info');
+                                        let message = JSON.parse(data.data)['message'];
+                                        let pre = $('<pre>').text(message).addClass('text-info');
                                         execute_log_div.append(pre);
                                         execute_log_div.scrollTop(execute_log_div.get(0).scrollHeight);
                                     }
@@ -126,13 +126,13 @@
                             });
 
                             suite_socket.onmessage = function(data) {
-                                var type = JSON.parse(data.data)['type'];
+                                let type = JSON.parse(data.data)['type'];
                                 if (type === 'ready'){
                                     suite_socket.send(JSON.stringify({'command': 'start', 'execute_uuid': execute_uuid}));
                                 } else if (type === 'message'){
-                                    var message = JSON.parse(data.data)['message'];
-                                    var level = JSON.parse(data.data)['level'];
-                                    var pre = $('<pre>').text(message);
+                                    let message = JSON.parse(data.data)['message'];
+                                    let level = JSON.parse(data.data)['level'];
+                                    let pre = $('<pre>').text(message);
                                     if (level) {
                                         if (level>=40) { pre.addClass('text-danger') }
                                         else if (level>=30) { pre.addClass('text-warning') }
@@ -143,11 +143,11 @@
                                         execute_log_div.scrollTop(execute_log_div.get(0).scrollHeight);
                                     }
                                 } else if (type === 'end'){
-                                    var data_ = JSON.parse(data.data)['data'];
-                                    var content_div = $('<div>').html(data_.suite_result_content);
+                                    let data_ = JSON.parse(data.data)['data'];
+                                    let content_div = $('<div>').html(data_.suite_result_content);
                                     execute_result_div.append(content_div);
                                     execute_button_div.empty();
-                                    var detail_button = $('<button id="detail_button" class="btn btn-primary"><i class="icon-table"></i>&nbsp;结果详情</button>');
+                                    let detail_button = $('<button id="detail_button" class="btn btn-primary"><i class="icon-table"></i>&nbsp;结果详情</button>');
                                     execute_button_div.append(detail_button);
                                     detail_button.off('click').on('click', function () {
                                         modal_with_iframe_max('inside_detail_modal', '结果详情', data_.suite_result_url + '?inside=1')
@@ -161,8 +161,8 @@
                                         console.log(e);
                                     }
                                 } else if (type === 'error'){
-                                    var data_ = JSON.parse(data.data)['data'];
-                                    var content_div = $('<div>').addClass('text-left lead text-danger').text(data_);
+                                    let data_ = JSON.parse(data.data)['data'];
+                                    let content_div = $('<div>').addClass('text-left lead text-danger').text(data_);
                                     execute_result_div.append(content_div);
                                     execute_button_div.empty();
                                     my_modal.find('.modal-title').text('执行出错');

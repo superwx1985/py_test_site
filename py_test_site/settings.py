@@ -288,7 +288,7 @@ LOGGING = {
         # },
         # 测试执行日志文件
         'py_test': {
-            'level': 'DEBUG',
+            'level': log_level,
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(LOG_DIR, 'py_test.log'),
             'when': 'D',
@@ -312,13 +312,14 @@ LOGGING = {
         'django': {
             'handlers': ['server', 'console_normal', 'console_warning'],
             'level': log_level,
+            'propagate': False,  # 日志记录只由当前 logger 处理，不会向上传递
+        },
+        # 请求日志
+        'django.request': {
+            'handlers': ['server', 'console_normal', 'console_warning'],
+            'level': log_level,
             'propagate': False,
         },
-        # # 请求日志
-        # 'django.request': {
-        #     'handlers': ['server_request'],
-        #     'level': log_level,
-        # },
         # sql日志
         # 'django.db.backends': {
         #     'handlers': ['server_sql'],

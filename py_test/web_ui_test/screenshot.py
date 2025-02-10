@@ -148,8 +148,8 @@ def scroll_down_for_loading(dr, wait_time=30, print_=True, logger=logging.getLog
     # dr.execute_script("arguments[0].scrollIntoView();")
     dr.execute_script("""
         (function () {
-            var y = scrollY;
-            var step = 100;
+            let y = scrollY;
+            let step = 100;
             window.scroll(0, 0);
 
             function f() {

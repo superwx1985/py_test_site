@@ -42,9 +42,9 @@
                 {% if inside %}
                     {% if prompt == 'success' %}
                         {% if form.last_name.value or form.first_name.value %}
-                            var new_name = '{{ obj.last_name }}{{ obj.first_name }}';
+                            const new_name = '{{ obj.last_name }}{{ obj.first_name }}';
                         {% else %}
-                            var new_name = '{{ obj.username }}';
+                            const new_name = '{{ obj.username }}';
                         {% endif %}
                         parent.window.$('#user_link').text(new_name);
                         parent.window.$('[name=user_modal]').modal('hide');

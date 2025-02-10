@@ -49,7 +49,7 @@
                 $("#result_mask").hide();
             });
             function update_result_div(success, data) {
-                var result_div = $("#result_div");
+                let result_div = $("#result_div");
                 result_div.empty();
                 if (success) {
                     if (data.state === 1) {
@@ -58,12 +58,12 @@
                         result_div.append($("<pre>").addClass("text-info").text("文本验证结果为：" + data.data.find_result));
                     } else {
                         toastr.error('测试出错');
-                        var div = $("<pre>").addClass("text-danger").text(data.message);
+                        let div = $("<pre>").addClass("text-danger").text(data.message);
                         result_div.append(div);
                     }
                 } else {
                     toastr.error('测试出错');
-                    var div = $("<pre>").addClass("text-danger").text(data);
+                    let div = $("<pre>").addClass("text-danger").text(data);
                     result_div.append(div);
                 }
                 $("#result_mask").hide();
@@ -76,9 +76,13 @@
     </head>
     <body>
         {% csrf_token %}
-        {% include 'main/include/navbar.html' %}
-        <div class="container" style="padding-top: 60px; padding-bottom: 200px">
-            <h2 class="text-center">文本验证测试</h2>
+        {% if not inside %}
+            {% include 'main/include/navbar.html' %}
+        {% endif %}
+        <div class="container-fluid" style="padding-bottom: 50px; {% if not inside %}padding-top: 50px;{% endif %}">
+            {% if not inside %}
+                <h2 class="text-center">文本验证测试</h2>
+            {% endif %}
             <div class="row align-items-center">
                 <div class="col-2 text-left font-weight-bold">测试变量组</div>
                 <div class="col" form_data>

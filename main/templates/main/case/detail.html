@@ -91,7 +91,7 @@
         // 回调更新m2m
         function update_m2m_objects() {
             submit_m2m_all_objects_form('/case', '{% url "steps_list_json" %}', get_cookie('last_condition_json'));
-            var temp_list_json = window.$m2m_input.val();
+            let temp_list_json = window.$m2m_input.val();
             getData("{% url 'steps_list_temp' %}", window.$csrf_input.val(), m2m_list_selected_update, temp_list_json);
         }
         // 更新待选m2m列表
@@ -99,19 +99,19 @@
             if (success) {
                 // 更新并注册分页工具
                 update_and_bind_paginator(data.data.page, data.data.max_page, data.data.size);
-                var tbody = $('#m2m_all_table tbody');
+                let tbody = $('#m2m_all_table tbody');
                 tbody.empty();
                 if (data.data.objects.length > 0) {
                     $.each(data.data.objects, function (i, v) {
-                        var tr = $('<tr>').attr('pk', v.pk).attr('url', v.url).attr('uuid', v.uuid);
+                        let tr = $('<tr>').attr('pk', v.pk).attr('url', v.url).attr('uuid', v.uuid);
                         $('<td moveable class="middle"><i class="icon-move"></i></td>').addClass('middle').appendTo(tr);
-                        var a = $('<a href="javascript:m2m_detail_popup(\'步骤详情\', \''+v.url+'?inside=1\')">').text(v.name);
+                        let a = $('<a href="javascript:m2m_detail_popup(\'步骤详情\', \''+v.url+'?inside=1\')">').text(v.name);
                         $('<td name>').append(a).appendTo(tr);
                         $('<td>').addClass('middle').text(v.keyword).appendTo(tr);
                         $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
                         $('<td action>').addClass('middle').text(v.action).appendTo(tr);
                         $('<td>').addClass('middle').text(v.real_name).appendTo(tr);
-                        var span = $('<span>').text(v.modified_date_sort).attr('title', v.modified_date).attr('data-toggle', 'tooltip').tooltip();
+                        let span = $('<span>').text(v.modified_date_sort).attr('title', v.modified_date).attr('data-toggle', 'tooltip').tooltip();
                         $('<td>').addClass('middle').append(span).appendTo(tr);
                         tbody.append(tr);
                     });
@@ -125,7 +125,7 @@
                             distance: 15,
                             scope: "m2m_all",
                             helper: function() {
-                                var tr = $(this).clone().css('background-color', 'lightblue').width($(this).width()).removeClass('ui-draggable').addClass('from_all_table');
+                                let tr = $(this).clone().css('background-color', 'lightblue').width($(this).width()).removeClass('ui-draggable').addClass('from_all_table');
                                 tr.children('[moveable]').after($('<td index class="text-center"></td>'));
                                 return tr;
                             },
@@ -135,7 +135,7 @@
                         });
                     }
                 } else {
-                    var tr = $('<tr placeholder><td colspan='+ $('#m2m_all_table thead th').length + ' class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
+                    let tr = $('<tr placeholder><td colspan='+ $('#m2m_all_table thead th').length + ' class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
                     tbody.empty().append(tr);
                 }
                 update_sort_icon();
@@ -146,25 +146,25 @@
         // 更新已选步骤列表
         function m2m_list_selected_update(success, data) {
             if (success) {
-                var tbody = $('#m2m_selected_table tbody');
+                let tbody = $('#m2m_selected_table tbody');
                 if (data.data.length > 0) {
                     tbody.empty();
                     $.each(data.data, function (i, v) {
-                        var tr = $('<tr>').attr('pk', v.pk).attr('url', v.url).attr('uuid', v.uuid);
+                        let tr = $('<tr>').attr('pk', v.pk).attr('url', v.url).attr('uuid', v.uuid);
                         $('<td moveable class="middle"><i class="icon-move"></i></td>').addClass('middle').appendTo(tr);
                         $('<td index class="text-center"></td>').addClass('middle').appendTo(tr);
-                        var a = $('<a>').text(v.name);
+                        let a = $('<a>').text(v.name);
                         $('<td name>').append(a).appendTo(tr);
                         $('<td>').addClass('middle').text(v.keyword).appendTo(tr);
                         $('<td>').addClass('middle').text(v.project__name).appendTo(tr);
                         $('<td action>').addClass('middle').text(v.action).appendTo(tr);
                         $('<td>').addClass('middle').text(v.real_name).appendTo(tr);
-                        var span = $('<span>').text(v.modified_date_sort).attr('title', v.modified_date).attr('data-toggle', 'tooltip').tooltip();
+                        let span = $('<span>').text(v.modified_date_sort).attr('title', v.modified_date).attr('data-toggle', 'tooltip').tooltip();
                         $('<td>').addClass('middle').append(span).appendTo(tr);
                         tbody.append(tr);
                     });
                 } else {
-                    var tr = $('<tr placeholder><td colspan=' + $('#m2m_selected_table thead th').length + ' class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
+                    let tr = $('<tr placeholder><td colspan=' + $('#m2m_selected_table thead th').length + ' class="text-center bg-secondary"><span class="text-white">无数据</span></td></tr>');
                     tbody.empty().append(tr);
                 }
                 update_m2m_selected_index_and_field(window.$m2m_input, '步骤详情', true);

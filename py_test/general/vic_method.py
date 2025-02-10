@@ -84,6 +84,8 @@ def select_func(str_, variables, global_variables, logger=logging.getLogger('py_
                 value = get_uuid()
             elif f == 'slice':
                 value = get_slice(parameter)
+            elif f == 'str':
+                value = str(parameter)
             elif f == 'int':
                 try:
                     value = int(parameter)

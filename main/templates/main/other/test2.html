@@ -15,11 +15,11 @@
                 window.$csrf_input = $('input[name="csrfmiddlewaretoken"]');
                 getData("{% url 'cases_select_json' %}", window.$csrf_input.val(), update_div_dropdown, '{"selected_pk":"15"}');
 
-                {#var chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/');#}
+                {#const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/');#}
                 {##}
                 {#chatSocket.onmessage = function(e) {#}
-                {#    var data = JSON.parse(e.data);#}
-                {#    var message = data['message'];#}
+                {#    let data = JSON.parse(e.data);#}
+                {#    let message = data['message'];#}
                 {#    document.querySelector('#chat-log').value += (message + '\n');#}
                 {#};#}
                 {##}
@@ -35,8 +35,8 @@
                 {#};#}
                 {##}
                 {#document.querySelector('#chat-message-submit').onclick = function(e) {#}
-                {#    var messageInputDom = document.querySelector('#chat-message-input');#}
-                {#    var message = messageInputDom.value;#}
+                {#    let messageInputDom = document.querySelector('#chat-message-input');#}
+                {#    let message = messageInputDom.value;#}
                 {#    chatSocket.send(JSON.stringify({#}
                 {#        'message': message#}
                 {#    }));#}
@@ -47,19 +47,19 @@
                 {##}
                 {##}
                 {#$('#suite-submit').off('click').on('click', function () {#}
-                {#    var suite_pk = $('#suite-input').val();#}
-                {#    var suite_socket = new WebSocket('ws://' + window.location.host + '/ws/suite_execute/' + String(suite_pk));#}
-                {#    var chat_log = $('#chat-log');#}
+                {#    let suite_pk = $('#suite-input').val();#}
+                {#    let suite_socket = new WebSocket('ws://' + window.location.host + '/ws/suite_execute/' + String(suite_pk));#}
+                {#    let chat_log = $('#chat-log');#}
                 {#    chat_log.val('');#}
-                {#    var log = '';#}
+                {#    let log = '';#}
                 {#    suite_socket.onmessage = function(data) {#}
-                {#        var message = JSON.parse(data.data)['message'];#}
+                {#        let message = JSON.parse(data.data)['message'];#}
                 {#        log += message + '\n';#}
                 {#        chat_log.val(log);#}
                 {#        chat_log.scrollTop(chat_log.get(0).scrollHeight);#}
                 {#    };#}
                 {#    suite_socket.onclose = function(e) {#}
-                {#        var message = 'end' + '\n';#}
+                {#        let message = 'end' + '\n';#}
                 {#        log = chat_log.val() + message;#}
                 {#        chat_log.val(log);#}
                 {#        chat_log.scrollTop(chat_log.get(0).scrollHeight);#}
@@ -82,8 +82,8 @@
             // 更新下拉项
             function update_dropdown(data, $base_div, readonly) {
                 $base_div.empty();
-                var name = $base_div.attr('name');
-                var div_dropdown = $('<div j_dropdown><select style="display: none" placeholder="请选择" name="' + name + '"></select></div>');
+                let name = $base_div.attr('name');
+                let div_dropdown = $('<div j_dropdown><select style="display: none" placeholder="请选择" name="' + name + '"></select></div>');
                 $base_div.append(div_dropdown);
                 div_dropdown.j_dropdown({
                     data: data.data,

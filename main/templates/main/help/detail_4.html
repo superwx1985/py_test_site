@@ -3,7 +3,7 @@
 <html>
     <head>
         {% include 'main/include/common_header.html' %}
-        <title>变量测试</title>
+        <title>变量表达式测试</title>
         {% include 'main/include/general_css.html' %}
         <style media='screen'>
             div.row {
@@ -40,7 +40,7 @@
                 };
                 $("#test_button").off("click").on("click", function () {
                     $("#result_mask").show();
-                    let condition_json = JSON.stringify({variable_str: $("#variable_str").val(), variable_group_pk: $("select[name=variable_group]").val()});
+                    let condition_json = JSON.stringify({test_input: $("#test_input").val(), variable_group_pk: $("select[name=variable_group]").val()});
                     console.log(condition_json)
                     getData("{% url "variable_test" %}", window.$csrf_input.val(), update_result_div, condition_json);
                 });
@@ -49,22 +49,28 @@
                 $("#result_mask").hide();
             });
             function update_result_div(success, data) {
-                var result_div = $("#result_div");
+                const result_div = $("#result_div");
+                const detail_div = $("#detail_div");
+                const process_div = $("#process_div");
                 result_div.empty();
+                detail_div.empty();
+                process_div.empty();
                 if (success) {
+                    result_div.append($("<pre>").text(data.data.value));
+                    detail_div.append($("<pre>").addClass("text-info").text("返回值类型：" + data.data.value_type));
                     if (data.state === 1) {
-                        toastr.success('测试成功');
-                        result_div.append($("<pre>").addClass("text-success").text(data.data.value));
-                        result_div.append($("<pre>").addClass("text-info").text("类型：" + data.data.value_type));
+                        toastr.success(data.message);
+                        detail_div.append($("<pre>").addClass("text-success").text(data.data.detail_msg));
                     } else {
-                        toastr.error('测试出错');
-                        var div = $("<pre>").addClass("text-danger").text(data.message);
-                        result_div.append(div);
+                        toastr.error(data.message);
+                        detail_div.append($("<pre>").addClass("text-danger").text(data.data.detail_msg));
                     }
+                    detail_div.append($("<pre>").text("运算过程："));
+                    detail_div.append($("<pre>").addClass("text-info").text(data.data.process));
                 } else {
-                    toastr.error('测试出错');
-                    var div = $("<pre>").addClass("text-danger").text(data);
-                    result_div.append(div);
+                    toastr.error(data.message);
+                    result_div.append($("<pre>").text(data.message));
+                    detail_div.append($("<pre>").addClass("text-danger").text(data));
                 }
                 $("#result_mask").hide();
             }
@@ -76,9 +82,13 @@
     </head>
     <body>
         {% csrf_token %}
-        {% include 'main/include/navbar.html' %}
-        <div class="container" style="padding-top: 60px; padding-bottom: 200px">
-            <h2 class="text-center">变量测试</h2>
+        {% if not inside %}
+            {% include 'main/include/navbar.html' %}
+        {% endif %}
+        <div class="container-fluid" style="padding-bottom: 50px; {% if not inside %}padding-top: 50px;{% endif %}">
+            {% if not inside %}
+                <h2 class="text-center">变量测试</h2>
+            {% endif %}
             <div class="row align-items-center">
                 <div class="col-2 text-left font-weight-bold">测试变量组</div>
                 <div class="col" form_data>
@@ -87,15 +97,20 @@
             </div>
             <div>
                 <div class="font-weight-bold">变量表达式</div>
-                <textarea class="form-control" id="variable_str" rows="5" placeholder="请输入要测试的变量，例如：${t|now}$"></textarea>
+                <textarea class="form-control" id="test_input" rows="3" placeholder="请输入要测试的变量，例如：${t|now}$"></textarea>
             </div>
             <br>
             <div><button class="btn btn-primary" id="test_button">测试</button></div>
             <br>
-            <div style="min-height: 250px; position: relative">
+            <div style="min-height: 200px; position: relative">
                 {% include 'main/include/mask.html' with mask_class='element-mask' mask_id='result_mask' %}
+                <div class="font-weight-bold">返回值</div>
                 <div class="jumbotron" style="padding: 10px 0 10px 10px; font-size: larger">
-                    <div id="result_div" style="height: 250px; overflow-y: auto;"></div>
+                    <div id="result_div" style="height: 60px; overflow-y: auto;"></div>
+                </div>
+                <div class="font-weight-bold">详情</div>
+                <div class="jumbotron" style="padding: 10px 0 10px 10px; font-size: larger">
+                    <div id="detail_div" style="height: 200px; overflow-y: auto;"></div>
                 </div>
             </div>
         </div>

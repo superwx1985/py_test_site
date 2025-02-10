@@ -35,9 +35,9 @@
             });
 
             function continue_(that) {
-                var url = "{% url 'suites_continue' %}";
-                var tr = $(that).parents('tr');
-                var execute_uuid = tr.attr('execute_uuid');
+                let url = "{% url 'suites_continue' %}";
+                let tr = $(that).parents('tr');
+                let execute_uuid = tr.attr('execute_uuid');
                 $.ajax({
                     url: url,
                     type: "POST",
@@ -64,9 +64,9 @@
             }
 
             function pause(that) {
-                var url = "{% url 'suites_pause' %}";
-                var tr = $(that).parents('tr');
-                var execute_uuid = tr.attr('execute_uuid');
+                let url = "{% url 'suites_pause' %}";
+                let tr = $(that).parents('tr');
+                let execute_uuid = tr.attr('execute_uuid');
                 $.ajax({
                     url: url,
                     type: "POST",
@@ -93,11 +93,11 @@
             }
 
             function stop(that) {
-                var url = "{% url 'suites_stop' %}";
-                var tr = $(that).parents('tr');
-                var execute_uuid = tr.attr('execute_uuid');
-                var name = tr.find('td[col_name="name"]').text();
-                var msg = '确实要中止<span class="mark">[' + execute_uuid + ']' + name + '</span>？';
+                let url = "{% url 'suites_stop' %}";
+                let tr = $(that).parents('tr');
+                let execute_uuid = tr.attr('execute_uuid');
+                let name = tr.find('td[col_name="name"]').text();
+                let msg = '确实要中止<span class="mark">[' + execute_uuid + ']' + name + '</span>？';
                 bootbox.confirm({
                     title: '<i class="icon-exclamation-sign">&nbsp;</i>请确认',
                     message: msg,

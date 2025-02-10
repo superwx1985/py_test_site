@@ -2,7 +2,6 @@ import datetime
 import time
 import json
 import traceback
-import socket
 import math
 from socket import timeout as socket_timeout_error
 
@@ -11,11 +10,10 @@ from django.forms.models import model_to_dict
 from selenium.common import exceptions
 from selenium.webdriver.common.by import By
 from py_test.general import vic_variables, vic_method
-from py_test.vic_tools import vic_find_object
+from py_test.vic_tools import vic_find_object, vic_eval, vic_date_handle
 from py_test import web_ui_test
 from py_test.api_test import method as api_method
 from py_test.db_test import method as db_method
-from py_test.vic_tools import vic_eval, vic_date_handle
 from main.models import StepResult, Step, error_handle_dict
 from py_test_site.settings import LOOP_ITERATIONS_LIMIT, ERROR_PAUSE_TIMEOUT
 

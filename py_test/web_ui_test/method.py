@@ -50,8 +50,8 @@ def highlight(dr, elements, color='green'):
     highlight_elements_map = {}
     for element in elements:
         original_style = dr.execute_script(
-            '''var element = arguments[0];
-            var original_style = element.getAttribute("style")?element.getAttribute("style"):"";
+            '''let element = arguments[0];
+            let original_style = element.getAttribute("style")?element.getAttribute("style"):"";
             element.setAttribute("style", original_style + "; ''' + style + '''");
             return original_style;''', element)
         highlight_elements_map[element] = original_style
@@ -63,8 +63,8 @@ def cancel_highlight(dr, elements_map):
     for element, original_style in elements_map.items():
         try:
             dr.execute_script(
-                '''var element = arguments[0];
-                var original_style = arguments[1];
+                '''let element = arguments[0];
+                let original_style = arguments[1];
                 element.setAttribute("style", original_style + ";");''',
                 element, original_style)
         except exceptions.StaleElementReferenceException:
@@ -77,8 +77,8 @@ def highlight_for_a_moment(dr, elements, color='green', duration=0.5, sleep=0):
     style = 'outline: 2px dotted %s; border: 1px solid %s;' % (color, color)
     for element in elements:
         dr.execute_script(
-            '''var element = arguments[0];
-            var original_style = element.getAttribute("style")?element.getAttribute("style"):"";
+            '''let element = arguments[0];
+            let original_style = element.getAttribute("style")?element.getAttribute("style"):"";
             element.setAttribute("style", original_style + "; ''' + style + '''");
             setTimeout(function(){element.setAttribute("style", original_style);}, ''' + str(
                 round(duration * 1000)) + ');', element)

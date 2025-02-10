@@ -9,7 +9,7 @@
             window.multiple_delete_url="{% url 'results_multiple_delete' %}";
             // 查看套件
             $('[name=parent_button]').on('click', function () {
-                var url = $(this).parents('tr').attr('parent_url') + '?inside=1';
+                let url = $(this).parents('tr').attr('parent_url') + '?inside=1';
                 modal_with_iframe_max('inside_detail_modal', '套件详情', url, '');
                 $(this).tooltip('hide');
             });

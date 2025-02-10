@@ -21,7 +21,15 @@
                 $("#logout_btn").click(function () {
                     window.open('{% url 'user_logout' %}', '_self');
                 });
+                help_items_popup($('[name=help_items]'));
             });
+            function help_items_popup($e) {
+                $e.off('click').on('click', function() {
+                    let url = $(this).attr('url') + "?inside=1";
+                    let name = $(this).text();
+                    modal_with_iframe_max('inside_detail_modal', name, url);
+                });
+            }
         </script>
     </head>
     <body>
@@ -30,11 +38,11 @@
             <div class="container">
                 <h2 class="text-center">帮助文档</h2>
                 <ol>
-                    <li><a href="/help/1/">变量说明</a></li>
-                    <li><a href="/help/2/">文本验证操作符说明</a></li>
-                    <li><a href="/help/3/">文本验证连接符说明</a></li>
-                    <li><a href="/help/4/">变量测试</a></li>
-                    <li><a href="/help/5/">文本验证测试</a></li>
+                    <li><a name="help_items" url={% url "help" 1 %} href="javascript:">变量说明</a></li>
+                    <li><a name="help_items" url={% url "help" 2 %} href="javascript:">文本验证操作符说明</a></li>
+                    <li><a name="help_items" url={% url "help" 3 %} href="javascript:">文本验证连接符说明</a></li>
+                    <li><a name="help_items" url={% url "help" 4 %} href="javascript:">变量表达式测试</a></li>
+                    <li><a name="help_items" url={% url "help" 5 %} href="javascript:">文本验证测试</a></li>
                 </ol>
             </div>
         </div>

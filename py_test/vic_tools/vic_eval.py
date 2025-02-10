@@ -18,8 +18,9 @@ class EvalObject:
         #     raise ValueError('Valid operator list should be list class')
         # =======================================================================
         # 必须把较长的操作符放在前面
-        self.__valid_operator_list = ['round',
-                                      'not', 'and', 'len',
+        self.__valid_operator_list = ['round', 'float',
+                                      'bool',
+                                      'not', 'and', 'len', 'str', 'int',
                                       'or', 'in', '==', '!=', '<=', '>=', '**', '//', '<<', '>>',
                                       '<', '>', '(', ')', '[', ']', '+', '-', '*', '/', '%', '&', '|', '^', '~', ',']
         if variable_dict is None:

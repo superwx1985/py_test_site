@@ -25,10 +25,14 @@
         </script>
     </head>
     <body>
-        {% include 'main/include/navbar.html' %}
-        <div class="container-fluid" style="padding-top: 60px; padding-bottom: 200px">
+        {% if not inside %}
+            {% include 'main/include/navbar.html' %}
+        {% endif %}
+        <div class="container-fluid" style="padding-bottom: 50px; {% if not inside %}padding-top: 50px;{% endif %}">
             <div class="container">
-                <h2 class="text-center">文本验证连接符说明</h2>
+                {% if not inside %}
+                    <h2 class="text-center">文本验证连接符说明</h2>
+                {% endif %}
                 <p>在测试数据中使用<span class="mark">#&&#</span>表示两侧文本验证条件是且的关系，当两侧条件都满足时，验证通过。</p>
                 <p>在测试数据中使用<span class="mark">#||#</span>表示两侧文本验证条件是或的关系，当两侧条件任一满足时，验证通过。</p>
                 <p>当两种连接符同时使用时，且的优先级大于或。</p>
