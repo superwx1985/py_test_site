@@ -3,7 +3,7 @@ import os
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.remote.client_config import ClientConfig
-import py_test.config as py_test_config
+import py_test_site.settings as settings
 
 
 # 获取浏览器driver
@@ -19,8 +19,8 @@ def get_driver_(config, execute_str, timeout, logger=logging.getLogger('py_test'
 
         if config.ui_selenium_client == 1:  # 本地
             if config.ui_driver_type == 1:  # Chrome
-                chrome_options.binary_location = py_test_config.CHROME_BINARY_LOCATION  # 指定chrome binary位置
-                os.environ["webdriver.chrome.driver"] = py_test_config.WEBDRIVER_CHROME_DRIVER  # 指定chrome driver位置
+                chrome_options.binary_location = settings.CHROME_BINARY_LOCATION  # 指定chrome binary位置
+                os.environ["webdriver.chrome.driver"] = settings.WEBDRIVER_CHROME_DRIVER  # 指定chrome driver位置
                 dr = webdriver.Chrome(options=chrome_options)
             elif config.ui_driver_type == 2:  # IE
                 dr = webdriver.Ie()

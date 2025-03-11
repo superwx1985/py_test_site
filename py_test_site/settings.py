@@ -5,6 +5,21 @@ from manage import PROJECT_ROOT
 from py_test_site.version import SITE_VERSION
 import psycopg
 
+# 站点名称
+SITE_NAME = '自动化测试平台'
+
+# 最大并行测试线程数
+SUITE_MAX_CONCURRENT_EXECUTE_COUNT = 8
+
+# 步骤循环次数限制
+LOOP_ITERATIONS_LIMIT = 100
+
+# 出错后暂停的最大时间（秒）
+ERROR_PAUSE_TIMEOUT = 600
+
+# 服务器本地浏览器及驱动位置
+CHROME_BINARY_LOCATION = "D:/vic/selenium/chrome-win64/chrome.exe"
+WEBDRIVER_CHROME_DRIVER = "D:/vic/selenium/chromedriver-win64/chromedriver.exe"
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -348,18 +363,6 @@ LOGGING = {
     },
 }
 
-# 站点名称
-SITE_NAME = '自动化测试平台'
-
-# 最大并行测试线程数
-SUITE_MAX_CONCURRENT_EXECUTE_COUNT = 8
-
-# 步骤循环次数限制
-LOOP_ITERATIONS_LIMIT = 100
-
-# 出错后暂停的最大时间（秒）
-ERROR_PAUSE_TIMEOUT = 600
-
 # 设置channel使用的通道层
 if DEBUG:
     # 调试时使用内置的Channel Layer
@@ -381,4 +384,5 @@ else:
         },
     }
 
+# GLB专用配置
 GLB = {"GTM_BASE_URL": "https://gtm.greenworkstools.com.cn:991"}

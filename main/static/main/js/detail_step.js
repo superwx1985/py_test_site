@@ -1,9 +1,19 @@
+function help_items_popup($e) {
+	$e.off('click').on('click', function() {
+		let url = $(this).attr('url') + "?inside=1";
+		let name = $(this).text();
+		modal_with_iframe_max('inside_detail_modal', name, url);
+	});
+}
+
 // 一些公用说明
 function show_expression_introduce($introduce) {
-	$introduce.append($('<div>如果想在表达式中使用字符串，请添加<span class="text-danger">英文双引号</span>。例：<span class="mark">"123"</span>不会转换为整型<span class="text-info">123</span>，而是被保存为字符串<span class="text-info">123</span></div>'));
-	$introduce.append($('<div>如果想在表达式中调用变量，请使用<span class="mark">$[变量名]$</span>格式。例：假设已有变量x=3，那么<span class="mark">$[x]$+1</span>结果为<span class="text-info">4</span>；<span class="mark">$[x]$==3</span>结果为布尔变量<span class="text-info">True</span></div>'));
-	$introduce.append($('<div>如果想在表达式中使用特殊变量，请使用<span class="mark">${特殊变量表达式}$</span>格式。注意：特殊变量返回值会被认为是表达式的一部分，所以应该添加双引号把它转为文本再进行保存，否则会被认为是无效的表达式。如果想把当前时间保存为变量，那么<span class="text-success">正确示例：</span><span class="mark">"${t|now}$"</span>结果为字符串<span class="text-info">2025-02-05 12:55:58</span>；<span class="mark">"现在时间: "+"${t|now}$"</span>结果为字符串<span class="text-info">现在时间: 2025-02-05 12:55:58</span><span class="text-danger">。错误示例：</span><span class="mark">${t|now}$</span></div>'));
-	$introduce.append($('<div>复杂用法的示例。验证字符串的最后一位是数字4：<span class="mark">${int|${slice|abcd1234,-1}$}$==4</span>结果为布尔变量<span class="text-info">True</span></div>'));
+	$introduce.append($('<div>计算表达式时，首先会替换表达式中<span class="mark">${}$</span>标识的变量，然后替换<span class="mark">$[]$</span>标识的变量，最后把替换的结果尝试作为python代码执行。由于安全原因，大部分python关键字将会被屏蔽，只支持数学运算符，逻辑运算符和类型转换符。</div>'));
+	$introduce.append($('<div>如果想在表达式中使用字符串，请添加<span class="text-danger">英文双引号</span>。例：<span class="mark">"123"</span>不会转换为整型<span class="text-info">123</span>，而是被保存为字符串<span class="text-info">123</span>。</div>'));
+	$introduce.append($('<div>如果想在表达式中调用变量，请使用<span class="mark">$[变量名]$</span>格式。例：假设已有变量x=3（字符串），那么<span class="mark">int($[x]$)+1</span>结果为<span class="text-info">4</span>；<span class="mark">$[x]$==3</span>结果为布尔变量<span class="text-info">False</span>。</div>'));
+	$introduce.append($('<div>如果想在表达式中使用特殊变量，请使用<span class="mark">${特殊变量表达式}$</span>格式。注意：特殊变量返回值会被认为是表达式的一部分，所以应该添加双引号把它转为文本再进行保存，否则会被认为是无效的表达式。例如想把当前时间保存为变量，<span class="text-success">正确示例：</span><span class="mark">"${t|now}$"</span>结果为字符串<span class="text-info">2025-02-05 12:55:58</span>；<span class="mark">"现在时间: "+"${t|now}$"</span>结果为字符串<span class="text-info">现在时间: 2025-02-05 12:55:58</span>。<span class="text-danger">错误示例：</span><span class="mark">${t|now}$</span>。</div>'));
+	$introduce.append($('<div>复杂用法的示例。验证字符串的最后一位是数字4：<span class="mark">${int|${slice|abcd1234,-1}$}$==4</span>结果为布尔变量<span class="text-info">True</span>。请使用<a name="help_items" url=' + window.variable_test_url + ' href="javascript:">变量表达式测试</a>页面自行测试。</div>'));
+	help_items_popup($('[name=help_items]'));
 }
 
 // 展示Action相关内容
@@ -168,10 +178,11 @@ function show_action_field($actionSelect, init) {
         $('div[name=save_as] .col-1').html('变量名&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="需要转换的变量名称"></i>');;
 		$('div[name=save_as],div[name=other_data]').show();
 	} else if (select_value === 'OTHER_TEXT_PROCESSING') {
-		introduce.children('div').text('通过文本验证操作符处理文本并保存为变量，使用方法请参考帮助文档《文本验证操作符》。如使用re操作符，需要获取的内容用小括号括起');
+		introduce.children('div').html('通过文本验证操作符处理文本并保存为变量，使用方法请参考帮助文档<a name="help_items" url=' + window.text_validation_operators_help_url + ' href="javascript:">《文本验证操作符说明》</a>和<a name="help_items" url=' + window.text_validation_connector_help_url + ' href="javascript:">《文本验证连接符说明》</a>。请使用<a name="help_items" url=' + window.text_verification_test_url + ' href="javascript:">文本验证测试</a>页面自行测试。');
 		introduce.append($('<div>例：如果待处理的文本为<span class="mark">cid=123&tid=456</span>，文本验证操作符为<span class="mark">#{re}#tid=(.*)&|tid=(.*)$</span>，将返回<span class="text-info">"456"</span></div>'));
-		introduce.append($('<div>例：如果待处理的文本为<span class="mark">{"a": {"a1": "123", "a2": "456"}, "b": "9"}</span>，文本验证操作符为<span class="mark">#{json}#{"a": {"a2": "#{re}#(\d*)"}}</span>，将返回<span class="text-info">"123"</span></div>'));
-        $('div[name=other_data] .col-1').text('文本验证操作符');
+		introduce.append($('<div>例：如果待处理的文本为<span class="mark">{"a": {"a1": "123", "a2": "456"}, "b": "9"}</span>，文本验证操作符为<span class="mark">#{json}#{"a": {"a2": "#{re|,0}#(\\d*)"}}</span>，将返回<span class="text-info">"123"</span></div>'));
+        help_items_popup($('[name=help_items]'));
+		$('div[name=other_data] .col-1').text('文本验证操作符');
 		$('div[name=save_as],div[name=other_data],div[name=other_input]').show();
 	} else if (select_value === 'OTHER_VERIFY_EXPRESSION') {
 		introduce.children('div').html('验证表达式，条件为真（表达式的计算结果为<span class="text-info">True</span>）时验证通过，否则验证失败');

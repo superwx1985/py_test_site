@@ -531,9 +531,12 @@
                                         <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th><th class="middle">返回值</th></tr>
                                     </thead>
                                     <tbody>
+                                        <tr><td>#{re|,0}#vic\.wang@</td><td>vic.wang@test.com</td><td class="middle"><code>str</code></td><td class="middle">匹配</td><td class="middle">vic.wang@</td></tr>
                                         <tr><td>#{re|,0}#vic\.(.*)@</td><td>vic.wang@test.com</td><td class="middle"><code>str</code></td><td class="middle">匹配</td><td class="middle">wang</td></tr>
                                         <tr><td>#{re|,0}#vic\.(.*)@</td><td>Vic.wang@test.com</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td><td class="middle"></td></tr>
                                         <tr><td>#{re|I,0}#vic\.(.*)@</td><td>Vic.wang@test.com</td><td class="middle"><code>str</code></td><td class="middle">匹配</td><td class="middle">wang</td></tr>
+                                        <tr><td>#{re|,0}#([\w.-]+)(?=@)</td><td>vic.wang@123.com;abc@456.com</td><td class="middle"><code>str</code></td><td class="middle">匹配</td><td class="middle">vic.wang</td></tr>
+                                        <tr><td>#{re|,1}#([\w.-]+)(?=@)</td><td>vic.wang@123.com;abc@456.com</td><td class="middle"><code>str</code></td><td class="middle">匹配</td><td class="middle">abc</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -724,6 +727,5 @@
                 </div>
             </div>
         </div>
-
     </body>
 </html>
