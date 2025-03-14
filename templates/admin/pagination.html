@@ -1,0 +1,25 @@
+{% load admin_list %}
+{% load i18n %}
+<p class="paginator">
+    {% if pagination_required %}
+        {% for i in page_range %}
+            {% paginator_number cl i %}
+        {% endfor %}
+    {% endif %}
+    {{ cl.result_count }}
+    {% if cl.result_count == 1 %}{{ cl.opts.verbose_name }}{% else %}{{ cl.opts.verbose_name_plural }}{% endif %}
+    {% if show_all_url %}<a href="{{ show_all_url }}" class="showall">{% translate 'Show all' %}</a>{% endif %}
+    {% with '5 10 25 50 100' as list %} — {% translate 'Per page' %}
+        <select onchange="let p = new URLSearchParams(location.search);p.delete('all');p.set('list_per_page', this.value);location.search = p;">
+            {% if cl.list_per_page|slugify not in list.split %}
+                <option selected>{{ cl.list_per_page }}</option>
+            {% endif %}
+            {% for i in list.split %}
+                <option value="{{ i }}"
+                        {% if cl.list_per_page|slugify == i %}selected{% else %}{% endif %}>{{ i }}</option>
+            {% endfor %}
+        </select>
+    {% endwith %}
+    {% if cl.formset and cl.result_count %}
+        <input type="submit" name="_save" class="default" value="{% translate 'Save' %}">{% endif %}
+</p>
