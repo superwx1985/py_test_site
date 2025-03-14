@@ -6,8 +6,6 @@ import datetime
 import logging
 from selenium.common import exceptions
 from PIL import Image
-from main.models import Image as db_Image
-from django.core.files.uploadedfile import UploadedFile
 from py_test.web_ui_test import method
 
 
@@ -58,6 +56,8 @@ def _get_screenshot(dr, element=None):
             break
 
     name = datetime.datetime.now().strftime('%Y%m%d_%H%M%S.png')
+    from main.models import Image as db_Image
+    from django.core.files.uploadedfile import UploadedFile
     image = db_Image(name=name, img=UploadedFile(bio, name=name))
     image.save()
     bio.close()

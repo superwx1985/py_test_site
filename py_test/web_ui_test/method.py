@@ -6,7 +6,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.common.action_chains import ActionChains
 from py_test.vic_tools import vic_find_object, vic_eval
-from py_test.vic_tools.vic_str_handle import change_string_to_digit
+from py_test.vic_tools.vic_str_handle import convert_string_to_float
 from py_test.general import vic_variables
 from py_test.web_ui_test import driver
 from selenium.webdriver.common.by import By
@@ -688,7 +688,7 @@ def get_special_keys(data_, logger=logging.getLogger('py_test')):
 
 
 # 特殊动作
-def perform_special_action(vic_step, update_test_data=False, print_=True):
+def perform_special_action(vic_step, print_=True):
     elapsed_time = 0
     pause_time = 0
     if not vic_step.ui_by or not vic_step.ui_locator:
@@ -719,13 +719,11 @@ def perform_special_action(vic_step, update_test_data=False, print_=True):
         ActionChains(dr).release(element).perform()
 
     elif sp == 'move_by_offset':
-        if update_test_data:
-            vic_step.update_test_data('ui_data')
         data = vic_step.ui_data.split(',')
         if len(data) < 2:
             raise ValueError('必须指定一组偏移坐标')
-        xoffset = change_string_to_digit(data[0].strip())
-        yoffset = change_string_to_digit(data[1].strip())
+        xoffset = int(convert_string_to_float(data[0].strip(), _raise=True))
+        yoffset = int(convert_string_to_float(data[1].strip(), _raise=True))
         ActionChains(dr).move_by_offset(xoffset, yoffset).perform()
 
     elif sp == 'move_to_element':
@@ -734,20 +732,16 @@ def perform_special_action(vic_step, update_test_data=False, print_=True):
         ActionChains(dr).move_to_element(element).perform()
 
     elif sp == 'move_to_element_with_offset':
-        if update_test_data:
-            vic_step.update_test_data('ui_data')
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个元素')
         data = vic_step.ui_data.split(',')
         if len(data) < 2:
             raise ValueError('必须指定一组偏移坐标')
-        xoffset = change_string_to_digit(data[0].strip())
-        yoffset = change_string_to_digit(data[1].strip())
+        xoffset = int(convert_string_to_float(data[0].strip(), _raise=True))
+        yoffset = int(convert_string_to_float(data[1].strip(), _raise=True))
         ActionChains(dr).move_to_element_with_offset(element, xoffset, yoffset).perform()
 
     elif sp == 'drag_and_drop':
-        if update_test_data:
-            vic_step.update_test_data('ui_data')
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个元素')
         target_element = vic_variables.get_elements(vic_step.ui_data, vic_step.variables, vic_step.global_variables)[0]
@@ -756,32 +750,29 @@ def perform_special_action(vic_step, update_test_data=False, print_=True):
         ActionChains(dr).drag_and_drop(element, target_element).perform()
 
     elif sp == 'drag_and_drop_by_offset':
-        if update_test_data:
-            vic_step.update_test_data('ui_data')
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个元素')
         data = vic_step.ui_data.split(',')
         if len(data) < 2:
             raise ValueError('必须指定一组目标坐标')
-        xoffset = change_string_to_digit(data[0].strip())
-        yoffset = change_string_to_digit(data[1].strip())
+        xoffset = int(convert_string_to_float(data[0].strip(), _raise=True))
+        yoffset = int(convert_string_to_float(data[1].strip(), _raise=True))
         ActionChains(dr).drag_and_drop_by_offset(element, xoffset, yoffset).perform()
 
     elif sp == 'key_down':
-        ActionChains(dr).key_down(element).perform()
+        keys = get_special_keys(vic_step.ui_data, logger=vic_step.logger)
+        ActionChains(dr).key_down(keys[0], element).perform()
 
     elif sp == 'key_up':
-        ActionChains(dr).key_up(element).perform()
+        keys = get_special_keys(vic_step.ui_data, logger=vic_step.logger)
+        ActionChains(dr).key_up(keys[0], element).perform()
 
     elif sp == 'send_keys':
-        if update_test_data:
-            vic_step.update_test_data('ui_data')
         keys = get_special_keys(vic_step.ui_data, logger=vic_step.logger)
+        # for k in keys:
         ActionChains(dr).send_keys(keys).perform()
 
     elif sp == 'send_keys_to_element':
-        if update_test_data:
-            vic_step.update_test_data('ui_data')
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个被操作元素')
         keys = get_special_keys(vic_step.ui_data, logger=vic_step.logger)
@@ -1029,4 +1020,40 @@ def get_element_attr(vic_step, print_=True):
     return run_result, attr, elapsed_time, pause_time
 
 
+if __name__ == '__main__':
+    from typing import Iterable
+    from typing import List
+    from typing import Optional
+    from typing import Union
+    from selenium.types import AnyKey
+    from selenium.webdriver.common.keys import Keys
 
+
+    def send_keys(*keys_to_send: str):
+        """Sends keys to current focused element.
+
+        :Args:
+         - keys_to_send: The keys to send.  Modifier keys constants can be found in the
+           'Keys' class.
+        """
+        typing = keys_to_typing(keys_to_send)
+        print(typing)
+
+
+    def keys_to_typing(value: Iterable[AnyKey]) -> List[str]:
+        """Processes the values that will be typed in the element."""
+        characters: List[str] = []
+        for val in value:
+            if isinstance(val, Keys):
+                # Todo: Does this even work?
+                characters.append(val)
+            elif isinstance(val, (int, float)):
+                characters.extend(str(val))
+            else:
+                characters.extend(val)
+        return characters
+
+
+    _ = get_special_keys("$CONTROL+a+$CONTROL+$BACKSPACE+Abc")
+    print(_)
+    send_keys(_)

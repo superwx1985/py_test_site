@@ -534,12 +534,12 @@ class VicStep:
                         # 特殊动作
                         elif ac == 'UI_SPECIAL_ACTION':
                             if re_run_count == 0:
-                                self.update_test_data('ui_locator', 'ui_base_element')
+                                self.update_test_data('ui_locator', 'ui_base_element', 'ui_data')
                                 _update_test_data = True
                             else:
                                 _update_test_data = False
                             self.run_result, element, _, _pause_time \
-                                = web_ui_test.method.perform_special_action(self, _update_test_data)
+                                = web_ui_test.method.perform_special_action(self)
                             pause_time += _pause_time
                             self.elements = [element]
                             if self.save_as:

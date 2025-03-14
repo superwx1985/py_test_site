@@ -7,15 +7,14 @@ function bind_m2m_multiple_import_button() {
 
 // m2m导入对象
 function m2m_multiple_import_obj(name_prefix, project, text, no_project) {
-	var url = window.m2m_multiple_import_url;
-
-    var title = '<i class="icon-exclamation-sign">&nbsp;</i>' + '导入seleniumIDE生成的XML格式用例';
-    var body = $('<div>').addClass('modal-body');
-    var now = new Date().Format("yyyy-MM-dd HH:mm:ss");
-    var case_name = $('#id_name').val();
-    var div = $('<div>请输入导入后对象的名称前缀</div>');
+	const url = window.m2m_multiple_import_url;
+    const title = '<i class="icon-exclamation-sign">&nbsp;</i>' + '导入selenium IDE用例';
+    const now = new Date().Format("yyyy-MM-dd HH:mm:ss");
+    const case_name = $('#id_name').val();
+    let body = $('<div>').addClass('modal-body');
+    let div = $('<div>请输入导入后对象的名称前缀</div>');
     body.append(div);
-    var input = $('<input class="form-control" autocomplete="off" type="text" id="copy_obj_name">');
+    let input = $('<input class="form-control" autocomplete="off" type="text" id="copy_obj_name">');
     if (name_prefix){
         input.attr('value', name_prefix);
     } else {
@@ -25,8 +24,8 @@ function m2m_multiple_import_obj(name_prefix, project, text, no_project) {
 
     div = $('<div>请选择导入后对象所属的项目</div>');
     body.append(div);
-    var select = $('#id_project');
-    var new_select = select.clone();
+    const select = $('#id_project');
+    const new_select = select.clone();
     new_select.attr('id', 'new_' + new_select.attr('id'));
     if (typeof(project)==='undefined') {
         new_select.val(select.val());
@@ -40,13 +39,13 @@ function m2m_multiple_import_obj(name_prefix, project, text, no_project) {
     }
 
     body.append($('<br>'));
-    div = $('<div>请粘贴seleniumIDE生成的XML格式用例，对象将被添加到当前选中的最后一行下面</div>');
+    div = $('<div>请使用文本编辑器打开.side文件，复制全部内容后粘贴到下面的文本框。导入的步骤将被添加到当前选中的最后一个步骤下面</div>');
     body.append(div);
-    var textarea = $('<textarea class="form-control" rows="10" wrap="off" id="aa111">');
+    const textarea = $('<textarea class="form-control" rows="10" wrap="off" id="aa111">');
     if (text) { textarea.text(text) }
     body.append(textarea);
 
-    var buttons = {
+    const buttons = {
 		import: {
 			label: '<span title="导入步骤"><i class="icon-primary">&nbsp;</i>导入</span>',
 			className: 'btn btn-primary',
