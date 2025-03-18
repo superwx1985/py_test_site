@@ -277,7 +277,7 @@ function show_special_action_field($actionSelect) {
 		$('[ui]').show();
 		$('div[name=ui_data]').hide();
 	} else if (select_value === '2') {
-		introduce.empty().append($('<div>').text('在指定的元素上点击后不释放，不指定元素则在当前鼠标位置触发'));
+		introduce.empty().append($('<div>').text('在指定的元素上触发双击，不指定元素则在当前鼠标位置触发'));
 		$('[ui]').show();
 		$('div[name=ui_data]').hide();
 	} else if (select_value === '3') {
@@ -285,11 +285,11 @@ function show_special_action_field($actionSelect) {
 		$('[ui]').show();
 		$('div[name=ui_data]').hide();
 	} else if (select_value === '4') {
-		introduce.empty().append($('<div>').text('在指定的元素上触发双击，不指定元素则在当前鼠标位置触发'));
+		introduce.empty().append($('<div>').text('在指定的元素上左键点击后不释放，不指定元素则在当前鼠标位置触发'));
 		$('[ui]').show();
 		$('div[name=ui_data]').hide();
 	} else if (select_value === '5') {
-		introduce.empty().append($('<div>').text('释放鼠标按键'));
+		introduce.empty().append($('<div>').text('释放左键点按'));
 	} else if (select_value === '6') {
 		introduce.empty().append($('<div>').text('鼠标从当前位置偏移一定距离。偏移量x,y为一对半角逗号分隔的数字（单位：像素，水平方向为x轴，左负右正，垂直方向为y轴，上负下正）。例：300,200'));
 		$('div[name=ui_data]').show();
@@ -311,25 +311,30 @@ function show_special_action_field($actionSelect) {
 		$('[ui]').show();
 		$('div[name=ui_data] .col-1').text('偏移量');
 	} else if (select_value === '11') {
-		introduce.empty().append($('<div>').text('在指定的元素里按下某个键盘按键不释放，该方法应该只用于发送修饰键（$SHIFT，$CONTROL，$ALT），否则会导致不确定输出结果。不指定元素则在当前焦点所在元素触发'));
-		$('[ui]').show();
-		$('div[name=ui_data] .col-1').html('按键&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头"></i>');
-	} else if (select_value === '12') {
-		introduce.empty().append($('<div>').text('在指定的元素里释放某个键盘按键。不指定元素则在当前焦点所在元素触发'));
-		$('[ui]').show();
-		$('div[name=ui_data] .col-1').html('按键&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头"></i>');
-	} else if (select_value === '13') {
-		introduce.empty().append($('<div>').text('向当前焦点所在元素里发送按键（组），修饰键发送一次后一直有效，直到出现相同的修饰键'));
-		introduce.append($('<div>').html('常用的特殊键：<span class="mark">$SHIFT $CONTROL $ALT $ENTER $ESCAPE $SPACE $BACKSPACE $TAB $PAGE_UP $PAGE_DOWN $END $HOME $LEFT $UP $RIGHT $DOWN $INSERT $DELETE</span>'));
-		introduce.append($('<div>').html('特殊键和普通键之间，以及特殊键和特殊键之间，用+号分隔。例如要实现全选删除原有字符后输入Abc，可以使用：<span class="mark">$CONTROL+a+$CONTROL+$BACKSPACE+Abc</span>'));
-		introduce.append($('<div>').html('如需输入真正的+号和$号，请添加转义符。例如：<span class="mark">\$control\+a</span>将被当作字符串<span class="text-info">$control+a</span>'));
+		introduce.empty().append($('<div>').text('按偏移量从当前位置滚动页面。偏移量x,y为一对半角逗号分隔的数字（单位：像素，水平方向为x轴，左负右正，垂直方向为y轴，上负下正）。例：300,200'));
 		$('div[name=ui_data]').show();
-		$('div[name=ui_data] .col-1').html('按键（组）&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头，多个特殊按键以+分隔，连续的普通按键可以不分隔，如需输入正常的$和+请用\\转义，如\\$，\\+"></i>');
+		$('div[name=ui_data] .col-1').text('偏移量');
+	} else if (select_value === '12') {
+		introduce.empty().append($('<div>').text('如果某元素（通过定位信息指定）位于页面显示范围之外，则将页面底部滚动到该元素的底部'));
+		$('[ui]').show();
+		$('div[name=ui_data] .col-1').text('偏移量');
+	} else if (select_value === '13') {
+		introduce.empty().append($('<div>').text('在指定的元素里按下某个键盘按键不释放，不指定元素则在当前焦点所在元素触发。该方法应该只用于发送修饰键（$SHIFT，$CONTROL，$ALT），否则会导致不确定输出结果'));
+		introduce.append($('<div>').html('<span class="text-danger">经测试：发送装饰键到指定元素在Chrome浏览器有问题，建议只通过预先设置焦点的方式触发修饰键</span>'));
+		$('[ui]').show();
+		$('div[name=ui_data] .col-1').html('按键&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头"></i>');
 	} else if (select_value === '14') {
-		introduce.empty().append($('<div>').text('向指定的元素发送按键（组），修饰键发送一次后一直有效，直到出现相同的修饰键'));
-		introduce.append($('<div>').html('常用的特殊键：<span class="mark">$SHIFT $CONTROL $ALT $ENTER $ESCAPE $SPACE $BACKSPACE $TAB $PAGE_UP $PAGE_DOWN $END $HOME $LEFT $UP $RIGHT $DOWN $INSERT $DELETE</span>'));
-		introduce.append($('<div>').html('特殊键和普通键之间，以及特殊键和特殊键之间，用+号分隔。例如要实现全选删除原有字符后输入Abc，可以使用：<span class="mark">$CONTROL+a+$CONTROL+$BACKSPACE+Abc</span>'));
-		introduce.append($('<div>').html('如需输入真正的+号和$号，请添加转义符。例如：<span class="mark">\$control\+a</span>将被当作字符串<span class="text-info">$control+a</span>'));
+		introduce.empty().append($('<div>').text('在指定的元素里释放某个键盘按键，不指定元素则在当前焦点所在元素触发。该方法应该只用于发送修饰键（$SHIFT，$CONTROL，$ALT）'));
+		introduce.append($('<div>').html('<span class="text-danger">经测试：发送装饰键到指定元素在Chrome浏览器有问题，建议只通过预先设置焦点的方式触发修饰键</span>'));
+		$('[ui]').show();
+		$('div[name=ui_data] .col-1').html('按键&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头"></i>');
+	} else if (select_value === '15') {
+		introduce.empty().append($('<div>').text('向指定的元素发送按键（组）。不指定元素则在当前焦点所在元素触发'));
+		introduce.append($('<div>').html('<span class="text-danger">经测试：发送装饰键到指定元素在Chrome浏览器有问题，建议只通过预先设置焦点的方式触发修饰键</span>'));
+		introduce.append($('<div>').html('常用的特殊键：<span class="mark">$SHIFT $CONTROL $ALT $ENTER $ESCAPE $SPACE $BACKSPACE $TAB $PAGE_UP $PAGE_DOWN $END $HOME $LEFT $UP $RIGHT $DOWN $INSERT $DELETE $F1~$F12</span>'));
+		introduce.append($('<div>').html('其中修饰键是：<span class="mark">$SHIFT $CONTROL $ALT</span>，修饰键发送一次后一直有效，直到出现相同的修饰键。此外，步骤结束后，所有未释放的修饰键会被自动释放。如果需要跨步骤使用修饰键，请使用“键盘 - 按住某键”'));
+		introduce.append($('<div>').html('特殊键和普通键之间，以及特殊键和特殊键之间，用+号分隔，连续的普通按键可以不分隔。例如要实现全选删除原有字符后输入Abc，可以使用：<span class="mark">$CONTROL+a+$CONTROL+$BACKSPACE+Abc</span>'));
+		introduce.append($('<div>').html('如需输入真正的+号和$号，请添加转义符。例如：<span class="mark">\$CONTROL\+a</span>将被当作字符串<span class="text-info">$CONTROL+a</span>'));
 		$('[ui]').show();
 		$('div[name=ui_data] .col-1').html('按键（组）&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="特殊按键以$开头，多个特殊按键以+分隔，连续的普通按键可以不分隔，如需输入正常的$和+请用\\转义，如\\$，\\+"></i>');
 	}

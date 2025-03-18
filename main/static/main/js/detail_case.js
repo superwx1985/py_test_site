@@ -8,7 +8,7 @@ function bind_m2m_multiple_import_button() {
 // m2m导入对象
 function m2m_multiple_import_obj(name_prefix, project, text, no_project) {
 	const url = window.m2m_multiple_import_url;
-    const title = '<i class="icon-exclamation-sign">&nbsp;</i>' + '导入selenium IDE用例';
+    const title = '<i class="icon-exclamation-sign">&nbsp;</i>' + '从Selenium IDE导入';
     const now = new Date().Format("yyyy-MM-dd HH:mm:ss");
     const case_name = $('#id_name').val();
     let body = $('<div>').addClass('modal-body');

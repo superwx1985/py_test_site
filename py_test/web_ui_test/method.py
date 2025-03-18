@@ -664,7 +664,7 @@ def try_to_select(vic_step, print_=True):
 def get_special_keys(data_, logger=logging.getLogger('py_test')):
     data_ = data_.replace('\\+', '#{#plus#}#')
     data_list = data_.split('+')
-    keys = list()
+    keys = []
     from selenium.webdriver.common.keys import Keys
     for key_str in data_list:
         key_str = key_str.replace('#{#plus#}#', '+').replace('\\$', '#{#dollar#}#')
@@ -679,11 +679,10 @@ def get_special_keys(data_, logger=logging.getLogger('py_test')):
                 try:
                     key_str = getattr(Keys, key_name)
                 except AttributeError:
-                    logger.warning('【{}】不是一个合法的特殊键，不进行转换'.format(key_str))
-            keys.append(key_str)
+                    logger.warning('【{}】不是一个合法的特殊键，已忽略'.format(key_str))
         else:
-            key_str = key_str.replace('#{#dollar#}#', '$')
-            keys.append(key_str)
+            key_name = key_str = key_str.replace('#{#dollar#}#', '$')
+        keys.append((key_str, key_name))
     return keys
 
 
@@ -693,30 +692,35 @@ def perform_special_action(vic_step, print_=True):
     pause_time = 0
     if not vic_step.ui_by or not vic_step.ui_locator:
         element = None
-        el_msg = ''
+        el_msg = "【当前鼠标位置】"
     else:
-        element, el_msg, _, elapsed_time, pause_time = get_element(vic_step, print_=print_)
+        element, el_msg, _, elapsed_time, pause_time = get_element(vic_step, print_=print_, necessary=True)
 
     dr = vic_step.drs['web_dr']
     sp = vic_step.ui_special_action
 
+    log_prefix = f"【{vic_step.execute_str}】\t"
     msg = '特殊动作执行完毕'
 
     if sp == 'click':
         ActionChains(dr).click(element).perform()
-        msg = '点击元素{}'.format(el_msg)
-
-    elif sp == 'click_and_hold':
-        ActionChains(dr).click_and_hold(element).perform()
-
-    elif sp == 'context_click':
-        ActionChains(dr).context_click(element).perform()
+        vic_step.logger.info(f"{log_prefix}在{el_msg}执行左键单击操作")
 
     elif sp == 'double_click':
         ActionChains(dr).double_click(element).perform()
+        vic_step.logger.info(f"{log_prefix}在{el_msg}执行左键双击操作")
+
+    elif sp == 'context_click':
+        ActionChains(dr).context_click(element).perform()
+        vic_step.logger.info(f"{log_prefix}在{el_msg}执行右键单击操作")
+
+    elif sp == 'click_and_hold':
+        ActionChains(dr).click_and_hold(element).perform()
+        vic_step.logger.info(f"{log_prefix}在{el_msg}执行左键点按操作")
 
     elif sp == 'release':
         ActionChains(dr).release(element).perform()
+        vic_step.logger.info(f"{log_prefix}在{el_msg}执行鼠标双击操作")
 
     elif sp == 'move_by_offset':
         data = vic_step.ui_data.split(',')
@@ -725,11 +729,13 @@ def perform_special_action(vic_step, print_=True):
         xoffset = int(convert_string_to_float(data[0].strip(), _raise=True))
         yoffset = int(convert_string_to_float(data[1].strip(), _raise=True))
         ActionChains(dr).move_by_offset(xoffset, yoffset).perform()
+        vic_step.logger.info(f"{log_prefix}执行移动鼠标到偏移点位置操作")
 
     elif sp == 'move_to_element':
         if not isinstance(element, WebElement):
             raise ValueError('必须指定一个元素')
         ActionChains(dr).move_to_element(element).perform()
+        vic_step.logger.info(f"{log_prefix}执行移动鼠标到{el_msg}元素操作")
 
     elif sp == 'move_to_element_with_offset':
         if not isinstance(element, WebElement):
@@ -740,6 +746,7 @@ def perform_special_action(vic_step, print_=True):
         xoffset = int(convert_string_to_float(data[0].strip(), _raise=True))
         yoffset = int(convert_string_to_float(data[1].strip(), _raise=True))
         ActionChains(dr).move_to_element_with_offset(element, xoffset, yoffset).perform()
+        vic_step.logger.info(f"{log_prefix}执行移动鼠标到以{el_msg}元素左上角为基准的偏移点位置操作")
 
     elif sp == 'drag_and_drop':
         if not isinstance(element, WebElement):
@@ -748,6 +755,7 @@ def perform_special_action(vic_step, print_=True):
         if not isinstance(target_element, WebElement):
             raise ValueError('必须指定一个目标元素')
         ActionChains(dr).drag_and_drop(element, target_element).perform()
+        vic_step.logger.info(f"{log_prefix}执行拖动{el_msg}元素到另一元素上操作")
 
     elif sp == 'drag_and_drop_by_offset':
         if not isinstance(element, WebElement):
@@ -758,33 +766,67 @@ def perform_special_action(vic_step, print_=True):
         xoffset = int(convert_string_to_float(data[0].strip(), _raise=True))
         yoffset = int(convert_string_to_float(data[1].strip(), _raise=True))
         ActionChains(dr).drag_and_drop_by_offset(element, xoffset, yoffset).perform()
+        vic_step.logger.info(f"{log_prefix}执行拖动{el_msg}元素到偏移点位置操作")
+
+    elif sp == 'scroll_by_amount':
+        data = vic_step.ui_data.split(',')
+        if len(data) < 2:
+            raise ValueError('必须指定一组偏移坐标')
+        xoffset = int(convert_string_to_float(data[0].strip(), _raise=True))
+        yoffset = int(convert_string_to_float(data[1].strip(), _raise=True))
+        ActionChains(dr).scroll_by_amount(xoffset, yoffset).perform()
+        vic_step.logger.info(f"{log_prefix}执行滚动到偏移点位置操作")
+
+    elif sp == 'scroll_to_element':
+        if not isinstance(element, WebElement):
+            raise ValueError('必须指定一个元素')
+        ActionChains(dr).scroll_to_element(element).perform()
+        vic_step.logger.info(f"{log_prefix}执行滚动到{el_msg}元素底部操作")
 
     elif sp == 'key_down':
         keys = get_special_keys(vic_step.ui_data, logger=vic_step.logger)
-        ActionChains(dr).key_down(keys[0], element).perform()
+        ActionChains(dr).key_down(keys[0][0], element).perform()
+        el_msg = "【当前焦点元素】" if not element else el_msg
+        vic_step.logger.info(f"{log_prefix}在{el_msg}按住【{keys[0][1]}】")
 
     elif sp == 'key_up':
         keys = get_special_keys(vic_step.ui_data, logger=vic_step.logger)
-        ActionChains(dr).key_up(keys[0], element).perform()
+        ActionChains(dr).key_up(keys[0][0], element).perform()
+        el_msg = "【当前焦点元素】" if not element else el_msg
+        vic_step.logger.info(f"{log_prefix}在{el_msg}释放【{keys[0][1]}】")
 
     elif sp == 'send_keys':
+        el_msg = "【当前焦点元素】" if not element else el_msg
+        vic_step.logger.info(f"{log_prefix}在{el_msg}进行下列键盘操作")
         keys = get_special_keys(vic_step.ui_data, logger=vic_step.logger)
-        # for k in keys:
-        ActionChains(dr).send_keys(keys).perform()
-
-    elif sp == 'send_keys_to_element':
-        if not isinstance(element, WebElement):
-            raise ValueError('必须指定一个被操作元素')
-        keys = get_special_keys(vic_step.ui_data, logger=vic_step.logger)
-        ActionChains(dr).send_keys_to_element(element, keys).perform()
-        msg = '在元素{}上输入【{}】'.format(el_msg, vic_step.ui_data)
-
+        modifier_keys = {"\ue008": [0, "SHIFT"], "\ue009": [0, "CONTROL"], "\ue010": [0, "ALT"]}  # 考虑多个键使用相同的值，例如SHIFT和LEFT_SHIFT
+        for key_str, key_name in keys:
+            if key_str in modifier_keys:
+                if modifier_keys[key_str][0] == 0:
+                    modifier_keys[key_str][0] = 1
+                    ActionChains(dr).key_down(key_str, element).perform()
+                    vic_step.logger.info(f"{log_prefix}按住【{key_name}】")
+                else:
+                    modifier_keys[key_str][0] = 0
+                    ActionChains(dr).key_up(key_str, element).perform()
+                    vic_step.logger.info(f"{log_prefix}释放【{key_name}】")
+            else:
+                if element:
+                    ActionChains(dr).send_keys_to_element(element, key_str).perform()
+                else:
+                    ActionChains(dr).send_keys(key_str).perform()
+                vic_step.logger.info(f"{log_prefix}按【{key_name}】")
+            time.sleep(0.5)
+        for k, v in modifier_keys.items():
+            if v[0] != 0:
+                ActionChains(dr).key_up(k, element).perform()
+                vic_step.logger.info(f"{log_prefix}自动释放【{v[1]}】")
     else:
         raise ValueError('无法处理的特殊操作[{}]'.format(sp))
 
     run_result = ['p', msg]
     if print_:
-        vic_step.logger.info('【{}】\t{}'.format(vic_step.execute_str, run_result[1]))
+        vic_step.logger.info(f"{log_prefix}{run_result[1]}")
     return run_result, element, elapsed_time, pause_time
 
 
