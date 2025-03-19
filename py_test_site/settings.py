@@ -44,7 +44,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -174,7 +173,6 @@ AUTH_PASSWORD_VALIDATORS = [
     # },
 ]
 
-
 # Internationalization
 
 LANGUAGE_CODE = 'zh-hans'
@@ -218,7 +216,6 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 # 登陆页面
 LOGIN_URL = reverse_lazy('user_login')
 
-
 # 日志配置
 log_level = 'DEBUG' if DEBUG else 'INFO'  # 如果DEBUG打开则启动DEBUG日志
 
@@ -227,12 +224,16 @@ LOGGING = {
     'disable_existing_loggers': False,
     # 日志格式
     'formatters': {
-       'standard': {
+        'standard': {
             'format': '%(asctime)s [%(threadName)s] [%(name)s] [%(module)s:%(funcName)s:%(lineno)d] [%(levelname)s] - %(message)s'
-       },
-       'detail': {
+        },
+        'detail': {
             'format': '%(asctime)s [%(threadName)s:%(thread)d] [%(name)s] [%(pathname)s:%(funcName)s:%(lineno)d] [%(levelname)s] - %(message)s'
-       },
+        },
+        'websocket': {
+            'format': '%(asctime)s - %(message)s',
+            'datefmt': '%H:%M:%S',
+        },
     },
     # 过滤器
     'filters': {
@@ -262,11 +263,11 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(LOG_DIR, 'server.log'),  # 日志输出文件
-            'when': 'D',                # 时间间隔单位
-            'interval': 1,              # 时间间隔值
-            'backupCount': 30,          # 保留日志数量
-            'formatter': 'standard',    # 使用哪种formatters日志格式
-            'encoding': 'utf-8',        # 使用utf-8编码
+            'when': 'D',  # 时间间隔单位
+            'interval': 1,  # 时间间隔值
+            'backupCount': 30,  # 保留日志数量
+            'formatter': 'standard',  # 使用哪种formatters日志格式
+            'encoding': 'utf-8',  # 使用utf-8编码
         },
         # # 服务器错误日志文件
         # 'server_error': {

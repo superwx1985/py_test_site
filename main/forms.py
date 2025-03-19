@@ -2,7 +2,7 @@ from django import forms
 from main.models import *
 from django.contrib.auth import password_validation
 from django.utils.translation import gettext_lazy
-from py_test_site.settings import SUITE_MAX_CONCURRENT_EXECUTE_COUNT
+from django.conf import settings
 
 
 class LoginForm(forms.Form):
@@ -193,7 +193,7 @@ class DataSetForm(forms.ModelForm):
 
 class SuiteForm(forms.ModelForm):
     # 限制线程数最大值
-    thread_count = forms.IntegerField(initial=1, min_value=1, max_value=int(SUITE_MAX_CONCURRENT_EXECUTE_COUNT))
+    thread_count = forms.IntegerField(initial=1, min_value=1, max_value=int(settings.SUITE_MAX_CONCURRENT_EXECUTE_COUNT))
     # 限制config为必选
     config = forms.ModelChoiceField(queryset=Config.objects, required=True)
     # 限制project为必选

@@ -3,7 +3,7 @@ import os
 from selenium import webdriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.remote.client_config import ClientConfig
-import py_test_site.settings as settings
+from django.conf import settings
 
 
 # 获取浏览器driver

@@ -1,7 +1,7 @@
 import logging
 import threading
 from concurrent.futures import ThreadPoolExecutor
-from py_test_site.settings import SUITE_MAX_CONCURRENT_EXECUTE_COUNT
+from django.conf import settings
 from .system import RUNNING_SUITES
 
 
@@ -40,7 +40,7 @@ def get_pool(logger=logging.getLogger('py_test.{}')):
     logger.debug('{}，公用线程池：{}，当前线程总数：{}'.format(msg, SUITE_EXECUTE_POOL, threading.active_count()))
     with lock:
         if not SUITE_EXECUTE_POOL or (not RUNNING_SUITES.get_suites() and SUITE_EXECUTE_POOL.work_queue_empty_shutdown()):
-            SUITE_EXECUTE_POOL = VicThreadPoolExecutor(SUITE_MAX_CONCURRENT_EXECUTE_COUNT or 1)
+            SUITE_EXECUTE_POOL = VicThreadPoolExecutor(settings.SUITE_MAX_CONCURRENT_EXECUTE_COUNT or 1)
             logger.debug('新建线程池')
     return SUITE_EXECUTE_POOL
 

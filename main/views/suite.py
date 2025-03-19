@@ -17,7 +17,7 @@ from utils.other import get_query_condition, change_to_positive_integer, Cookie,
 from urllib.parse import quote
 from main.views import case, config, variable_group, element_group
 from utils import system, thread_pool
-from py_test_site import settings
+from django.conf import settings
 
 logger = logging.getLogger('django.request')
 

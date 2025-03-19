@@ -1,6 +1,5 @@
 import time
 import datetime
-import json
 import traceback
 import logging
 import uuid
@@ -15,7 +14,7 @@ from main.models import Case, SuiteResult, Step, error_handle_dict
 from django.forms.models import model_to_dict
 from utils.system import RUNNING_SUITES
 from utils.thread_pool import VicThreadPoolExecutor, get_pool, safety_shutdown_pool
-from py_test_site.settings import SUITE_MAX_CONCURRENT_EXECUTE_COUNT
+from django.conf import settings
 
 
 class VicSuite:
@@ -25,10 +24,12 @@ class VicSuite:
 
         self.websocket_sender = websocket_sender
         if websocket_sender:  # 是否推送websocket
-            date_fmt = '%H:%M:%S'
-            format_ = logging.Formatter('%(asctime)s [%(threadName)s] - %(message)s', date_fmt)
+            formatter_config = settings.LOGGING['formatters']['websocket']
+            format_str = formatter_config['format']
+            date_fmt = formatter_config.get('datefmt', None)
+            formatter = logging.Formatter(format_str, date_fmt)
             ws_handler = vic_log.WebsocketHandler(websocket_sender)
-            ws_handler.setFormatter(format_)
+            ws_handler.setFormatter(formatter)
             self.logger.addHandler(ws_handler)
 
         self.suite = suite
@@ -148,7 +149,7 @@ class VicSuite:
                 self.suite_result.element_group = element_group_dict
 
             # 限制进程数
-            s_count = SUITE_MAX_CONCURRENT_EXECUTE_COUNT
+            s_count = settings.SUITE_MAX_CONCURRENT_EXECUTE_COUNT
             if self.thread_count > s_count:
                 self.thread_count = s_count
                 self.logger.warning('套件线程数超过了服务器允许的最大值【{}】，已被修改为【{}】'.format(s_count, s_count))
@@ -174,6 +175,7 @@ class VicSuite:
                                 self.logger.warning(f"Cannot get latest test data from GTM! The error is [{e}]")
                         data_set_list = case.data_set.data.get("data", [])
                         i = 0
+                        self.logger.info(f"检测到数据组，用例【{case.name}】将被拆解为{len(data_set_list)}个迭代执行:")
                         for data_set_dict in data_set_list:
                             i += 1
                             data_set_dict['0_id'] = i
@@ -206,8 +208,9 @@ class VicSuite:
                         elif case_result.result_state == 4:
                             self.suite_result.stop_count += 1
 
-            ignore_count = (self.suite_result.execute_count - self.suite_result.pass_count - self.suite_result.fail_count
-                          - self.suite_result.error_count - self.suite_result.stop_count)
+            ignore_count = (self.suite_result.execute_count - self.suite_result.pass_count
+                            - self.suite_result.fail_count - self.suite_result.error_count
+                            - self.suite_result.stop_count)
 
             if self.suite_result.error_count:
                 self.suite_result.result_state = 3
@@ -256,8 +259,12 @@ class VicSuite:
         return self
 
     def add_vic_case_into_pool(self, vic_case, timeout=None):
+        if vic_case.data_set_dict and vic_case.data_set_dict.get('2_name'):
+            case_name = vic_case.data_set_dict['2_name']
+        else:
+            case_name = vic_case.name
+        self.logger.info('【{}】\t用例【{}】进入队列'.format(vic_case.execute_str, case_name))
         task = get_pool(self.logger).submit(vic_case.execute)
-        self.logger.info('【{}】\t用例【{}】进入队列'.format(vic_case.execute_str, vic_case.name))
         # import pdb
         # pdb.set_trace()
         start_time = time.time()
@@ -267,7 +274,7 @@ class VicSuite:
             except CancelledError:
                 elapsed_time = time.time() - start_time
                 self.logger.warning('【{}】\t用例【{}】已在队列{:.1f}秒，已被取消'.format(
-                    vic_case.execute_str, vic_case.name, elapsed_time))
+                    vic_case.execute_str, case_name, elapsed_time))
                 break
             except f_TimeoutError:
                 if self.force_stop:
@@ -280,11 +287,11 @@ class VicSuite:
                 elapsed_time = time.time() - start_time
                 if task.running():
                     self.logger.debug('【{}】\t用例【{}】已在队列{:.1f}秒，执行中...'.format(
-                        vic_case.execute_str, vic_case.name, elapsed_time))
+                        vic_case.execute_str, case_name, elapsed_time))
                 else:
                     if timeout and elapsed_time > timeout:
                         self.logger.warning('【{}】\t用例【{}】已在队列{:.1f}秒，尝试取消'.format(
-                            vic_case.execute_str, vic_case.name, elapsed_time))
+                            vic_case.execute_str, case_name, elapsed_time))
                         _success = task.cancel()
                         vic_case.case_result.result_state = 3
                         vic_case.case_result.result_message = "超时"
@@ -293,12 +300,12 @@ class VicSuite:
                         vic_case.case_result.save()
                         if not _success:
                             self.logger.warning('【{}】\t用例【{}】取消失败，发送用例级别强制停止信号'.format(
-                                vic_case.execute_str, vic_case.name))
+                                vic_case.execute_str, case_name))
                             vic_case.force_stop = True
                             break
                     else:
                         self.logger.info('【{}】\t用例【{}】已在队列{:.1f}秒，排队中...'.format(
-                            vic_case.execute_str, vic_case.name, elapsed_time))
+                            vic_case.execute_str, case_name, elapsed_time))
             else:
                 break
 

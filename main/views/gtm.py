@@ -1,9 +1,8 @@
-import requests
 import json
 import logging
 from django.http import JsonResponse, HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
-import py_test_site.settings as settings
+from django.conf import settings
 from py_test.vic_test.vic_http_request import request
 
 logger = logging.getLogger('django.request')

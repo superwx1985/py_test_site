@@ -816,7 +816,6 @@ def perform_special_action(vic_step, print_=True):
                 else:
                     ActionChains(dr).send_keys(key_str).perform()
                 vic_step.logger.info(f"{log_prefix}按【{key_name}】")
-            time.sleep(0.5)
         for k, v in modifier_keys.items():
             if v[0] != 0:
                 ActionChains(dr).key_up(k, element).perform()

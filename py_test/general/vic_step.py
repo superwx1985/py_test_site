@@ -3,9 +3,8 @@ import time
 import json
 import traceback
 import math
-from socket import timeout as socket_timeout_error
-
 import requests
+from socket import timeout as socket_timeout_error
 from django.forms.models import model_to_dict
 from selenium.common import exceptions
 from selenium.webdriver.common.by import By
@@ -15,7 +14,7 @@ from py_test import web_ui_test
 from py_test.api_test import method as api_method
 from py_test.db_test import method as db_method
 from main.models import StepResult, Step, error_handle_dict
-from py_test_site.settings import LOOP_ITERATIONS_LIMIT, ERROR_PAUSE_TIMEOUT
+from django.conf import settings
 
 
 class VicStep:
@@ -157,7 +156,7 @@ class VicStep:
     def pause_(self, seconds=0.0, msg_format='【{}】\t已暂停{}秒，剩余{}秒'):
         if self.pause:
             if seconds <= 0:
-                seconds = ERROR_PAUSE_TIMEOUT
+                seconds = settings.ERROR_PAUSE_TIMEOUT
             _timeout = math.modf(float(seconds))
             start_time = time.time()
             time.sleep(_timeout[0])  # 补上小数部分
@@ -224,12 +223,6 @@ class VicStep:
 
         try:
             self.pause_()
-
-            # selenium驱动初始化检查
-            if atc == 'WEB-UI':
-                web_ui_test.method.check_web_driver(self)
-                dr = drs.get("web_dr", None)
-                web_ui_test.method.set_driver_timeout(dr, timeout)
 
             # 如果步骤执行过程中页面元素被改变导致出现StaleElementReferenceException，将自动再次执行步骤
             start_time = time.time()
@@ -361,7 +354,7 @@ class VicStep:
                                 self.update_test_data('other_data')
                                 if vc.loop_list:
                                     loop_count = vc.loop_list[-1][1]
-                                    if loop_count > LOOP_ITERATIONS_LIMIT-1:
+                                    if loop_count > settings.LOOP_ITERATIONS_LIMIT-1:
                                         msg = '循环次数超限，强制跳出循环'
                                         logger.warning('【{}】\t{}'.format(estr, msg))
                                         run_result = ['f', msg]
@@ -390,6 +383,13 @@ class VicStep:
                     # 如果步骤为分支判断，那么保留步骤结果文字
                     if vc.step_active or ac in (
                             'OTHER_IF', 'OTHER_ELSE', 'OTHER_ELSE_IF', 'OTHER_END_IF'):
+
+                        # selenium驱动初始化检查
+                        if atc == 'WEB-UI':
+                            web_ui_test.method.check_web_driver(self)
+                            dr = drs.get("web_dr", None)
+                            web_ui_test.method.set_driver_timeout(dr, timeout)
+
                         if ac in (
                                 'OTHER_IF', 'OTHER_ELSE', 'OTHER_ELSE_IF', 'OTHER_END_IF', 'OTHER_START_LOOP',
                                 'OTHER_END_LOOP'):

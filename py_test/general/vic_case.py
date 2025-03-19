@@ -11,7 +11,7 @@ from django.forms.models import model_to_dict
 from .public_items import status_str_dict
 from .vic_step import VicStep
 from utils.other import check_recursive_call
-from py_test_site.settings import ERROR_PAUSE_TIMEOUT
+from django.conf import settings
 
 
 class VicCase:
@@ -175,7 +175,7 @@ class VicCase:
     def pause_(self, seconds=0, msg_format='【{}】\t已暂停{}秒，剩余{}秒'):
         if self.pause:
             if seconds <= 0:
-                seconds = ERROR_PAUSE_TIMEOUT
+                seconds = settings.ERROR_PAUSE_TIMEOUT
             _timeout = math.modf(float(seconds))
             start_time = time.time()
             time.sleep(_timeout[0])  # 补上小数部分
@@ -348,7 +348,7 @@ class VicCase:
                                 step_result_.result_message, ignore_msg)
                             step_result_.save()
                         else:
-                            if self.error_handle == 'stop':
+                            if self.error_handle == 'stop' and self.vic_suite.error_handle == 'stop':
                                 self.vic_suite.force_stop_signal = True  # 向套件发送中止信号
                             if step_result_.result_state == 2:
                                 self.case_result.fail_count += 1
