@@ -249,3 +249,15 @@ class SuiteResultForm(forms.ModelForm):
             'result_error',
             'snapshot',
         ]
+
+
+class SuiteResultSnapshotForm(forms.ModelForm):
+    class Meta:
+        model = Suite
+        fields = '__all__'
+
+
+class CaseResultSnapshotForm(forms.ModelForm):
+    class Meta:
+        model = Case
+        fields = '__all__'

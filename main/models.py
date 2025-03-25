@@ -30,12 +30,12 @@ class Suite(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, null=True, blank=True)
     creator = models.ForeignKey(
-        User, verbose_name='创建人', related_name='suite_creator', on_delete=models.SET_NULL, blank=True, null=True)
+        User, verbose_name='创建人', related_name='suite_creator', on_delete=models.SET_NULL, null=True, blank=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(
-        User, verbose_name='修改人', related_name='suite_modifier', on_delete=models.SET_NULL, blank=True, null=True)
+        User, verbose_name='修改人', related_name='suite_modifier', on_delete=models.SET_NULL, null=True, blank=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
     timeout = models.FloatField(default=10)
@@ -51,9 +51,9 @@ class Suite(models.Model):
     )
     log_level = models.IntegerField(choices=log_level_list, default=20)
     thread_count = models.IntegerField(default=1)
-    config = models.ForeignKey('main.Config', on_delete=models.SET_NULL, blank=True, null=True)
-    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.SET_NULL, blank=True, null=True)
-    element_group = models.ForeignKey('main.ElementGroup', on_delete=models.SET_NULL, blank=True, null=True)
+    config = models.ForeignKey('main.Config', on_delete=models.SET_NULL, null=True, blank=True)
+    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.SET_NULL, null=True, blank=True)
+    element_group = models.ForeignKey('main.ElementGroup', on_delete=models.SET_NULL, null=True, blank=True)
     error_handle = models.IntegerField(choices=error_handle_list_suite, default=1)
 
     case = models.ManyToManyField('Case', through='SuiteVsCase', through_fields=('suite', 'case'))
@@ -74,20 +74,20 @@ class Case(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, null=True, blank=True)
     creator = models.ForeignKey(
-        User, verbose_name='创建人', related_name='case_creator', on_delete=models.SET_NULL, blank=True, null=True)
+        User, verbose_name='创建人', related_name='case_creator', on_delete=models.SET_NULL, null=True, blank=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(
-        User, verbose_name='修改人', related_name='case_modifier', on_delete=models.SET_NULL, blank=True, null=True)
+        User, verbose_name='修改人', related_name='case_modifier', on_delete=models.SET_NULL, null=True, blank=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
-    timeout = models.FloatField(blank=True, null=True)
-    ui_step_interval = models.FloatField(blank=True, null=True)
-    config = models.ForeignKey('main.Config', on_delete=models.SET_NULL, blank=True, null=True)
-    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.SET_NULL, blank=True, null=True)
+    timeout = models.FloatField(null=True, blank=True)
+    ui_step_interval = models.FloatField(null=True, blank=True)
+    config = models.ForeignKey('main.Config', on_delete=models.SET_NULL, null=True, blank=True)
+    variable_group = models.ForeignKey('main.VariableGroup', on_delete=models.SET_NULL, null=True, blank=True)
     error_handle = models.IntegerField(choices=error_handle_list, default=0)
-    data_set = models.ForeignKey('main.DataSet', on_delete=models.SET_NULL, blank=True, null=True)
+    data_set = models.ForeignKey('main.DataSet', on_delete=models.SET_NULL, null=True, blank=True)
     step = models.ManyToManyField('Step', through='CaseVsStep', through_fields=('case', 'step'))
 
     class Meta:
@@ -104,17 +104,17 @@ class Step(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, null=True, blank=True)
     creator = models.ForeignKey(
-        User, verbose_name='创建人', related_name='step_creator', on_delete=models.SET_NULL, blank=True, null=True)
+        User, verbose_name='创建人', related_name='step_creator', on_delete=models.SET_NULL, null=True, blank=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(
-        User, verbose_name='修改人', related_name='step_modifier', on_delete=models.SET_NULL, blank=True, null=True)
+        User, verbose_name='修改人', related_name='step_modifier', on_delete=models.SET_NULL, null=True, blank=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
-    action = models.ForeignKey('main.Action', on_delete=models.SET_NULL, blank=True, null=True)
-    timeout = models.FloatField(blank=True, null=True)
-    ui_step_interval = models.FloatField(blank=True, null=True)
+    action = models.ForeignKey('main.Action', on_delete=models.SET_NULL, null=True, blank=True)
+    timeout = models.FloatField(null=True, blank=True)
+    ui_step_interval = models.FloatField(null=True, blank=True)
     error_handle = models.IntegerField(choices=error_handle_list, default=0)
     save_as = models.CharField(blank=True, max_length=100)
     ui_by_list = (
@@ -133,7 +133,7 @@ class Step(models.Model):
     ui_by_dict = {i[0]: i[1] for i in ui_by_list}
     ui_by = models.IntegerField(choices=ui_by_list, default=0)
     ui_locator = models.TextField(blank=True)
-    ui_index = models.IntegerField(blank=True, null=True)
+    ui_index = models.IntegerField(null=True, blank=True)
     ui_base_element = models.CharField(max_length=1000, blank=True)
     ui_data = models.TextField(blank=True)
     ui_special_action_list_ = (
@@ -187,7 +187,7 @@ class Step(models.Model):
     other_input = models.CharField(blank=True, max_length=100)
     other_data = models.TextField(blank=True)
     other_sub_case = models.ForeignKey(
-        'main.Case', on_delete=models.SET_NULL, blank=True, null=True, related_name='step_sub_case')
+        'main.Case', on_delete=models.SET_NULL, null=True, blank=True, related_name='step_sub_case')
     db_type_list_ = (
         (1, 'Oracle', 'oracle'),
         (2, 'MySQL', 'mysql'),
@@ -272,13 +272,13 @@ class Action(models.Model):
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
     creator = models.ForeignKey(
-        User, verbose_name='创建人', related_name='action_creator', on_delete=models.SET_NULL, blank=True, null=True)
+        User, verbose_name='创建人', related_name='action_creator', on_delete=models.SET_NULL, null=True, blank=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(
-        User, verbose_name='修改人', related_name='action_modifier', on_delete=models.SET_NULL, blank=True, null=True)
+        User, verbose_name='修改人', related_name='action_modifier', on_delete=models.SET_NULL, null=True, blank=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
-    type = models.ForeignKey('main.ActionType', on_delete=models.SET_NULL, blank=True, null=True)
+    type = models.ForeignKey('main.ActionType', on_delete=models.SET_NULL, null=True, blank=True)
     order = models.FloatField(default=0)
 
     class Meta:
@@ -317,10 +317,10 @@ class Config(models.Model):
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
     creator = models.ForeignKey(
-        User, verbose_name='创建人', related_name='config_creator', on_delete=models.SET_NULL, blank=True, null=True)
+        User, verbose_name='创建人', related_name='config_creator', on_delete=models.SET_NULL, null=True, blank=True)
     created_date = models.DateTimeField('创建时间', auto_now_add=True, null=True)
     modifier = models.ForeignKey(
-        User, verbose_name='修改人', related_name='config_modifier', on_delete=models.SET_NULL, blank=True, null=True)
+        User, verbose_name='修改人', related_name='config_modifier', on_delete=models.SET_NULL, null=True, blank=True)
     modified_date = models.DateTimeField('修改时间', auto_now=True, null=True)
     is_active = models.BooleanField(default=True)
     ui_selenium_client_list = (
@@ -330,7 +330,7 @@ class Config(models.Model):
     )
     ui_selenium_client = models.IntegerField(choices=ui_selenium_client_list, default=0)
     ui_remote_ip = models.CharField(max_length=100, blank=True)
-    ui_remote_port = models.IntegerField(blank=True, null=True)
+    ui_remote_port = models.IntegerField(null=True, blank=True)
     ui_driver_list = (
         (1, 'Chrome'),
         (2, 'IE'),
@@ -343,10 +343,10 @@ class Config(models.Model):
         (2, '自定义'),
     )
     ui_window_size = models.IntegerField(choices=ui_window_size_list, default=1)
-    ui_window_width = models.IntegerField(blank=True, null=True)
-    ui_window_height = models.IntegerField(blank=True, null=True)
-    ui_window_position_x = models.IntegerField(blank=True, null=True)
-    ui_window_position_y = models.IntegerField(blank=True, null=True)
+    ui_window_width = models.IntegerField(null=True, blank=True)
+    ui_window_height = models.IntegerField(null=True, blank=True)
+    ui_window_position_x = models.IntegerField(null=True, blank=True)
+    ui_window_position_y = models.IntegerField(null=True, blank=True)
     ui_driver_ff_profile = models.CharField(max_length=100, blank=True)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
@@ -365,7 +365,7 @@ class VariableGroup(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, null=True, blank=True)
     creator = models.ForeignKey(
         User, verbose_name='创建人', related_name='variable_group_creator', on_delete=models.SET_NULL, blank=True,
         null=True)
@@ -411,7 +411,7 @@ class ElementGroup(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, null=True, blank=True)
     creator = models.ForeignKey(
         User, verbose_name='创建人', related_name='element_group_creator', on_delete=models.SET_NULL, blank=True,
         null=True)
@@ -457,7 +457,7 @@ class DataSet(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, null=True, blank=True)
     creator = models.ForeignKey(
         User, verbose_name='创建人', related_name='data_set_creator', on_delete=models.SET_NULL, blank=True,
         null=True)
@@ -485,7 +485,7 @@ class SuiteResult(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
-    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, blank=True, null=True)
+    project = models.ForeignKey('main.Project', on_delete=models.SET_NULL, null=True, blank=True)
     creator = models.ForeignKey(
         User, verbose_name='创建人', related_name='suite_result_creator', on_delete=models.SET_NULL, blank=True,
         null=True)
@@ -501,19 +501,18 @@ class SuiteResult(models.Model):
     config = models.JSONField(null=True, blank=True)
     variable_group = models.JSONField(null=True, blank=True)
     element_group = models.JSONField(null=True, blank=True)
-    error_handle = models.IntegerField(blank=True, null=True)
 
     suite = models.ForeignKey('main.Suite', on_delete=models.SET_NULL, null=True, blank=True)
 
-    start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
-    end_date = models.DateTimeField(verbose_name='结束时间', blank=True, null=True)
-    execute_count = models.IntegerField(blank=True, null=True)
-    pass_count = models.IntegerField(blank=True, null=True)
-    fail_count = models.IntegerField(blank=True, null=True)
-    error_count = models.IntegerField(blank=True, null=True)
-    stop_count = models.IntegerField(blank=True, null=True)
+    start_date = models.DateTimeField(verbose_name='开始时间', null=True, blank=True)
+    end_date = models.DateTimeField(verbose_name='结束时间', null=True, blank=True)
+    execute_count = models.IntegerField(null=True, blank=True)
+    pass_count = models.IntegerField(null=True, blank=True)
+    fail_count = models.IntegerField(null=True, blank=True)
+    error_count = models.IntegerField(null=True, blank=True)
+    stop_count = models.IntegerField(null=True, blank=True)
 
-    result_state = models.IntegerField(choices=result_state_list, blank=True, null=True)
+    result_state = models.IntegerField(choices=result_state_list, null=True, blank=True)
     result_message = models.TextField(blank=True)
     result_error = models.TextField(blank=True)
 
@@ -542,26 +541,28 @@ class CaseResult(models.Model):
     description = models.TextField(blank=True)
     keyword = models.CharField(blank=True, max_length=100)
 
-    timeout = models.FloatField(blank=True, null=True)
-    ui_step_interval = models.FloatField(blank=True, null=True)
+    timeout = models.FloatField(null=True, blank=True)
+    ui_step_interval = models.FloatField(null=True, blank=True)
     config = models.JSONField(null=True, blank=True)
     variable_group = models.JSONField(null=True, blank=True)
     data_set = models.JSONField(null=True, blank=True)
 
+    snapshot = models.JSONField(null=True, blank=True)
+
     suite_result = models.ForeignKey('main.SuiteResult', on_delete=models.CASCADE)
     step_result = models.ForeignKey('main.StepResult', on_delete=models.CASCADE, null=True, blank=True)
-    parent_case_pk_list = models.TextField(blank=True, null=True)
+    parent_case_pk_list = models.TextField(null=True, blank=True)
     case = models.ForeignKey('main.Case', on_delete=models.SET_NULL, null=True, blank=True)
-    case_order = models.IntegerField(blank=True, null=True)
-    creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.SET_NULL, blank=True, null=True)
-    start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
-    end_date = models.DateTimeField(verbose_name='结束时间', blank=True, null=True)
-    execute_count = models.IntegerField(blank=True, null=True)
-    pass_count = models.IntegerField(blank=True, null=True)
-    fail_count = models.IntegerField(blank=True, null=True)
-    error_count = models.IntegerField(blank=True, null=True)
+    case_order = models.IntegerField(null=True, blank=True)
+    creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.SET_NULL, null=True, blank=True)
+    start_date = models.DateTimeField(verbose_name='开始时间', null=True, blank=True)
+    end_date = models.DateTimeField(verbose_name='结束时间', null=True, blank=True)
+    execute_count = models.IntegerField(null=True, blank=True)
+    pass_count = models.IntegerField(null=True, blank=True)
+    fail_count = models.IntegerField(null=True, blank=True)
+    error_count = models.IntegerField(null=True, blank=True)
 
-    result_state = models.IntegerField(choices=result_state_list, blank=True, null=True)
+    result_state = models.IntegerField(choices=result_state_list, null=True, blank=True)
     result_message = models.TextField(blank=True)
     result_error = models.TextField(blank=True)
 
@@ -590,15 +591,15 @@ class StepResult(models.Model):
 
     case_result = models.ForeignKey('main.CaseResult', on_delete=models.CASCADE)
     step = models.ForeignKey('main.Step', on_delete=models.SET_NULL, null=True, blank=True)
-    step_order = models.IntegerField(blank=True, null=True)
+    step_order = models.IntegerField(null=True, blank=True)
     loop_id = models.CharField(blank=True, max_length=100)
     runtime_variables = models.JSONField(null=True, blank=True)
 
-    creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.SET_NULL, blank=True, null=True)
-    start_date = models.DateTimeField(verbose_name='开始时间', blank=True, null=True)
-    end_date = models.DateTimeField(verbose_name='结束时间', blank=True, null=True)
+    creator = models.ForeignKey(User, verbose_name='创建人', on_delete=models.SET_NULL, null=True, blank=True)
+    start_date = models.DateTimeField(verbose_name='开始时间', null=True, blank=True)
+    end_date = models.DateTimeField(verbose_name='结束时间', null=True, blank=True)
     
-    result_state = models.IntegerField(choices=result_state_list, blank=True, null=True)
+    result_state = models.IntegerField(choices=result_state_list, null=True, blank=True)
     result_message = models.TextField(blank=True)
     result_error = models.TextField(blank=True)
 
@@ -653,8 +654,8 @@ class Token(models.Model):
     keyword = models.CharField(blank=True, max_length=100)
     is_active = models.BooleanField(default=True)
     value = models.CharField(verbose_name='token值', max_length=100)
-    expire_date = models.DateTimeField(verbose_name='有效期', blank=True, null=True, default=timezone.now)
-    user = models.ForeignKey(User, verbose_name='对应用户', on_delete=models.SET_NULL, blank=True, null=True)
+    expire_date = models.DateTimeField(verbose_name='有效期', null=True, blank=True, default=timezone.now)
+    user = models.ForeignKey(User, verbose_name='对应用户', on_delete=models.SET_NULL, null=True, blank=True)
 
     def natural_key(self):  # 序列化时，可以用此值代替外键ID
         return self.name

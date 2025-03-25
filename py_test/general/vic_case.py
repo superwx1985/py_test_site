@@ -115,6 +115,8 @@ class VicCase:
         self.socket_no_response = False
 
         # 初始化result数据库对象
+        _snapshot = model_to_dict(case) if case else None
+        _snapshot['step'] = [x.pk for x in _snapshot['step']]
         self.case_result = CaseResult.objects.create(
             name=case.name,
             description=case.description,
@@ -122,6 +124,7 @@ class VicCase:
 
             timeout=case.timeout,
             ui_step_interval=case.ui_step_interval,
+            config=model_to_dict(case.config),
             variable_group=variable_group_dict,
             data_set=_data_set_dict,
 
@@ -135,6 +138,8 @@ class VicCase:
             pass_count=0,
             fail_count=0,
             error_count=0,
+
+            snapshot=_snapshot,
         )
 
         # 根据数据组修改用例名称

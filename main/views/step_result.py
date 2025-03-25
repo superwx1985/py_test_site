@@ -61,7 +61,7 @@ def detail_json(_, pk):
         except CaseResult.DoesNotExist:
             data_dict['sub_case'] = '找不到子用例数据！'
         else:
-            data_dict['sub_case'] = render_to_string('main/include/case_result_content.html',
+            data_dict['sub_case'] = render_to_string('main/result/case_result_content.html',
                                                      {'case_result': case_result})
     for img in obj.imgs.all():
         img_dict = dict()

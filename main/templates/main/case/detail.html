@@ -225,7 +225,7 @@
             </div>
         </div>
         <div class="row align-items-center">
-            <div class="col-1 text-right font-weight-bold">{% if form.fields.config.required %}*{% endif %}测试配置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的配置项"></i></div>
+            <div class="col-1 text-right font-weight-bold">{% if form.fields.config.required %}*{% endif %}测试配置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试使用的配置项，不填写将继承上级的配置"></i></div>
             <div class="col" form_data>
                 <div id="config_dropdown" name="config"></div>
                 {% for error in form.config.errors %}

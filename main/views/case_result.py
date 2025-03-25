@@ -1,10 +1,9 @@
 import logging
 import json
-from django.http import Http404, HttpResponse
+from django.http import Http404
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from main.models import CaseResult
-from main.forms import VariableGroupForm, DataSetForm
+from main.forms import *
 
 logger = logging.getLogger('django.request')
 
@@ -32,3 +31,14 @@ def data_set_snapshot(request, pk):
     else:
         form = DataSetForm(initial=obj.data_set)
         return render(request, 'main/data_set/snapshot.html', locals())
+
+
+@login_required
+def config_snapshot(request, pk):
+    try:
+        obj = CaseResult.objects.get(pk=pk)
+    except CaseResult.DoesNotExist:
+        raise Http404('Suite Result does not exist')
+    else:
+        form = ConfigForm(initial=obj.config)
+        return render(request, 'main/config/snapshot.html', locals())

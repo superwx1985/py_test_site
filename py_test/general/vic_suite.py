@@ -62,13 +62,6 @@ class VicSuite:
             keyword=suite.keyword,
             project=suite.project,
 
-            # timeout=suite.timeout,
-            # ui_step_interval=suite.ui_step_interval,
-            # ui_get_ss=suite.ui_get_ss,
-            # log_level=suite.log_level,
-            # thread_count=suite.thread_count,
-            # error_handle=suite.error_handle,
-
             suite=suite,
             creator=user,
             modifier=user,
