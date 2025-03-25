@@ -1,4 +1,5 @@
 {% extends 'main/detail_base.html' %}
+{% load widget_tweaks %}
 {% block title %}
     结果{{ block.super }} | {{ form.initial.name }}
 {% endblock %}
@@ -122,67 +123,63 @@
     </div>
     <div class="row align-items-center">
         <div class="col-1 text-right font-weight-bold">描述</div>
-        <div class="col"><textarea class="form-control" rows="3" disabled>{{ obj.snapshot.description }}</textarea></div>
+        <div class="col" form_data>
+            {% include 'main/include/form_textarea.html' with field=suite_snapshot_form.description rows='3' readonly=1%}
+        </div>
     </div>
     <div class="row align-items-center">
         <div class="col-1 text-right font-weight-bold">关键字</div>
-        <div class="col"><input class="form-control" value="{{ obj.snapshot.keyword }}" disabled></div>
-    </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该套件内每一步骤的默认超时值（单位：秒）。会被下级的设置覆盖"></i></div>
         <div class="col" form_data>
-            <span class="text-info">{{ obj.snapshot.timeout }}</span>
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.keyword readonly=1%}
         </div>
     </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。会被下级的设置覆盖"></i></div>
+    <div class="row align-items-center" base>
+        <div class="col-1 text-right font-weight-bold">项目</div>
         <div class="col" form_data>
-            <span class="text-info">{{ obj.snapshot.ui_step_interval }}</span>
-        </div>
-    </div>
-    <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">自动截图&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="UI测试运行出错以及遇到验证步骤时是否自动截图"></i></div>
-        <div class="col" form_data>
-            <input type="checkbox" name="ui_get_ss" id="id_ui_get_ss" {% if obj.snapshot.ui_get_ss %}checked{% endif %} disabled>
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.project readonly=1%}
         </div>
     </div>
     <div class="row align-items-center">
         <div class="col-1 text-right font-weight-bold">错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。会被下级的设置覆盖"></i></div>
         <div class="col" form_data>
-            <select name="error_handle" class="form-control" id="id_error_handle" disabled>
-              <option value="0">继承上级</option>
-              <option value="1">中止测试</option>
-              <option value="2">继续测试</option>
-              <option value="3">暂停测试</option>
-              <option value="4">忽略（不记录错误）</option>
-            </select>
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.error_handle readonly=1%}
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-right font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该套件内每一步骤的默认超时值（单位：秒）。会被下级的设置覆盖"></i></div>
+        <div class="col" form_data>
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.timeout readonly=1%}
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-right font-weight-bold">UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。会被下级的设置覆盖"></i></div>
+        <div class="col" form_data>
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.ui_step_interval readonly=1%}
+        </div>
+    </div>
+    <div class="row align-items-center">
+        <div class="col-1 text-right font-weight-bold">自动截图&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="UI测试运行出错以及遇到验证步骤时是否自动截图"></i></div>
+        <div class="col" form_data>
+            <input type="checkbox" name="ui_get_ss" id="id_ui_get_ss" {% if suite_snapshot_form.ui_get_ss.value %}checked{% endif %} disabled>
         </div>
     </div>
     <div class="row align-items-center">
         <div class="col-1 text-right font-weight-bold">日志级别&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试的日志详细程度，选择DEV将不会自动关闭浏览器"></i></div>
         <div class="col" form_data>
-            <select name="log_level" class="form-control" id="id_log_level" disabled>
-                <option value="0"></option>
-                <option value="1">DEV</option>
-                <option value="10">DEBUG</option>
-                <option value="20">INFO</option>
-                <option value="30">WARNING</option>
-                <option value="40">ERROR</option>
-                <option value="50">CRITICAL</option>
-            </select>
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.log_level readonly=1%}
         </div>
     </div>
     <div class="row align-items-center">
-        <div class="col-1 text-right font-weight-bold">测试线程数&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="可同时运行的用例数量。设置更高的值可以加快测试速度，但会打乱用例执行顺序，导致一些意外情况。"></i></div>
+        <div class="col-1 text-right font-weight-bold">测试线程数&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="并发运行的用例数量，可加快测试速度，但会打乱用例执行顺序，导致一些意外情况。此设置还受限于服务器设置的最大线程数，所有用户将共享测试线程池"></i></div>
         <div class="col" form_data>
-            <span class="text-info">{{ obj.snapshot.thread_count }}</span>
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.thread_count readonly=1%}
         </div>
     </div>
     <div class="row align-items-center">
         <div class="col-1 text-right font-weight-bold">测试配置</div>
         <div class="col">
             <a name="related_items" url={% url "config" obj.config.id %} href="javascript:">{{ obj.config.name }}</a>
-            <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '配置快照', '{% url "config_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;快照</button>
+            <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '配置快照', '{% url "suite_config_snapshot" obj.pk %}')"><i class="icon-time"></i>&nbsp;快照</button>
         </div>
     </div>
     <div class="row align-items-center">
@@ -227,7 +224,7 @@
                     {% for case_result in sub_objects %}
                         <div id="case_result_{{ case_result.pk }}" class="tab-pane {% if forloop.counter == 1 %}active{% endif %}" style="padding: 1em">
                             <div>
-                                {% include 'main/include/case_result_content.html' with case_result=case_result %}
+                                {% include 'main/result/case_result_content.html' with case_result=case_result %}
                             </div>
                         </div>
                     {% endfor %}
