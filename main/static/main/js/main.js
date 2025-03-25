@@ -100,13 +100,19 @@ function getData(url, csrf_token, callback_func, condition_json) {
 
 // 获取元素整体高度, 包含margin
 function get_element_full_height($el) {
-    var height = parseInt($el.css('margin-top')) + parseInt($el.css('margin-bottom')) + $el.outerHeight();
+    const height = parseInt($el.css('margin-top')) + parseInt($el.css('margin-bottom')) + $el.outerHeight();
     return isNaN(height) ? 0 : height
+}
+
+// 获取元素整体宽度, 包含margin
+function get_element_full_width($el) {
+    const width = parseInt($el.css('margin-left')) + parseInt($el.css('margin-right')) + $el.outerWidth();
+    return isNaN(width) ? 0 : width
 }
 
 // 获取元素外部margin, border, padding高度
 function get_element_outside_height($el) {
-    var height = get_element_full_height($el) - $el.height();
+    const height = get_element_full_height($el) - $el.height();
     return isNaN(height) ? 0 : height
 }
 
@@ -291,7 +297,6 @@ function update_dropdown(data, $base_div, readonly, choice_callback) {
         //limitCount: 1,
         input: '<input type="text" maxLength="20" placeholder="筛选">',
         choice: function () {
-            // console.log(this.selectId);
             // window._selectId = JSON.stringify(this.selectId);
             if (choice_callback) {
                 choice_callback()
@@ -330,51 +335,51 @@ function float_element($el, top) {
     if (!$el || $el.length === 0) {
         return false;
     }
-    if (!top) {
-        top = 0;
-    }
-    var el_top = $el.offset().top;
-    var original_style = $el.attr('style');
+    if (!top) top = 0;
+    let el_top = $el.offset().top;
+    let original_style = $el.attr('style');
     if (!original_style) {
         original_style = true
     }
-    var doing = [];
-    var $el_temp = [];
-    $(window).scroll(function () {
+    let doing = [];
+    let $el_temp = [];
 
-        if (doing.length > 0) {
-            return false;
-        }  // 防止频繁判断导致跳动
-        if (!$el.data('float')) {
-            el_top = $el.offset().top;
-        }  // 未浮动时通过自身确定位置
-        var el_height = get_element_full_height($el);
-        var window_height = window.innerHeight;
+    $(window).off('scroll.float_element').on('scroll.float_element', function () {
+        if (doing.length > 0) return false;  // 防止频繁判断导致跳动
+        if (!$el.data('float')) el_top = $el.offset().top;  // 未浮动时通过自身确定位置
+        const is_vertical_out= $(window).scrollTop() > el_top - top;
+        const is_horizontal_out= $(window).scrollLeft() > 0;
 
-        if (window_height > el_height + top + 10 && $(window).scrollTop() > el_top - top) {
+        if (is_vertical_out || is_horizontal_out) {
             if (!$el.data('float')) {
-                // console.log('冻结', $(window).scrollTop() , el_top - top, $el);
                 doing.push(true);
                 setTimeout(function () {
                     doing.pop();
                 }, 50);
                 $el_temp = $el.clone().insertAfter($el).css('visibility', 'hidden');  // 占位
                 $el_temp.removeAttr('id').removeAttr('name').find('*').removeAttr('id').removeAttr('name');  // 防止和占位元素交互
-                $el.css('top', top + 'px');
-                $el.css('z-index', 999);
                 $el.width($el.width());
                 $el.height($el.height());
-                $el.css('position', 'fixed');
+                $el.css({
+                    'position': 'fixed',
+                    'top': top + 'px',
+                    'z-index': 999,
+                });
                 $el.data('float', original_style);
-            } else {  // 浮动时通过占位元素确定大小及位置
+            } else {
+                // 浮动时通过占位元素确定大小及位置
                 $el.width($el_temp.width());
                 $el.height($el_temp.height());
-                el_top = $el_temp.offset().top;
+                $el.css('top', top + 'px');
+
+            }
+            // 当元素超出水平视野但还在垂直视野内时，动态更新其垂直位置
+            if (is_horizontal_out && !is_vertical_out) {
+                $el.css('top', $el_temp[0].getBoundingClientRect().top + 'px');
             }
         } else {
-            var style = $el.data('float');
+            const style = $el.data('float');
             if (style) {
-                // console.log('解除', $(window).scrollTop() , el_top - top, $el);
                 $el.data('float', false);
                 if ($el_temp.length > 0) {
                     $el_temp.remove();

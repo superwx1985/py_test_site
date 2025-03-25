@@ -8,7 +8,6 @@ function update_variable_group_dropdown(success, data) {
 		}
 		update_mask($('#mask'), -1);
     } else {
-		console.log(data);
 		if (!window.errs) { window.errs = [] }
 		window.errs.push(data);
 	}
@@ -24,7 +23,6 @@ function update_element_group_dropdown(success, data) {
 		}
 		update_mask($('#mask'), -1);
     } else {
-		console.log(data);
 		if (!window.errs) { window.errs = [] }
 		window.errs.push(data);
 	}
@@ -40,7 +38,6 @@ function update_config_dropdown(success, data) {
 		}
 		update_mask($('#mask'), -1);
     } else {
-		console.log(data);
 		if (!window.errs) { window.errs = [] }
 		window.errs.push(data);
 	}
@@ -56,7 +53,6 @@ function update_data_set_dropdown(success, data) {
 		}
 		update_mask($('#mask'), -1);
     } else {
-		console.log(data);
 		if (!window.errs) { window.errs = [] }
 		window.errs.push(data);
 	}
@@ -72,7 +68,6 @@ function update_other_sub_case_dropdown(success, data) {
 		}
 		update_mask($('#mask'), -1);
     } else {
-		console.log(data);
 		if (!window.errs) { window.errs = [] }
 		window.errs.push(data);
 	}
@@ -94,7 +89,6 @@ function update_action_dropdown(success, data) {
 		});
 		update_mask($('#mask'), -1);
     } else {
-		console.log(data);
 		if (!window.errs) { window.errs = [] }
 		window.errs.push(data);
 	}
@@ -345,7 +339,7 @@ function submit_m2m_all_objects_form(cookie_path, json_url, last_condition_json)
 			condition_json = last_condition_json;
 		}
 		catch (e) {
-			console.log(e);
+			console.warn(e);
 		}
 		$('input[name=search_text]').val(last_condition.search_text);
 		if (last_condition.search_project === '') {

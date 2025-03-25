@@ -19,6 +19,9 @@
             padding-right: 0;
         }
     </style>
+{#    <link href="https://cdn.datatables.net/v/bs4/dt-2.2.2/b-3.2.2/b-html5-3.2.2/cr-2.0.4/r-3.0.4/rr-1.5.0/sl-3.0.0/datatables.min.css" rel="stylesheet" integrity="sha384-pZycgFh47ZLx6Ja8YdWiDVqIovOYs9MzTCenNOQhNPiyDB+os7NKrqWNnLffULGf" crossorigin="anonymous">#}
+ 
+
 {% endblock %}
 
 {% block prepare_script %}
@@ -31,6 +34,7 @@
         });
     </script>
     <script src="{% static 'main/js/detail_data_set.js' %}"></script>
+{#    <script src="https://cdn.datatables.net/v/bs4/dt-2.2.2/b-3.2.2/b-html5-3.2.2/cr-2.0.4/r-3.0.4/rr-1.5.0/sl-3.0.0/datatables.min.js" integrity="sha384-R46rIQC/PNL1Q3Jf0OTFAowBTMRI/a64NMLNzyN1yTdHsk/s3gV4CN8tn9W2qW7l" crossorigin="anonymous"></script>#}
 {% endblock %}
 
 {% block script %}
@@ -38,11 +42,11 @@
         $(function () {
             // 悬浮按钮组
             let sub_button_group = $('#sub_button_group');
-            {% if inside %}
-                float_element(sub_button_group);
-            {% else %}
-                float_element(sub_button_group, 60);
+            window.button_top = 0;
+            {% if not inside %}
+                window.button_top = 60;
             {% endif %}
+            float_element(sub_button_group, window.button_top);
             
             let data_set_str = $('#data_set_data').val();
             window.data_set = {data: [], gtm: null};
