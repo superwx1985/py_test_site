@@ -124,7 +124,7 @@ class VicCase:
 
             timeout=case.timeout,
             ui_step_interval=case.ui_step_interval,
-            config=model_to_dict(case.config),
+            config=model_to_dict(case.config) if case.config else None,
             variable_group=variable_group_dict,
             data_set=_data_set_dict,
 
@@ -353,8 +353,17 @@ class VicCase:
                                 step_result_.result_message, ignore_msg)
                             step_result_.save()
                         else:
-                            if self.error_handle == 'stop' and self.vic_suite.error_handle == 'stop':
-                                self.vic_suite.force_stop_signal = True  # 向套件发送中止信号
+                            if self.error_handle == 'stop' and step_.error_handle == 'stop':
+                                self.force_stop_signal = True
+                                _ = "用例及步骤的错误处理方式均为中止，用例中止执行"
+                                if self.vic_suite.error_handle == 'stop':  # 如果套件的错误处理方式是中止，向套件发送中止信号，阻止其他case继续执行
+                                    self.vic_suite.force_stop_signal = True
+                                    _ = "套件、用例及步骤的错误处理方式均为中止，套件中止执行"
+                            else:
+                                _ = "用例及步骤的错误处理方式不全为中止，用例继续执行"
+                            self.logger.warn(f'【{step_execute_str}】\t{_}')
+                            step_result_.result_message = f"{step_result_.result_message}\n==========\n{_}"
+                            step_result_.save()
                             if step_result_.result_state == 2:
                                 self.case_result.fail_count += 1
                             else:
