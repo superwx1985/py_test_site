@@ -16,8 +16,9 @@ def variable_group_snapshot(request, pk):
     except CaseResult.DoesNotExist:
         raise Http404('Case Result does not exist')
     else:
-        variables_json = json.dumps({'data': obj.variable_group['variables']})
-        form = VariableGroupForm(initial=obj.variable_group)
+        _ = obj.snapshot["variable_group"]
+        variables_json = json.dumps({'data': _['variables']})
+        form = VariableGroupForm(initial=_)
         return render(request, 'main/variable_group/snapshot.html', locals())
 
 
@@ -29,7 +30,7 @@ def data_set_snapshot(request, pk):
     except CaseResult.DoesNotExist:
         raise Http404('Case Result does not exist')
     else:
-        form = DataSetForm(initial=obj.data_set)
+        form = DataSetForm(initial=obj.snapshot["data_set"])
         return render(request, 'main/data_set/snapshot.html', locals())
 
 
@@ -40,5 +41,5 @@ def config_snapshot(request, pk):
     except CaseResult.DoesNotExist:
         raise Http404('Suite Result does not exist')
     else:
-        form = ConfigForm(initial=obj.config)
+        form = ConfigForm(initial=obj.snapshot["config"])
         return render(request, 'main/config/snapshot.html', locals())

@@ -5,19 +5,19 @@
             <div>
                 <table>
                     <colgroup>
-                        <col style="width: 50px;">
-                        <col style="width: 50px;">
                         <col>
-                        <col style="width: 50px;">
-                        <col style="width: 50px;">
+                        <col>
+                        <col>
+                        <col>
+                        <col>
                         <col>
                     </colgroup>
                     <tr>
-                        <td><button name="first_page_button" type="button" class="btn btn-info">首页</button></td>
-                        <td><button name="prev_page_button" type="button" class="btn btn-info">上页</button></td>
+                        <td><button name="first_page_button" type="button" class="btn btn-info"><i class="icon-double-angle-left"></i></button></td>
+                        <td><button name="prev_page_button" type="button" class="btn btn-info"><i class="icon-angle-left"></i></button></td>
                         <td><div>{% render_field paginator_form.page class="form-control" style='width: 85px' %}&nbsp;/&nbsp;{{ paginator.num_pages|default:0 }}&nbsp;</div></td>
-                        <td><button name="next_page_button" type="button" class="btn btn-info">下页</button></td>
-                        <td><button name="last_page_button" type="button" class="btn btn-info">末页</button></td>
+                        <td><button name="next_page_button" type="button" class="btn btn-info"><i class="icon-angle-right"></i></button></td>
+                        <td><button name="last_page_button" type="button" class="btn btn-info"><i class="icon-double-angle-right"></i></button></td>
                         <td><div>每页&nbsp;{% render_field paginator_form.size class="form-control" style='width: 85px' %}&nbsp;条&nbsp;共&nbsp;{{ paginator.count|default:0 }}&nbsp;条</div></td>
                     </tr>
                 </table>

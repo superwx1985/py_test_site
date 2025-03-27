@@ -125,7 +125,7 @@ urlpatterns = [
     path("case_result/<str:pk>/config_snapshot", case_result.config_snapshot, name="case_config_snapshot"),
 
     path("step_result/<str:pk>/", step_result.detail, name="step_result"),
-    path("step_result/<str:pk>/detail_json", step_result.detail_json, name="step_result_detail_json"),
+    # path("step_result/<str:pk>/detail_json", step_result.detail_json, name="step_result_detail_json"),
     path("step_result/<str:pk>/snapshot", step_result.snapshot, name="step_snapshot"),
     path("step_result/<str:pk>/runtime_variables", step_result.runtime_variables, name="runtime_variables"),
 

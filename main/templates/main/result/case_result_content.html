@@ -6,35 +6,45 @@
 </div>
 <div class="row align-items-center">
     <div class="col-1 text-right font-weight-bold">描述</div>
-    <div class="col"><textarea class="form-control" rows="3" disabled>{{ case_result.description }}</textarea></div>
+    <div class="col" form_data>
+        {% include 'main/include/form_textarea.html' with field=case_result.case_snapshot_form.description rows='3' disabled=1 %}
+    </div>
 </div>
 <div class="row align-items-center">
     <div class="col-1 text-right font-weight-bold">关键字</div>
-    <div class="col"><input class="form-control" value="{{ case_result.keyword }}" disabled></div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=case_result.case_snapshot_form.keyword disabled=1 %}
+    </div>
+</div>
+<div class="row align-items-center">
+    <div class="col-1 text-right font-weight-bold">项目</div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=case_result.case_snapshot_form.project disabled=1 %}
+    </div>
 </div>
 <div class="row align-items-center">
     <div class="col-1 text-right font-weight-bold">错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。会被下级的设置覆盖"></i></div>
     <div class="col" form_data>
-        {% include 'main/include/form_input.html' with field=case_result.case_snapshot_form.error_handle readonly=1%}
+        {% include 'main/include/form_input.html' with field=case_result.case_snapshot_form.error_handle disabled=1 %}
     </div>
 </div>
 <div class="row align-items-center">
     <div class="col-1 text-right font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该套件内每一步骤的默认超时值（单位：秒）。会被下级的设置覆盖"></i></div>
     <div class="col" form_data>
-        {% include 'main/include/form_input.html' with field=case_result.case_snapshot_form.timeout readonly=1%}
+        {% include 'main/include/form_input.html' with field=case_result.case_snapshot_form.timeout disabled=1 %}
     </div>
 </div>
 <div class="row align-items-center">
     <div class="col-1 text-right font-weight-bold">UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。会被下级的设置覆盖"></i></div>
     <div class="col" form_data>
-        {% include 'main/include/form_input.html' with field=case_result.case_snapshot_form.ui_step_interval readonly=1%}
+        {% include 'main/include/form_input.html' with field=case_result.case_snapshot_form.ui_step_interval disabled=1 %}
     </div>
 </div>
 <div class="row align-items-center">
     <div class="col-1 text-right font-weight-bold">测试配置</div>
     <div class="col">
-        {% if case_result.config %}
-        <a name="related_items" url={% url "config" case_result.config.id %} href="javascript:">{{ case_result.config.name }}</a>
+        {% if case_result.snapshot.config %}
+        <a name="related_items" url={% url "config" case_result.snapshot.config.id %} href="javascript:">{{ case_result.snapshot.config.name }}</a>
         <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '配置快照', '{% url "case_config_snapshot" case_result.pk %}')"><i class="icon-time"></i>&nbsp;快照</button>
         {% else %}
             <span class="text-info">【未配置】</span>
@@ -44,8 +54,8 @@
 <div class="row align-items-center">
     <div class="col-1 text-right font-weight-bold">变量组</div>
     <div class="col">
-        {% if case_result.variable_group %}
-            <a name="related_items" url={% url "variable_group" case_result.variable_group.id %} href="javascript:">{{ case_result.variable_group.fullname }}</a>
+        {% if case_result.snapshot.variable_group %}
+            <a name="related_items" url={% url "variable_group" case_result.snapshot.variable_group.id %} href="javascript:">{{ case_result.snapshot.variable_group.fullname }}</a>
             <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '用例变量组快照', '{% url "case_variable_group_snapshot" case_result.pk %}')"><i class="icon-time"></i>&nbsp;快照</button>
         {% else %}
             <span class="text-info">【未配置】</span>
@@ -55,8 +65,8 @@
 <div class="row align-items-center">
     <div class="col-1 text-right font-weight-bold">数据组</div>
     <div class="col">
-        {% if case_result.data_set %}
-            <a name="related_items" url={% url "data_set" case_result.data_set.id %} href="javascript:">{{ case_result.data_set.fullname }}</a>
+        {% if case_result.snapshot.data_set %}
+            <a name="related_items" url={% url "data_set" case_result.snapshot.data_set.id %} href="javascript:">{{ case_result.snapshot.data_set.fullname }}</a>
             <button class="btn btn-info" onclick="modal_with_iframe_max('snapshot_modal', '用例数据组快照', '{% url "case_data_set_snapshot" case_result.pk %}')"><i class="icon-time"></i>&nbsp;快照</button>
         {% else %}
             <span class="text-info">【未配置】</span>

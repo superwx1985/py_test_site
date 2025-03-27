@@ -1,7 +1,7 @@
 {% load widget_tweaks %}
 {% if field.errors %}
-    {% if readonly %}
-        {% render_field field|attr:"readonly:readonly" class="form-control is-invalid" placeholder=placeholder %}
+    {% if disabled %}
+        {% render_field field|attr:"disabled:" class="form-control is-invalid" placeholder=placeholder %}
     {% else %}
         {% render_field field class="form-control is-invalid" placeholder=placeholder %}
     {% endif %}
@@ -9,8 +9,8 @@
         <div class="invalid-feedback">{{ error }}</div>
     {% endfor %}
 {% else %}
-    {% if readonly %}
-        {% render_field field|attr:"readonly:readonly" class="form-control" placeholder=placeholder %}
+    {% if disabled %}
+        {% render_field field|attr:"disabled:" class="form-control" placeholder=placeholder %}
     {% else %}
         {% render_field field class="form-control" placeholder=placeholder %}
     {% endif %}

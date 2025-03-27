@@ -124,37 +124,37 @@
     <div class="row align-items-center">
         <div class="col-1 text-right font-weight-bold">描述</div>
         <div class="col" form_data>
-            {% include 'main/include/form_textarea.html' with field=suite_snapshot_form.description rows='3' readonly=1%}
+            {% include 'main/include/form_textarea.html' with field=suite_snapshot_form.description rows='3' disabled=1 %}
         </div>
     </div>
     <div class="row align-items-center">
         <div class="col-1 text-right font-weight-bold">关键字</div>
         <div class="col" form_data>
-            {% include 'main/include/form_input.html' with field=suite_snapshot_form.keyword readonly=1%}
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.keyword disabled=1 %}
         </div>
     </div>
-    <div class="row align-items-center" base>
+    <div class="row align-items-center">
         <div class="col-1 text-right font-weight-bold">项目</div>
         <div class="col" form_data>
-            {% include 'main/include/form_input.html' with field=suite_snapshot_form.project readonly=1%}
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.project disabled=1 %}
         </div>
     </div>
     <div class="row align-items-center">
         <div class="col-1 text-right font-weight-bold">错误处理&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="遇到错误及验证失败时的处理方式。会被下级的设置覆盖"></i></div>
         <div class="col" form_data>
-            {% include 'main/include/form_input.html' with field=suite_snapshot_form.error_handle readonly=1%}
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.error_handle disabled=1 %}
         </div>
     </div>
     <div class="row align-items-center">
         <div class="col-1 text-right font-weight-bold">超时设置&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="设置该套件内每一步骤的默认超时值（单位：秒）。会被下级的设置覆盖"></i></div>
         <div class="col" form_data>
-            {% include 'main/include/form_input.html' with field=suite_snapshot_form.timeout readonly=1%}
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.timeout disabled=1 %}
         </div>
     </div>
     <div class="row align-items-center">
         <div class="col-1 text-right font-weight-bold">UI测试间隔&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="执行UI测试时每一步骤后的暂停时间（单位：秒）。会被下级的设置覆盖"></i></div>
         <div class="col" form_data>
-            {% include 'main/include/form_input.html' with field=suite_snapshot_form.ui_step_interval readonly=1%}
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.ui_step_interval disabled=1 %}
         </div>
     </div>
     <div class="row align-items-center">
@@ -166,13 +166,13 @@
     <div class="row align-items-center">
         <div class="col-1 text-right font-weight-bold">日志级别&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="本次测试的日志详细程度，选择DEV将不会自动关闭浏览器"></i></div>
         <div class="col" form_data>
-            {% include 'main/include/form_input.html' with field=suite_snapshot_form.log_level readonly=1%}
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.log_level disabled=1 %}
         </div>
     </div>
     <div class="row align-items-center">
         <div class="col-1 text-right font-weight-bold">测试线程数&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="并发运行的用例数量，可加快测试速度，但会打乱用例执行顺序，导致一些意外情况。此设置还受限于服务器设置的最大线程数，所有用户将共享测试线程池"></i></div>
         <div class="col" form_data>
-            {% include 'main/include/form_input.html' with field=suite_snapshot_form.thread_count readonly=1%}
+            {% include 'main/include/form_input.html' with field=suite_snapshot_form.thread_count disabled=1 %}
         </div>
     </div>
     <div class="row align-items-center">

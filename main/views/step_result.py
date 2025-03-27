@@ -4,8 +4,7 @@ from django.http import JsonResponse, Http404, HttpResponse
 from django.shortcuts import render
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
-from main.models import StepResult, CaseResult
-from main.forms import StepForm
+from main.forms import *
 from django.template.loader import render_to_string
 from utils import other
 
@@ -25,6 +24,7 @@ def detail(request, pk):
     if obj.has_sub_case:
         try:
             case_result = CaseResult.objects.get(step_result=pk)
+            case_result.case_snapshot_form = CaseResultSnapshotForm(initial=case_result.snapshot)
         except CaseResult.DoesNotExist:
             sub_case = '找不到子用例数据！'
 
@@ -58,6 +58,7 @@ def detail_json(_, pk):
     if obj.has_sub_case:
         try:
             case_result = CaseResult.objects.get(step_result=pk)
+            case_result.case_snapshot_form = CaseResultSnapshotForm(initial=case_result.snapshot)
         except CaseResult.DoesNotExist:
             data_dict['sub_case'] = '找不到子用例数据！'
         else:

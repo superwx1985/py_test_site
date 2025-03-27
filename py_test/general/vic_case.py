@@ -94,12 +94,18 @@ class VicCase:
         # 循环迭代次数
         self.loop_active = False
 
+        # 获取配置json
+        config_dict = None
+        if case.config and case.config.is_active:
+            config_dict = model_to_dict(case.config)
+
         # 获取变量组json
         variable_group_dict = None
         if case.variable_group and case.variable_group.is_active:
             v_list = list(case.variable_group.variable_set.all().values('pk', 'name', 'description', 'value', 'order'))
             variable_group_dict = model_to_dict(case.variable_group)
             variable_group_dict['variables'] = v_list
+            variable_group_dict['fullname'] = f"{case.variable_group.name} | {case.variable_group.project.name}"
 
         # 获取数据组json
         _data_set_dict = None
@@ -110,6 +116,7 @@ class VicCase:
                 {key: value for key, value in record.items() if not key[0].isdigit()} for record in _data_set_dict['data']['data']
             ]
             _data_set_dict['data']['data'] = cleaned_data
+            _data_set_dict['fullname'] = f"{case.data_set.name} | {case.data_set.project.name}"
 
         # 驱动停止响应标志
         self.socket_no_response = False
@@ -117,16 +124,19 @@ class VicCase:
         # 初始化result数据库对象
         _snapshot = model_to_dict(case) if case else None
         _snapshot['step'] = [x.pk for x in _snapshot['step']]
+        _snapshot['config'] = config_dict
+        _snapshot['variable_group'] = variable_group_dict
+        _snapshot['data_set'] = _data_set_dict
         self.case_result = CaseResult.objects.create(
             name=case.name,
             description=case.description,
             keyword=case.keyword,
 
-            timeout=case.timeout,
-            ui_step_interval=case.ui_step_interval,
-            config=model_to_dict(case.config) if case.config else None,
-            variable_group=variable_group_dict,
-            data_set=_data_set_dict,
+            # timeout=case.timeout,
+            # ui_step_interval=case.ui_step_interval,
+            # config=model_to_dict(case.config) if case.config else None,
+            # variable_group=variable_group_dict,
+            # data_set=_data_set_dict,
 
             suite_result=vic_suite.suite_result,
             step_result=vic_step.step_result if vic_step else None,
