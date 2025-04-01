@@ -49,7 +49,7 @@
             float_element(sub_button_group, window.button_top);
             
             let data_set_str = $('#data_set_data').val();
-            window.data_set = {data: [], gtm: null};
+            window.data_set = {data: [], columns: [], gtm: null};
             try {
                 if (data_set_str !== "null") {
                     window.data_set = JSON.parse(data_set_str); // 转换字符串为 JSON 对象

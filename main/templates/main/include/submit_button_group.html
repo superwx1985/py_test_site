@@ -10,17 +10,18 @@
                     <td><button type="submit" name="save_button" class="btn btn-primary"><i class="icon-ok">&nbsp;</i>应用</button></td>
                     <td><button type="submit" name="save_and_return_button" class="btn btn-success"><i class="icon-upload-alt">&nbsp;</i>提交</button></td>
                 {% else %}
-                    <td><button type="submit" name="save_button" class="btn btn-success"><i class="icon-upload-alt">&nbsp;</i>提交</button></td>
+                    <td><button type="submit" name="save_and_return_button" class="btn btn-success"><i class="icon-upload-alt">&nbsp;</i>提交</button></td>
                 {% endif %}
             {% else %}
             {% endif %}
         {% else %}
             <td><button type="button" name="return_button" class="btn btn-secondary"><i class="icon-reply">&nbsp;</i>返回</button></td>
             {% if not inside %}
-                <td><button type="submit" name="save_button" class="btn btn-primary" data-toggle="tooltip" title="添加后查看新对象"><i class="icon-plus">&nbsp;</i>添加</button></td>
-                <td><button type="submit" name="add_another_button" class="btn btn-info" data-toggle="tooltip" title="添加后留在添加页面"><i class="icon-plus-sign">&nbsp;</i>连续添加</button></td>
+                <td><button type="submit" name="save_button" class="btn btn-primary" data-toggle="tooltip" title="添加后留在详情页"><i class="icon-ok">&nbsp;</i>应用</button></td>
+                <td><button type="submit" name="save_and_return_button" class="btn btn-success" data-toggle="tooltip" title="添加后回到列表"><i class="icon-upload-alt">&nbsp;</i>提交</button></td>
+                <td><button type="submit" name="add_another_button" class="btn btn-info" data-toggle="tooltip" title="添加后打开新的添加页"><i class="icon-plus-sign">&nbsp;</i>连续添加</button></td>
             {% else %}
-                <td><button type="submit" name="add_another_button" class="btn btn-success"><i class="icon-upload-alt">&nbsp;</i>提交</button></td>
+                <td><button type="submit" name="save_and_return_button" class="btn btn-success"><i class="icon-upload-alt">&nbsp;</i>提交</button></td>
             {% endif %}
         {% endif %}
     </div>

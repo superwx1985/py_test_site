@@ -144,7 +144,7 @@
                                     }
                                 } else if (type === 'end'){
                                     let data_ = JSON.parse(data.data)['data'];
-                                    let content_div = $('<div>').html(data_.suite_result_content);
+                                    let content_div = $('<div>').html(data_.ws_suite_result_content);
                                     execute_result_div.append(content_div);
                                     execute_button_div.empty();
                                     let detail_button = $('<button id="detail_button" class="btn btn-primary"><i class="icon-table"></i>&nbsp;结果详情</button>');

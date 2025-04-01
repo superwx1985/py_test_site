@@ -118,9 +118,9 @@ class SuiteConsumer(WebsocketConsumer):
     @staticmethod
     def get_result_data(suite_result):
         sub_objects = suite_result.caseresult_set.filter(step_result=None)
-        suite_result_content = render_to_string('main/include/suite_result_content.html', locals())
+        ws_suite_result_content = render_to_string('main/result/ws_suite_result_content.html', locals())
         data_dict = dict()
-        data_dict['suite_result_content'] = suite_result_content
+        data_dict['ws_suite_result_content'] = ws_suite_result_content
         data_dict['suite_result_state'] = suite_result.result_state
         data_dict['suite_result_url'] = reverse('result', args=[suite_result.pk])
         return data_dict
