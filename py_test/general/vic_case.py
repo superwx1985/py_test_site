@@ -10,7 +10,6 @@ from main.models import CaseResult, Step, error_handle_dict
 from django.forms.models import model_to_dict
 from .public_items import status_str_dict
 from .vic_step import VicStep
-from utils.other import check_recursive_call
 from django.conf import settings
 
 
@@ -236,12 +235,6 @@ class VicCase:
             try:
                 self.logger.info('【{}】\t初始化 => {}'.format(step_execute_str, self.name))
 
-                # 判断是否递归调用
-                recursive_id, case_list = check_recursive_call(self.case)
-                if recursive_id:
-                    raise RecursionError('用例[ID:{}]被用例[ID:{}]递归调用，执行中止。调用顺序列表：{}'.format(
-                            recursive_id, case_list[-1], case_list))
-
                 # 读取本地变量
                 if self.variables is None:
                     self.variables = vic_variables.Variables(self.logger)
@@ -263,26 +256,17 @@ class VicCase:
                 step_order = 0
                 for step in steps:
                     if step.action.code == "OTHER_CALL_SUB_CASE":
+
                         case = step.other_sub_case
                         if case.data_set and case.data_set.is_active:
-                            if case.data_set.data.get('gtm'):
-                                try:
-                                    case.data_set.data["data"] = get_gtm_data_(
-                                        case.data_set.data['gtm']['tcNumber'],
-                                        case.data_set.data['gtm']['version']
-                                    )["data"]
-                                    case.data_set.save()
-                                except Exception as e:
-                                    self.logger.warning(f"Cannot get latest test data from GTM! The error is [{e}]")
-                            data_set_list = case.data_set.data.get("data", [])
+                            data_set_cases = get_case_list(case, self.logger, step_execute_str)
                             i = 0
-                            for data_set_dict in data_set_list:
-                                i += 1
-                                data_set_dict['0_id'] = i
-                                data_set_dict['1_remark'] = data_set_dict.get('remark')
-                                data_set_dict['2_name'] = f"{case.name} ({data_set_dict['0_id']} - {data_set_dict['1_remark']})" if data_set_dict['1_remark'] else f"{case.name} ({data_set_dict['0_id']})"
+                            for data_set_case in data_set_cases:
                                 step_order += 1
-                                self.steps.append(VicStep(step=step, vic_case=self, step_order=step_order, data_set_dict=data_set_dict))
+                                i += 1
+                                self.logger.info(f'【{step_execute_str}】\t{i} | {data_set_case[1]['2_name']}')
+                                self.steps.append(VicStep(step=step, vic_case=self, step_order=step_order,
+                                                          data_set_dict=data_set_case[1]))
                         else:
                             step_order += 1
                             self.steps.append(VicStep(step=step, vic_case=self, step_order=step_order))
@@ -438,3 +422,27 @@ class VicCase:
         self.status = 4
 
         return self
+
+
+def get_case_list(case, logger, execute_str=""):
+    if case.data_set.data.get('gtm'):
+        try:
+            case.data_set.data["data"] = \
+            get_gtm_data_(case.data_set.data['gtm']['tcNumber'], case.data_set.data['gtm']['version'])["data"]
+            case.data_set.save()
+        except Exception as e:
+            logger.warning(f"Cannot get latest test data from GTM! The error is [{e}]")
+    data_set_list = case.data_set.data.get("data", [])
+    i = 0
+    if execute_str:
+        execute_str = f"【{execute_str}】\t"
+    logger.info(f"{execute_str}检测到数据组，用例【{case.name}】将被拆解为{len(data_set_list)}个迭代执行:")
+    data_set_cases = []
+    for data_set_dict in data_set_list:
+        i += 1
+        data_set_dict['0_id'] = i
+        data_set_dict['1_remark'] = data_set_dict.get('remark')
+        data_set_dict['2_name'] = f"{case.name} ({data_set_dict['0_id']} - {data_set_dict['1_remark']})" if \
+        data_set_dict['1_remark'] else f"{case.name} ({data_set_dict['0_id']})"
+        data_set_cases.append((case, data_set_dict))
+    return data_set_cases

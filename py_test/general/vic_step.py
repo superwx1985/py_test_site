@@ -1039,8 +1039,7 @@ class VicStep:
                             if self.other_sub_case is None:
                                 raise ValueError('子用例为空或不存在')
                             elif self.other_sub_case.pk in vc.parent_case_pk_list:
-                                raise RecursionError('子用例[ID:{}]【{}】被递归调用'.format(
-                                    self.other_sub_case.pk, self.other_sub_case.name))
+                                raise RecursionError(f"用例[ID:{self.other_sub_case.pk}]被用例[ID:{vc.parent_case_pk_list[-1]}]递归调用，执行中止。调用顺序列表：{vc.parent_case_pk_list}")
                             else:
                                 if self.data_set_dict:
                                     self.step_result.name = f"{self.step_result.name} -> {self.data_set_dict['2_name']}"

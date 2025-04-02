@@ -6,9 +6,8 @@ import uuid
 import threading
 
 from main.views.gtm import get_gtm_data_
-from py_test.general import vic_variables, vic_public_elements, vic_log, vic_method
+from py_test.general import vic_variables, vic_public_elements, vic_log, vic_method, vic_case as vc
 from .public_items import status_str_dict
-from .vic_case import VicCase
 from concurrent.futures import wait, CancelledError, TimeoutError as f_TimeoutError
 from main.models import Case, SuiteResult, Step, error_handle_dict
 from django.forms.models import model_to_dict
@@ -38,7 +37,7 @@ class VicSuite:
         self.execute_uuid = execute_uuid
         self.force_stop_signal = False  # 强制停止信号
         self.pause_lock = threading.Lock()
-        self.vic_cases = list()
+        self.vic_cases = []
         self.status = 0
         self.init_date = datetime.datetime.now()
         self.start_date = None
@@ -155,32 +154,20 @@ class VicSuite:
                 raise ValueError('配置读取出错，请检查配置是否已被删除')
 
             if cases:
-                self.logger.info('准备运行下列{}个用例:'.format(len(cases)))
+                self.logger.info("初始化用例列表...")
                 case_order = 0
-                case_order_list = list()
                 for case in cases:
-                    if case.data_set and case.data_set.is_active:
-                        if case.data_set.data.get('gtm'):
-                            try:
-                                case.data_set.data["data"] = get_gtm_data_(case.data_set.data['gtm']['tcNumber'], case.data_set.data['gtm']['version'])["data"]
-                                case.data_set.save()
-                            except Exception as e:
-                                self.logger.warning(f"Cannot get latest test data from GTM! The error is [{e}]")
-                        data_set_list = case.data_set.data.get("data", [])
-                        i = 0
-                        self.logger.info(f"检测到数据组，用例【{case.name}】将被拆解为{len(data_set_list)}个迭代执行:")
-                        for data_set_dict in data_set_list:
-                            i += 1
-                            data_set_dict['0_id'] = i
-                            data_set_dict['1_remark'] = data_set_dict.get('remark')
-                            data_set_dict['2_name'] = f"{case.name} ({data_set_dict['0_id']} - {data_set_dict['1_remark']})" if data_set_dict['1_remark'] else f"{case.name} ({data_set_dict['0_id']})"
-                            case_order, case_order_list = self.add_case(case_order, case_order_list, case, data_set_dict)
+                    if case.data_set and case.data_set.is_active:  # 拆分数据组
+                        data_set_cases = vc.get_case_list(case, self.logger)
+                        for data_set_case in data_set_cases:
+                            case_order = self.add_case(case_order, data_set_case[0], data_set_case[1])
                     else:
-                        case_order, case_order_list = self.add_case(case_order, case_order_list, case, None)
+                        case_order = self.add_case(case_order, case)
 
+                self.logger.info(f"共{len(self.vic_cases)}个用例")
                 self.logger.info('========================================')
 
-                futures = list()
+                futures = []
 
                 with VicThreadPoolExecutor(max_workers=self.thread_count) as pool:  # 保证线程池被关闭
 
@@ -304,16 +291,15 @@ class VicSuite:
 
         return vic_case
 
-    def add_case(self, case_order, case_order_list, case, data_set_dict):
+    def add_case(self, case_order, case, data_set_dict=None):
         case_order += 1
-        case_order_list.append(str(case_order))
         self.vic_cases.append(
-            VicCase(case=case, case_order=case_order, vic_suite=self, execute_str=str(case_order),
+            vc.VicCase(case=case, case_order=case_order, vic_suite=self, execute_str=str(case_order),
                     data_set_dict=data_set_dict)
         )
         name = data_set_dict['2_name'] if data_set_dict else case.name
-        self.logger.info('【{}】\tID:{} | {}'.format(case_order, case.pk, name))
-        return case_order, case_order_list
+        self.logger.info(f'【{case_order}】\tID:{case.pk} | {name}')
+        return case_order
 
 
 if __name__ == '__main__':
