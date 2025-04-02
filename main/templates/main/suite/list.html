@@ -198,7 +198,7 @@
         <table class="table table-bordered table-hover result-table" id='result_table'>
             <colgroup>
                 <col style='width: 60px;'>
-                <col style='width: 60px;'>
+                <col style='width: 70px;'>
                 <col>
                 <col>
                 <col style='width: 150px;'>
@@ -206,7 +206,7 @@
                 <col style='width: 100px;'>
                 <col style='width: 100px;'>
                 <col style='width: 105px;'>
-                <col style='width: 180px;'>
+                <col style='width: 120px;'>
                 <col style='width: 170px;'>
             </colgroup>
             <thead class="thead-light middle">
@@ -236,7 +236,7 @@
                         <td col_name='m2m_count' class="middle">{{ obj.m2m_count }}</td>
                         <td col_name='result_count' class="middle"><a href="javascript:window.open('{% url "results" %}'+'?all_=True&suite_id={{ obj.pk }}');"><span class="font-weight-bold">{{ obj.result_count }}</span></a></td>
                         <td col_name='real_name' class="middle">{{ obj.real_name|default:obj.creator__username }}</td>
-                        <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
+                        <td col_name='modified_date' class="middle" data-toggle="tooltip" data-original-title="{{ obj.modified_date|date:"Y-m-d H:i:s"|default:'N/A' }}">{{ obj.modified_date|date:"Y-m-d"|default:'N/A' }}</td>
                         <td class="middle">
                             <div>
                                 <button type="button" name="execute_button" class="btn btn-outline-success list_button" data-toggle="tooltip" title="执行"><i class="icon-play"></i></button>

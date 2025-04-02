@@ -5,8 +5,8 @@
         <span class="font-weight-bold">作者：</span>{{ obj.creator.last_name }}{{ obj.creator.first_name }}[{{ obj.creator.username }}]&nbsp;&nbsp;&nbsp;&nbsp;
         <span class="font-weight-bold">创建时间：</span>{{ obj.created_date }}&nbsp;&nbsp;&nbsp;&nbsp;
         <span class="font-weight-bold">修改者：</span>{{ obj.modifier.last_name }}{{ obj.modifier.first_name }}[{{ obj.modifier.username }}]&nbsp;&nbsp;&nbsp;&nbsp;
-        <span class="font-weight-bold">修改时间：</span>{{ obj.modified_date }}{% if reference_url %}&nbsp;&nbsp;&nbsp;&nbsp;
-        <a href="javascript:show_reference('{{ reference_url }}')">被调用情况</a>{% endif %}
+        <span class="font-weight-bold">修改时间：</span>{{ obj.modified_date|date:"Y-m-d H:i:s"|default:'N/A' }}
+        {% if reference_url %}&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:show_reference('{{ reference_url }}')">被调用情况</a>{% endif %}
     {% else %}
         添加{{ object_name }}
     {% endif %}

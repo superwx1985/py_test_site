@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Suite, Case, SuiteVsCase
 from main.forms import OrderByForm, PaginatorForm, SuiteForm
+from main.views.general import sort_list
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
 from urllib.parse import quote
 from main.views import case, config, variable_group, element_group
@@ -74,11 +75,10 @@ def list_(request):
     for o in objects:
         o['m2m_count'] = m2m_count.get(o['pk'], 0)
         o['result_count'] = result_count.get(o['pk'], 0)
-    # 排序
+
     if objects:
-        if order_by not in objects[0]:
-            order_by = 'pk'
-        objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
+        objects = sort_list(objects, order_by, order_by_reverse)
+
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)

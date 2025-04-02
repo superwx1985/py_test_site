@@ -58,4 +58,13 @@ def debug3(_):
     return HttpResponse(json.dumps({'state': 1, 'message': 'OK', 'data': data_dict, '测试': '测试VVV'}))
 
 
-
+# 列表元素排序
+def sort_list(objects, order_by, order_by_reverse):
+    if order_by not in objects[0]:
+        order_by = 'pk'
+    # 处理 None 值，确保安全排序
+    return sorted(
+        objects,
+        key=lambda x: (x[order_by] is not None, x[order_by]),  # None 作为最小值
+        reverse=order_by_reverse
+    )

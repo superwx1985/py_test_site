@@ -9,6 +9,7 @@ from django.db.models import Q, CharField, Count
 from django.db.models.functions import Concat
 from django.contrib.auth.decorators import login_required
 from main.forms import *
+from main.views.general import sort_list
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
 from py_test.vic_tools.vic_date_handle import get_timedelta_str
 
@@ -86,11 +87,10 @@ def list_(request):
             o['elapsed_time_str'] = get_timedelta_str(o['elapsed_time'], 1)
         # 获取子对象数量
         o['m2m_count'] = m2m_count.get(o['pk'], 0)
-    # 排序
+
     if objects:
-        if order_by not in objects[0]:
-            order_by = 'pk'
-        objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
+        objects = sort_list(objects, order_by, order_by_reverse)
+
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)

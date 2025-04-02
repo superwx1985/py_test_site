@@ -12,6 +12,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Case, Step, CaseVsStep, Action
 from main.forms import OrderByForm, PaginatorForm, CaseForm
+from main.views.general import sort_list
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin,\
     check_recursive_call
 from urllib.parse import quote
@@ -397,11 +398,10 @@ def list_json(request):
     objects = Case.objects.filter(q).values(
         'pk', 'uuid', 'name', 'keyword', 'project__name', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
-    # 排序
+
     if objects:
-        if order_by not in objects[0]:
-            order_by = 'pk'
-        objects = sorted(objects, key=lambda x: x[order_by], reverse=order_by_reverse)
+        objects = sort_list(objects, order_by, order_by_reverse)
+
     paginator = Paginator(objects, size)
     try:
         objects = paginator.page(page)

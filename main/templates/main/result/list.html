@@ -40,16 +40,16 @@
         <table class="table table-bordered table-hover result-table" id='result_table'>
             <colgroup>
                 <col style='width: 60px;'>
-                <col style='width: 60px;'>
+                <col style='width: 70px;'>
                 <col>
                 <col style='width: 200px;'>
                 <col style='width: 150px;'>
                 <col style='width: 100px;'>
-                <col style='width: 180px;'>
+                <col style='width: 120px;'>
                 <col style='width: 150px;'>
                 <col style='width: 80px;'>
                 <col style='width: 105px;'>
-                <col style='width: 180px;'>
+                <col style='width: 120px;'>
                 <col style='width: 120px;'>
             </colgroup>
             <thead class="thead-light middle">
@@ -77,7 +77,7 @@
                         <td col_name='keyword' class="middle">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='m2m_count' class="middle">{{ obj.m2m_count }}</td>
-                        <td col_name='start_date' class="middle">{{ obj.start_date|default_if_none:'N/A' }}</td>
+                        <td col_name='start_date' class="middle" data-toggle="tooltip" data-original-title="{{ obj.start_date|date:"Y-m-d H:i:s"|default:'N/A' }}">{{ obj.start_date|date:"Y-m-d"|default:'N/A' }}</td>
                         <td col_name='elapsed_time_str' class="middle">{{ obj.elapsed_time_str }}</td>
                         {% if obj.result_state == 0 %}
                             <td class="middle"><span class="badge badge-pill badge-secondary">{{ obj.result_state_str }}</span></td>
@@ -91,7 +91,7 @@
                             <td class="middle"><span class="badge badge-pill badge-danger">{{ obj.result_state_str }}</span></td>
                         {% endif %}
                         <td col_name='real_name' class="middle">{{ obj.real_name|default:obj.creator__username }}</td>
-                        <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
+                        <td col_name='modified_date' class="middle" data-toggle="tooltip" data-original-title="{{ obj.modified_date|date:"Y-m-d H:i:s"|default:'N/A' }}">{{ obj.modified_date|date:"Y-m-d"|default:'N/A' }}</td>
                         <td class="middle">
                             <div>
                                 <button type="button" name="parent_button" class="btn btn-primary list_button" data-toggle="tooltip" title="查看套件"><i class="icon-link"></i></button>

@@ -19,14 +19,14 @@
         <table class="table table-bordered table-hover result-table" id='result_table'>
             <colgroup>
                 <col style='width: 60px;'>
-                <col style='width: 60px;'>
+                <col style='width: 70px;'>
                 <col>
                 <col style='width: 150px;'>
                 <col style='width: 150px;'>
                 <col style='width: 250px;'>
                 <col style='width: 130px;'>
                 <col style='width: 105px;'>
-                <col style='width: 180px;'>
+                <col style='width: 120px;'>
                 <col style='width: 120px;'>
             </colgroup>
             <thead class="thead-light middle">
@@ -54,7 +54,7 @@
                         <td col_name='action' class="middle">{{ obj.action }}</td>
                         <td col_name='reference_count' class="middle"><a href="javascript:show_reference('{% url "step_reference" obj.pk %}', '<span class=\'mark small\'>{{ obj.name }}</span>被调用情况')"><span class="font-weight-bold">{{ obj.reference_count }}</span></a></td>
                         <td col_name='real_name' class="middle">{{ obj.real_name|default:obj.creator__username }}</td>
-                        <td col_name='modified_date' class="middle">{{ obj.modified_date }}</td>
+                        <td col_name='modified_date' class="middle" data-toggle="tooltip" data-original-title="{{ obj.modified_date|date:"Y-m-d H:i:s"|default:'N/A' }}">{{ obj.modified_date|date:"Y-m-d"|default:'N/A' }}</td>
                         <td class="middle">
                             <div>
                                 <button copy_url="{% url 'step_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
