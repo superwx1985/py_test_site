@@ -48,8 +48,8 @@
                     <tr pk="{{ obj.pk }}" uuid="{{ obj.uuid }}" edit_url="{% url 'step' obj.pk %}" quick_update_url="{% url 'step_quick_update' obj.pk %}" del_url="{% url 'step_delete' obj.pk %}">
                         <td col_name='index' class="middle small"></td>
                         <td col_name='pk' class="middle small">{{ obj.pk }}</td>
-                        <td col_name='name' class="align-middle" quick_update title="双击可快速修改">{{ obj.name }}</td>
-                        <td col_name='keyword' class="middle" quick_update title="双击可快速修改">{{ obj.keyword }}</td>
+                        <td col_name='name' class="align-middle" {% if request.user.pk == obj.creator or is_admin %}quick_update title="双击可快速修改"{% endif %}>{{ obj.name }}</td>
+                        <td col_name='keyword' class="middle" {% if request.user.pk == obj.creator or is_admin %}quick_update title="双击可快速修改"{% endif %}>{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='action' class="middle">{{ obj.action }}</td>
                         <td col_name='reference_count' class="middle"><a href="javascript:show_reference('{% url "step_reference" obj.pk %}', '<span class=\'mark small\'>{{ obj.name }}</span>被调用情况')"><span class="font-weight-bold">{{ obj.reference_count }}</span></a></td>

@@ -73,8 +73,8 @@
                     <tr pk="{{ obj.pk }}" uuid="{{ obj.uuid }}" edit_url="{% url 'result' obj.pk %}" quick_update_url="{% url 'result_quick_update' obj.pk %}" del_url="{% url 'result_delete' obj.pk %}" parent_url="{% url 'suite' obj.suite__pk %}">
                         <td col_name='index' class="middle small"></td>
                         <td col_name='pk' class="middle small">{{ obj.pk }}</td>
-                        <td col_name='name' class="align-middle">{{ obj.name }}</td>
-                        <td col_name='keyword' class="middle">{{ obj.keyword }}</td>
+                        <td col_name='name' class="align-middle" {% if request.user.pk == obj.creator or is_admin %}quick_update title="双击可快速修改"{% endif %}>{{ obj.name }}</td>
+                        <td col_name='keyword' class="middle" {% if request.user.pk == obj.creator or is_admin %}quick_update title="双击可快速修改"{% endif %}>{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='m2m_count' class="middle">{{ obj.m2m_count }}</td>
                         <td col_name='start_date' class="middle" data-toggle="tooltip" data-original-title="{{ obj.start_date|date:"Y-m-d H:i:s"|default:'N/A' }}">{{ obj.start_date|date:"Y-m-d"|default:'N/A' }}</td>

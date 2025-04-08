@@ -193,5 +193,5 @@ td[quick_update] {
   transition: background-color 0.5s;
 }
 td[quick_update]:hover {
-  background-color: lightyellow;
+  background-color: lightcyan;
 }

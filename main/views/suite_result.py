@@ -216,11 +216,14 @@ def quick_update(request, pk):
             new_value = request.POST['new_value']
             obj = SuiteResult.objects.get(pk=pk)
             if col_name in ('name', 'keyword'):
-                setattr(obj, col_name, new_value)
-                obj.clean_fields()
-                obj.modifier = request.user
-                obj.modified_date = timezone.now()
-                obj.save()
+                is_admin = check_admin(request.user)
+                if is_admin or obj.creator == request.user:
+                    setattr(obj, col_name, new_value)
+                    obj.clean_fields()
+                    obj.modifier = request.user
+                    obj.save()
+                else:
+                    raise PermissionError('无权限')
             else:
                 raise ValueError('非法的字段名称')
         except Exception as e:

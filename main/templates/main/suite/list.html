@@ -229,8 +229,8 @@
                     <tr pk="{{ obj.pk }}" uuid="{{ obj.uuid }}" edit_url="{% url 'suite' obj.pk %}" quick_update_url="{% url 'suite_quick_update' obj.pk %}" del_url="{% url 'suite_delete' obj.pk %}" exe_url="{% url 'suite_execute' obj.pk %}">
                         <td col_name='index' class="middle small"></td>
                         <td col_name='pk' class="middle small">{{ obj.pk }}</td>
-                        <td col_name='name' class="align-middle" quick_update title="双击可快速修改">{{ obj.name }}</td>
-                        <td col_name='keyword' class="middle" quick_update title="双击可快速修改">{{ obj.keyword }}</td>
+                        <td col_name='name' class="align-middle" {% if request.user.pk == obj.creator or is_admin %}quick_update title="双击可快速修改"{% endif %}>{{ obj.name }}</td>
+                        <td col_name='keyword' class="middle" {% if request.user.pk == obj.creator or is_admin %}quick_update title="双击可快速修改"{% endif %}>{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='config__name' class="middle">{{ obj.config__name|default_if_none:'N/A' }}</td>
                         <td col_name='m2m_count' class="middle">{{ obj.m2m_count }}</td>
