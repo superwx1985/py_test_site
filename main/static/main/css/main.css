@@ -187,3 +187,11 @@ div.div_center>div>div{
 	cursor: pointer;
 	opacity: 0.75;
 }
+
+/* 快速编辑的td特效 */
+td[quick_update] {
+  transition: background-color 0.5s;
+}
+td[quick_update]:hover {
+  background-color: lightyellow;
+}

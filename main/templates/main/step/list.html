@@ -48,8 +48,8 @@
                     <tr pk="{{ obj.pk }}" uuid="{{ obj.uuid }}" edit_url="{% url 'step' obj.pk %}" quick_update_url="{% url 'step_quick_update' obj.pk %}" del_url="{% url 'step_delete' obj.pk %}">
                         <td col_name='index' class="middle small"></td>
                         <td col_name='pk' class="middle small">{{ obj.pk }}</td>
-                        <td col_name='name' class="align-middle">{{ obj.name }}</td>
-                        <td col_name='keyword' class="middle">{{ obj.keyword }}</td>
+                        <td col_name='name' class="align-middle" quick_update title="双击可快速修改">{{ obj.name }}</td>
+                        <td col_name='keyword' class="middle" quick_update title="双击可快速修改">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='action' class="middle">{{ obj.action }}</td>
                         <td col_name='reference_count' class="middle"><a href="javascript:show_reference('{% url "step_reference" obj.pk %}', '<span class=\'mark small\'>{{ obj.name }}</span>被调用情况')"><span class="font-weight-bold">{{ obj.reference_count }}</span></a></td>
@@ -57,7 +57,7 @@
                         <td col_name='modified_date' class="middle" data-toggle="tooltip" data-original-title="{{ obj.modified_date|date:"Y-m-d H:i:s"|default:'N/A' }}">{{ obj.modified_date|date:"Y-m-d"|default:'N/A' }}</td>
                         <td class="middle">
                             <div>
-                                <button copy_url="{% url 'step_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
+                                <button copy_url="{% url 'step_copy' obj.pk %}" obj_name="{{ obj.name }}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
                                 <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除" {% if request.user.pk != obj.creator and not is_admin %}disabled="disabled"{% endif %}><i class="icon-trash"></i></button>
                             </div>
                         </td>

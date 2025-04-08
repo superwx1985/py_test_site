@@ -252,9 +252,9 @@
             </div>
         </div>
 
-        <input type="text" name="step" id="id_step" hidden>
+        <input name="step" id="id_step" hidden>
         {% include 'main/include/detail_redirect.html' %}
-        {% include 'main/include/submit_button_group.html' with copy_url='case_copy' %}
+        {% include 'main/include/submit_button_group.html' with copy_url='case_copy' obj_name=form.name.value %}
     </form>
 {% endblock %}
 

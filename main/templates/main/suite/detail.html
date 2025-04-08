@@ -265,10 +265,9 @@
             </div>
         </div>
 
-        <input name="case" hidden>
+        <input name="case" id="id_case" hidden>
         {% include 'main/include/detail_redirect.html' %}
-
-        {% include 'main/include/submit_button_group.html' with copy_url='suite_copy' %}
+        {% include 'main/include/submit_button_group.html' with copy_url='suite_copy' obj_name=form.name.value %}
     </form>
 {% endblock %}
 

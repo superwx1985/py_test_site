@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Step, Action, Project
 from main.forms import OrderByForm, PaginatorForm, StepForm
-from main.views.general import sort_list
+from main.views.general import sort_list, generate_new_name
 from py_test.vic_tools.vic_str_handle import convert_string_to_float
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
 from urllib.parse import quote
@@ -343,7 +343,7 @@ def list_json(request):
 def list_temp(request):
     pk_list = json.loads(request.POST.get('condition', ''))
     order = 0
-    data_list = list()
+    data_list = []
     for pk in pk_list:
         if pk.strip() == '':
             continue
@@ -371,19 +371,16 @@ def list_temp(request):
 
 
 # 复制操作
-def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=None):
+def copy_action(pk, user, new_name=None, name_prefix=None, copy_sub_item=None, copied_items=None):
     if not copied_items:
-        copied_items = [dict()]
+        copied_items = [{}]
     obj = Step.objects.select_related('action').get(pk=pk)
     original_obj_uuid = obj.uuid
     if original_obj_uuid in copied_items[0]:  # 判断是否已被复制
         return copied_items[0][original_obj_uuid]
 
     obj.pk = None
-    if name_prefix:
-        obj.name = name_prefix + obj.name
-        if len(obj.name) > 100:
-            obj.name = obj.name[0:97] + '...'
+    obj.name = generate_new_name(obj.name, new_name, name_prefix)
 
     if copy_sub_item and obj.action.code == 'OTHER_CALL_SUB_CASE' and obj.other_sub_case:
         # 判断是否已被复制
@@ -393,8 +390,7 @@ def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=Non
         #     new_sub_obj = case.copy_action(
         #         obj.other_sub_case.pk, user, name_prefix, copy_sub_item, copied_items)
         #     copied_items[0][obj.other_sub_case] = obj.other_sub_case = new_sub_obj
-        new_sub_obj = case.copy_action(obj.other_sub_case.pk, user, name_prefix, copy_sub_item, copied_items)
-        obj.other_sub_case = new_sub_obj
+        obj.other_sub_case = case.copy_action(obj.other_sub_case.pk, user, None, name_prefix, copy_sub_item, copied_items)
 
     obj.creator = obj.modifier = user
     obj.uuid = uuid.uuid1()
@@ -408,12 +404,13 @@ def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=Non
 # 复制
 @login_required
 def copy_(request, pk):
-    name_prefix = request.POST.get('name_prefix', '')
+    new_name = request.POST.get('new_name')
+    name_prefix = request.POST.get('name_prefix')
     order = request.POST.get('order')
     order = change_to_positive_integer(order, 0)
     copy_sub_item = request.POST.get('copy_sub_item')
     try:
-        obj = copy_action(pk, request.user, name_prefix, copy_sub_item)
+        obj = copy_action(pk, request.user, new_name, name_prefix, copy_sub_item)
         return JsonResponse({
             'state': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
@@ -429,11 +426,10 @@ def multiple_copy(request):
         try:
             pk_list = json.loads(request.POST['pk_list'])
             name_prefix = request.POST.get('name_prefix', '')
-            copy_sub_item = request.POST.get('copy_sub_item')
-            copied_items = [dict()]
-            new_pk_list = list()
+            copied_items = [{}]
+            new_pk_list = []
             for pk in pk_list:
-                new_obj = copy_action(pk, request.user, name_prefix, copy_sub_item, copied_items)
+                new_obj = copy_action(pk, request.user, None, name_prefix, None, copied_items)
                 new_pk_list.append(new_obj.pk)
         except Exception as e:
             return JsonResponse({'state': 2, 'message': str(e), 'data': None})

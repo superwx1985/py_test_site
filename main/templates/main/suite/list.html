@@ -229,8 +229,8 @@
                     <tr pk="{{ obj.pk }}" uuid="{{ obj.uuid }}" edit_url="{% url 'suite' obj.pk %}" quick_update_url="{% url 'suite_quick_update' obj.pk %}" del_url="{% url 'suite_delete' obj.pk %}" exe_url="{% url 'suite_execute' obj.pk %}">
                         <td col_name='index' class="middle small"></td>
                         <td col_name='pk' class="middle small">{{ obj.pk }}</td>
-                        <td col_name='name' class="align-middle">{{ obj.name }}</td>
-                        <td col_name='keyword' class="middle">{{ obj.keyword }}</td>
+                        <td col_name='name' class="align-middle" quick_update title="双击可快速修改">{{ obj.name }}</td>
+                        <td col_name='keyword' class="middle" quick_update title="双击可快速修改">{{ obj.keyword }}</td>
                         <td col_name='project__name' class="middle">{{ obj.project__name }}</td>
                         <td col_name='config__name' class="middle">{{ obj.config__name|default_if_none:'N/A' }}</td>
                         <td col_name='m2m_count' class="middle">{{ obj.m2m_count }}</td>
@@ -240,7 +240,7 @@
                         <td class="middle">
                             <div>
                                 <button type="button" name="execute_button" class="btn btn-outline-success list_button" data-toggle="tooltip" title="执行"><i class="icon-play"></i></button>
-                                <button copy_url="{% url 'suite_copy' obj.pk %}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
+                                <button copy_url="{% url 'suite_copy' obj.pk %}" obj_name="{{ obj.name }}" type="button" name="copy_button" class="btn btn-warning list_button" data-toggle="tooltip" title="复制"><i class="icon-copy"></i></button>
                                 <button type="button" name="delete_button" class="btn btn-danger list_button" data-toggle="tooltip" title="删除" {% if request.user.pk != obj.creator and not is_admin %}disabled="disabled"{% endif %}><i class="icon-trash"></i></button>
                             </div>
                         </td>

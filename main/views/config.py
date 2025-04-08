@@ -10,12 +10,12 @@ from django.db.models import Q, CharField, Count
 from django.db.models.functions import Concat
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
-from main.models import Config, Suite
+from main.models import *
 from main.forms import OrderByForm, PaginatorForm, ConfigForm
-from main.views.general import sort_list
+from main.views.general import sort_list, generate_new_name
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, check_admin
 from urllib.parse import quote
-from main.views import suite
+from main.views import suite, case
 
 logger = logging.getLogger('django.request')
 
@@ -56,11 +56,14 @@ def list_(request):
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
 
     # 获取被调用次数
-    reference_objects = Config.objects.filter(is_active=True, suite__is_active=True).values('pk').annotate(
+    reference_objects1 = Config.objects.filter(is_active=True, case__is_active=True).values('pk').annotate(
         reference_count=Count('*'))
-    reference_count = {o['pk']: o['reference_count'] for o in reference_objects}
+    reference_count1 = {o['pk']: o['reference_count'] for o in reference_objects1}
+    reference_objects2 = Config.objects.filter(is_active=True, suite__is_active=True).values('pk').annotate(
+        reference_count=Count('*'))
+    reference_count2 = {o['pk']: o['reference_count'] for o in reference_objects2}
     for o in objects:
-        o['reference_count'] = reference_count.get(o['pk'], 0)
+        o['reference_count'] = reference_count1.get(o['pk'], 0) + reference_count2.get(o['pk'], 0)
 
     if objects:
         objects = sort_list(objects, order_by, order_by_reverse)
@@ -267,7 +270,7 @@ def select_json(request):
 
 
 # 复制操作
-def copy_action(pk, user, name_prefix=None, copied_items=None):
+def copy_action(pk, user, new_name=None, name_prefix=None, copied_items=None):
     if not copied_items:
         copied_items = [dict()]
     obj = Config.objects.get(pk=pk)
@@ -276,10 +279,7 @@ def copy_action(pk, user, name_prefix=None, copied_items=None):
         return copied_items[0][original_obj_uuid]
 
     obj.pk = None
-    if name_prefix:
-        obj.name = name_prefix + obj.name
-        if len(obj.name) > 100:
-            obj.name = obj.name[0:97] + '...'
+    obj.name = generate_new_name(obj.name, new_name, name_prefix)
     obj.creator = obj.modifier = user
     obj.uuid = uuid.uuid1()
     obj.clean_fields()
@@ -292,11 +292,12 @@ def copy_action(pk, user, name_prefix=None, copied_items=None):
 # 复制
 @login_required
 def copy_(request, pk):
-    name_prefix = request.POST.get('name_prefix', '')
+    new_name = request.POST.get('new_name')
+    name_prefix = request.POST.get('name_prefix')
     order = request.POST.get('order')
     order = change_to_positive_integer(order, 0)
     try:
-        obj = copy_action(pk, request.user, name_prefix)
+        obj = copy_action(pk, request.user, new_name, name_prefix)
         return JsonResponse({
             'state': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
@@ -312,10 +313,10 @@ def multiple_copy(request):
         try:
             pk_list = json.loads(request.POST['pk_list'])
             name_prefix = request.POST.get('name_prefix', '')
-            copied_items = [dict()]
-            new_pk_list = list()
+            copied_items = [{}]
+            new_pk_list = []
             for pk in pk_list:
-                new_obj = copy_action(pk, request.user, name_prefix, copied_items)
+                new_obj = copy_action(pk, request.user, None, name_prefix, copied_items)
                 new_pk_list.append(new_obj.pk)
         except Exception as e:
             return JsonResponse({'state': 2, 'message': str(e), 'data': None})
@@ -330,11 +331,20 @@ def reference(request, pk):
         obj = Config.objects.get(pk=pk)
     except Config.DoesNotExist:
         raise Http404('Config does not exist')
-    objects = Suite.objects.filter(is_active=True, config=obj).order_by('-modified_date').values(
+
+    objects = Case.objects.filter(is_active=True, config=obj).order_by('-modified_date').values(
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
-        # obj_['url'] = '{}?next={}'.format(reverse(suite.detail, args=[obj_['pk']]), reverse(suite.list_))
+        obj_['url'] = reverse(case.detail, args=[obj_['pk']])
+        obj_['type'] = '用例'
+    objects2 = Suite.objects.filter(is_active=True, config=obj).order_by('-modified_date').values(
+        'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
+        real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
+    for obj_ in objects2:
         obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
         obj_['type'] = '套件'
+    objects = list(objects)
+    objects.extend(list(objects2))
+
     return render(request, 'main/include/detail_reference.html', locals())

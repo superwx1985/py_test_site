@@ -12,11 +12,11 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import Case, Step, CaseVsStep, Action
 from main.forms import OrderByForm, PaginatorForm, CaseForm
-from main.views.general import sort_list
+from main.views.general import sort_list, generate_new_name
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin,\
     check_recursive_call
 from urllib.parse import quote
-from main.views import step, suite, variable_group, config
+from main.views import step, suite, variable_group, config, data_set
 from utils import system
 
 logger = logging.getLogger('django.request')
@@ -453,7 +453,7 @@ def list_temp(request):
 
 
 # 复制操作
-def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=None):
+def copy_action(pk, user, new_name=None, name_prefix=None, copy_sub_item=None, copied_items=None):
     if not copied_items:
         copied_items = [dict()]
     obj = Case.objects.get(pk=pk)
@@ -469,10 +469,7 @@ def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=Non
     m2m_objects = obj.step.filter(is_active=True).order_by('casevsstep__order') or []
 
     obj.pk = None
-    if name_prefix:
-        obj.name = name_prefix + obj.name
-        if len(obj.name) > 100:
-            obj.name = obj.name[0:97] + '...'
+    obj.name = generate_new_name(obj.name, new_name, name_prefix)
 
     if copy_sub_item:
         if obj.config:
@@ -481,16 +478,16 @@ def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=Non
             # else:
             #     new_sub_obj = config.copy_action(obj.config.pk, user, name_prefix)
             #     copied_items[0][obj.config] = obj.config = new_sub_obj
-            new_sub_obj = config.copy_action(obj.config.pk, user, name_prefix, copied_items)
-            obj.config = new_sub_obj
+            obj.config = config.copy_action(obj.config.pk, user, None, name_prefix, copied_items)
         if obj.variable_group:
             # if obj.variable_group in copied_items[0]:  # 判断是否已被复制
             #     obj.variable_group = copied_items[0][obj.variable_group]
             # else:
             #     new_sub_obj = variable_group.copy_action(obj.variable_group.pk, user, name_prefix)
             #     copied_items[0][obj.variable_group] = obj.variable_group = new_sub_obj
-            new_sub_obj = variable_group.copy_action(obj.variable_group.pk, user, name_prefix, copied_items)
-            obj.variable_group = new_sub_obj
+            obj.variable_group = variable_group.copy_action(obj.variable_group.pk, user, None, name_prefix, copied_items)
+        if obj.data_set:
+            obj.data_set = data_set.copy_action(obj.data_set.pk, user, None, name_prefix, copied_items)
 
     obj.creator = obj.modifier = user
     obj.uuid = uuid.uuid1()
@@ -507,12 +504,11 @@ def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=Non
             # else:
             #     m2m_obj_ = step.copy_action(m2m_obj.pk, user, name_prefix, copy_sub_item, copied_items)
             #     copied_items[0][m2m_obj] = m2m_obj_
-            m2m_obj_ = step.copy_action(m2m_obj.pk, user, name_prefix, copy_sub_item, copied_items)
+            m2m_obj_ = step.copy_action(m2m_obj.pk, user, None, name_prefix, copy_sub_item, copied_items)
         else:
             m2m_obj_ = m2m_obj
         m2m_order += 1
-        CaseVsStep.objects.create(
-            case=obj, step=m2m_obj_, order=m2m_order, creator=user, modifier=user)
+        CaseVsStep.objects.create(case=obj, step=m2m_obj_, order=m2m_order, creator=user, modifier=user)
 
     copied_items[0][original_obj_uuid] = obj
     return obj
@@ -521,12 +517,13 @@ def copy_action(pk, user, name_prefix=None, copy_sub_item=None, copied_items=Non
 # 复制
 @login_required
 def copy_(request, pk):
-    name_prefix = request.POST.get('name_prefix', '')
+    new_name = request.POST.get('new_name')
+    name_prefix = request.POST.get('name_prefix')
     order = request.POST.get('order')
     order = change_to_positive_integer(order, 0)
     copy_sub_item = request.POST.get('copy_sub_item')
     try:
-        obj = copy_action(pk, request.user, name_prefix, copy_sub_item)
+        obj = copy_action(pk, request.user, new_name, name_prefix, copy_sub_item)
         return JsonResponse({
             'state': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk]), 'order': order}
@@ -542,11 +539,10 @@ def multiple_copy(request):
         try:
             pk_list = json.loads(request.POST['pk_list'])
             name_prefix = request.POST.get('name_prefix', '')
-            copy_sub_item = request.POST.get('copy_sub_item')
-            copied_items = [dict()]
-            new_pk_list = list()
+            copied_items = [{}]
+            new_pk_list = []
             for pk in pk_list:
-                new_obj = copy_action(pk, request.user, name_prefix, copy_sub_item, copied_items)
+                new_obj = copy_action(pk, request.user, None, name_prefix, None, copied_items)
                 new_pk_list.append(new_obj.pk)
         except Exception as e:
             return JsonResponse({'state': 2, 'message': str(e), 'data': None})
@@ -562,15 +558,15 @@ def select_json(request):
     try:
         condition = json.loads(condition)
     except json.decoder.JSONDecodeError:
-        condition = dict()
+        condition = {}
     selected_pk = condition.get('selected_pk')
     url_format = condition.get('url_format')
     url_replacer = condition.get('url_replacer')
     objects = Case.objects.filter(is_active=True).values('pk', 'uuid', 'name', 'keyword', 'project__name')
 
-    data = list()
+    data = []
     for obj in objects:
-        d = dict()
+        d = {}
         d['id'] = str(obj['pk'])
         d['name'] = '{} | {}'.format(obj['name'], obj['project__name'])
         d['search_info'] = '{} {} {}'.format(obj['name'], obj['project__name'], obj['keyword'])

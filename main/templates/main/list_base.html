@@ -129,7 +129,7 @@
                     // 注册删除按钮
                     bind_delete_button();
                     // 注册复制按钮
-                    $('[name=copy_button]').off('click').on('click', function() { copy_obj($(this).attr('copy_url')) });
+                    $('[name=copy_button]').off('click').on('click', function() { copy_obj($(this).attr('copy_url'), $(this).attr('obj_name')) });
                     // 注册搜索按钮
                     $('#search_button').off('click').on('click', function() { go_to_first_page(window.not_go_to_first_page, set_page_to_one, $('input[name=page]')); window.not_go_to_first_page = 0});
                     // 注册清空按钮

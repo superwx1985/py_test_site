@@ -117,15 +117,16 @@ function get_element_outside_height($el) {
 }
 
 // 复制对象弹框
-function copy_obj(copy_url, order) {
-    var now = new Date().Format("yyyy-MM-dd HH:mm:ss");
-    var body = $('<div>').addClass('modal-body');
-    var div = $('<div>准备复制对象。请输入复制后对象的名称前缀</div>');
+function copy_obj(copy_url, name, order) {
+    const now = new Date().Format("yyyy-MM-dd HH:mm:ss");
+    const body = $('<div>').addClass('modal-body');
+    const div = $('<div>准备复制对象。请输入新名称：</div>');
     body.append(div);
-    var input = $('<input class="form-control" autocomplete="off" type="text" id="copy_obj_name">').attr('value', '【' + now + ' 复制】');
+    const input = $('<input class="form-control" autocomplete="off" type="text" id="copy_obj_name">').attr('value', '【' + now + '复制】' + name);
     body.append(input);
+    let buttons;
     if (window.has_sub_object) {
-        var buttons = {
+        buttons = {
             cancel: {
                 label: '<i class="icon-undo">&nbsp;</i>取消',
                 className: 'btn btn-secondary'
@@ -146,7 +147,7 @@ function copy_obj(copy_url, order) {
             }
         }
     } else {
-        var buttons = {
+        buttons = {
             cancel: {
                 label: '<i class="icon-undo">&nbsp;</i>取消',
                 className: 'btn btn-secondary'

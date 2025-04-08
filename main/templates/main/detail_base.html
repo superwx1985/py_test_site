@@ -90,10 +90,10 @@
                             $('[name=save_and_return_button]').on('click', function() { $('[name=redirect]').val(true) });
                         }
                         $('[name=add_another_button]').on('click', function() { $('[name=redirect]').val('add_another') });
-                        $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url')) });
+                        $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url'), $(this).attr('obj_name')) });
                     {% else %}
                         $('[name=return_button]').on('click', function() { parent.window.$('[name=inside_detail_modal]').modal('hide') });
-                        $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url'), {{ order|default:0 }}) });
+                        $('[name=copy_button]').on('click', function() { copy_obj($(this).attr('copy_url'), $(this).attr('obj_name'), {{ order|default:0 }}) });
                     {% endif %}
                     {#如果有顺序参数，替换m2m字段的值#}
                     {% if new_pk and order %}

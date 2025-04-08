@@ -68,3 +68,13 @@ def sort_list(objects, order_by, order_by_reverse):
         key=lambda x: (x[order_by] is not None, x[order_by]),  # None 作为最小值
         reverse=order_by_reverse
     )
+
+
+def generate_new_name(name, new_name, name_prefix):
+    if new_name:
+        name = new_name
+    elif name_prefix:
+        name = name_prefix + name
+    if len(name) > 100:
+        name = name[0:97] + '...'
+    return name

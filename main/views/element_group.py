@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import ElementGroup, Element, Step, Suite
 from main.forms import OrderByForm, PaginatorForm, ElementGroupForm
-from main.views.general import sort_list
+from main.views.general import sort_list, generate_new_name
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
 from urllib.parse import quote
 from main.views import suite
@@ -345,7 +345,7 @@ def select_json(request):
 
 
 # 复制操作
-def copy_action(pk, user, name_prefix=None, copied_items=None):
+def copy_action(pk, user, new_name=None, name_prefix=None, copied_items=None):
     if not copied_items:
         copied_items = [dict()]
     obj = ElementGroup.objects.get(pk=pk)
@@ -356,10 +356,7 @@ def copy_action(pk, user, name_prefix=None, copied_items=None):
     sub_object_values = list(
         Element.objects.filter(element_group=obj).order_by('order').values('name', 'by', 'locator', 'description'))
     obj.pk = None
-    if name_prefix:
-        obj.name = name_prefix + obj.name
-        if len(obj.name) > 100:
-            obj.name = obj.name[0:97] + '...'
+    obj.name = generate_new_name(obj.name, new_name, name_prefix)
     obj.creator = obj.modifier = user
     obj.uuid = uuid.uuid1()
     obj.clean_fields()
@@ -382,9 +379,10 @@ def copy_action(pk, user, name_prefix=None, copied_items=None):
 # 复制
 @login_required
 def copy_(request, pk):
-    name_prefix = request.POST.get('name_prefix', '')
+    new_name = request.POST.get('new_name')
+    name_prefix = request.POST.get('name_prefix')
     try:
-        obj = copy_action(pk, request.user, name_prefix)
+        obj = copy_action(pk, request.user, new_name, name_prefix)
         return JsonResponse({
             'state': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk])}
@@ -400,10 +398,10 @@ def multiple_copy(request):
         try:
             pk_list = json.loads(request.POST['pk_list'])
             name_prefix = request.POST.get('name_prefix', '')
-            copied_items = [dict()]
-            new_pk_list = list()
+            copied_items = [{}]
+            new_pk_list = []
             for pk in pk_list:
-                new_obj = copy_action(pk, request.user, name_prefix, copied_items)
+                new_obj = copy_action(pk, request.user, None, name_prefix, copied_items)
                 new_pk_list.append(new_obj.pk)
         except Exception as e:
             return JsonResponse({'state': 2, 'message': str(e), 'data': None})

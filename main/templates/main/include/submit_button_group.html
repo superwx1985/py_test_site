@@ -3,7 +3,7 @@
         {% if pk and pk != "add" %}
             <td><button type="button" name="return_button" class="btn btn-secondary"><i class="icon-reply">&nbsp;</i>返回</button></td>
             {% if copy_url %}
-                <td><button copy_url="{% url copy_url obj.pk %}" copy_sub_item="{{ copy_sub_item }}" type="button" name="copy_button" class="btn btn-warning"><i class="icon-copy">&nbsp;</i>复制</button></td>
+                <td><button copy_url="{% url copy_url obj.pk %}" copy_sub_item="{{ copy_sub_item }}" obj_name="{{ obj_name }}" type="button" name="copy_button" class="btn btn-warning"><i class="icon-copy">&nbsp;</i>复制</button></td>
             {% endif %}
             {% if request.user == obj.creator or is_admin %}
                 {% if not inside %}

@@ -463,16 +463,22 @@ function disable_interaction() {
 }
 
 // 复制对象的回调函数
-function callback_copy_obj(copy_url, name_prefix, order) {
-	copy_obj_post(copy_url, name_prefix, null, order)
+function callback_copy_obj(copy_url, new_name, order) {
+	copy_obj_post(copy_url, new_name, "", null, order)
 }
 
 // 复制对象及子对象的的回调函数
-function callback_copy_obj_sub_item(copy_url, name_prefix, order) {
+function callback_copy_obj_sub_item(copy_url, parent_name, order) {
+	let sub_object_prefix = "【复制《" + parent_name + "》时生成】";
+	const body = $('<div>').addClass('modal-body');
+    const div = $('<div>复制对象包含的所有子对象，将生成大量数据，可能耗费较长时间。请确认您了解此操作的含义。<br>请输入复制后对象的名称前缀：</div>');
+    body.append(div);
+    const input = $('<input class="form-control" autocomplete="off" type="text" id="sub_object_prefix">').attr('value', sub_object_prefix);
+    body.append(input);
 	bootbox.dialog({
 		size: 'large',
 		title: '<i class="icon-exclamation-sign">&nbsp;</i>请再次确认',
-		message: '复制对象包含的所有子对象，将生成大量数据，可能耗费较长时间。请确认您了解此操作的含义。',
+		message: body.html(),
 		buttons: {
 			cancel: {
 				label: '<i class="icon-undo">&nbsp;</i>取消',
@@ -481,16 +487,16 @@ function callback_copy_obj_sub_item(copy_url, name_prefix, order) {
 			confirm: {
 				label: '<i class="icon-ok">&nbsp;</i>确认',
 				className: 'btn btn-primary',
-				callback: function() { copy_obj_post(copy_url, name_prefix, 1, order) }
+				callback: function() {copy_obj_post(copy_url, parent_name, $('#sub_object_prefix').val(), 1, order)}
 			}
 		}
 	})
 }
 
 // 复制对象
-function copy_obj_post(copy_url, name_prefix, copy_sub_item, order) {
+function copy_obj_post(copy_url, new_name, name_prefix, copy_sub_item, order) {
 	$('#mask').show();
-	$.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'name_prefix': name_prefix, 'copy_sub_item': copy_sub_item, 'order': order}, function(data) {
+	$.post(copy_url, {'csrfmiddlewaretoken': $csrf_input.val(), 'new_name': new_name, 'name_prefix': name_prefix, 'copy_sub_item': copy_sub_item, 'order': order}, function(data) {
 		$('#mask').hide();
 		if (data.state === 1) {
             // 如果返回包含有效order，则添加new_pk及order至参数，用于内嵌窗口复制后更新m2m列表

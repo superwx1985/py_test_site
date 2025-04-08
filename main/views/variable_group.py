@@ -12,7 +12,7 @@ from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from main.models import VariableGroup, Variable, Case, Suite
 from main.forms import OrderByForm, PaginatorForm, VariableGroupForm
-from main.views.general import sort_list
+from main.views.general import sort_list, generate_new_name
 from utils.other import get_query_condition, change_to_positive_integer, Cookie, get_project_list, check_admin
 from urllib.parse import quote
 from main.views import case, suite
@@ -318,7 +318,7 @@ def select_json(request):
     try:
         condition = json.loads(condition)
     except json.decoder.JSONDecodeError:
-        condition = dict()
+        condition = {}
     selected_pk = condition.get('selected_pk')
     url_format = condition.get('url_format')
     url_replacer = condition.get('url_replacer')
@@ -327,7 +327,7 @@ def select_json(request):
     # )
     objects = VariableGroup.objects.filter(is_active=True).values('pk', 'uuid', 'name', 'keyword', 'project__name')
 
-    data = list()
+    data = []
     for obj in objects:
         d = dict()
         d['id'] = str(obj['pk'])
@@ -348,9 +348,9 @@ def select_json(request):
 
 
 # 复制操作
-def copy_action(pk, user, name_prefix=None, copied_items=None):
+def copy_action(pk, user, new_name=None, name_prefix=None, copied_items=None):
     if not copied_items:
-        copied_items = [dict()]
+        copied_items = [{}]
     obj = VariableGroup.objects.get(pk=pk)
     original_obj_uuid = obj.uuid
     if original_obj_uuid in copied_items[0]:  # 判断是否已被复制
@@ -359,10 +359,7 @@ def copy_action(pk, user, name_prefix=None, copied_items=None):
         Variable.objects.filter(variable_group=obj).order_by('order').values('name', 'value', 'description'))
 
     obj.pk = None
-    if name_prefix:
-        obj.name = name_prefix + obj.name
-        if len(obj.name) > 100:
-            obj.name = obj.name[0:97] + '...'
+    obj.name = generate_new_name(obj.name, new_name, name_prefix)
     obj.creator = obj.modifier = user
     obj.uuid = uuid.uuid1()
     obj.clean_fields()
@@ -384,9 +381,10 @@ def copy_action(pk, user, name_prefix=None, copied_items=None):
 # 复制
 @login_required
 def copy_(request, pk):
-    name_prefix = request.POST.get('name_prefix', '')
+    new_name = request.POST.get('new_name')
+    name_prefix = request.POST.get('name_prefix')
     try:
-        obj = copy_action(pk, request.user, name_prefix)
+        obj = copy_action(pk, request.user, new_name, name_prefix)
         return JsonResponse({
             'state': 1, 'message': 'OK', 'data': {
                 'new_pk': obj.pk, 'new_url': reverse(detail, args=[obj.pk])}
@@ -405,7 +403,7 @@ def multiple_copy(request):
             copied_items = [dict()]
             new_pk_list = list()
             for pk in pk_list:
-                new_obj = copy_action(pk, request.user, name_prefix, copied_items)
+                new_obj = copy_action(pk, request.user, None, name_prefix, copied_items)
                 new_pk_list.append(new_obj.pk)
         except Exception as e:
             return JsonResponse({'state': 2, 'message': str(e), 'data': None})
@@ -424,14 +422,12 @@ def reference(request, pk):
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects:
-        # obj_['url'] = '{}?next={}'.format(reverse(case.detail, args=[obj_['pk']]), reverse(case.list_))
         obj_['url'] = reverse(case.detail, args=[obj_['pk']])
         obj_['type'] = '用例'
     objects2 = Suite.objects.filter(is_active=True, variable_group=obj).order_by('-modified_date').values(
         'pk', 'uuid', 'name', 'keyword', 'creator', 'creator__username', 'modified_date').annotate(
         real_name=Concat('creator__last_name', 'creator__first_name', output_field=CharField()))
     for obj_ in objects2:
-        # obj_['url'] = '{}?next={}'.format(reverse(suite.detail, args=[obj_['pk']]), reverse(suite.list_))
         obj_['url'] = reverse(suite.detail, args=[obj_['pk']])
         obj_['type'] = '套件'
     objects = list(objects)

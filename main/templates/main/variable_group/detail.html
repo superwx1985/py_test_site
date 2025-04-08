@@ -87,7 +87,7 @@
         {% csrf_token %}
         {% include 'main/variable_group/detail_form_content.html' %}
         {% include 'main/include/detail_redirect.html' %}
-        {% include 'main/include/submit_button_group.html' with copy_url='variable_group_copy' %}
+        {% include 'main/include/submit_button_group.html' with copy_url='variable_group_copy' obj_name=form.name.value %}
     </form>
 {% endblock %}
 
