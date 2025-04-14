@@ -297,18 +297,17 @@ def wait_for_element_visible(vic_step, timeout=None, print_=True):
 
         msg = '找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个'.format(
             vic_step.ui_by, vic_step.ui_locator, len(elements), len(visible_elements))
-        if visible_elements:
-            if vic_step.ui_data:
-                eo = vic_eval.EvalObject(vic_step.ui_data, {'x': len(visible_elements)}, vic_step.logger)
-                eval_success, eval_result, final_expression = eo.get_eval_result()
-                compare_result = eval_result
-                if compare_result is True:
-                    msg = '{}，符合给定的数量限制\n数量表达式：{}'.format(msg, final_expression)
-                    _success = True
-                else:
-                    msg = '{}，不符合给定的数量限制\n数量表达式：{}'.format(msg, final_expression)
-            else:
+        if vic_step.ui_data:
+            eo = vic_eval.EvalObject(vic_step.ui_data, {'x': len(visible_elements)}, vic_step.logger)
+            eval_success, eval_result, final_expression = eo.get_eval_result()
+            compare_result = eval_result
+            if compare_result is True:
+                msg = '{}，符合给定的数量限制\n数量表达式：{}'.format(msg, final_expression)
                 _success = True
+            else:
+                msg = '{}，不符合给定的数量限制\n数量表达式：{}'.format(msg, final_expression)
+        elif visible_elements:
+            _success = True
 
         if time.time() - last_print_time >= 1:
             pause_time += vic_step.pause_()
@@ -384,14 +383,11 @@ def wait_for_element_disappear(vic_step, print_=True):
             else:
                 elements = vic_step.drs['web_dr'].find_elements(vic_step.ui_by, vic_step.ui_locator)
 
-        if not elements:
+        for element in elements:
+            if element.is_displayed():
+                visible_elements.append(element)
+        if elements and not visible_elements:
             _success = True
-        else:
-            for element in elements:
-                if element.is_displayed():
-                    visible_elements.append(element)
-            if not visible_elements:
-                _success = True
 
         msg = '找到期望元素【By:{}|Locator:{}】{}个，其中可见元素{}个'.format(
             vic_step.ui_by, vic_step.ui_locator, len(elements), len(visible_elements))

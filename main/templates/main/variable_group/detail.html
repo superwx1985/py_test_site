@@ -26,7 +26,7 @@
             // 临时列表
             window.temp_sub_list = [];
             // 列表可调宽度
-            table_col_resizable($('#variable_table'), 'th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3))');
+            table_col_resizable($('#variable_table'), 'th:nth-child(n+4)');
         });
     </script>
     <script src="{% static 'main/js/detail_variable_group.js' %}"></script>

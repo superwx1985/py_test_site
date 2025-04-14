@@ -27,23 +27,25 @@ function update_data_set_input() {
 }
 
 function check_unsaved() {
-    let unsaved = false;
-
-    if (unsaved) {
-
-    } else {
+    // $('#myTable tbody td:nth-child(n+3) textarea').trigger("change");
+    setTimeout(() => {
         update_data_set_input();
         $('#object_form').removeAttr('onsubmit').submit();
-    }
+    }, 0);
     return false;
 }
 
-window.baseColumns = [
+const COLUMN_WIDTHS = {
+  MOVE: 60,
+  NUM: 30,
+};
+
+const baseColumns = [
     {
         title: 'MOVE',
         type: 'html',
         defaultContent: '<div class="icon-sort icon-2x"></div>',
-        width: '60px',
+        width: `${COLUMN_WIDTHS.MOVE}px`,
         className: 'text-center no-lef-right-padding middle',
         orderable: false
     },
@@ -57,7 +59,7 @@ window.baseColumns = [
                 return meta.row + 1; // 如果不是数组，直接 + 1
             }
         },
-        width: '30px',
+        width: `${COLUMN_WIDTHS.NUM}px`,
         className: 'text-center middle'
     },
 ];
@@ -80,7 +82,6 @@ function get_tableSettings(baseColumns, data_set) {
             data: col,
             type: 'string',
             render: renderFunction,
-            // width: 100
         }))
     } else if (has_columns) {
         dynamicColumns = _data_set.columns.map(col => ({
@@ -88,7 +89,6 @@ function get_tableSettings(baseColumns, data_set) {
             data: col,
             type: 'string',
             render: renderFunction,
-            // width: 100
         }))
     }
 
@@ -139,7 +139,7 @@ function create_table_and_register_event(is_init) {
         // $table.off('column-reorder'); // 取消注册列排序事件，否则destroy时会再次触发事件导致异常
         // 记录宽度
         window.width = $('#myTable').css('width');
-        window.widths = $('#myTable tr[originalTr] th').map(function() {
+        window.widths = $('#myTable tr[originalTr] th:nth-child(n+3)').map(function() {
             return $(this).css('width');
         }).get();
         $table.destroy(); // 销毁现有表格
@@ -151,7 +151,6 @@ function create_table_and_register_event(is_init) {
     }
     window.$table = $('#myTable').DataTable(get_tableSettings(baseColumns, data_set));
 
-
     // 表头上色
     $('#myTable th').css('background-color', 'rgb(233, 236, 239)');
     $('#myTable thead tr').attr('originalTr', true)
@@ -159,11 +158,17 @@ function create_table_and_register_event(is_init) {
     // 恢复宽度
     if (window.width && window.widths) {
         $('#myTable').css('width', window.width);
-        $('#myTable th').each(function(index) {
+        $('#myTable th:nth-child(n+3)').each(function(index) {
             let width = window.widths[index];
-            if (!width) width = 300
+            if (!width) {
+                width = 300; // 新列的宽度
+                $('#myTable').css('width', `${parseFloat(window.width)+width}px`);
+            }
             $(this).css('width', width); // 强制设置内联样式
         });
+    }
+    if (data_set.columns.length === 0) { // 没有有效数据时不要占满屏幕
+        $('#myTable').css('width', COLUMN_WIDTHS.MOVE+COLUMN_WIDTHS.NUM);
     }
 
     // 创建用于调整列宽的行，防止和行排序冲突
@@ -179,8 +184,12 @@ function create_table_and_register_event(is_init) {
     }
     $newTr.insertBefore($originalTr);
 
+    // 表头提示设置
+    $originalTr.find('th:nth-child(n+3)').attr('title', '双击修改名称，拖动修改排序');
+    $newTr.find('th:nth-child(n+3)').attr('title', '拖动本行边框修改宽度');
+
     // 列表可调宽度
-    table_col_resizable($('#myTable'), 'tr[newTr] th:not(:nth-child(1)):not(:nth-child(2))');
+    table_col_resizable($('#myTable'), 'tr[newTr] th:nth-child(n+3)');
 
     // 监听所有textarea的焦点事件避免数据更新过程中拖动排序导致异常
     window.isTextareaFocused = false
@@ -207,21 +216,26 @@ function create_table_and_register_event(is_init) {
     check_and_set_whether_the_table_is_interactive();
     $('#table_selected_mask').hide();
     $("#sub_delete_row_button, #sub_delete_col_button").attr("disabled", true);
-    float_tr('#myTable tr[originalTr]:not([temp])', 60 + get_element_full_height($('#sub_button_group')));
+    float_tr('#myTable tr[originalTr]:not([temp])', window.button_top + get_element_full_height($('#sub_button_group')));
 }
 
 // 修改data，更新并重绘datatable，重新绑定事件
 function bing_row_data_change() {
     let td_textarea = $('#myTable tbody td:nth-child(n+3) textarea');
     // 监听单元格编辑完成的事件
-    td_textarea.off('change');
-    td_textarea.on('change', function () {
+    td_textarea.off('change').on('change', function () {
         const newValue = $(this).val();
         const cell = $table.cell($(this).closest('td'));
         // 更新单元格数据到 DataTables 内部
         cell.data(newValue);
+        // console.log('Cell updated:', {
+        //     row: cell.index().row,
+        //     column: cell.index().column,
+        //     newValue: newValue
+        // });
         $table.draw();
         data_set.data = $table.rows().data().toArray();
+        create_table_and_register_event();
     });
 }
 
@@ -297,12 +311,8 @@ function change_col_name(newName, oldName) {
 
 function create_new_row(row_data) {
     if (!row_data || typeof row_data === 'undefined' || row_data === "") {
-        row_data = {}
-        data_set.data.forEach(item => {
-            for (let key in item) {
-                row_data[key] = '';  // 设置空值
-            }
-        });
+        row_data = {};
+        data_set.columns.forEach(col => { row_data[col] = '' }); // 设置空值
     }
     data_set.data.push(row_data);
     create_table_and_register_event();
@@ -405,9 +415,9 @@ function create_new_col(columnName) {
         return;
     }
     // 如果没有任何数据，先添加一行
-    if (data_set.data === null || (Array.isArray(data_set.data) && data_set.data.length === 0)) {
-        create_new_row()
-    }
+    // if (data_set.data === null || (Array.isArray(data_set.data) && data_set.data.length === 0)) {
+    //     create_new_row()
+    // }
     data_set.data.forEach(row => {
         row[columnName] = ''; // 添加新列，值为空
     });
@@ -465,7 +475,7 @@ function bind_sub_delete_row_button() {
     $("#sub_delete_row_button").off("click").on("click", function () {
         const selected = $table.cells('.selected').toArray()[0];
         const uniqueRows = [...new Set(selected.map(item => item.row + 1))];
-        popup("删除行", "确认要删除以下行吗？（注意：删除全部行会清空列名！）", JSON.stringify(uniqueRows), true, delete_row);
+        popup("删除行", "确认要删除以下行吗？", JSON.stringify(uniqueRows), true, delete_row);
     });
 }
 
@@ -610,10 +620,6 @@ function check_and_set_whether_the_table_is_interactive() {
     if (window.editable && !data_set.gtm) {
         $('#sub_add_row_button, #sub_add_col_button').removeAttr("disabled");
     }
-    // 添加行按钮应该在添加列后激活
-    if (data_set.data === null || (Array.isArray(data_set.data) && data_set.data.length === 0)) {
-        $('#sub_add_row_button').attr('disabled', true)
-    }
 }
 
 function float_tr(tr_selector, top) {
@@ -631,8 +637,8 @@ function float_tr(tr_selector, top) {
     let $el_temp = [];
 
     window.widths = $('#myTable tr[originalTr] th').map(function() {
-            return get_element_full_width($(this));
-        }).get();
+        return get_element_full_width($(this));
+    }).get();
 
     $(window).off('scroll.float_tr').on('scroll.float_tr', function () {
         if (doing.length > 0) return false;  // 防止频繁判断导致跳动
@@ -645,6 +651,11 @@ function float_tr(tr_selector, top) {
         if (window.widths) {
             $el.find('th').each(function(index) {
                 let width = window.widths[index];
+                if (index===0) { // 保持前两列固定宽度
+                    width = parseFloat(width) < COLUMN_WIDTHS.MOVE ? width : `${COLUMN_WIDTHS.MOVE}px`
+                } else if (index===1) {
+                    width = parseFloat(width) < COLUMN_WIDTHS.NUM ? width : `${COLUMN_WIDTHS.NUM}px`
+                }
                 $(this).css('width', width); // 强制设置内联样式
             });
         }

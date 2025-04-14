@@ -30,7 +30,7 @@
             // 初始化by选项
             $('td[col_by]').empty().append(generate_select(window.by_list));
             // 列表可调宽度
-            table_col_resizable($('#element_table'), 'th:not(:nth-child(1)):not(:nth-child(2)):not(:nth-child(3))');
+            table_col_resizable($('#element_table'), 'th:nth-child(n+4)');
         });
     </script>
     <script src="{% static 'main/js/detail_element_group.js' %}"></script>
