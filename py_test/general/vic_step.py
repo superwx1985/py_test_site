@@ -211,7 +211,7 @@ class VicStep:
         self.step_result.save()  # 暂存，防止子用例设置调用步骤时报错
         drs = self.drs = self.vic_case.driver_container  # 获取运行时driver
         dr = drs.get("web_dr", None)
-        # 简称
+        # 缩写
         estr = self.execute_str
         vc = self.vic_case
         var = self.variables
@@ -505,7 +505,7 @@ class VicStep:
                             if self.save_as:
                                 var.set_variable(self.save_as, self.elements)
 
-                        # 输入
+                        # 清空输入框
                         elif ac == 'UI_CLEAR':
                             if re_run_count == 0:
                                 self.update_test_data('ui_locator', 'ui_base_element')

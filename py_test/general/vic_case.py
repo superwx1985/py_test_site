@@ -402,9 +402,7 @@ class VicCase:
             del web_dr
             self.driver_container.pop("web_dr", None)
 
-        if self.force_stop:
-            self.case_result.result_state = 4
-        elif self.case_result.error_count or self.case_result.result_error:
+        if self.case_result.error_count or self.case_result.result_error:
             self.case_result.result_state = 3
         elif self.case_result.fail_count:
             self.case_result.result_state = 2
@@ -412,6 +410,9 @@ class VicCase:
         elif self.case_result.execute_count == 0:
             self.case_result.result_state = 0
             self.case_result.result_message = '忽略'
+        elif self.force_stop:
+            self.case_result.result_state = 4
+            self.case_result.result_message = '中止'
         else:
             self.case_result.result_state = 1
             self.case_result.result_message = '通过'
