@@ -641,6 +641,15 @@ def find_with_condition(
         # logger.debug(error_msg)
     # logger.debug('is_matched: [%s], match_count: [%s]' % (find_result.is_matched, find_result.match_count))
     # logger.debug('find_result: \n%s' % find_result)
+
+    # 处理正则表达式使用了|的情况，正确返回匹配到的结果
+    if re_result and isinstance(re_result[0], tuple):
+        new_re_result = ''
+        for _ in re_result[0]:
+            if _ != '':
+                new_re_result = _
+                break
+        re_result[0] = new_re_result
     return FindResult(
         is_matched, condition, data, match_count, condition_value, operator_list, data_object, re_result, error_msg)
 
@@ -748,5 +757,25 @@ if __name__ == '__main__':
     # r = find_with_multiple_condition('#json#{"message":"Email is required"}', '{"message":"Email is required","statusCode":1001}')
 
     # r = find_with_condition('#{json}#{"a": "#{re}#.*", "b": "#{re|,0}#(.*)"}', '{"a": "1", "b": 2}')
-    r = find_with_condition(r'#{re|}#vic\.(.*)@', 'Vic.wang@test.com')
+    s = ''' <div class="lc-block toggled" id="l-login">
+        <form method="post" action="/Account/Login?Tenant=GLB">
+            <input type="hidden" name="returnUrl" value="1" />
+            <input type="hidden" name="returnUrl" value="2" />
+            <h3>User Login</h3>
+            <div class="text-danger text-left validation-summary-valid" data-valmsg-summary="true"><ul><li style="display:none"></li>
+</ul></div>
+
+            <div class="input-group m-b-20">
+                <span class="input-group-addon"><i class="zmdi zmdi-account"></i></span>
+                <div class="fg-line">
+                    <input type="text" class="form-control" placeholder="Email" data-val="true" data-val-required="The Email field is required." id="Email" name="Email" value="">
+                </div>
+            </div>
+
+
+<button class="btn btn-login btn-danger btn-float" type="submit"><i class="zmdi zmdi-arrow-forward"></i></button>
+
+        <input name="__RequestVerificationToken" type="hidden" value="CfDJ8ApRf9-jr0VLla_LOI1b6xdQqlD4q1pdaHbFluTXOxFMUr0Jx_l4vq-TWNDM9ZCwT5vxZLb3FRLT3k1x34hoy6-NDsDYxfQe-F9wg7pcslNUIp9mdIKSAYSOoqzpcwmOy4S4KuGM6yFSsd7nlKj6paU" /></form>
+    </div>'''
+    r = find_with_condition(r'#{re|,0}#<input\sname="returnUrl"\stype="hidden"\svalue="(.*?)"\s/>|<input\stype="hidden"\sname="returnUrl"\svalue="(.*?)"\s/>', s)
     print(r)
