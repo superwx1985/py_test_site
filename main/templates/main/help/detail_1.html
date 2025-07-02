@@ -75,9 +75,6 @@
                         <a class="nav-link" data-toggle="tab" href="#operate_4">tst</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_5">url</a>
-                    </li>
-                    <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#operate_6">uuid</a>
                     </li>
                     <li class="nav-item">
@@ -94,9 +91,6 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#operate_11">time或datetime</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_12">jwt</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#operate_13">cal</a>
@@ -260,14 +254,6 @@
                             </p>
                         </div>
                     </div>
-                    <div id="operate_5" class="tab-pane" style="padding: 1em">
-                        <div>
-                            <p class="lead">把字符串通过url编码后返回，接受1个参数。</p>
-                            <p class="font-weight-bold">参数1</p>
-                            <p>需要转换的内容。</p>
-                            <p>例：<span class="mark">${url|index.html?a=测试}$</span>，返回<span class="text-info">index.html%3Fa%3D%E6%B5%8B%E8%AF%95</span></p>
-                        </div>
-                    </div>
                     <div id="operate_6" class="tab-pane" style="padding: 1em">
                         <div>
                             <p class="lead">返回一个长度为32位的UUID，不需要参数，但必须包含竖线分隔符</p>
@@ -416,17 +402,6 @@
                             <p>代表输入的时间格式，参见<a href="javascript:$('a[href=\'#operate_2\']').click()">操作符t</a>的参数2。</p>
                             <p class="font-weight-bold">参数3及参数4</p>
                             <p>参数3代表时间位移单位，参数4代表时间位移量，参见<a href="javascript:$('a[href=\'#operate_2\']').click()">操作符t</a>的参数3及参数4。</p>
-                        </div>
-                    </div>
-                    <div id="operate_12" class="tab-pane" style="padding: 1em">
-                        <div>
-                            <p class="lead">解密JWT（JSON Web Tokens）</p>
-                            <p class="font-weight-bold">参数1</p>
-                            <p>加密的JWT</p>
-                            <p>例：
-                                <br>
-                                <div class="mark" style="display: inline-block; word-break: break-word;">${jwt|eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c}$</div>，返回<div class="text-info">{"header": {"alg":"HS256","typ":"JWT"}, "payload": {"sub":"1234567890","name":"John Doe","iat":1516239022}}</div>
-                            </p>
                         </div>
                     </div>
                     <div id="operate_13" class="tab-pane" style="padding: 1em">

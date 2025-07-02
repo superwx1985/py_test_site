@@ -1,12 +1,18 @@
-import json
+import hashlib
 import re
 import uuid
 import logging
+import html
+import json
 from copy import deepcopy
+from urllib.parse import quote, unquote, unquote_plus
+
+from py_test.general.vic_method import decode_jwt_func
 from py_test.vic_tools import vic_eval
 from py_test.vic_tools.vic_date_handle import str_to_time
 from py_test.vic_tools.attr_display import AttrDisplay
-from py_test.vic_tools.vic_str_handle import remove_line_break_and_blank_from_both_ends, remove_line_break_from_both_ends
+from py_test.vic_tools.vic_str_handle import remove_line_break_and_blank_from_both_ends, \
+    remove_line_break_from_both_ends, detect_html_encoding
 
 
 # 在对象中查找对象
@@ -634,6 +640,55 @@ def find_with_condition(
                 if not is_matched and _error_msg:
                     error_msg = _error_msg
 
+            elif first_operator == 'encode':
+                supported_method = ["url", "html", "md5", "sha1", "sha224", "sha256"]
+                if len(parameter_list) == 0 or parameter_list[0] not in supported_method:
+                    raise ValueError(f"参数错误,【{first_operator}】目前只支持{supported_method}")
+                method = parameter_list[0]
+                _result = data
+                if method == "url":
+                    _save = "/"
+                    if len(parameter_list) >= 2:
+                        if parameter_list[1].lower() == "save":
+                            _save = condition_value
+                        elif parameter_list[1].lower() == "none":
+                            _save = ""
+                    _result = quote(data, safe=_save)
+                elif method == "html":
+                    _force = False
+                    if len(parameter_list) >= 2 and parameter_list[1].lower() == "force":
+                        _force = True
+                    if _force or not detect_html_encoding(data):
+                        _result = html.escape(data)
+                elif method in ["md5", "sha1", "sha224", "sha256"]:
+                    hash_obj = hashlib.new(method)
+                    hash_obj.update(data.encode('utf-8'))
+                    _result = hash_obj.hexdigest()
+
+                is_matched = True
+                match_count = 1
+                re_result = [_result]
+
+            elif first_operator == 'decode':
+                supported_method = ["url", "html", "jwt"]
+                if len(parameter_list) == 0 or parameter_list[0] not in supported_method:
+                    raise ValueError(f"参数错误,【{first_operator}】目前只支持{supported_method}")
+                method = parameter_list[0]
+                _result = data
+                if method == "url":
+                    if len(parameter_list) >= 2 and parameter_list[1].lower() == "plus":
+                        _result = unquote_plus(data)
+                    else:
+                        _result = unquote(data)
+                elif method == "html":
+                    _result = html.unescape(data)
+                elif method == "jwt":
+                    _result = json.dumps(decode_jwt_func(data))
+
+                is_matched = True
+                match_count = 1
+                re_result = [_result]
+
             else:
                 raise ValueError('Invalid operational character [' + first_operator + ']')
     except Exception as e:
@@ -736,7 +791,6 @@ def find_with_multiple_condition_intersection(
 if __name__ == '__main__':
     # from py_test.vic_tools.vic_find_object import find_with_condition, FindObject
     from py_test.general import vic_log
-    import json
     import logging
 
     logger = logging.getLogger('debug')
@@ -757,7 +811,7 @@ if __name__ == '__main__':
     # r = find_with_multiple_condition('#json#{"message":"Email is required"}', '{"message":"Email is required","statusCode":1001}')
 
     # r = find_with_condition('#{json}#{"a": "#{re}#.*", "b": "#{re|,0}#(.*)"}', '{"a": "1", "b": 2}')
-    s = ''' <div class="lc-block toggled" id="l-login">
+    _ = ''' <div class="lc-block toggled" id="l-login">
         <form method="post" action="/Account/Login?Tenant=GLB">
             <input type="hidden" name="returnUrl" value="1" />
             <input type="hidden" name="returnUrl" value="2" />
@@ -777,5 +831,14 @@ if __name__ == '__main__':
 
         <input name="__RequestVerificationToken" type="hidden" value="CfDJ8ApRf9-jr0VLla_LOI1b6xdQqlD4q1pdaHbFluTXOxFMUr0Jx_l4vq-TWNDM9ZCwT5vxZLb3FRLT3k1x34hoy6-NDsDYxfQe-F9wg7pcslNUIp9mdIKSAYSOoqzpcwmOy4S4KuGM6yFSsd7nlKj6paU" /></form>
     </div>'''
-    r = find_with_condition(r'#{re|,0}#<input\sname="returnUrl"\stype="hidden"\svalue="(.*?)"\s/>|<input\stype="hidden"\sname="returnUrl"\svalue="(.*?)"\s/>', s)
-    print(r)
+    # r = find_with_condition(r'#{re|,0}#<input\sname="returnUrl"\stype="hidden"\svalue="(.*?)"\s/>|<input\stype="hidden"\sname="returnUrl"\svalue="(.*?)"\s/>', s)
+    _ = '''www.baidu.com/s?ie=UTF-8&wd=abc+d'''
+    print(find_with_condition(r'#{encode|url}#', _))
+    print(find_with_condition(r'#{encode|url,none}#', _))
+    print(find_with_condition(r'#{encode|url,save}#/', _))
+    print(find_with_condition(r'#{encode|url,save}#/?=+', _))
+    _ = '''eyJhbGciOiJSUzI1NiIsImtpZCI6IjU0RTAzNDAwODUxNDBGOEI3QkNENjM0NjJFN0VFODMyQURGREM5NzVSUzI1NiIsInR5cCI6ImF0K2p3dCIsIng1dCI6IlZPQTBBSVVVRDR0N3pXTkdMbjdvTXEzOXlYVSJ9.eyJuYmYiOjE3NTE0NDQ5OTEsImV4cCI6MTc1MTQ1MjE5MSwiaXNzIjoiaHR0cHM6Ly9ndWMuZ2xvYmV0b29scy5zeXN0ZW1zOjQ0NiIsImF1ZCI6WyJBcHBsaWNhdGlvblVzYWdlVHJhY2tpbmdBcGkiLCJEZXZpY2VEYkFwaSIsIkVycm9yU2VydmljZUFwaSIsIkZsZWV0QXBpIiwiRzNTQXBpIiwiR2Z1QXBpIiwiR2ltc1NpZ25hbFIiLCJHSW90Q29yZUFwaSIsIkdJb3RQcm9kdWN0U2VydmljZUFwaSIsIkdsb2JlSW90RGFzaGJvYXJkQXBpIiwiR3VjQXBpIiwiSW90RERTQXBpIiwiTGljZW5zZVNlcnZpY2VBcGkiLCJQbm1zQ2FjaGVBcGkiLCJTaG9waWZ5QXBpIl0sImNsaWVudF9pZCI6IkdyZWVud29ya3NUb29scyIsInN1YiI6IjNmMGY5MWFlLTQ3YjctMTFmMC1hYjY5LTA2YjExMjg5Yzg0ZiIsImF1dGhfdGltZSI6MTc1MTQ0NDk5MCwiaWRwIjoibG9jYWwiLCJBY2Nlc3NpYmxlQXBwbGljYXRpb24iOiJHcmVlbndvcmtzVG9vbHMiLCJUZW5hbnQiOiJHTEIiLCJCYXNlTG9jYXRpb24iOiJYWFgiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiWGxpbmtVc2VyXzlmNjg0NzNjOTkxNTRlMmU4YjMwMWIwOWIzYjIwOGYwX0dyZWVud29ya3NUb29scyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6InZpYy53YW5nQGdsb2JldG9vbHMuY29tIiwiSXNFbWFpbENvbmZpcm1lZCI6dHJ1ZSwiUGFzc3dvcmRIYXNoIjoiQVFBQUFBSUFBWWFnQUFBQUVQb2V1T3QwcE1zYUNsK3pjc1FpeXpLT2tTdnF4VmRnYW5XUmFET1hvQWw1cnJHcnFUSnFCaksvUXZJUHVPR2IrUT09IiwianRpIjoiODI4MzU3RTYyREZCNzA5RTdEMkJDREYzQkIxMTA1REQiLCJpYXQiOjE3NTE0NDQ5OTEsInNjb3BlIjoiQXBwbGljYXRpb25Vc2FnZVRyYWNraW5nQXBpIERldmljZURiQXBpIEVycm9yU2VydmljZUFwaSBGbGVldEFwaSBHM1NBcGkgR2Z1QXBpIEdpbXNTaWduYWxSIEdJb3RDb3JlQXBpIEdJb3RQcm9kdWN0U2VydmljZUFwaSBHbG9iZUlvdERhc2hib2FyZEFwaSBHdWNBcGkgSW90RERTQXBpIExpY2Vuc2VTZXJ2aWNlQXBpIG9wZW5pZCBQbm1zQ2FjaGVBcGkgcHJvZmlsZSBTaG9waWZ5QXBpIG9mZmxpbmVfYWNjZXNzIiwiYW1yIjpbInB3ZCJdfQ.f_su5FwF8KrNp3-d5TVq0Kr1Y9uE0jAFhO0YV9L8f7ikAN7RQErlwpLZB2Ho31jER4re2Jge2IhXqmGdDcpTWGnsiTtWhUGQ3NtoGzD6i5Vxe28JtKpAqwfY8h9jCPp0oUwBcr55iuH1nBNJOFJP1DEqVEPL8N4UjDP8-bp63tpY7BRm0M4jxl1usW3nHuobL3zAdD2A6IJYuPqEEZNaEQ3iVmpQaA84efNAS4jI0_z41F62_cufBL2yAZKs55dsZhjekHUqhvprVNP3kL00VKkVTtx4C7nBLx_YWi9IwV-phUViZ64Z9-QeP0MQs8ENHGlMKGSC2wUQKSiM5YzqrA'''
+    print(find_with_condition(r'#{decode|jwt}#', _))
+    print(find_with_condition(r'#{decode|jwt}#', _).re_result[0])
+
+

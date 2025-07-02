@@ -3,16 +3,35 @@ import requests
 import json
 import logging
 from py_test.vic_tools import vic_find_object
-from py_test.vic_test.vic_http_request import request
+from py_test.vic_test.vic_http_request import vic_requests
+
+
+def create_session():
+    return requests.Session()
 
 
 # 发送http请求
 def send_http_request(vic_step):
     response_start_time = datetime.datetime.now()
     try:
-        response = request(vic_step.api_method.upper(), vic_step.api_url, headers=vic_step.api_headers, files=None,
-                           data=vic_step.api_body, params=None, auth=None, cookies=None, hooks=None, json=None,
-                           _logger=vic_step.logger, highlight_error=False, timeout=(vic_step.timeout, vic_step.timeout))
+        response = vic_requests(
+            method=vic_step.api_method.upper(),
+            url=vic_step.api_url,
+            headers=vic_step.api_headers,
+            files=None,
+            data=vic_step.api_body,
+            params=None,
+            auth=None,
+            cookies=None,
+            hooks=None,
+            json=None,
+            _logger=vic_step.logger,
+            highlight_error=False,
+            timeout=(vic_step.timeout, vic_step.timeout),
+            session=vic_step.vic_case.session,
+            allow_redirects=vic_step.api_allow_redirects,
+            max_redirects=vic_step.api_max_redirects,
+        )
     except requests.exceptions.Timeout as e:
         response = e
     response_end_time = datetime.datetime.now()
@@ -125,11 +144,12 @@ def save_http_response(response, content, save_as_group, variables, logger=loggi
             continue
         else:
             if part == 'header':
-                response_json = json.dumps(response)
+                header_dict = dict(response.headers)
+                header_json = json.dumps(header_dict)
                 if expression:
-                    value = response.get(expression, None)
+                    value = header_dict.get(expression, None)
                     if not value:
-                        find_result = vic_find_object.find_with_condition(expression, dict(response), logger=logger)
+                        find_result = vic_find_object.find_with_condition(expression, header_json, logger=logger)
                         if find_result.is_matched and find_result.re_result:
                             value = find_result.re_result[0]
                         else:
@@ -140,7 +160,7 @@ def save_http_response(response, content, save_as_group, variables, logger=loggi
                             value = ''
                             success = False
                 else:
-                    value = response_json
+                    value = header_json
             else:
                 if expression:
                     find_result = vic_find_object.find_with_condition(expression, content, logger=logger)

@@ -140,6 +140,21 @@
     </div>
 </div>
 <div class="row align-items-center" api>
+    <div class="col-1 text-right font-weight-bold">跟随跳转&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="是否允许跟随302跳转"></i></div>
+    <div class="col" form_data>
+        {{ form.api_allow_redirects }}
+        {% for error in form.api_allow_redirects.errors %}
+            <div class="invalid-feedback" style="display: block">{{ error }}</div>
+        {% endfor %}
+    </div>
+</div>
+<div class="row align-items-center" api>
+    <div class="col-1 text-right font-weight-bold">最大跳转次数&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="仅在允许跟随跳转时生效，不填写代表使用默认值：30次"></i></div>
+    <div class="col" form_data>
+        {% include 'main/include/form_input.html' with field=form.api_max_redirects %}
+    </div>
+</div>
+<div class="row align-items-center" api>
     <div class="col-1 text-right font-weight-bold">期望返回码</div>
     <div class="col" form_data>
         {% include 'main/include/form_textarea.html' with field=form.api_response_status %}
@@ -213,9 +228,9 @@
     </div>
 </div>
 <div class="row align-items-center" other name="other_input">
-    <div class="col-1 text-right font-weight-bold">待处理文本&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="可以使用变量，例如${jwt|${token}$}$"></i></div>
+    <div class="col-1 text-right font-weight-bold">待处理文本&nbsp;<i class="icon-question-sign" data-toggle="tooltip" title="可以使用变量，例如${token}$"></i></div>
     <div class="col" form_data>
-        {% include 'main/include/form_input.html' with field=form.other_input %}
+        {% include 'main/include/form_textarea.html' with field=form.other_input rows='2'%}
     </div>
 </div>
 <div class="row align-items-center" other name="other_data">

@@ -104,6 +104,8 @@ class VicStep:
             self.api_response_status = step.api_response_status
             self.api_data = step.api_data
             self.api_save = step.api_save
+            self.api_allow_redirects = step.api_allow_redirects
+            self.api_max_redirects = step.api_max_redirects
 
             self.other_input = step.other_input
             self.other_data = step.other_data
@@ -750,7 +752,7 @@ class VicStep:
                                 self.run_result = ['f', '请求超时']
                             else:
                                 try:
-                                    pretty_request_header = json.dumps(self.api_headers, indent=2, ensure_ascii=False)
+                                    pretty_request_header = json.dumps(dict(response.request.headers), indent=2, ensure_ascii=False)
                                 except TypeError:
                                     pretty_request_header = str(self.api_headers)
                                 pretty_response_header = json.dumps(dict(response.headers), indent=2, ensure_ascii=False)
@@ -774,20 +776,16 @@ class VicStep:
                                 if len(response_body_msg) > 10000:
                                     response_body_msg = '{}\n*****（为节约空间，只保存了前10000个字符）*****'.format(
                                         response_body_msg[:10000])
-                                msg = '请求地址：\n{}\n' \
-                                      '请求方式：\n{}\n' \
-                                      '请求头：\n{}\n' \
-                                      '请求体：\n{}\n' \
-                                      '响应状态：\n{} {}\n' \
-                                      '响应头：\n{}\n' \
-                                      '响应体：\n{}\n{}'.format(
-                                    self.api_url,
-                                    self.api_method,
-                                    pretty_request_header,
-                                    self.api_body,
-                                    response.status_code, response.reason,
-                                    pretty_response_header,
-                                    response_body_msg, suffix_msg)
+                                msg = f'''Request URL: \n{self.api_url}
+Request Method: {self.api_method}
+Request Header: \n{pretty_request_header}
+Request Body: \n{self.api_body}
+====================
+Response Code: {response.status_code} {response.reason}
+Response Header: \n{pretty_response_header}
+Response Body: \n{response_body_msg}
+====================
+{suffix_msg}'''
 
                                 if self.save_as and self.api_data:
                                     if self.run_result[0] == 'p':
@@ -815,6 +813,16 @@ class VicStep:
                                         verify_result = False
                                     msg = var.set_variable(self.save_as, verify_result)
                                     self.run_result[1] = '{}\n==========\n{}'.format(self.run_result[1], msg)
+
+                        elif ac == 'API_CREATE_HTTP_SESSION':
+                            self.vic_case.session = api_method.create_session()
+                            msg = f"Created new session: {self.vic_case.session}"
+                            self.run_result = ['p', msg]
+
+                        elif ac == 'API_DELETE_HTTP_SESSION':
+                            self.vic_case.session = None
+                            msg = f"Session has been deleted"
+                            self.run_result = ['p', msg]
 
                         # ===== DB =====
                         elif ac == 'DB_EXECUTE_SQL':
@@ -1061,6 +1069,8 @@ class VicStep:
                                 case_result_ = sub_case.case_result
                                 # 更新driver
                                 self.drs = self.vic_case.driver_container = sub_case.driver_container
+                                # 更新http请求步骤的session
+                                self.vic_case.session = sub_case.session
                                 self.step_result.has_sub_case = True
                                 if case_result_.error_count or case_result_.result_error:
                                     self.run_result = ['e', '子用例执行出错，请查看子用例中步骤的执行结果']

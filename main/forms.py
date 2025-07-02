@@ -120,6 +120,8 @@ class StepForm(forms.ModelForm):
     ui_step_interval = forms.FloatField(min_value=0, required=False)
     # 限制ui_index大于0
     ui_index = forms.IntegerField(min_value=0, required=False)
+    # 限制api_max_redirects大于0
+    api_max_redirects = forms.IntegerField(min_value=1, required=False)
 
     class Meta:
         model = Step

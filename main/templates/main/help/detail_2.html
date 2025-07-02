@@ -71,6 +71,12 @@
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#operate_9">count</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#operate_10">encode</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#operate_11">decode</a>
+                    </li>
                 </ul>
                 <div class="tab-content bg-light">
                     <div id="operate_1" class="tab-pane active" style="padding: 1em">
@@ -581,7 +587,7 @@
                                         <tr><td>#{json}#{"b":"#{==|int}#12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配（期望对象和实际对象中的值都先转换为int再进行比较）</td></tr>
                                         <tr><td>#{json}#{"a":"#{re}#\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
                                         <tr><td>#{json}#{"b":"#{re}#\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#["#{json}#{\\\"b\\\":\\\"#{re}#\d+\\\"}"]	</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配（json字符串中嵌套json操作符，双引号转义复杂，不建议使用）</td></tr>
+                                        <tr><td>#{json}#["#{json}#{\"b\":\"#{re}#\d+\"}"]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配（json字符串中嵌套json操作符，双引号转义复杂，不建议使用）</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -656,20 +662,24 @@
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col style="width: 250px"><col style="width: 250px"><col></colgroup>
+                                                <colgroup><col style="width: 310px"><col style="width: 340px"><col></colgroup>
                                                 <thead class="thead-light">
                                                     <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+","c":"Abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|re}#{"a":11,"b":"\d+","c":"Abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|re}#{"a":"\d+","b":12,"c":"Abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（期望对象的值12不是str，不会进入新一轮文本验证，将直接与实际对象相应的值进行对比，而int不等于str，故匹配失败）</td></tr>
-                                                    <tr><td>#{json|re}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{json|re[i]}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|re}#{"c":"#{re|i}#abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|re[i]}#{"c":"#{re}#abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（单独指定的正则匹配规则覆盖了默认的规则）</td></tr>
-                                                    <tr><td>#{json|re[i],l,d}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（不符合dict精确匹配）</td></tr>
+                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配2处</td></tr>
+                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+","c":"Abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配1处</td></tr>
+                                                    <tr><td>#{json|re}#{"a":11,"b":"\d+","c":"Abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|re}#{"a":"\d+","b":12,"c":"Abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（期望对象的值12不是str，不会进入新一轮文本验证，将直接与实际对象相应的值进行对比，而int不等于str，故匹配失败）</td></tr>
+                                                    <tr><td>#{json|re}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{json|re[i]}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|re}#{"c":"#{re|i}#abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|re[i]}#{"c":"#{re}#abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（单独指定的正则匹配规则覆盖了默认的规则）</td></tr>
+                                                    <tr><td>#{json|re}#{"c":"#{re|i}#abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>#{json|re[i,0]}#{"c":"#{re|i}#abc(\d+)"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配，但默认的re参数被覆盖，所以无返回</td></tr>
+                                                    <tr><td>#{json|re[i,0]}#{"c":"abc(\d+)"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配，返回13</td></tr>
+                                                    <tr><td>#{json|re}#{"c":"#{re|i,0}#abc(\d+)"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配，返回13</td></tr>
+                                                    <tr><td>#{json|re[i],l,d}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（不符合dict精确匹配）</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -680,7 +690,7 @@
                     </div>
                     <div id="operate_9" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">验证期望值在实际值中出现的次数是否符合期望，可以和其他操作符嵌套使用。</p>
+                            <p class="lead">验证期望值在实际值中出现的次数是否符合期望，可以和其他操作符嵌套使用。接受0或1参数。</p>
                             <p class="font-weight-bold">无参数</p>
                             <p>出现次数大于0次则通过。</p>
                             <div>
@@ -721,6 +731,169 @@
                                         <tr><td>#{count|$[x]$>0 or $[x]$<2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="operate_10" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">对文本进行编码操作并返回操作后的值。接受1或2个参数。</p>
+                            <p class="font-weight-bold">参数</p>
+                            <p>参数1代表<span class="font-weight-bold">编码类型</span>，目前支持的编码方式有："<span class="mark">url</span>", "<span class="mark">html</span>", "<span class="mark">md5</span>", "<span class="mark">sha1</span>", "<span class="mark">sha224</span>", "<span class="mark">sha256</span>"。</p>
+                            <p>参数2用于不同<span class="font-weight-bold">编码类型</span>的特别处理，详见下表。</p>
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#operate_10_1">url</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_10_2">html</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_10_3">（哈希函数）</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content" style="background-color: #f0f0f0 !important;">
+                                <div id="operate_10_1" class="tab-pane active" style="padding: 1em">
+                                    <div>
+                                        <p>对文本进行url编码。参数2用于保留不转换的字符。</p>
+                                        <p>不提供参数2代表默认情况，即只保留<span class="mark">/</span>不转换，其余特殊字符均转换。</p>
+                                        <p><span class="mark">none</span>代表全部特殊字符都转换。</p>
+                                        <p><span class="mark">save</span>代表保留<span class="mark">表达式后的字符</span>，其余特殊字符均转换。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{encode|url}#</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com/s%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
+                                                    <tr><td>#{encode|url,none}#</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com%2Fs%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
+                                                    <tr><td>#{encode|url,save}#/</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com/s%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
+                                                    <tr><td>#{encode|url,save}#/?=+</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_10_2" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>对文本进行html编码。参数2用于防止重复编码。</p>
+                                        <p>不提供参数2代表自动防止重复编码，即检查到文本已包含html编码就不再进行编码。</p>
+                                        <p><span class="mark">force</span>代表关闭重复编码检查，强制进行编码。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{encode|html}#</td><td>returnUrl=test2?b=2&c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
+                                                    <tr><td>#{encode|html,force}#</td><td>returnUrl=test2?b=2&c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
+                                                    <tr><td>#{encode|html}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
+                                                    <tr><td>#{encode|html,force}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>returnUrl=test2?b=2&amp;amp;amp;c=3</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_10_3" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>对文本进行对应的哈希编码。</p>
+                                        <p>支持的哈希函数："<span class="mark">md5</span>", "<span class="mark">sha1</span>", "<span class="mark">sha224</span>", "<span class="mark">sha256</span>"</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{encode|md5}#</td><td>abc123</td><td>e99a18c428cb38d5f260853678922e03</td></tr>
+                                                    <tr><td>#{encode|sha1}#</td><td>abc123</td><td>6367c48dd193d56ea7b0baad25b19455e529f5ee</td></tr>
+                                                    <tr><td>#{encode|sha224}#</td><td>abc123</td><td>5c69bb695cc29b93d655e1a4bb5656cda624080d686f74477ea09349</td></tr>
+                                                    <tr><td>#{encode|sha256}#</td><td>abc123</td><td>6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="operate_11" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">对文本进行解码操作并返回操作后的值。接受1或2个参数。</p>
+                            <p class="font-weight-bold">参数</p>
+                            <p>参数1代表<span class="font-weight-bold">解码类型</span>，目前支持的解码方式有："<span class="mark">url</span>", "<span class="mark">html</span>"。</p>
+                            <p>参数2用于不同<span class="font-weight-bold">解码类型</span>的特别处理，详见下表。</p>
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#operate_11_1">url</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_11_2">html</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_11_3">jwt</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content" style="background-color: #f0f0f0 !important;">
+                                <div id="operate_11_1" class="tab-pane active" style="padding: 1em">
+                                    <div>
+                                        <p>对文本进行url解码。参数2代表是否把<span class="mark">+</span>号解码为空格。</p>
+                                        <p>不提供参数2代表默认情况，即保留<span class="mark">+</span>号。</p>
+                                        <p><span class="mark">plus</span>代表把<span class="mark">+</span>号解码为空格。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{encode|url}#</td><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td></tr>
+                                                    <tr><td>#{encode|url,plus}#</td><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td><td>www.baidu.com/s?ie=UTF-8&wd=abc d</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_11_2" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>对文本进行html解码。无后续参数。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{decode|html}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>returnUrl=test2?b=2&c=3</td></tr>
+                                                    <tr><td>#{decode|html}#</td><td>returnUrl=test2?b=2&amp;amp;amp;c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_11_3" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>对文本进行JWT（JSON Web Tokens）解码。无后续参数。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td style="white-space: nowrap;">#{decode|jwt}#</td><td style="word-break: break-all;">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</td><td>{"header": {"alg": "HS256", "typ": "JWT"}, "payload": {"sub": "1234567890", "name": "John Doe", "iat": 1516239022}}</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

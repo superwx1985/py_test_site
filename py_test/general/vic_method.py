@@ -78,8 +78,6 @@ def select_func(str_, variables, global_variables, logger=logging.getLogger('py_
                 value = get_timestamp_str_func(parameter)
             elif f == 'tst':
                 value = timestamp_to_time_str_func(parameter)
-            elif f == 'url':
-                value = encode_url_func(parameter)
             elif f == 'uuid':
                 value = get_uuid()
             elif f == 'slice':
@@ -109,11 +107,6 @@ def select_func(str_, variables, global_variables, logger=logging.getLogger('py_
                     value = get_time_func(parameter)
                 except ValueError:
                     raise ValueError('无法把{}转换为时间类型，请检查数据'.format(parameter))
-            elif f == 'jwt':
-                try:
-                    value = decode_jwt_func(parameter)
-                except Exception as e:
-                    raise ValueError(f'[{parameter}]无法作为JWT解密，请检查数据')
             elif f == 'cal':
                 eo = vic_eval.EvalObject(
                     parameter, vic_variables.get_variable_dict(variables, global_variables), logger)
@@ -282,16 +275,7 @@ def get_slice(str_):
     return new_str
 
 
-# 转换为URL编码
-def encode_url_func(str_):
-    try:
-        value = quote(str_)
-    except Exception as e:
-        raise ValueError('Cannot encode [' + str_ + ']. ' + str(e))
-    return value
-
-
-def decode_jwt_func(str_: str) -> (dict, dict):
+def decode_jwt_func(str_: str) -> dict:
     header_encoded, payload_encoded, signature = str_.split('.')
 
     # 解码 Base64 URL 编码的字符串
@@ -301,9 +285,9 @@ def decode_jwt_func(str_: str) -> (dict, dict):
         decoded_bytes = base64.urlsafe_b64decode(data + padding)
         return decoded_bytes.decode("utf-8")
 
-    header = decode_base64_url(header_encoded)
-    payload = decode_base64_url(payload_encoded)
-    return f'''{{"header": {header}, "payload": {payload}}}'''
+    header = json.loads(decode_base64_url(header_encoded))
+    payload = json.loads(decode_base64_url(payload_encoded))
+    return {"header": header, "payload": payload}
 
 
 if __name__ == '__main__':

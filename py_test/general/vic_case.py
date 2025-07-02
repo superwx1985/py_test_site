@@ -36,6 +36,7 @@ class VicCase:
         self.global_variables = vic_suite.global_variables
         self.public_elements = vic_suite.public_elements
         self.vic_step = vic_step
+        self.session = None if vic_step is None else vic_step.vic_case.session
 
         # 记录用例id以防递归调用
         if not parent_case_pk_list:

@@ -181,10 +181,12 @@ class Step(models.Model):
     api_headers = models.TextField(blank=True)
     api_body = models.TextField(blank=True)
     api_decode = models.CharField(max_length=255, blank=True)
+    api_allow_redirects = models.BooleanField(default=True)
+    api_max_redirects = models.IntegerField(null=True, blank=True)
     api_response_status = models.CharField(max_length=255, blank=True)
     api_data = models.TextField(blank=True)
     api_save = models.TextField(blank=True)
-    other_input = models.CharField(blank=True, max_length=100)
+    other_input = models.TextField(blank=True)
     other_data = models.TextField(blank=True)
     other_sub_case = models.ForeignKey(
         'main.Case', on_delete=models.SET_NULL, null=True, blank=True, related_name='step_sub_case')

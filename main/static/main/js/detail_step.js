@@ -239,6 +239,10 @@ function show_action_field($actionSelect, init) {
 		});
 		// 启用排序功能
 		sortable_api_save_as();
+	} else if (select_value === 'API_CREATE_HTTP_SESSION') {
+		introduce.children('div').text('创建HTTP请求的SESSION，后续所有的HTTP都会使用同一个SESSION（用于保存Cookies）。如果重复调用这个步骤，可以重置为新SESSION。');
+	} else if (select_value === 'API_CREATE_HTTP_SESSION') {
+		introduce.children('div').text('删除HTTP请求的SESSION，后续所有的HTTP都使用独立的临时SESSION。');
 	} else if ($.inArray(select_value, ["test"]) >= 0) {
 		console.error('未知的动作【' +select_value + '】')
 	}

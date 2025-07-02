@@ -63,5 +63,21 @@ def remove_line_break_from_both_ends(str_):
     return str_
 
 
+def detect_html_encoding(text):
+    """检测可能的多次html编码"""
+    patterns = [
+        "&amp;",   # &
+        "&lt;",    # <
+        "&gt;",    # >
+        "&quot;",  # "
+        "&apos;",   # '
+    ]
+
+    for pattern in patterns:
+        if pattern in text:
+            return True
+    return False
+
+
 if __name__ == '__main__':
     print(convert_string_to_float(""))
