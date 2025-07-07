@@ -42,7 +42,11 @@
                     const row = $('<tr></tr>');
                     row.append(`<td class="middle">${number}</td>`);
                     row.append(`<td class="vertical-align-middle">${key}</td>`);
-                    row.append(`<td><textarea style="width: 100%; display: block;">${value}</textarea></td>`);
+                    const ta = $('<textarea style="width: 100%; display: block;"></textarea>')
+                    ta.text(value)  // 保证插入的值保留html编码，例如&amp;
+                    const td = $('<td></td>')
+                    td.append(ta)
+                    row.append(td);
                     tbody.append(row);
                 });
     

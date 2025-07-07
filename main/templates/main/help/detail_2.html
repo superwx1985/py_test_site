@@ -34,7 +34,7 @@
                     <h2 class="text-center">文本验证操作符说明</h2>
                 {% endif %}
                 <p>
-                    在测试数据中使用<span class="mark">#{}#</span>标识文本验证操作符，通常由操作符及操作符参数构成，操作符及参数通过竖线分隔，如不提供参数，则竖线也应去掉，如<span class="mark">#{re}#</span>，<span class="mark">#{count|2}#</span>。操作符用于告知程序使用何种方法验证内容，参数用于修饰该方法，具体使用方法见下。
+                    在测试数据中使用<span class="mark">#{}#</span>标识文本验证操作符，通常由操作符及操作符参数构成，操作符及参数通过竖线分隔。<span class="text-danger">如不提供参数，则竖线也应去掉</span>，如：<span class="mark">#{re}#</span>，<span class="mark">#{count|2}#</span>。操作符用于告知程序使用何种方法验证内容，参数用于修饰该方法，具体使用方法见下。
                     <br>
                     <span class="font-weight-bold">注意：</span>
                     <br>
@@ -63,19 +63,22 @@
                         <a class="nav-link" data-toggle="tab" href="#operate_6"><=，>=，<，></a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_7">re</a>
+                        <a class="nav-link" data-toggle="tab" href="#operate_count">count</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_8">json</a>
+                        <a class="nav-link" data-toggle="tab" href="#operate_encode">encode</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_9">count</a>
+                        <a class="nav-link" data-toggle="tab" href="#operate_decode">decode</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_10">encode</a>
+                        <a class="nav-link" data-toggle="tab" href="#operate_re">re</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#operate_11">decode</a>
+                        <a class="nav-link" data-toggle="tab" href="#operate_json">json</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#operate_xpath">xpath</a>
                     </li>
                 </ul>
                 <div class="tab-content bg-light">
@@ -464,7 +467,216 @@
                             </div>
                         </div>
                     </div>
-                    <div id="operate_7" class="tab-pane" style="padding: 1em">
+                    <div id="operate_count" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">验证期望值在实际值中出现的次数是否符合期望，可以和其他操作符嵌套使用。接受0或1参数。</p>
+                            <p class="font-weight-bold">无参数</p>
+                            <p>出现次数大于0次则通过。</p>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>#{count}#test1</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count}#test4</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{count}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="font-weight-bold">有参数</p>
+                            <p>参数为期望的出现次数。参数可以用数字代表固定次数，也可以使用表达式进行高级匹配，在表达式中<span class="mark">$[x]$</span>代表实际出现的次数。</p>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>#{count|1}#test1</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|0}#test1</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|0}#test4</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|2}#test1</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{count|4}#test</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|3}##{re}#test\d+</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|4}##{re}#test\d+</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{count|2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|1}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{count|$[x]$>0 and $[x]$<=2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{count|$[x]$>0 and $[x]$<2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>#{count|$[x]$>0 or $[x]$<2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="operate_encode" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">对文本进行编码操作并返回操作后的值。接受1或2个参数。</p>
+                            <p class="font-weight-bold">参数</p>
+                            <p>参数1代表<span class="font-weight-bold">编码类型</span>，目前支持的编码方式有："<span class="mark">url</span>", "<span class="mark">html</span>", "<span class="mark">md5</span>", "<span class="mark">sha1</span>", "<span class="mark">sha224</span>", "<span class="mark">sha256</span>"。</p>
+                            <p>参数2用于不同<span class="font-weight-bold">编码类型</span>的特别处理，详见下表。</p>
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#operate_encode_1">url</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_encode_2">html</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_encode_3">（哈希函数）</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content" style="background-color: #f0f0f0 !important;">
+                                <div id="operate_encode_1" class="tab-pane active" style="padding: 1em">
+                                    <div>
+                                        <p>对文本进行url编码。参数2用于保留不转换的字符。</p>
+                                        <p>不提供参数2代表默认情况，即只保留<span class="mark">/</span>不转换，其余特殊字符均转换。</p>
+                                        <p><span class="mark">none</span>代表全部特殊字符都转换。</p>
+                                        <p><span class="mark">save</span>代表保留<span class="mark">表达式后的字符</span>，其余特殊字符均转换。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{encode|url}#</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com/s%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
+                                                    <tr><td>#{encode|url,none}#</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com%2Fs%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
+                                                    <tr><td>#{encode|url,save}#/</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com/s%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
+                                                    <tr><td>#{encode|url,save}#/?=+</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_encode_2" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>对文本进行html编码。参数2用于防止重复编码。</p>
+                                        <p>不提供参数2代表自动防止重复编码，即检查到文本已包含html编码就不再进行编码。</p>
+                                        <p><span class="mark">force</span>代表关闭重复编码检查，强制进行编码。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{encode|html}#</td><td>returnUrl=test2?b=2&c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
+                                                    <tr><td>#{encode|html,force}#</td><td>returnUrl=test2?b=2&c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
+                                                    <tr><td>#{encode|html}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
+                                                    <tr><td>#{encode|html,force}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>returnUrl=test2?b=2&amp;amp;amp;c=3</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_encode_3" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>对文本进行对应的哈希编码。</p>
+                                        <p>支持的哈希函数："<span class="mark">md5</span>", "<span class="mark">sha1</span>", "<span class="mark">sha224</span>", "<span class="mark">sha256</span>"</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{encode|md5}#</td><td>abc123</td><td>e99a18c428cb38d5f260853678922e03</td></tr>
+                                                    <tr><td>#{encode|sha1}#</td><td>abc123</td><td>6367c48dd193d56ea7b0baad25b19455e529f5ee</td></tr>
+                                                    <tr><td>#{encode|sha224}#</td><td>abc123</td><td>5c69bb695cc29b93d655e1a4bb5656cda624080d686f74477ea09349</td></tr>
+                                                    <tr><td>#{encode|sha256}#</td><td>abc123</td><td>6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="operate_decode" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">对文本进行解码操作并返回操作后的值。接受1或2个参数。</p>
+                            <p class="font-weight-bold">参数</p>
+                            <p>参数1代表<span class="font-weight-bold">解码类型</span>，目前支持的解码方式有："<span class="mark">url</span>", "<span class="mark">html</span>"。</p>
+                            <p>参数2用于不同<span class="font-weight-bold">解码类型</span>的特别处理，详见下表。</p>
+                            <ul class="nav nav-tabs" role="tablist">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#operate_decode_1">url</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_decode_2">html</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-toggle="tab" href="#operate_decode_3">jwt</a>
+                                </li>
+                            </ul>
+                            <div class="tab-content" style="background-color: #f0f0f0 !important;">
+                                <div id="operate_decode_1" class="tab-pane active" style="padding: 1em">
+                                    <div>
+                                        <p>对文本进行url解码。参数2代表是否把<span class="mark">+</span>号解码为空格。</p>
+                                        <p>不提供参数2代表默认情况，即保留<span class="mark">+</span>号。</p>
+                                        <p><span class="mark">plus</span>代表把<span class="mark">+</span>号解码为空格。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{encode|url}#</td><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td></tr>
+                                                    <tr><td>#{encode|url,plus}#</td><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td><td>www.baidu.com/s?ie=UTF-8&wd=abc d</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_decode_2" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>对文本进行html解码。无后续参数。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td>#{decode|html}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>returnUrl=test2?b=2&c=3</td></tr>
+                                                    <tr><td>#{decode|html}#</td><td>returnUrl=test2?b=2&amp;amp;amp;c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="operate_decode_3" class="tab-pane" style="padding: 1em">
+                                    <div>
+                                        <p>对文本进行JWT（JSON Web Tokens）解码。无后续参数。</p>
+                                        <div>
+                                            <span>例：</span>
+                                            <table class="table table-bordered table-sm">
+                                                <colgroup><col><col><col></colgroup>
+                                                <thead class="thead-light">
+                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr><td style="white-space: nowrap;">#{decode|jwt}#</td><td style="word-break: break-all;">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</td><td>{"header": {"alg": "HS256", "typ": "JWT"}, "payload": {"sub": "1234567890", "name": "John Doe", "iat": 1516239022}}</td></tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="operate_re" class="tab-pane" style="padding: 1em">
                         <div>
                             <p class="lead">把期望值视为正则表达式，把实际值转换为str进行正则匹配。接受0或多个参数。</p>
                             <p class="font-weight-bold">无参数</p>
@@ -496,7 +708,7 @@
                             <div>
                                 <span>匹配规则表（参数对大小写不敏感）：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <colgroup><col style="width: 7em"><col></colgroup>
                                     <thead class="thead-light">
                                         <tr><th class="middle">参数</th><th>匹配规则</th></tr>
                                     </thead>
@@ -548,7 +760,7 @@
                             </div>
                         </div>
                     </div>
-                    <div id="operate_8" class="tab-pane" style="padding: 1em">
+                    <div id="operate_json" class="tab-pane" style="padding: 1em">
                         <div>
                             <p class="lead">把期望值和实际值视为json字符串，双方都转换为对象后进行匹配。接受0或多个参数。</p>
                             <p>json字符串必须是符合规定格式的字符串，如：key必须为文本且使用双引号标识，value可以为文本或数字，为文本时需使用双引号标识。</p>
@@ -559,127 +771,131 @@
                             <div>
                                 <span>例：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col style="width: 320px"><col style="width: 250px"><col></colgroup>
+                                    <colgroup><col style="width: 320px"><col style="width: 250px"><col style="width: 60px"><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th></tr>
+                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th><th>备注</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{json}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#{"a":21}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#{"a":31}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{json}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#[{"a":11},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#[{"a":11},{"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#{"a":11,"b":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#{"a":11,"c":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{json}#{"a":11,"b":"12","c":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{json}#[{"a":11,"b":"12"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#[]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#[{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#[{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#[{},{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{json}#[{"a":11,"b":"12"},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#[{"a":11,"b":"12"},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#{"a":"11"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配（期望对象中的11是str类型，被视为无操作符的期望值进入新一轮文本验证，故实际对象中的11被自动转为了str）</td></tr>
-                                        <tr><td>#{json}#{"a":"#{===|str}#11"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（期望对象中的11被标识为完全匹配）</td></tr>
-                                        <tr><td>#{json}#{"b":12}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（期望对象的值12不是str，不会进入新一轮文本验证，将直接与实际对象相应的值进行对比，而int不等于str，故匹配失败）</td></tr>
-                                        <tr><td>#{json}#{"b":"#{==|int}#12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配（期望对象和实际对象中的值都先转换为int再进行比较）</td></tr>
-                                        <tr><td>#{json}#{"a":"#{re}#\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#{"b":"#{re}#\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{json}#["#{json}#{\"b\":\"#{re}#\d+\"}"]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配（json字符串中嵌套json操作符，双引号转义复杂，不建议使用）</td></tr>
+                                        <tr><td>#{json}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"a":21}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"a":31}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11},{"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"a":11,"b":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"a":11,"c":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"a":11,"b":"12","c":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11,"b":"12"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{},{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11,"b":"12"},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11,"b":"12"},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"a":"11"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>期望对象中的11是str类型，被视为无操作符的期望值进入新一轮文本验证，故实际对象中的11被自动转为了str</td></tr>
+                                        <tr><td>#{json}#{"a":"#{===|str}#11"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>期望对象中的11被标识为完全匹配</td></tr>
+                                        <tr><td>#{json}#{"b":12}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>期望对象的值12不是str，不会进入新一轮文本验证，将直接与实际对象相应的值进行对比，而int不等于str，故匹配失败</td></tr>
+                                        <tr><td>#{json}#{"b":"#{==|int}#12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>期望对象和实际对象中的值都先转换为int再进行比较</td></tr>
+                                        <tr><td>#{json}#{"a":"#{re}#\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"b":"#{re}#\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#["#{json}#{\"b\":\"#{re}#\d+\"}"]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>json字符串中嵌套json操作符，双引号转义复杂，不建议使用</td></tr>
                                     </tbody>
                                 </table>
                             </div>
                             <p class="font-weight-bold">有参数</p>
                             <p>参数为对象匹配使用的具体配置，下列参数可同时使用。</p>
-                            <h5>参数</h5>
+                            <p class="font-weight-bold">参数1</p>
                             <ul class="nav nav-tabs" role="tablist">
                                 <li class="nav-item">
-                                    <a class="nav-link active" data-toggle="tab" href="#operate_8_1">l</a>
+                                    <a class="nav-link active" data-toggle="tab" href="#operate_json_1">l</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" data-toggle="tab" href="#operate_8_2">d</a>
+                                    <a class="nav-link" data-toggle="tab" href="#operate_json_2">d</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" data-toggle="tab" href="#operate_8_3">re</a>
+                                    <a class="nav-link" data-toggle="tab" href="#operate_json_3">re</a>
                                 </li>
                             </ul>
                             <div class="tab-content" style="background-color: #f0f0f0 !important;">
-                                <div id="operate_8_1" class="tab-pane active" style="padding: 1em">
+                                <div id="operate_json_1" class="tab-pane active" style="padding: 1em">
                                     <div>
-                                        <p>对list使用精确匹配。如提供该参数，则两个list长度及顺序必须一致，而且对应的值相等才能匹配通过。</p>
+                                        <p>对列表使用精确匹配。如提供该参数，则两个列表长度及顺序必须一致，而且对应的值相等才能匹配通过。</p>
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col></colgroup>
+                                                <colgroup><col style="width: 220px"><col style="width: 250px"><col style="width: 60px"><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th></tr>
+                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th><th>备注</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{json|l}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|l}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{json|l}#[{"a":11},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|l}#[]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{json|l}#[{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{json|l}#[{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|l}#[{},{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>#{json|l}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|l}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>列表值的数量不一致</td></tr>
+                                                    <tr><td>#{json}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>不使用列表精确匹配时，只要列表包含表达式中的值即为匹配</td></tr>
+                                                    <tr><td>#{json|l}#[{"a":11},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|l}#[{"a":21},{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>列表值的顺序不一致</td></tr>
+                                                    <tr><td>#{json}#[{"a":21},{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>不使用列表精确匹配时，不考虑值的顺序</td></tr>
+                                                    <tr><td>#{json|l}#[]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>列表值的数量不一致</td></tr>
+                                                    <tr><td>#{json|l}#[{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>列表值的数量不一致</td></tr>
+                                                    <tr><td>#{json|l}#[{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>数据结构和表达式的期望一致，所以匹配</td></tr>
+                                                    <tr><td>#{json|l}#[{},{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>列表值的数量不一致</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
                                 </div>
-                                <div id="operate_8_2" class="tab-pane" style="padding: 1em">
+                                <div id="operate_json_2" class="tab-pane" style="padding: 1em">
                                     <div>
-                                        <p>对dict使用精确匹配。如提供该参数，则两个dict中的键值对数量必须一致，而且对应的值相等才能匹配通过。</p>
+                                        <p>对字典使用精确匹配。如提供该参数，则两个字典中的键值对数量必须一致，而且对应的值相等才能匹配通过。</p>
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col></colgroup>
+                                                <colgroup><col style="width: 330px"><col style="width: 250px"><col style="width: 60px"><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th></tr>
+                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th><th>备注</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{json|d}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{json|d}#{"a":11,"b":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|d}#{"b":"12","a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|d,l}#{"b":"12","a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|d}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|d,l}#[{"a":11,"b":"12"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（不符合list精确匹配）</td></tr>
-                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|d,l}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|d,l}#[{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（不符合dict精确匹配）</td></tr>
+                                                    <tr><td>#{json}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|d}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>键值对的数量和表达式不一致</td></tr>
+                                                    <tr><td>#{json|d}#{"a":11,"b":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>和其中一个字段完全相同</td></tr>
+                                                    <tr><td>#{json|d}#{"b":"12","a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>字典是无序的</td></tr>
+                                                    <tr><td>#{json|d,l}#{"b":"12","a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>虽然加入列表精确匹配，但表达式中并无列表</td></tr>
+                                                    <tr><td>#{json|d}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>键值对的数量和表达式不一致</td></tr>
+                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|d,l}#[{"a":11,"b":"12"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>列表值的数量不一致，不符合列表精确匹配</td></tr>
+                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>键值对的数量和表达式不一致</td></tr>
+                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|d,l}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|d,l}#[{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>表达式不提供键值对相当于要求键值对的数量为0</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
                                 </div>
-                                <div id="operate_8_3" class="tab-pane" style="padding: 1em">
+                                <div id="operate_json_3" class="tab-pane" style="padding: 1em">
                                     <div>
                                         <p>对象的值匹配时默认使用正则表达式匹配。如果对象的某个值单独指定了其他匹配方式，则该值单独使用其他匹配方式。在<span class="mark">re</span>后面可使用<span class="mark">[xxx]</span>指定正则匹配规则。</p>
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col style="width: 310px"><col style="width: 340px"><col></colgroup>
+                                                <colgroup><col style="width: 320px"><col style="width: 340px"><col style="width: 60px"><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th></tr>
+                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th><th>备注</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配2处</td></tr>
-                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+","c":"Abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配1处</td></tr>
-                                                    <tr><td>#{json|re}#{"a":11,"b":"\d+","c":"Abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|re}#{"a":"\d+","b":12,"c":"Abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（期望对象的值12不是str，不会进入新一轮文本验证，将直接与实际对象相应的值进行对比，而int不等于str，故匹配失败）</td></tr>
-                                                    <tr><td>#{json|re}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{json|re[i]}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|re}#{"c":"#{re|i}#abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|re[i]}#{"c":"#{re}#abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（单独指定的正则匹配规则覆盖了默认的规则）</td></tr>
-                                                    <tr><td>#{json|re}#{"c":"#{re|i}#abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{json|re[i,0]}#{"c":"#{re|i}#abc(\d+)"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配，但默认的re参数被覆盖，所以无返回</td></tr>
-                                                    <tr><td>#{json|re[i,0]}#{"c":"abc(\d+)"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配，返回13</td></tr>
-                                                    <tr><td>#{json|re}#{"c":"#{re|i,0}#abc(\d+)"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配，返回13</td></tr>
-                                                    <tr><td>#{json|re[i],l,d}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配（不符合dict精确匹配）</td></tr>
+                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>匹配2处</td></tr>
+                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+","c":"Abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>匹配1处</td></tr>
+                                                    <tr><td>#{json|re}#{"a":11,"b":"\d+","c":"Abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|re}#{"a":"\d+","b":12,"c":"Abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>期望对象的值12不是str，不会进入新一轮文本验证，将直接与实际对象相应的值进行对比，而int不等于str，故匹配失败</td></tr>
+                                                    <tr><td>#{json|re}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td></td></tr>
+                                                    <tr><td>#{json|re[i]}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|re}#{"c":"#{re|i}#abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|re[i]}#{"c":"#{re}#abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>单独指定的正则匹配规则覆盖了默认的规则</td></tr>
+                                                    <tr><td>#{json|re}#{"c":"#{re|i}#abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|re[i,0]}#{"c":"#{re|i}#abc(\d+)"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>默认的re参数被覆盖，所以无返回</td></tr>
+                                                    <tr><td>#{json|re[i,0]}#{"c":"abc(\d+)"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>返回13</td></tr>
+                                                    <tr><td>#{json|re}#{"c":"#{re|i,0}#abc(\d+)"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>返回13</td></tr>
+                                                    <tr><td>#{json|re[i],l,d}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>不符合字典精确匹配</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -688,212 +904,79 @@
                             </div>
                         </div>
                     </div>
-                    <div id="operate_9" class="tab-pane" style="padding: 1em">
+                    <div id="operate_xpath" class="tab-pane" style="padding: 1em">
                         <div>
-                            <p class="lead">验证期望值在实际值中出现的次数是否符合期望，可以和其他操作符嵌套使用。接受0或1参数。</p>
+                            <p class="lead">把期望值视为xpath表达式，把实际值解析为xml进行查找。接受0或1个参数。</p>
+                            <p>下面的例子均使用如下xml：</p> 
+                            <div class="jumbotron" style="padding: 10px 2px 10px 10px">
+                                <div class="text-left small">
+                                    <pre>&lt;root&gt;
+    &lt;lib:book xmlns:lib="http://example.com/library"&gt;
+        &lt;lib:row&gt;row lib&lt;/lib:row&gt;
+        &lt;lib:a class="1"&gt;a lib&lt;/lib:a&gt;
+    &lt;/lib:book&gt;
+    
+    &lt;doc:book xmlns:doc="http://example.com/document"&gt;
+        &lt;doc:title class="c3"&gt;title doc&lt;/doc:title&gt;
+        &lt;a class="2"&gt;a doc&lt;/a&gt;
+    &lt;/doc:book&gt;
+    
+    &lt;book xmlns="http://example.com/no-key"&gt;
+        &lt;title class="c3"&gt;title no key&lt;/title&gt;
+        &lt;a class="3"&gt;a no key&lt;/a&gt;
+    &lt;/book&gt;
+    
+    &lt;book&gt;&lt;title         class="c3"&gt;title no ns1&lt;/title&gt;         &lt;a class="4-1"&gt;a no ns1&lt;/a&gt;&lt;/book&gt;
+    &lt;book&gt;&lt;title         class="c3"&gt;title no ns2&lt;/title&gt;         &lt;a class="4-2"&gt;a no ns2&lt;/a&gt;&lt;/book&gt;
+&lt;/root&gt;</pre>
+                                </div>
+                            </div>
                             <p class="font-weight-bold">无参数</p>
-                            <p>出现次数大于0次则通过。</p>
+                            <p>无参数时只进行查找，不返回匹配到的值。</p>
                             <div>
                                 <span>例：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col><col><col></colgroup>
+                                    <colgroup><col style="width: 350px"><col style="width: 60px"><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th></tr>
+                                        <tr><th>期望值（文本验证表达式）</th><th class="middle">结果</th><th>备注</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{count}#test1</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count}#test4</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{count}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{xpath}#//book</td><td class="middle">匹配</td><td>匹配2次</td></tr>
+                                        <tr><td>#{xpath}#//book/a[@class="4-2"]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{xpath}#//doc:book</td><td class="middle">匹配</td><td></td>使用命名空间查找</tr>
+                                        <tr><td>#{xpath}#//doc:book/a</td><td class="middle">匹配</td><td></td>使用命名空间查找</tr>
+                                        <tr><td>#{xpath}#//doc:book/doc:title</td><td class="middle">匹配</td><td>使用命名空间查找</td></tr>
+                                        <tr><td>#{xpath}#//doc:book/title</td><td class="middle">不匹配</td><td>doc:book的title命名空间不正确</td></tr>
+                                        <tr><td>#{xpath}#//book/doc:title</td><td class="middle">不匹配</td><td>无命名空间的book的title命名空间不正确</td></tr>
+                                        <tr><td>#{xpath}#//_default:book/_default:a[@class="3"]</td><td class="middle">匹配</td><td>没有key的命名空间会自动赋予key=_default</td></tr>
+                                        <tr><td>#{xpath}#//_default:a[@class="3"]</td><td class="middle">匹配</td><td>没有key的命名空间会自动赋予key=_default</td></tr>
+                                        <tr><td>#{xpath}#//a[@class="3"]</td><td class="middle">不匹配</td><td>没有key的命名空间会自动赋予key=_default</td></tr>
                                     </tbody>
                                 </table>
                             </div>
                             <p class="font-weight-bold">有参数</p>
-                            <p>参数为期望的出现次数。参数可以用数字代表固定次数，也可以使用表达式进行高级匹配，在表达式中<span class="mark">$[x]$</span>代表实际出现的次数。</p>
+                            <p class="font-weight-bold">参数1</p>
+                            <p>参数1用于在多个匹配到的内容中选取一个。0代表返回第一个匹配的值，1代表第二个，以此类推。</p>
                             <div>
                                 <span>例：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col><col><col></colgroup>
+                                    <colgroup><col style="width: 350px"><col style="width: 60px"><col><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th></tr>
+                                        <tr><th>期望值（文本验证表达式）</th><th class="middle">结果</th><th>返回值</th><th>备注</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{count|1}#test1</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|0}#test1</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|0}#test4</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|2}#test1</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{count|4}#test</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|3}##{re}#test\d+</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|4}##{re}#test\d+</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{count|2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|1}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{count|$[x]$>0 and $[x]$<=2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|$[x]$>0 and $[x]$<2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{count|$[x]$>0 or $[x]$<2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>#{xpath|0}#//book</td><td class="middle">匹配</td><td><pre>&lt;book&gt;
+    &lt;title class="c3"&gt;title no ns1&lt;/title&gt;
+    &lt;a class="4-1"&gt;a no ns1&lt;/a&gt;
+&lt;/book&gt;</pre><td>匹配第1个</td></tr>
+                                        <tr><td>#{xpath|1}#//book</td><td class="middle">匹配</td><td><pre>&lt;book&gt;
+    &lt;title class="c3"&gt;title no ns1&lt;/title&gt;
+    &lt;a class="4-2"&gt;a no ns2&lt;/a&gt;
+&lt;/book&gt;</pre><td>匹配第2个</td></tr>
+                                        <tr><td>#{xpath|0}#//book/a/text()</td><td class="middle">匹配</td><td>a no ns1</td><td>通过text()获取元素的值</td></tr>
+                                        <tr><td>#{xpath|1}#//book/a/@class</td><td class="middle">匹配</td><td>4-2</td><td>通过@class获取元素的class属性</td></tr>
                                     </tbody>
                                 </table>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="operate_10" class="tab-pane" style="padding: 1em">
-                        <div>
-                            <p class="lead">对文本进行编码操作并返回操作后的值。接受1或2个参数。</p>
-                            <p class="font-weight-bold">参数</p>
-                            <p>参数1代表<span class="font-weight-bold">编码类型</span>，目前支持的编码方式有："<span class="mark">url</span>", "<span class="mark">html</span>", "<span class="mark">md5</span>", "<span class="mark">sha1</span>", "<span class="mark">sha224</span>", "<span class="mark">sha256</span>"。</p>
-                            <p>参数2用于不同<span class="font-weight-bold">编码类型</span>的特别处理，详见下表。</p>
-                            <ul class="nav nav-tabs" role="tablist">
-                                <li class="nav-item">
-                                    <a class="nav-link active" data-toggle="tab" href="#operate_10_1">url</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" data-toggle="tab" href="#operate_10_2">html</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" data-toggle="tab" href="#operate_10_3">（哈希函数）</a>
-                                </li>
-                            </ul>
-                            <div class="tab-content" style="background-color: #f0f0f0 !important;">
-                                <div id="operate_10_1" class="tab-pane active" style="padding: 1em">
-                                    <div>
-                                        <p>对文本进行url编码。参数2用于保留不转换的字符。</p>
-                                        <p>不提供参数2代表默认情况，即只保留<span class="mark">/</span>不转换，其余特殊字符均转换。</p>
-                                        <p><span class="mark">none</span>代表全部特殊字符都转换。</p>
-                                        <p><span class="mark">save</span>代表保留<span class="mark">表达式后的字符</span>，其余特殊字符均转换。</p>
-                                        <div>
-                                            <span>例：</span>
-                                            <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col></colgroup>
-                                                <thead class="thead-light">
-                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr><td>#{encode|url}#</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com/s%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
-                                                    <tr><td>#{encode|url,none}#</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com%2Fs%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
-                                                    <tr><td>#{encode|url,save}#/</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com/s%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
-                                                    <tr><td>#{encode|url,save}#/?=+</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td></tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="operate_10_2" class="tab-pane" style="padding: 1em">
-                                    <div>
-                                        <p>对文本进行html编码。参数2用于防止重复编码。</p>
-                                        <p>不提供参数2代表自动防止重复编码，即检查到文本已包含html编码就不再进行编码。</p>
-                                        <p><span class="mark">force</span>代表关闭重复编码检查，强制进行编码。</p>
-                                        <div>
-                                            <span>例：</span>
-                                            <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col></colgroup>
-                                                <thead class="thead-light">
-                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr><td>#{encode|html}#</td><td>returnUrl=test2?b=2&c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
-                                                    <tr><td>#{encode|html,force}#</td><td>returnUrl=test2?b=2&c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
-                                                    <tr><td>#{encode|html}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
-                                                    <tr><td>#{encode|html,force}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>returnUrl=test2?b=2&amp;amp;amp;c=3</td></tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="operate_10_3" class="tab-pane" style="padding: 1em">
-                                    <div>
-                                        <p>对文本进行对应的哈希编码。</p>
-                                        <p>支持的哈希函数："<span class="mark">md5</span>", "<span class="mark">sha1</span>", "<span class="mark">sha224</span>", "<span class="mark">sha256</span>"</p>
-                                        <div>
-                                            <span>例：</span>
-                                            <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col></colgroup>
-                                                <thead class="thead-light">
-                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr><td>#{encode|md5}#</td><td>abc123</td><td>e99a18c428cb38d5f260853678922e03</td></tr>
-                                                    <tr><td>#{encode|sha1}#</td><td>abc123</td><td>6367c48dd193d56ea7b0baad25b19455e529f5ee</td></tr>
-                                                    <tr><td>#{encode|sha224}#</td><td>abc123</td><td>5c69bb695cc29b93d655e1a4bb5656cda624080d686f74477ea09349</td></tr>
-                                                    <tr><td>#{encode|sha256}#</td><td>abc123</td><td>6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090</td></tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div id="operate_11" class="tab-pane" style="padding: 1em">
-                        <div>
-                            <p class="lead">对文本进行解码操作并返回操作后的值。接受1或2个参数。</p>
-                            <p class="font-weight-bold">参数</p>
-                            <p>参数1代表<span class="font-weight-bold">解码类型</span>，目前支持的解码方式有："<span class="mark">url</span>", "<span class="mark">html</span>"。</p>
-                            <p>参数2用于不同<span class="font-weight-bold">解码类型</span>的特别处理，详见下表。</p>
-                            <ul class="nav nav-tabs" role="tablist">
-                                <li class="nav-item">
-                                    <a class="nav-link active" data-toggle="tab" href="#operate_11_1">url</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" data-toggle="tab" href="#operate_11_2">html</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" data-toggle="tab" href="#operate_11_3">jwt</a>
-                                </li>
-                            </ul>
-                            <div class="tab-content" style="background-color: #f0f0f0 !important;">
-                                <div id="operate_11_1" class="tab-pane active" style="padding: 1em">
-                                    <div>
-                                        <p>对文本进行url解码。参数2代表是否把<span class="mark">+</span>号解码为空格。</p>
-                                        <p>不提供参数2代表默认情况，即保留<span class="mark">+</span>号。</p>
-                                        <p><span class="mark">plus</span>代表把<span class="mark">+</span>号解码为空格。</p>
-                                        <div>
-                                            <span>例：</span>
-                                            <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col></colgroup>
-                                                <thead class="thead-light">
-                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr><td>#{encode|url}#</td><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td></tr>
-                                                    <tr><td>#{encode|url,plus}#</td><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td><td>www.baidu.com/s?ie=UTF-8&wd=abc d</td></tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="operate_11_2" class="tab-pane" style="padding: 1em">
-                                    <div>
-                                        <p>对文本进行html解码。无后续参数。</p>
-                                        <div>
-                                            <span>例：</span>
-                                            <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col></colgroup>
-                                                <thead class="thead-light">
-                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr><td>#{decode|html}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>returnUrl=test2?b=2&c=3</td></tr>
-                                                    <tr><td>#{decode|html}#</td><td>returnUrl=test2?b=2&amp;amp;amp;c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div id="operate_11_3" class="tab-pane" style="padding: 1em">
-                                    <div>
-                                        <p>对文本进行JWT（JSON Web Tokens）解码。无后续参数。</p>
-                                        <div>
-                                            <span>例：</span>
-                                            <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col></colgroup>
-                                                <thead class="thead-light">
-                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
-                                                </thead>
-                                                <tbody>
-                                                    <tr><td style="white-space: nowrap;">#{decode|jwt}#</td><td style="word-break: break-all;">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</td><td>{"header": {"alg": "HS256", "typ": "JWT"}, "payload": {"sub": "1234567890", "name": "John Doe", "iat": 1516239022}}</td></tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>

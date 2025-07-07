@@ -6,8 +6,8 @@ import html
 import json
 from copy import deepcopy
 from urllib.parse import quote, unquote, unquote_plus
-
 from py_test.general.vic_method import decode_jwt_func
+from py_test.vic_test.vic_xml import vic_find_xml
 from py_test.vic_tools import vic_eval
 from py_test.vic_tools.vic_date_handle import str_to_time
 from py_test.vic_tools.attr_display import AttrDisplay
@@ -329,7 +329,7 @@ def replace_control_character_in_json(json_):
         "\f", "#{$f}#").replace("\r", "#{$r}#").replace("\a", "#{$a}#").replace("\\", "#{$}#")
 
 
-def get_python_vaild_json(json_):
+def get_python_valid_json(json_):
     json_ = json_.replace('\\"', '#{$dq}#')  # 把转义的双引号暂时替换为其他符号，防止循环替换时被找到
     json_ = replace_control_character(json_, replace_control_character_in_json, '"', '"')
     json_ = json_.replace("\b", "").replace("\t", "").replace("\n", "").replace("\f", "").replace("\r", "").replace(
@@ -379,7 +379,7 @@ def restore_control_character_in_list(list_, f):
 
 
 # 还原对象中被替换的特殊符号
-def restore_control_character_in_objecr(object_, f):
+def restore_control_character_in_object(object_, f):
     if dict == type(object_):
         return restore_control_character_in_dict(object_, f)
     elif list == type(object_):
@@ -582,7 +582,7 @@ def find_with_condition(
                 match_index = None
                 if len(parameter_list) >= 1:
                     re_parameter = parameter_list[0]
-                if len(parameter_list) == 2:
+                if len(parameter_list) >= 2:
                     match_index = int(parameter_list[1]) if parameter_list[1].isdigit() else None
                 flags = generate_reg_flags(re_parameter)
                 _re_result = re.findall(condition_value, str(data), flags)
@@ -595,11 +595,11 @@ def find_with_condition(
             # json比较
             elif first_operator == 'json':
                 try:
-                    condition_object = json.loads(get_python_vaild_json(condition_value))
+                    condition_object = json.loads(get_python_valid_json(condition_value))
                 except ValueError:
                     raise ValueError(
                         "Cannot change [{}] {} to json object.".format(condition_value, type(condition_value)))
-                condition_object = restore_control_character_in_objecr(condition_object, restore_control_character)
+                condition_object = restore_control_character_in_object(condition_object, restore_control_character)
 
                 if isinstance(pre_data_object, (tuple, list, dict)):
                     data_object = pre_data_object
@@ -608,7 +608,7 @@ def find_with_condition(
                         data_object = data
                     else:
                         try:
-                            data_object = json.loads(get_python_vaild_json(data))
+                            data_object = json.loads(get_python_valid_json(data))
                         except ValueError:
                             raise ValueError("Cannot change [{}] {} to json object.".format(data, type(data)))
 
@@ -688,6 +688,21 @@ def find_with_condition(
                 is_matched = True
                 match_count = 1
                 re_result = [_result]
+
+            elif first_operator == 'xpath':
+                _result = vic_find_xml(data, condition_value)
+
+                match_index = None if len(parameter_list) == 0 else int(parameter_list[0])
+                if _result and match_index is None:
+                    is_matched = True
+                    match_count = len(_result)
+                elif _result and match_index < len(_result):
+                    is_matched = True
+                    match_count = 1
+                    re_result = [_result[match_index]]
+                else:
+                    is_matched = False
+                    match_count = 0
 
             else:
                 raise ValueError('Invalid operational character [' + first_operator + ']')
@@ -833,12 +848,149 @@ if __name__ == '__main__':
     </div>'''
     # r = find_with_condition(r'#{re|,0}#<input\sname="returnUrl"\stype="hidden"\svalue="(.*?)"\s/>|<input\stype="hidden"\sname="returnUrl"\svalue="(.*?)"\s/>', s)
     _ = '''www.baidu.com/s?ie=UTF-8&wd=abc+d'''
-    print(find_with_condition(r'#{encode|url}#', _))
-    print(find_with_condition(r'#{encode|url,none}#', _))
-    print(find_with_condition(r'#{encode|url,save}#/', _))
-    print(find_with_condition(r'#{encode|url,save}#/?=+', _))
-    _ = '''eyJhbGciOiJSUzI1NiIsImtpZCI6IjU0RTAzNDAwODUxNDBGOEI3QkNENjM0NjJFN0VFODMyQURGREM5NzVSUzI1NiIsInR5cCI6ImF0K2p3dCIsIng1dCI6IlZPQTBBSVVVRDR0N3pXTkdMbjdvTXEzOXlYVSJ9.eyJuYmYiOjE3NTE0NDQ5OTEsImV4cCI6MTc1MTQ1MjE5MSwiaXNzIjoiaHR0cHM6Ly9ndWMuZ2xvYmV0b29scy5zeXN0ZW1zOjQ0NiIsImF1ZCI6WyJBcHBsaWNhdGlvblVzYWdlVHJhY2tpbmdBcGkiLCJEZXZpY2VEYkFwaSIsIkVycm9yU2VydmljZUFwaSIsIkZsZWV0QXBpIiwiRzNTQXBpIiwiR2Z1QXBpIiwiR2ltc1NpZ25hbFIiLCJHSW90Q29yZUFwaSIsIkdJb3RQcm9kdWN0U2VydmljZUFwaSIsIkdsb2JlSW90RGFzaGJvYXJkQXBpIiwiR3VjQXBpIiwiSW90RERTQXBpIiwiTGljZW5zZVNlcnZpY2VBcGkiLCJQbm1zQ2FjaGVBcGkiLCJTaG9waWZ5QXBpIl0sImNsaWVudF9pZCI6IkdyZWVud29ya3NUb29scyIsInN1YiI6IjNmMGY5MWFlLTQ3YjctMTFmMC1hYjY5LTA2YjExMjg5Yzg0ZiIsImF1dGhfdGltZSI6MTc1MTQ0NDk5MCwiaWRwIjoibG9jYWwiLCJBY2Nlc3NpYmxlQXBwbGljYXRpb24iOiJHcmVlbndvcmtzVG9vbHMiLCJUZW5hbnQiOiJHTEIiLCJCYXNlTG9jYXRpb24iOiJYWFgiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiWGxpbmtVc2VyXzlmNjg0NzNjOTkxNTRlMmU4YjMwMWIwOWIzYjIwOGYwX0dyZWVud29ya3NUb29scyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6InZpYy53YW5nQGdsb2JldG9vbHMuY29tIiwiSXNFbWFpbENvbmZpcm1lZCI6dHJ1ZSwiUGFzc3dvcmRIYXNoIjoiQVFBQUFBSUFBWWFnQUFBQUVQb2V1T3QwcE1zYUNsK3pjc1FpeXpLT2tTdnF4VmRnYW5XUmFET1hvQWw1cnJHcnFUSnFCaksvUXZJUHVPR2IrUT09IiwianRpIjoiODI4MzU3RTYyREZCNzA5RTdEMkJDREYzQkIxMTA1REQiLCJpYXQiOjE3NTE0NDQ5OTEsInNjb3BlIjoiQXBwbGljYXRpb25Vc2FnZVRyYWNraW5nQXBpIERldmljZURiQXBpIEVycm9yU2VydmljZUFwaSBGbGVldEFwaSBHM1NBcGkgR2Z1QXBpIEdpbXNTaWduYWxSIEdJb3RDb3JlQXBpIEdJb3RQcm9kdWN0U2VydmljZUFwaSBHbG9iZUlvdERhc2hib2FyZEFwaSBHdWNBcGkgSW90RERTQXBpIExpY2Vuc2VTZXJ2aWNlQXBpIG9wZW5pZCBQbm1zQ2FjaGVBcGkgcHJvZmlsZSBTaG9waWZ5QXBpIG9mZmxpbmVfYWNjZXNzIiwiYW1yIjpbInB3ZCJdfQ.f_su5FwF8KrNp3-d5TVq0Kr1Y9uE0jAFhO0YV9L8f7ikAN7RQErlwpLZB2Ho31jER4re2Jge2IhXqmGdDcpTWGnsiTtWhUGQ3NtoGzD6i5Vxe28JtKpAqwfY8h9jCPp0oUwBcr55iuH1nBNJOFJP1DEqVEPL8N4UjDP8-bp63tpY7BRm0M4jxl1usW3nHuobL3zAdD2A6IJYuPqEEZNaEQ3iVmpQaA84efNAS4jI0_z41F62_cufBL2yAZKs55dsZhjekHUqhvprVNP3kL00VKkVTtx4C7nBLx_YWi9IwV-phUViZ64Z9-QeP0MQs8ENHGlMKGSC2wUQKSiM5YzqrA'''
-    print(find_with_condition(r'#{decode|jwt}#', _))
-    print(find_with_condition(r'#{decode|jwt}#', _).re_result[0])
+    # print(find_with_condition(r'#{encode|url}#', _))
+    # print(find_with_condition(r'#{encode|url,none}#', _))
+    # print(find_with_condition(r'#{encode|url,save}#/', _))
+    # print(find_with_condition(r'#{encode|url,save}#/?=+', _))
+    # _ = '''eyJhbGciOiJSUzI1NiIsImtpZCI6IjU0RTAzNDAwODUxNDBGOEI3QkNENjM0NjJFN0VFODMyQURGREM5NzVSUzI1NiIsInR5cCI6ImF0K2p3dCIsIng1dCI6IlZPQTBBSVVVRDR0N3pXTkdMbjdvTXEzOXlYVSJ9.eyJuYmYiOjE3NTE0NDQ5OTEsImV4cCI6MTc1MTQ1MjE5MSwiaXNzIjoiaHR0cHM6Ly9ndWMuZ2xvYmV0b29scy5zeXN0ZW1zOjQ0NiIsImF1ZCI6WyJBcHBsaWNhdGlvblVzYWdlVHJhY2tpbmdBcGkiLCJEZXZpY2VEYkFwaSIsIkVycm9yU2VydmljZUFwaSIsIkZsZWV0QXBpIiwiRzNTQXBpIiwiR2Z1QXBpIiwiR2ltc1NpZ25hbFIiLCJHSW90Q29yZUFwaSIsIkdJb3RQcm9kdWN0U2VydmljZUFwaSIsIkdsb2JlSW90RGFzaGJvYXJkQXBpIiwiR3VjQXBpIiwiSW90RERTQXBpIiwiTGljZW5zZVNlcnZpY2VBcGkiLCJQbm1zQ2FjaGVBcGkiLCJTaG9waWZ5QXBpIl0sImNsaWVudF9pZCI6IkdyZWVud29ya3NUb29scyIsInN1YiI6IjNmMGY5MWFlLTQ3YjctMTFmMC1hYjY5LTA2YjExMjg5Yzg0ZiIsImF1dGhfdGltZSI6MTc1MTQ0NDk5MCwiaWRwIjoibG9jYWwiLCJBY2Nlc3NpYmxlQXBwbGljYXRpb24iOiJHcmVlbndvcmtzVG9vbHMiLCJUZW5hbnQiOiJHTEIiLCJCYXNlTG9jYXRpb24iOiJYWFgiLCJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1lIjoiWGxpbmtVc2VyXzlmNjg0NzNjOTkxNTRlMmU4YjMwMWIwOWIzYjIwOGYwX0dyZWVud29ya3NUb29scyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6InZpYy53YW5nQGdsb2JldG9vbHMuY29tIiwiSXNFbWFpbENvbmZpcm1lZCI6dHJ1ZSwiUGFzc3dvcmRIYXNoIjoiQVFBQUFBSUFBWWFnQUFBQUVQb2V1T3QwcE1zYUNsK3pjc1FpeXpLT2tTdnF4VmRnYW5XUmFET1hvQWw1cnJHcnFUSnFCaksvUXZJUHVPR2IrUT09IiwianRpIjoiODI4MzU3RTYyREZCNzA5RTdEMkJDREYzQkIxMTA1REQiLCJpYXQiOjE3NTE0NDQ5OTEsInNjb3BlIjoiQXBwbGljYXRpb25Vc2FnZVRyYWNraW5nQXBpIERldmljZURiQXBpIEVycm9yU2VydmljZUFwaSBGbGVldEFwaSBHM1NBcGkgR2Z1QXBpIEdpbXNTaWduYWxSIEdJb3RDb3JlQXBpIEdJb3RQcm9kdWN0U2VydmljZUFwaSBHbG9iZUlvdERhc2hib2FyZEFwaSBHdWNBcGkgSW90RERTQXBpIExpY2Vuc2VTZXJ2aWNlQXBpIG9wZW5pZCBQbm1zQ2FjaGVBcGkgcHJvZmlsZSBTaG9waWZ5QXBpIG9mZmxpbmVfYWNjZXNzIiwiYW1yIjpbInB3ZCJdfQ.f_su5FwF8KrNp3-d5TVq0Kr1Y9uE0jAFhO0YV9L8f7ikAN7RQErlwpLZB2Ho31jER4re2Jge2IhXqmGdDcpTWGnsiTtWhUGQ3NtoGzD6i5Vxe28JtKpAqwfY8h9jCPp0oUwBcr55iuH1nBNJOFJP1DEqVEPL8N4UjDP8-bp63tpY7BRm0M4jxl1usW3nHuobL3zAdD2A6IJYuPqEEZNaEQ3iVmpQaA84efNAS4jI0_z41F62_cufBL2yAZKs55dsZhjekHUqhvprVNP3kL00VKkVTtx4C7nBLx_YWi9IwV-phUViZ64Z9-QeP0MQs8ENHGlMKGSC2wUQKSiM5YzqrA'''
+    # print(find_with_condition(r'#{decode|jwt}#', _))
+    # print(find_with_condition(r'#{decode|jwt}#', _).re_result[0])
+    _ = '''
+<root>
+    <lib:book xmlns:lib="http://example.com/library">
+        <lib:row>row lib</lib:row>
+        <lib:a class="1">a lib</lib:a>
+    </lib:book>
+    
+    <doc:book xmlns:doc="http://example.com/document">
+        <doc:title class="c3">title doc</doc:title>
+        <a class="2">a doc</a>
+    </doc:book>
+    
+    <book xmlns="http://example.com/no-key">
+        <title class="c3">title no key</title>
+        <a class="3">a no key</a>
+    </book>
+    
+    <book><title         class="c3">title no ns1</title>         <a class="4-1">a no ns1</a></book>
+    <book><title         class="c3">title no ns2</title>         <a class="4-2">a no ns2</a></book>
+</root>
+'''
+    # print(find_with_condition(r'#{xpath}#//doc:book/a/@class', _))
+    # print(find_with_condition(r'#{xpath}#//book/a/@class', _))
+    print(find_with_condition(r'#{xpath|0}#//book', _).re_result[0])
+    _ = '''
+    <!DOCTYPE html>
+    <html lang="en">
+    <!--[if IE 9 ]><html class="ie9"><![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Log in</title>
+
+        <!-- Vendor CSS -->
+        <link href="/vendors/bower_components/animate.css/animate.min.css" rel="stylesheet">
+        <link href="/vendors/bower_components/material-design-iconic-font/dist/css/material-design-iconic-font.min.css" rel="stylesheet">
+
+        <!-- CSS -->
+        <link href="/css/app.min.1.css" rel="stylesheet">
+        <link href="/css/app.min.2.css" rel="stylesheet">
+        <link href="/css/custom-css.css" rel="stylesheet">
+    </head>
+
+    <body class="login-content">
+
+        <!-- Login -->
+        <div class="lc-block toggled" id="l-login">
+            <form method="post" action="/Account/Login?Tenant=GLB">
+                <input type="hidden" name="returnUrl" value="/connect/authorize/callback?response_type=token&amp;client_id=gConnectWeb&amp;scope=gConnectIotDevice.GUCApi.Write%20gConnectIotDevice.GUCApi.Read%20gConnectIotDevice.offlineMessage.Write%20gConnectIotDevice.testModel.Write%20gConnectIotDevice.testModel.Read%20gConnectIotDevice.Device.Write%20gConnectIotDevice.Device.Read%20gConnectIotDevice.DeviceExtension.Write%20gConnectIotDevice.DeviceExtension.Read%20gConnectIotDevice.RLM.Write%20gConnectIotDevice.RLM.Read%20gConnectIotDevice.UserExtension.Write%20gConnectIotDevice.UserExtension.Read%20user.basic&amp;redirect_uri=https%3A%2F%2Fiot.eu.globetech-groups.com%2Fglb%2Frouter.html" />
+                <h3>User Login</h3>
+                <div class="text-danger text-left validation-summary-valid" data-valmsg-summary="true"><ul><li style="display:none"></li>
+    </ul></div>
+
+                <div class="input-group m-b-20">
+                    <span class="input-group-addon"><i class="zmdi zmdi-account"></i></span>
+                    <div class="fg-line">
+                        <input type="text" class="form-control" placeholder="Email" data-val="true" data-val-required="The Email field is required." id="Email" name="Email" value="">
+                    </div>
+                </div>
+
+                <div class="input-group m-b-20">
+                    <span class="input-group-addon"><i class="zmdi zmdi-lock"></i></span>
+                    <div class="fg-line">
+                        <input type="password" class="form-control" placeholder="Password" data-val="true" data-val-required="The Password field is required." id="Password" name="Password">
+                    </div>
+                </div>
+                <div>
+                    <a href="/Account/ForgotPassword?returnUrl=%2fconnect%2fauthorize%2fcallback%3fresponse_type%3dtoken%26client_id%3dgConnectWeb%26scope%3dgConnectIotDevice.GUCApi.Write%2520gConnectIotDevice.GUCApi.Read%2520gConnectIotDevice.offlineMessage.Write%2520gConnectIotDevice.testModel.Write%2520gConnectIotDevice.testModel.Read%2520gConnectIotDevice.Device.Write%2520gConnectIotDevice.Device.Read%2520gConnectIotDevice.DeviceExtension.Write%2520gConnectIotDevice.DeviceExtension.Read%2520gConnectIotDevice.RLM.Write%2520gConnectIotDevice.RLM.Read%2520gConnectIotDevice.UserExtension.Write%2520gConnectIotDevice.UserExtension.Read%2520user.basic%26redirect_uri%3dhttps%253A%252F%252Fiot.eu.globetech-groups.com%252Fglb%252Frouter.html">Forgot your password?</a>
+                    <br />
+                </div>
+                <div class="clearfix"></div>
 
 
+                <button class="btn btn-login btn-danger btn-float" type="submit"><i class="zmdi zmdi-arrow-forward"></i></button>
+
+            <input name="__RequestVerificationToken" type="hidden" value="CfDJ8ApRf9-jr0VLla_LOI1b6xduN18CtQC7-9-QOoCnnk3JDr5VP7Vne1jLYGQ-Fq9kp0hVU09DbmTsZifoECycCMss1HacNBeB6COdQym4W3aBwvq_-lKuxs1G5Vax7QxbHXKgksETUJeNgxFf5LTuw7s" /></form>
+        </div>
+
+
+        <!-- Older IE warning message -->
+        <!--[if lt IE 9]>
+            <div class="ie-warning">
+                <h1 class="c-white">Warning!!</h1>
+                <p>You are using an outdated version of Internet Explorer, please upgrade <br/>to any of the following web browsers to access this website.</p>
+                <div class="iew-container">
+                    <ul class="iew-download">
+                        <li>
+                            <a href="http://www.google.com/chrome/">
+                                <img src="img/browsers/chrome.png" alt="">
+                                <div>Chrome</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.mozilla.org/en-US/firefox/new/">
+                                <img src="img/browsers/firefox.png" alt="">
+                                <div>Firefox</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="http://www.opera.com">
+                                <img src="img/browsers/opera.png" alt="">
+                                <div>Opera</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.apple.com/safari/">
+                                <img src="img/browsers/safari.png" alt="">
+                                <div>Safari</div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="http://windows.microsoft.com/en-us/internet-explorer/download-ie">
+                                <img src="img/browsers/ie.png" alt="">
+                                <div>IE (New)</div>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <p>Sorry for the inconvenience!</p>
+            </div>
+        <![endif]-->
+        <!-- Javascript Libraries -->
+        <script src="/vendors/bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="/vendors/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+        <script src="/vendors/bower_components/Waves/dist/waves.min.js"></script>
+
+        <!-- Placeholder for IE9 -->
+        <!--[if IE 9 ]>
+            <script src="vendors/bower_components/jquery-placeholder/jquery.placeholder.min.js"></script>
+        <![endif]-->
+
+        <script src="/js/functions.js"></script>
+
+    </body>
+    </html>
+        '''
+    # print(find_with_condition(r'#{xpath}#//body//input[@name="returnUrl"]/@value', _))

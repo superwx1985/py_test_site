@@ -1013,7 +1013,7 @@ Response Body: \n{response_body_msg}
                                 else:
                                     msg = f'变量【{self.other_input}】无法匹配给定的文本操作符【{self.other_data}】'
                                     if find_result.error_msg:
-                                        msg = '{}\n在查找过程中出现错误：{}'.format(msg, find_result.error_msg)
+                                        msg = '{}\n在处理过程中出现错误：{}'.format(msg, find_result.error_msg)
                                     self.run_result = ['f', msg]
 
                         # 验证表达式

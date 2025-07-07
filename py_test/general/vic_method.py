@@ -276,7 +276,12 @@ def get_slice(str_):
 
 
 def decode_jwt_func(str_: str) -> dict:
-    header_encoded, payload_encoded, signature = str_.split('.')
+    str_list = str_.split(".")
+    if len(str_list) < 2:
+        raise ValueError("The JWT string should have at least 2 segments separated by a decimal point.")
+    else:
+        header_encoded = str_list[0]
+        payload_encoded = str_list[1]
 
     # 解码 Base64 URL 编码的字符串
     def decode_base64_url(data):

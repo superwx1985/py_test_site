@@ -50,7 +50,7 @@
                             let pause_button = $('<button id="pause_button" class="btn btn-warning"><i class="icon-pause"></i>&nbsp;暂停</button>');
                             let stop_button = $('<button id="stop_button" class="btn btn-danger"><i class="icon-stop"></i>&nbsp;中止</button>');
                             $modal_body_div.append(execute_button_div.append(pause_button).append(stop_button));
-                            let execute_log_outer_div = $('<div class="jumbotron" style="padding: 10px 0 10px 10px"></div>');
+                            let execute_log_outer_div = $('<div class="jumbotron" style="padding: 10px 2px 10px 10px"></div>');
                             let execute_log_div = $('<div id="execute_log_div" class="text-left small" style="height: 400px; overflow-y: auto;"></div>');
                             $modal_body_div.append(execute_log_outer_div.append(execute_log_div));
                             let my_modal = show_my_modal('execute_modal', 'modal-max', '', 'overflow-y: auto;', '<i class="icon-spinner icon-spin"></i>&nbsp;执行中...', $modal_body_div, {backdrop:'static'}, function() {$('#objects_form').submit()});

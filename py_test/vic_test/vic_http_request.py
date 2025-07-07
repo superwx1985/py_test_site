@@ -1,7 +1,6 @@
 import requests
 import uuid
 import json
-from loguru import logger
 
 
 def get_cookies_str(_cookies):
@@ -62,6 +61,7 @@ def vic_requests(
 
 
 if __name__ == '__main__':
+    from loguru import logger
     method = "POST"
     url = "https://api.globe-groups.com/globe/world/country/getRegion"
     headers = {"Content-Type": "application/json"}
