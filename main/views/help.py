@@ -40,7 +40,7 @@ def get_variables(variable_group_pk):
     return variables
 
 
-# 变量测试
+# 变量表达式测试
 def variable_test(request):
     condition = json.loads(request.POST.get('condition'))
     test_input = condition.get('test_input')
@@ -82,8 +82,7 @@ def variable_test(request):
     return JsonResponse({'state': state, 'message': msg, 'data': data})
 
 
-
-# 文本验证测试
+# 文本验证操作符测试
 def text_verification_test(request):
     condition = json.loads(request.POST.get('condition'))
     test_input = condition.get('test_input')
@@ -96,9 +95,8 @@ def text_verification_test(request):
         try:
             variables = get_variables(variable_group_pk)
             value = vic_method.replace_special_value(test_input, variables, logger=logger)
-
-            find_result = vic_find_object.find_with_condition(text_expression, value, logger=logger)
-
+            expression = vic_method.replace_special_value(text_expression, variables, logger=logger)
+            find_result = vic_find_object.find_with_condition(expression, value, logger=logger)
             data['value'] = value
             data['find_result'] = str(find_result)
             msg = '测试成功'

@@ -167,8 +167,12 @@ function create_table_and_register_event(is_init) {
             $(this).css('width', width); // 强制设置内联样式
         });
     }
+
+    if (!data_set.columns) {
+        update_data_set_input();
+    }
     if (data_set.columns.length === 0) { // 没有有效数据时不要占满屏幕
-        $('#myTable').css('width', COLUMN_WIDTHS.MOVE+COLUMN_WIDTHS.NUM);
+        $('#myTable').css('width', COLUMN_WIDTHS.MOVE+COLUMN_WIDTHS.NUM+100);
     }
 
     // 创建用于调整列宽的行，防止和行排序冲突
