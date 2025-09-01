@@ -2,6 +2,8 @@ from django.contrib import admin
 from .models import *
 from django.conf import settings
 from django.contrib.admin.views.main import ChangeList
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.admin import UserAdmin, GroupAdmin
 
 
 class MyAdmin(admin.AdminSite):
@@ -241,3 +243,7 @@ class DataSetAdmin(MyModelAdmin):
     list_filter = ('is_active', 'project', 'creator', 'created_date')
     list_editable = ('is_active', 'creator')
     search_fields = ('pk', 'name', 'keyword')
+
+
+admin_site.register(User, UserAdmin)
+admin_site.register(Group, GroupAdmin)
