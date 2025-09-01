@@ -50,16 +50,16 @@ def variable_test(request):
     state = 2
     data = dict()
     if test_input:
-        process = "===== 替换${}$标识的变量 ====="
+        process = f"{test_input}\n替换${{}}$标识的变量 =====>"
         try:
             variables = get_variables(variable_group_pk)
             value = vic_method.replace_special_value(test_input, variables, logger=logger)
-            process = f"{process}\n{value}\n===== 替换$[]$标识的变量 ====="
+            process = f"{process}\n{value}\n替换$[]$标识的变量 =====>"
 
             variable_dict = vic_variables.get_variable_dict(variables)
             eo = vic_eval.EvalObject(value, variable_dict, logger)
             eval_success, eval_result, final_expression = eo.get_eval_result()
-            process = f"{process}\n{final_expression}\n===== 计算表达式 =====\n{eval_result}"
+            process = f"{process}\n{final_expression}\n计算表达式 =====>\n{eval_result}"
             detail_msg = ""
             if eval_success:
                 msg = '成功'
