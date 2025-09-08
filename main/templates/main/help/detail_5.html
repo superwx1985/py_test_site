@@ -55,6 +55,9 @@
                     if (data.state === 1) {
                         toastr.success('测试成功');
                         result_div.append($("<pre>").addClass("text-success").text("输入的文本为：" + data.data.value));
+                        if (data.data.re_result) {
+                            result_div.append($("<pre>").addClass("text-success").text("处理后文本为：" + data.data.re_result));
+                        }
                         result_div.append($("<pre>").addClass("text-info").text("文本验证结果为：" + data.data.find_result));
                     } else {
                         toastr.error('测试出错');
@@ -90,7 +93,7 @@
                 </div>
             </div>
             <div>
-                <div class="font-weight-bold">实际值（待验证内容）</div>
+                <div class="font-weight-bold">实际值（待验证/处理内容）</div>
                 <textarea class="form-control" id="test_input" rows="3" placeholder="请输入要测试的文本或变量"></textarea>
             </div>
             <div>

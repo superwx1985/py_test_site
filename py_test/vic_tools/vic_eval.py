@@ -10,6 +10,7 @@ class EvalObject:
             logger.error('Eval expression should be a string')
             str(eval_expression)
         self.__eval_expression = eval_expression.replace('\n', '').replace('\r', '').strip()
+
         # 不建议把__valid_operator_list作为参数开放给调用者
         # =======================================================================
         # if isinstance(valid_operator_list, list):
@@ -17,12 +18,16 @@ class EvalObject:
         # else:
         #     raise ValueError('Valid operator list should be list class')
         # =======================================================================
+
         # 必须把较长的操作符放在前面
-        self.__valid_operator_list = ['round', 'float',
-                                      'bool',
-                                      'not', 'and', 'len', 'str', 'int',
-                                      'or', 'in', '==', '!=', '<=', '>=', '**', '//', '<<', '>>',
-                                      '<', '>', '(', ')', '[', ']', '+', '-', '*', '/', '%', '&', '|', '^', '~', ',']
+        self.__valid_operator_list = [
+            '.split',
+            'round', 'float',
+            'bool',
+            'not', 'and', 'len', 'str', 'int',
+            'or', 'in', '==', '!=', '<=', '>=', '**', '//', '<<', '>>',
+            '<', '>', '(', ')', '[', ']', '+', '-', '*', '/', '%', '&', '|', '^', '~', ','
+        ]
         if variable_dict is None:
             variable_dict = dict()
         if isinstance(variable_dict, dict):

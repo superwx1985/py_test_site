@@ -295,6 +295,19 @@ def get_first_text_in_re_result(re_result):
     return text
 
 
+def replace_str(s: str, old: str, new: str, count: int = 0, rev: bool = False) -> tuple:
+    old = old.replace("\\,", ",")
+    new = new.replace("\\,", ",")
+    if rev:
+        s = s[::-1]
+        old = old[::-1]
+        new = new[::-1]
+    result, replaced_count = re.subn(old, new, s, count=count)
+    if rev:
+        result = result[::-1]
+    return result, replaced_count
+
+
 # 替换成对标识里面的特殊字符，参数f为自定义替换函数，接收成对标识之间的字符串，返回替换后的字符串
 def replace_control_character(str_, f, start_str, end_str):
     # logger = get_thread_logger()
@@ -402,7 +415,7 @@ def resolve_operator(condition, start_str='#{', end_str='}#', default_operator_l
     # logger.debug('condition_value:\n%s' % condition_value)
     # logger.debug('data:\n%s' % data)
 
-    operator_list = operator_character.replace(start_str, '').replace(end_str, '').split(sep='|')
+    operator_list = operator_character.replace(start_str, '').replace(end_str, '').split(sep='|', maxsplit=1)
     first_operator = ''
     if operator_list:
         first_operator = operator_list[0].replace('\r', '').replace('\n', '').strip().lower()
@@ -447,6 +460,7 @@ def find_with_condition(
         # 处理有操作符的条件
         else:
             parameter_list = list()
+            operator_list_str = ""
             if len(operator_list) > 1:
                 operator_list_str = operator_list[1]
                 # 提取re[...]中的...另行处理，防止...中包含逗号导致分割出错
@@ -691,7 +705,6 @@ def find_with_condition(
 
             elif first_operator == 'xpath':
                 _result = vic_find_xml(data, condition_value)
-
                 match_index = None if len(parameter_list) == 0 else int(parameter_list[0])
                 if _result and match_index is None:
                     is_matched = True
@@ -703,6 +716,26 @@ def find_with_condition(
                 else:
                     is_matched = False
                     match_count = 0
+
+            elif first_operator == 'replace':
+                # 使用正则表达式分割：匹配前面没有反斜杠的逗号
+                # (?<!\\) 是负向预查，表示“前面不是反斜杠”
+                parameter_list = re.split(r'(?<!\\),', operator_list_str)
+                old = parameter_list[0]
+                new = "" if len(parameter_list) < 2 else parameter_list[1]
+                if len(parameter_list) < 3:
+                    count = 0
+                else:
+                    try:
+                        count = int(parameter_list[2])
+                    except ValueError:
+                        raise ValueError(f"参数3【{parameter_list[2]}】无法转换为一个正整数，请检查")
+
+                rev = False if len(parameter_list) < 4 else True
+                _result, match_count = replace_str(data, old, new, count, rev)
+                re_result = [_result]
+                if match_count:
+                    is_matched = True
 
             else:
                 raise ValueError('Invalid operational character [' + first_operator + ']')

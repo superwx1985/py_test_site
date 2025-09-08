@@ -65,7 +65,7 @@ def variable_test(request):
                 msg = '成功'
                 state = 1
             else:
-                detail_msg = f"不合法的表达式【{final_expression}】\n错误信息：{eval_result}\n注意：字符串应该用双引号括起来，检查引入的变量是否未定义"
+                detail_msg = f"不合法的表达式【{final_expression}】\n错误信息：{eval_result}\n注意：字符串应该用英文引号括起来，检查引入的变量是否未定义"
 
             data['value'] = str(eval_result)
             data['value_type'] = type(eval_result).__name__
@@ -91,7 +91,7 @@ def text_verification_test(request):
 
     success = False
     data = dict()
-    if condition.get:
+    if condition.get('test_input'):
         try:
             variables = get_variables(variable_group_pk)
             value = vic_method.replace_special_value(test_input, variables, logger=logger)
@@ -99,6 +99,7 @@ def text_verification_test(request):
             find_result = vic_find_object.find_with_condition(expression, value, logger=logger)
             data['value'] = value
             data['find_result'] = str(find_result)
+            data['re_result'] = find_result.re_result[0] if find_result.re_result else None
             msg = '测试成功'
             success = True
         except Exception as e:

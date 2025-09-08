@@ -80,6 +80,9 @@
                     <li class="nav-item">
                         <a class="nav-link" data-toggle="tab" href="#operate_xpath">xpath</a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#operate_replace">replace</a>
+                    </li>
                 </ul>
                 <div class="tab-content bg-light">
                     <div id="operate_1" class="tab-pane active" style="padding: 1em">
@@ -88,14 +91,14 @@
                             <div>
                                 <span>例：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                        <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>str</code></td><td>123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>str</code></td><td>123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>int</code></td><td>123</td><td class="middle">匹配</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -109,14 +112,14 @@
                             <div>
                                 <span>例：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                        <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{===}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{===}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{===}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>str</code></td><td>#{===}#123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>str</code></td><td>#{===}#123</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>int</code></td><td>#{===}#123</td><td class="middle">不匹配</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -125,101 +128,101 @@
                             <h5>参数</h5>
                             <ul class="nav nav-tabs" role="tablist">
                                 <li class="nav-item">
-                                    <a class="nav-link active" data-toggle="tab" href="#operate_1_1">str</a>
+                                    <a class="nav-link active" data-toggle="tab" href="#operate_2_1">str</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" data-toggle="tab" href="#operate_1_2">int</a>
+                                    <a class="nav-link" data-toggle="tab" href="#operate_2_2">int</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" data-toggle="tab" href="#operate_1_3">float</a>
+                                    <a class="nav-link" data-toggle="tab" href="#operate_2_3">float</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" data-toggle="tab" href="#operate_1_4">time或datetime</a>
+                                    <a class="nav-link" data-toggle="tab" href="#operate_2_4">time或datetime</a>
                                 </li>
                             </ul>
                             <div class="tab-content" style="background-color: #f0f0f0 !important;">
-                                <div id="operate_1_1" class="tab-pane active" style="padding: 1em">
+                                <div id="operate_2_1" class="tab-pane active" style="padding: 1em">
                                     <div>
                                         <p>将期望值转换为<code>str</code>类型再进行比较。</p>
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                    <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{===|str}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{===|str}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{===|str}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>123</td><td class="middle"><code>str</code></td><td>#{===|str}#123</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>1234</td><td class="middle"><code>str</code></td><td>#{===|str}#123</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>123</td><td class="middle"><code>int</code></td><td>#{===|str}#123</td><td class="middle">不匹配</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
                                 </div>
-                                <div id="operate_1_2" class="tab-pane" style="padding: 1em">
+                                <div id="operate_2_2" class="tab-pane" style="padding: 1em">
                                     <div>
                                         <p>将期望值转换为<code>int</code>类型再进行比较。</p>
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                    <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{===|int}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{===|int}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{===|int}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{===|int}#123</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{===|int}#abc</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">转换失败，报错</td></tr>
+                                                    <tr><td>123</td><td class="middle"><code>int</code></td><td>#{===|int}#123</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>1234</td><td class="middle"><code>int</code></td><td>#{===|int}#123</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>123</td><td class="middle"><code>str</code></td><td>#{===|int}#123</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>123.0</td><td class="middle"><code>float</code></td><td>#{===|int}#123</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>123</td><td class="middle"><code>int</code></td><td>#{===|int}#abc</td><td class="middle">转换失败，报错</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
                                 </div>
-                                <div id="operate_1_3" class="tab-pane" style="padding: 1em">
+                                <div id="operate_2_3" class="tab-pane" style="padding: 1em">
                                     <div>
                                         <p>将期望值转换为<code>float</code>类型再进行比较。</p>
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                    <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{===|float}#123.0</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{===|float}#123.0</td><td>123.4</td><td class="middle"><code>float</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{===|float}#123.0</td><td>123.0</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{===|float}#123.0</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{===|float}#abc</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">转换失败，报错</td></tr>
+                                                    <tr><td>123.0</td><td class="middle"><code>float</code></td><td>#{===|float}#123.0</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>123.4</td><td class="middle"><code>float</code></td><td>#{===|float}#123.0</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>123.0</td><td class="middle"><code>str</code></td><td>#{===|float}#123.0</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>123</td><td class="middle"><code>int</code></td><td>#{===|float}#123.0</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>123.0</td><td class="middle"><code>float</code></td><td>#{===|float}#abc</td><td class="middle">转换失败，报错</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
                                 </div>
-                                <div id="operate_1_4" class="tab-pane" style="padding: 1em">
+                                <div id="operate_2_4" class="tab-pane" style="padding: 1em">
                                     <div>
                                         <p>将期望值转换为<code>datetime</code>类型再进行比较。此参数后还可添加第二参数，用于指定接受的时间格式。多个参数用英文逗号分隔，时间格式不能含有逗号，时间格式参见操作符<span class="mark">t</span>的参数2。</p>
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                    <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{===|time}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{===|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{===|datetime}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{===|time}#2000-1-13 00:00:00.000</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{===|time}#2000-1-13 01:01:01.123</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{===|time}#1/13/2000,%m/%d/%Y</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{===|time}#2000-1-13 01:01:01.123</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{===|time}#2000-1-13</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{===|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{===|time}#2000-Jan-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">转换失败，报错</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{===|time}#2000-01-13</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{===|time}#2000-1-13</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{===|datetime}#2000-01-13</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{===|time}#2000-1-13 00:00:00.000</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td>#{===|time}#2000-1-13 01:01:01.123</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{===|time}#1/13/2000,%m/%d/%Y</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{===|time}#2000-1-13 01:01:01.123</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td>#{===|time}#2000-1-13</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>str</code></td><td>#{===|time}#2000-1-13</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{===|time}#2000-Jan-13</td><td class="middle">转换失败，报错</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -235,28 +238,28 @@
                             <div>
                                 <span>例：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                        <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{===}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{===}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{===}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{!==|int}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!==|int}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{!==|int}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{!==|int}#123</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{!==|time}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!==|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!==|datetime}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!==|time}#2000-1-13 00:00:00.000</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!==|time}#2000-1-13 01:01:01.123</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!==|time}#1/13/2000,%m/%d/%Y</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!==|time}#2000-1-13 01:01:01.123</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{!==|time}#2000-1-13</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{!==|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{!==|time}#2000-Jan-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">转换失败，报错</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>str</code></td><td>#{===}#123</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>str</code></td><td>#{===}#123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>int</code></td><td>#{===}#123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>int</code></td><td>#{!==|int}#123</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>int</code></td><td>#{!==|int}#123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>str</code></td><td>#{!==|int}#123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>123.0</td><td class="middle"><code>float</code></td><td>#{!==|int}#123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{!==|time}#2000-01-13</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{!==|time}#2000-1-13</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{!==|datetime}#2000-01-13</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{!==|time}#2000-1-13 00:00:00.000</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td>#{!==|time}#2000-1-13 01:01:01.123</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{!==|time}#1/13/2000,%m/%d/%Y</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{!==|time}#2000-1-13 01:01:01.123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td>#{!==|time}#2000-1-13</td><td class="middle">匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>str</code></td><td>#{!==|time}#2000-1-13</td><td class="middle">匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{!==|time}#2000-Jan-13</td><td class="middle">转换失败，报错</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -270,14 +273,14 @@
                             <div>
                                 <span>例：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                        <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{==}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{==}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{==}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>str</code></td><td>#{==}#123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>str</code></td><td>#{==}#123</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>int</code></td><td>#{==}#123</td><td class="middle">匹配</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -305,14 +308,14 @@
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                    <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{==|str}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|str}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{==|str}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
+                                                    <tr><td>123</td><td class="middle"><code>str</code></td><td>#{==|str}#123</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>1234</td><td class="middle"><code>str</code></td><td>#{==|str}#123</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>123</td><td class="middle"><code>int</code></td><td>#{==|str}#123</td><td class="middle">匹配</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -324,18 +327,18 @@
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                    <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{==|int}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|int}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{==|int}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|int}#123</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|int}#123</td><td>123.7</td><td class="middle"><code>float</code></td><td class="middle">匹配（浮点数被取整，并非四舍五入）</td></tr>
-                                                    <tr><td>#{==|int}#abc</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">期望值转换失败，报错</td></tr>
-                                                    <tr><td>#{==|int}#123</td><td>abc</td><td class="middle"><code>str</code></td><td class="middle">实际值转换失败，报错</td></tr>
+                                                    <tr><td>123</td><td class="middle"><code>int</code></td><td>#{==|int}#123</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>1234</td><td class="middle"><code>int</code></td><td>#{==|int}#123</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>123</td><td class="middle"><code>str</code></td><td>#{==|int}#123</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>123.0</td><td class="middle"><code>float</code></td><td>#{==|int}#123</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>123.7</td><td class="middle"><code>float</code></td><td>#{==|int}#123</td><td class="middle">匹配（浮点数被取整，并非四舍五入）</td></tr>
+                                                    <tr><td>123</td><td class="middle"><code>int</code></td><td>#{==|int}#abc</td><td class="middle">期望值转换失败，报错</td></tr>
+                                                    <tr><td>abc</td><td class="middle"><code>str</code></td><td>#{==|int}#123</td><td class="middle">实际值转换失败，报错</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -347,18 +350,18 @@
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                    <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{==|float}#123.0</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|float}#123.0</td><td>123.4</td><td class="middle"><code>float</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{==|float}#123.0</td><td>123.0</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|float}#123.0</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|float}#123.2</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{==|float}#abc</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">期望值转换失败，报错</td></tr>
-                                                    <tr><td>#{==|float}#123.0</td><td>abc</td><td class="middle"><code>str</code></td><td class="middle">实际值转换失败，报错</td></tr>
+                                                    <tr><td>123.0</td><td class="middle"><code>float</code></td><td>#{==|float}#123.0</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>123.4</td><td class="middle"><code>float</code></td><td>#{==|float}#123.0</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>123.0</td><td class="middle"><code>str</code></td><td>#{==|float}#123.0</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>123</td><td class="middle"><code>int</code></td><td>#{==|float}#123.0</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>123</td><td class="middle"><code>int</code></td><td>#{==|float}#123.2</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>123.0</td><td class="middle"><code>float</code></td><td>#{==|float}#abc</td><td class="middle">期望值转换失败，报错</td></tr>
+                                                    <tr><td>abc</td><td class="middle"><code>str</code></td><td>#{==|float}#123.0</td><td class="middle">实际值转换失败，报错</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -370,23 +373,23 @@
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                                <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                                    <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{==|time}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|datetime}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|time}#2000-1-13 00:00:00.000</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|time}#2000-1-13 01:01:01.123</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|time}#1/13/2000,%m/%d/%Y</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">实际值转换失败，报错</td></tr>
-                                                    <tr><td>#{==|time}#1/13/2000,%m/%d/%Y</td><td>1/13/2000</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|time}#2000-1-13 01:01:01.123</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{==|time}#2000-1-13</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                                    <tr><td>#{==|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                                    <tr><td>#{==|time}#2000-Jan-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">期望值转换失败，报错</td></tr>
-                                                    <tr><td>#{==|time}#2000-1-13</td><td>2000-Jan-13</td><td class="middle"><code>str</code></td><td class="middle">实际值转换失败，报错</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{==|time}#2000-01-13</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{==|time}#2000-1-13</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{==|datetime}#2000-01-13</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{==|time}#2000-1-13 00:00:00.000</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td>#{==|time}#2000-1-13 01:01:01.123</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{==|time}#1/13/2000,%m/%d/%Y</td><td class="middle">实际值转换失败，报错</td></tr>
+                                                    <tr><td>1/13/2000</td><td class="middle"><code>datetime</code></td><td>#{==|time}#1/13/2000,%m/%d/%Y</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{==|time}#2000-1-13 01:01:01.123</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td>#{==|time}#2000-1-13</td><td class="middle">不匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>str</code></td><td>#{==|time}#2000-1-13</td><td class="middle">匹配</td></tr>
+                                                    <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{==|time}#2000-Jan-13</td><td class="middle">期望值转换失败，报错</td></tr>
+                                                    <tr><td>2000-Jan-13</td><td class="middle"><code>str</code></td><td>#{==|time}#2000-1-13</td><td class="middle">实际值转换失败，报错</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -402,29 +405,29 @@
                             <div>
                                 <span>例：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                        <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{!=}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!=}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{!=}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!=|int}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!=|int}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{!=|int}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!=|int}#123</td><td>123.0</td><td class="middle"><code>float</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!=|int}#123</td><td>123.7</td><td class="middle"><code>float</code></td><td class="middle">不匹配（浮点数被取整，并非四舍五入）</td></tr>
-                                        <tr><td>#{!=|time}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!=|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!=|datetime}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!=|time}#2000-1-13 00:00:00.000</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!=|time}#2000-1-13 01:01:01.123</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!=|time}#1/13/2000,%m/%d/%Y</td><td>1/13/2000</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!=|time}#2000-1-13 01:01:01.123</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{!=|time}#2000-1-13</td><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{!=|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{!=|time}#2000-Jan-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">期望值转换失败，报错</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>str</code></td><td>#{!=}#123</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>str</code></td><td>#{!=}#123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>int</code></td><td>#{!=}#123</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>int</code></td><td>#{!=|int}#123</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>int</code></td><td>#{!=|int}#123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>str</code></td><td>#{!=|int}#123</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>123.0</td><td class="middle"><code>float</code></td><td>#{!=|int}#123</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>123.7</td><td class="middle"><code>float</code></td><td>#{!=|int}#123</td><td class="middle">不匹配（浮点数被取整，并非四舍五入）</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{!=|time}#2000-01-13</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{!=|time}#2000-1-13</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{!=|datetime}#2000-01-13</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{!=|time}#2000-1-13 00:00:00.000</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td>#{!=|time}#2000-1-13 01:01:01.123</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>1/13/2000</td><td class="middle"><code>datetime</code></td><td>#{!=|time}#1/13/2000,%m/%d/%Y</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{!=|time}#2000-1-13 01:01:01.123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>2000-01-13 01:01:01.123</td><td class="middle"><code>datetime</code></td><td>#{!=|time}#2000-1-13</td><td class="middle">匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>str</code></td><td>#{!=|time}#2000-1-13</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{!=|time}#2000-Jan-13</td><td class="middle">期望值转换失败，报错</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -437,31 +440,31 @@
                             <div>
                                 <span>例：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <colgroup><col><col style="width: 7em"><col><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                        <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{<}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">不匹配（'123'<'123'）</td></tr>
-                                        <tr><td>#{<=}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配（'123'<='123'）</td></tr>
-                                        <tr><td>#{<=}#123</td><td>abc</td><td class="middle"><code>str</code></td><td class="middle">匹配（'123'<='abc'）</td></tr>
-                                        <tr><td>#{<=}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">不匹配（'123'<'123'）</td></tr>
-                                        <tr><td>#{<=|int}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配（123<=123）</td></tr>
-                                        <tr><td>#{<|int}#123</td><td>12</td><td class="middle"><code>int</code></td><td class="middle">匹配（12<123）</td></tr>
-                                        <tr><td>#{<|int}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">不匹配（1234<123）</td></tr>
-                                        <tr><td>#{>|int}#123</td><td>12</td><td class="middle"><code>int</code></td><td class="middle">不匹配（12>123）</td></tr>
-                                        <tr><td>#{>|int}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">匹配（1234>123）</td></tr>
-                                        <tr><td>#{>|int}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配（1234>123）</td></tr>
-                                        <tr><td>#{>=|int}#123</td><td>123.7</td><td class="middle"><code>float</code></td><td class="middle">匹配（浮点数被取整123>=123）</td></tr>
-                                        <tr><td>#{>=|time}#2000-01-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配（2000-01-13 >=2000-01-13）</td></tr>
-                                        <tr><td>#{>|time}#2000-1-13</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配（2000-01-13 >2000-01-13）</td></tr>
-                                        <tr><td>#{>|time}#2000-1-13 00:00:00.000</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">不匹配（2000-01-13 00:00:00>2000-01-13 00:00:00）</td></tr>
-                                        <tr><td>#{>|time}#2000-1-13 00:00:00.001</td><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td class="middle">匹配（2000-01-13 00:00:00.001>2000-01-13 00:00:00）</td></tr>
-                                        <tr><td>#{<=|time}#2000-1-13 01:01:01.123</td><td>2000-01-13 01:01:01.121</td><td class="middle"><code>datetime</code></td><td class="middle">匹配（2000-01-13 01:01:01.121<=2000-01-13 01:01:01.123）</td></tr>
-                                        <tr><td>#{>|time}#1/13/2000,%m/%d/%Y</td><td>1/14/2000</td><td class="middle"><code>datetime</code></td><td class="middle">匹配（2000-01-14>2000-01-13）</td></tr>
-                                        <tr><td>#{<|time}#2000-1-13</td><td>1999-01-13</td><td class="middle"><code>str</code></td><td class="middle">匹配（1999-01-14<2000-01-13）</td></tr>
-                                        <tr><td>#{>|time}#1/13/2000,%m/%d/%Y</td><td>2000-01-12</td><td class="middle"><code>datetime</code></td><td class="middle">实际值转换失败，报错</td></tr>
-                                        <tr><td>#{>=|time}#2000-Jan-13</td><td>2000-01-12</td><td class="middle"><code>datetime</code></td><td class="middle">期望值转换失败，报错</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>str</code><td>#{<}#123</td></td><td class="middle">不匹配（'123'<'123'）</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>str</code></td><td>#{<=}#123</td><td class="middle">匹配（'123'<='123'）</td></tr>
+                                        <tr><td>abc</td><td class="middle"><code>str</code></td><td>#{<=}#123</td><td class="middle">匹配（'123'<='abc'）</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>int</code></td><td>#{<=}#123</td><td class="middle">不匹配（'123'<'123'）</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>int</code></td><td>#{<=|int}#123</td><td class="middle">匹配（123<=123）</td></tr>
+                                        <tr><td>12</td><td class="middle"><code>int</code></td><td>#{<|int}#123</td><td class="middle">匹配（12<123）</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>int</code></td><td>#{<|int}#123</td><td class="middle">不匹配（1234<123）</td></tr>
+                                        <tr><td>12</td><td class="middle"><code>int</code></td><td>#{>|int}#123</td><td class="middle">不匹配（12>123）</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>int</code></td><td>#{>|int}#123</td><td class="middle">匹配（1234>123）</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>str</code></td><td>#{>|int}#123</td><td class="middle">匹配（1234>123）</td></tr>
+                                        <tr><td>123.7</td><td class="middle"><code>float</code></td><td>#{>=|int}#123</td><td class="middle">匹配（浮点数被取整123>=123）</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{>=|time}#2000-01-13</td><td class="middle">匹配（2000-01-13 >=2000-01-13）</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{>|time}#2000-1-13</td><td class="middle">不匹配（2000-01-13 >2000-01-13）</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{>|time}#2000-1-13 00:00:00.000</td><td class="middle">不匹配（2000-01-13 00:00:00>2000-01-13 00:00:00）</td></tr>
+                                        <tr><td>2000-01-13</td><td class="middle"><code>datetime</code></td><td>#{>|time}#2000-1-13 00:00:00.001</td><td class="middle">匹配（2000-01-13 00:00:00.001>2000-01-13 00:00:00）</td></tr>
+                                        <tr><td>2000-01-13 01:01:01.121</td><td class="middle"><code>datetime</code></td><td>#{<=|time}#2000-1-13 01:01:01.123</td><td class="middle">匹配（2000-01-13 01:01:01.121<=2000-01-13 01:01:01.123）</td></tr>
+                                        <tr><td>1/14/2000</td><td class="middle"><code>datetime</code></td><td>#{>|time}#1/13/2000,%m/%d/%Y</td><td class="middle">匹配（2000-01-14>2000-01-13）</td></tr>
+                                        <tr><td>1999-01-13</td><td class="middle"><code>str</code></td><td>#{<|time}#2000-1-13</td><td class="middle">匹配（1999-01-14<2000-01-13）</td></tr>
+                                        <tr><td>2000-01-12</td><td class="middle"><code>datetime</code></td><td>#{>|time}#1/13/2000,%m/%d/%Y</td><td class="middle">实际值转换失败，报错</td></tr>
+                                        <tr><td>2000-01-12</td><td class="middle"><code>datetime</code></td><td>#{>=|time}#2000-Jan-13</td><td class="middle">期望值转换失败，报错</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -477,12 +480,12 @@
                                 <table class="table table-bordered table-sm">
                                     <colgroup><col><col><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th></tr>
+                                        <tr><th>实际值（待验证内容）</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{count}#test1</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count}#test4</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{count}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>test test1 test2 test3</td><td>#{count}#test1</td><td class="middle">匹配</td></tr>
+                                        <tr><td>test test1 test2 test3</td><td>#{count}#test4</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td>#{count}##{json}#{"a":1}</td><td class="middle">匹配</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -493,21 +496,21 @@
                                 <table class="table table-bordered table-sm">
                                     <colgroup><col><col><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th></tr>
+                                        <tr><th>实际值（待验证内容）</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{count|1}#test1</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|0}#test1</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|0}#test4</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|2}#test1</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{count|4}#test</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|3}##{re}#test\d+</td><td>test test1 test2 test3</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|4}##{re}#test\d+</td><td>test test1 test2 test3</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{count|2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|1}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{count|$[x]$>0 and $[x]$<=2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{count|$[x]$>0 and $[x]$<2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{count|$[x]$>0 or $[x]$<2}##{json}#{"a":1}</td><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td class="middle">匹配</td></tr>
+                                        <tr><td>test test1 test2 test3</td><td>#{count|1}#test1</td><td class="middle">匹配</td></tr>
+                                        <tr><td>test test1 test2 test3</td><td>#{count|0}#test1</td><td class="middle">匹配</td></tr>
+                                        <tr><td>test test1 test2 test3</td><td>#{count|0}#test4</td><td class="middle">匹配</td></tr>
+                                        <tr><td>test test1 test2 test3</td><td>#{count|2}#test1</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>test test1 test2 test3</td><td>#{count|4}#test</td><td class="middle">匹配</td></tr>
+                                        <tr><td>test test1 test2 test3</td><td>#{count|3}##{re}#test\d+</td><td class="middle">匹配</td></tr>
+                                        <tr><td>test test1 test2 test3</td><td>#{count|4}##{re}#test\d+</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td>#{count|2}##{json}#{"a":1}</td><td class="middle">匹配</td></tr>
+                                        <tr><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td>#{count|1}##{json}#{"a":1}</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td>#{count|$[x]$>0 and $[x]$<=2}##{json}#{"a":1}</td><td class="middle">匹配</td></tr>
+                                        <tr><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td>#{count|$[x]$>0 and $[x]$<2}##{json}#{"a":1}</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>[{"a":1,"b":"12"},{"a":1,"b":"22"}]</td><td>#{count|$[x]$>0 or $[x]$<2}##{json}#{"a":1}</td><td class="middle">匹配</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -537,18 +540,24 @@
                                         <p>不提供参数2代表默认情况，即只保留<span class="mark">/</span>不转换，其余特殊字符均转换。</p>
                                         <p><span class="mark">none</span>代表全部特殊字符都转换。</p>
                                         <p><span class="mark">save</span>代表保留<span class="mark">表达式后的字符</span>，其余特殊字符均转换。</p>
+                                        <p>下面的例子的待处理文本为</p> 
+                                        <div class="jumbotron" style="padding: 10px 2px 10px 10px">
+                                            <div class="text-left small">
+                                                <pre>www.baidu.com/s?ie=UTF-8&wd=abc+d</pre>
+                                            </div>
+                                        </div>
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
                                                 <colgroup><col><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                    <tr><th>操作符</th><th>处理结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{encode|url}#</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com/s%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
-                                                    <tr><td>#{encode|url,none}#</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com%2Fs%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
-                                                    <tr><td>#{encode|url,save}#/</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com/s%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
-                                                    <tr><td>#{encode|url,save}#/?=+</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td></tr>
+                                                    <tr><td>#{encode|url}#</td><td>www.baidu.com/s%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
+                                                    <tr><td>#{encode|url,none}#</td><td>www.baidu.com%2Fs%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
+                                                    <tr><td>#{encode|url,save}#/</td><td>www.baidu.com/s%3Fie%3DUTF-8%26wd%3Dabc%2Bd</td></tr>
+                                                    <tr><td>#{encode|url,save}#/?=+</td><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -564,13 +573,13 @@
                                             <table class="table table-bordered table-sm">
                                                 <colgroup><col><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                    <tr><th>待处理文本</th><th>操作符</th><th>处理结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{encode|html}#</td><td>returnUrl=test2?b=2&c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
-                                                    <tr><td>#{encode|html,force}#</td><td>returnUrl=test2?b=2&c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
-                                                    <tr><td>#{encode|html}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
-                                                    <tr><td>#{encode|html,force}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>returnUrl=test2?b=2&amp;amp;amp;c=3</td></tr>
+                                                    <tr><td>returnUrl=test2?b=2&c=3</td><td>#{encode|html}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
+                                                    <tr><td>returnUrl=test2?b=2&c=3</td><td>#{encode|html,force}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
+                                                    <tr><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>#{encode|html}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
+                                                    <tr><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>#{encode|html,force}#</td><td>returnUrl=test2?b=2&amp;amp;amp;c=3</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -580,18 +589,24 @@
                                     <div>
                                         <p>对文本进行对应的哈希编码。</p>
                                         <p>支持的哈希函数："<span class="mark">md5</span>", "<span class="mark">sha1</span>", "<span class="mark">sha224</span>", "<span class="mark">sha256</span>"</p>
+                                        <p>下面的例子的待处理文本为</p> 
+                                        <div class="jumbotron" style="padding: 10px 2px 10px 10px">
+                                            <div class="text-left small">
+                                                <pre>abc123</pre>
+                                            </div>
+                                        </div>
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
                                                 <colgroup><col><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                    <tr><th>操作符</th><th>处理结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{encode|md5}#</td><td>abc123</td><td>e99a18c428cb38d5f260853678922e03</td></tr>
-                                                    <tr><td>#{encode|sha1}#</td><td>abc123</td><td>6367c48dd193d56ea7b0baad25b19455e529f5ee</td></tr>
-                                                    <tr><td>#{encode|sha224}#</td><td>abc123</td><td>5c69bb695cc29b93d655e1a4bb5656cda624080d686f74477ea09349</td></tr>
-                                                    <tr><td>#{encode|sha256}#</td><td>abc123</td><td>6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090</td></tr>
+                                                    <tr><td>#{encode|md5}#</td><td>e99a18c428cb38d5f260853678922e03</td></tr>
+                                                    <tr><td>#{encode|sha1}#</td><td>6367c48dd193d56ea7b0baad25b19455e529f5ee</td></tr>
+                                                    <tr><td>#{encode|sha224}#</td><td>5c69bb695cc29b93d655e1a4bb5656cda624080d686f74477ea09349</td></tr>
+                                                    <tr><td>#{encode|sha256}#</td><td>6ca13d52ca70c883e0f0bb101e425a89e8624de51db2d2392593af6a84118090</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -628,11 +643,11 @@
                                             <table class="table table-bordered table-sm">
                                                 <colgroup><col><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                    <tr><th>待处理文本</th><th>操作符</th><th>处理结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{encode|url}#</td><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td></tr>
-                                                    <tr><td>#{encode|url,plus}#</td><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td><td>www.baidu.com/s?ie=UTF-8&wd=abc d</td></tr>
+                                                    <tr><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td><td>#{encode|url}#</td><td>www.baidu.com/s?ie=UTF-8&wd=abc+d</td></tr>
+                                                    <tr><td>www.baidu.com/s?ie=UTF-8%26wd=abc+d</td><td>#{encode|url,plus}#</td><td>www.baidu.com/s?ie=UTF-8&wd=abc d</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -646,11 +661,11 @@
                                             <table class="table table-bordered table-sm">
                                                 <colgroup><col><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                    <tr><th>待处理文本</th><th>操作符</th><th>处理结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{decode|html}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>returnUrl=test2?b=2&c=3</td></tr>
-                                                    <tr><td>#{decode|html}#</td><td>returnUrl=test2?b=2&amp;amp;amp;c=3</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
+                                                    <tr><td>returnUrl=test2?b=2&amp;amp;c=3</td><td>#{decode|html}#</td><td>returnUrl=test2?b=2&c=3</td></tr>
+                                                    <tr><td>returnUrl=test2?b=2&amp;amp;amp;c=3</td><td>#{decode|html}#</td><td>returnUrl=test2?b=2&amp;amp;c=3</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -664,10 +679,10 @@
                                             <table class="table table-bordered table-sm">
                                                 <colgroup><col><col><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>操作符</th><th>待处理文本</th><th>处理结果</th></tr>
+                                                    <tr><th>待处理文本</th><th>操作符</th><th>处理结果</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td style="white-space: nowrap;">#{decode|jwt}#</td><td style="word-break: break-all;">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</td><td>{"header": {"alg": "HS256", "typ": "JWT"}, "payload": {"sub": "1234567890", "name": "John Doe", "iat": 1516239022}}</td></tr>
+                                                    <tr><td style="word-break: break-all;">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c</td><td style="white-space: nowrap;">#{decode|jwt}#</td><td>{"header": {"alg": "HS256", "typ": "JWT"}, "payload": {"sub": "1234567890", "name": "John Doe", "iat": 1516239022}}</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -684,21 +699,21 @@
                             <div>
                                 <span>例：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <colgroup><col style="width: 300px"><col style="width: 7em"><col><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                        <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{re}#123</td><td>123</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{re}#123</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{re}#123</td><td>123</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{re}#123</td><td>1234</td><td class="middle"><code>int</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{re}#.*</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{re}#\d+</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{re}#^123$</td><td>1234</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{re}#name=Tom\d+</td><td>name=Tom001</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{re}#name=Tom\d+</td><td>name=Tomcat</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{re}#name=Tom\d+</td><td>name=tom001</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>str</code></td><td>#{re}#123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>str</code></td><td>#{re}#123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>123</td><td class="middle"><code>int</code></td><td>#{re}#123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>int</code></td><td>#{re}#123</td><td class="middle">匹配</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>str</code></td><td>#{re}#.*</td><td class="middle">匹配</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>str</code></td><td>#{re}#\d+</td><td class="middle">匹配</td></tr>
+                                        <tr><td>1234</td><td class="middle"><code>str</code></td><td>#{re}#^123$</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>name=Tom001</td><td class="middle"><code>str</code></td><td>#{re}#name=Tom\d+</td><td class="middle">匹配</td></tr>
+                                        <tr><td>name=Tomcat</td><td class="middle"><code>str</code></td><td>#{re}#name=Tom\d+</td><td class="middle">匹配</td></tr>
+                                        <tr><td>name=tom001</td><td class="middle"><code>str</code></td><td>#{re}#name=Tom\d+</td><td class="middle">不匹配</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -725,17 +740,17 @@
                             <div>
                                 <span>例：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <colgroup><col style="width: 300px"><col style="width: 7em"><col><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th></tr>
+                                        <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{re|I}#ABC</td><td>abc</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{re|S}#ab.c</td><td>ab\nc</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{re|S}#AB.C</td><td>ab\nc</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td></tr>
-                                        <tr><td>#{re|SI}#AB.C</td><td>ab\nc</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{re|IS}#AB.C</td><td>ab\nc</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
-                                        <tr><td>#{re|is}#AB.C</td><td>ab\nc</td><td class="middle"><code>str</code></td><td class="middle">匹配</td></tr>
+                                        <tr><td>abc</td><td class="middle"><code>str</code></td><td>#{re|I}#ABC</td><td class="middle">匹配</td></tr>
+                                        <tr><td>ab\nc</td><td class="middle"><code>str</code></td><td>#{re|S}#ab.c</td><td class="middle">匹配</td></tr>
+                                        <tr><td>ab\nc</td><td class="middle"><code>str</code></td><td>#{re|S}#AB.C</td><td class="middle">不匹配</td></tr>
+                                        <tr><td>ab\nc</td><td class="middle"><code>str</code></td><td>#{re|SI}#AB.C</td><td class="middle">匹配</td></tr>
+                                        <tr><td>ab\nc</td><td class="middle"><code>str</code></td><td>#{re|IS}#AB.C</td><td class="middle">匹配</td></tr>
+                                        <tr><td>ab\nc</td><td class="middle"><code>str</code></td><td>#{re|is}#AB.C</td><td class="middle">匹配</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -744,17 +759,17 @@
                             <div>
                                 <span>例：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col><col><col style="width: 7em"><col></colgroup>
+                                    <colgroup><col style="width: 300px"><col style="width: 7em"><col><col><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th class="middle">结果</th><th class="middle">返回值</th></tr>
+                                        <tr><th>实际值（待验证内容）</th><th class="middle">实际值类型</th><th>期望值（文本验证表达式）</th><th class="middle">结果</th><th class="middle">返回值</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{re|,0}#vic\.wang@</td><td>vic.wang@test.com</td><td class="middle"><code>str</code></td><td class="middle">匹配</td><td class="middle">vic.wang@</td></tr>
-                                        <tr><td>#{re|,0}#vic\.(.*)@</td><td>vic.wang@test.com</td><td class="middle"><code>str</code></td><td class="middle">匹配</td><td class="middle">wang</td></tr>
-                                        <tr><td>#{re|,0}#vic\.(.*)@</td><td>Vic.wang@test.com</td><td class="middle"><code>str</code></td><td class="middle">不匹配</td><td class="middle"></td></tr>
-                                        <tr><td>#{re|I,0}#vic\.(.*)@</td><td>Vic.wang@test.com</td><td class="middle"><code>str</code></td><td class="middle">匹配</td><td class="middle">wang</td></tr>
-                                        <tr><td>#{re|,0}#([\w.-]+)(?=@)</td><td>vic.wang@123.com;abc@456.com</td><td class="middle"><code>str</code></td><td class="middle">匹配</td><td class="middle">vic.wang</td></tr>
-                                        <tr><td>#{re|,1}#([\w.-]+)(?=@)</td><td>vic.wang@123.com;abc@456.com</td><td class="middle"><code>str</code></td><td class="middle">匹配</td><td class="middle">abc</td></tr>
+                                        <tr><td>vic.wang@test.com</td><td class="middle"><code>str</code></td><td>#{re|,0}#vic\.wang@</td><td class="middle">匹配</td><td class="middle">vic.wang@</td></tr>
+                                        <tr><td>vic.wang@test.com</td><td class="middle"><code>str</code></td><td>#{re|,0}#vic\.(.*)@</td><td class="middle">匹配</td><td class="middle">wang</td></tr>
+                                        <tr><td>Vic.wang@test.com</td><td class="middle"><code>str</code></td><td>#{re|,0}#vic\.(.*)@</td><td class="middle">不匹配</td><td class="middle"></td></tr>
+                                        <tr><td>Vic.wang@test.com</td><td class="middle"><code>str</code></td><td>#{re|I,0}#vic\.(.*)@</td><td class="middle">匹配</td><td class="middle">wang</td></tr>
+                                        <tr><td>vic.wang@123.com;abc@456.com</td><td class="middle"><code>str</code></td><td>#{re|,0}#([\w.-]+)(?=@)</td><td class="middle">匹配</td><td class="middle">vic.wang</td></tr>
+                                        <tr><td>vic.wang@123.com;abc@456.com</td><td class="middle"><code>str</code></td><td>#{re|,1}#([\w.-]+)(?=@)</td><td class="middle">匹配</td><td class="middle">abc</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -768,38 +783,44 @@
                             <p>对象中的值如果是<span>str</span>类型，则会被用于新一轮文本验证，可以嵌套使用文本验证操作符。</p>
                             <p class="font-weight-bold">无参数</p>
                             <p>期望对象存在于实际对象中，且相对的层级结构一致，则匹配成功。</p>
+                            <p>下面的例子的实际值为</p> 
+                            <div class="jumbotron" style="padding: 10px 2px 10px 10px">
+                                <div class="text-left small">
+                                    <pre>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</pre>
+                                </div>
+                            </div>
                             <div>
                                 <span>例：</span>
                                 <table class="table table-bordered table-sm">
-                                    <colgroup><col style="width: 320px"><col style="width: 250px"><col style="width: 60px"><col></colgroup>
+                                    <colgroup><col style="width: 350px"><col style="width: 60px"><col></colgroup>
                                     <thead class="thead-light">
-                                        <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th><th>备注</th></tr>
+                                        <tr><th>期望值（文本验证表达式）</th><th class="middle">结果</th><th>备注</th></tr>
                                     </thead>
                                     <tbody>
-                                        <tr><td>#{json}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#{"a":21}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#{"a":31}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td></td></tr>
-                                        <tr><td>#{json}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#[{"a":11},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#[{"a":11},{"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#{"a":11,"b":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#{"a":11,"c":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td></td></tr>
-                                        <tr><td>#{json}#{"a":11,"b":"12","c":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td></td></tr>
-                                        <tr><td>#{json}#[{"a":11,"b":"12"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#[]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#[{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#[{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#[{},{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td></td></tr>
-                                        <tr><td>#{json}#[{"a":11,"b":"12"},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#[{"a":11,"b":"12"},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#{"a":"11"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>期望对象中的11是str类型，被视为无操作符的期望值进入新一轮文本验证，故实际对象中的11被自动转为了str</td></tr>
-                                        <tr><td>#{json}#{"a":"#{===|str}#11"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>期望对象中的11被标识为完全匹配</td></tr>
-                                        <tr><td>#{json}#{"b":12}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>期望对象的值12不是str，不会进入新一轮文本验证，将直接与实际对象相应的值进行对比，而int不等于str，故匹配失败</td></tr>
-                                        <tr><td>#{json}#{"b":"#{==|int}#12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>期望对象和实际对象中的值都先转换为int再进行比较</td></tr>
-                                        <tr><td>#{json}#{"a":"#{re}#\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#{"b":"#{re}#\d+"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                        <tr><td>#{json}#["#{json}#{\"b\":\"#{re}#\d+\"}"]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>json字符串中嵌套json操作符，双引号转义复杂，不建议使用</td></tr>
+                                        <tr><td>#{json}#{"a":11}</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"a":21}</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"a":31}</td><td class="middle">不匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11},{"a":21}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11},{"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"a":11,"b":"12"}</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"a":11,"c":"12"}</td><td class="middle">不匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"a":11,"b":"12","c":"12"}</td><td class="middle">不匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11,"b":"12"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{},{}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{},{},{}]</td><td class="middle">不匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11,"b":"12"},{"a":21}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#[{"a":11,"b":"12"},{}]</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"a":"11"}</td><td class="middle">匹配</td><td>期望对象中的11是str类型，被视为无操作符的期望值进入新一轮文本验证，故实际对象中的11被自动转为了str</td></tr>
+                                        <tr><td>#{json}#{"a":"#{===|str}#11"}</td><td class="middle">不匹配</td><td>期望对象中的11被标识为完全匹配</td></tr>
+                                        <tr><td>#{json}#{"b":12}</td><td class="middle">不匹配</td><td>期望对象的值12不是str，不会进入新一轮文本验证，将直接与实际对象相应的值进行对比，而int不等于str，故匹配失败</td></tr>
+                                        <tr><td>#{json}#{"b":"#{==|int}#12"}</td><td class="middle">匹配</td><td>期望对象和实际对象中的值都先转换为int再进行比较</td></tr>
+                                        <tr><td>#{json}#{"a":"#{re}#\d+"}</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#{"b":"#{re}#\d+"}</td><td class="middle">匹配</td><td></td></tr>
+                                        <tr><td>#{json}#["#{json}#{\"b\":\"#{re}#\d+\"}"]</td><td class="middle">匹配</td><td>json字符串中嵌套json操作符，双引号转义复杂，不建议使用</td></tr>
                                     </tbody>
                                 </table>
                             </div>
@@ -821,24 +842,30 @@
                                 <div id="operate_json_1" class="tab-pane active" style="padding: 1em">
                                     <div>
                                         <p>对列表使用精确匹配。如提供该参数，则两个列表长度及顺序必须一致，而且对应的值相等才能匹配通过。</p>
+                                        <p>下面的例子的实际值为</p> 
+                                        <div class="jumbotron" style="padding: 10px 2px 10px 10px">
+                                            <div class="text-left small">
+                                                <pre>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</pre>
+                                            </div>
+                                        </div>
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col style="width: 220px"><col style="width: 250px"><col style="width: 60px"><col></colgroup>
+                                                <colgroup><col style="width: 220px"><col style="width: 60px"><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th><th>备注</th></tr>
+                                                    <tr><th>期望值（文本验证表达式）</th><th class="middle">结果</th><th>备注</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{json|l}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                                    <tr><td>#{json|l}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>列表值的数量不一致</td></tr>
-                                                    <tr><td>#{json}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>不使用列表精确匹配时，只要列表包含表达式中的值即为匹配</td></tr>
-                                                    <tr><td>#{json|l}#[{"a":11},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                                    <tr><td>#{json|l}#[{"a":21},{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>列表值的顺序不一致</td></tr>
-                                                    <tr><td>#{json}#[{"a":21},{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>不使用列表精确匹配时，不考虑值的顺序</td></tr>
-                                                    <tr><td>#{json|l}#[]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>列表值的数量不一致</td></tr>
-                                                    <tr><td>#{json|l}#[{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>列表值的数量不一致</td></tr>
-                                                    <tr><td>#{json|l}#[{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>数据结构和表达式的期望一致，所以匹配</td></tr>
-                                                    <tr><td>#{json|l}#[{},{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>列表值的数量不一致</td></tr>
+                                                    <tr><td>#{json|l}#{"a":11}</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|l}#[{"a":11}]</td><td class="middle">不匹配</td><td>列表值的数量不一致</td></tr>
+                                                    <tr><td>#{json}#[{"a":11}]</td><td class="middle">匹配</td><td>不使用列表精确匹配时，只要列表包含表达式中的值即为匹配</td></tr>
+                                                    <tr><td>#{json|l}#[{"a":11},{"a":21}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|l}#[{"a":21},{"a":11}]</td><td class="middle">不匹配</td><td>列表值的顺序不一致</td></tr>
+                                                    <tr><td>#{json}#[{"a":21},{"a":11}]</td><td class="middle">匹配</td><td>不使用列表精确匹配时，不考虑值的顺序</td></tr>
+                                                    <tr><td>#{json|l}#[]</td><td class="middle">不匹配</td><td>列表值的数量不一致</td></tr>
+                                                    <tr><td>#{json|l}#[{}]</td><td class="middle">不匹配</td><td>列表值的数量不一致</td></tr>
+                                                    <tr><td>#{json|l}#[{},{}]</td><td class="middle">匹配</td><td>数据结构和表达式的期望一致，所以匹配</td></tr>
+                                                    <tr><td>#{json|l}#[{},{},{}]</td><td class="middle">不匹配</td><td>列表值的数量不一致</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -847,26 +874,32 @@
                                 <div id="operate_json_2" class="tab-pane" style="padding: 1em">
                                     <div>
                                         <p>对字典使用精确匹配。如提供该参数，则两个字典中的键值对数量必须一致，而且对应的值相等才能匹配通过。</p>
+                                        <p>下面的例子的实际值为</p> 
+                                        <div class="jumbotron" style="padding: 10px 2px 10px 10px">
+                                            <div class="text-left small">
+                                                <pre>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</pre>
+                                            </div>
+                                        </div>
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col style="width: 330px"><col style="width: 250px"><col style="width: 60px"><col></colgroup>
+                                                <colgroup><col style="width: 330px"><col style="width: 60px"><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th><th>备注</th></tr>
+                                                    <tr><th>期望值（文本验证表达式）</th><th class="middle">结果</th><th>备注</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{json}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                                    <tr><td>#{json|d}#{"a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>键值对的数量和表达式不一致</td></tr>
-                                                    <tr><td>#{json|d}#{"a":11,"b":"12"}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>和其中一个字段完全相同</td></tr>
-                                                    <tr><td>#{json|d}#{"b":"12","a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>字典是无序的</td></tr>
-                                                    <tr><td>#{json|d,l}#{"b":"12","a":11}</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>虽然加入列表精确匹配，但表达式中并无列表</td></tr>
-                                                    <tr><td>#{json|d}#[{"a":11}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>键值对的数量和表达式不一致</td></tr>
-                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                                    <tr><td>#{json|d,l}#[{"a":11,"b":"12"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>列表值的数量不一致，不符合列表精确匹配</td></tr>
-                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"},{"a":21}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>键值对的数量和表达式不一致</td></tr>
-                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                                    <tr><td>#{json|d,l}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                                    <tr><td>#{json|d,l}#[{},{}]</td><td>[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>表达式不提供键值对相当于要求键值对的数量为0</td></tr>
+                                                    <tr><td>#{json}#{"a":11}</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|d}#{"a":11}</td><td class="middle">不匹配</td><td>键值对的数量和表达式不一致</td></tr>
+                                                    <tr><td>#{json|d}#{"a":11,"b":"12"}</td><td class="middle">匹配</td><td>和其中一个字段完全相同</td></tr>
+                                                    <tr><td>#{json|d}#{"b":"12","a":11}</td><td class="middle">匹配</td><td>字典是无序的</td></tr>
+                                                    <tr><td>#{json|d,l}#{"b":"12","a":11}</td><td class="middle">匹配</td><td>虽然加入列表精确匹配，但表达式中并无列表</td></tr>
+                                                    <tr><td>#{json|d}#[{"a":11}]</td><td class="middle">不匹配</td><td>键值对的数量和表达式不一致</td></tr>
+                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|d,l}#[{"a":11,"b":"12"}]</td><td class="middle">不匹配</td><td>列表值的数量不一致，不符合列表精确匹配</td></tr>
+                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"},{"a":21}]</td><td class="middle">不匹配</td><td>键值对的数量和表达式不一致</td></tr>
+                                                    <tr><td>#{json|d}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|d,l}#[{"a":11,"b":"12"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|d,l}#[{},{}]</td><td class="middle">不匹配</td><td>表达式不提供键值对相当于要求键值对的数量为0</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -875,27 +908,33 @@
                                 <div id="operate_json_3" class="tab-pane" style="padding: 1em">
                                     <div>
                                         <p>对象的值匹配时默认使用正则表达式匹配。如果对象的某个值单独指定了其他匹配方式，则该值单独使用其他匹配方式。在<span class="mark">re</span>后面可使用<span class="mark">[xxx]</span>指定正则匹配规则。</p>
+                                        <p>下面的例子的实际值为</p> 
+                                        <div class="jumbotron" style="padding: 10px 2px 10px 10px">
+                                            <div class="text-left small">
+                                                <pre>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</pre>
+                                            </div>
+                                        </div>
                                         <div>
                                             <span>例：</span>
                                             <table class="table table-bordered table-sm">
-                                                <colgroup><col style="width: 320px"><col style="width: 340px"><col style="width: 60px"><col></colgroup>
+                                                <colgroup><col style="width: 320px"><col style="width: 60px"><col></colgroup>
                                                 <thead class="thead-light">
-                                                    <tr><th>期望值（文本验证表达式）</th><th>实际值（待验证内容）</th><th class="middle">结果</th><th>备注</th></tr>
+                                                    <tr><th>期望值（文本验证表达式）</th><th class="middle">结果</th><th>备注</th></tr>
                                                 </thead>
                                                 <tbody>
-                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>匹配2处</td></tr>
-                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+","c":"Abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>匹配1处</td></tr>
-                                                    <tr><td>#{json|re}#{"a":11,"b":"\d+","c":"Abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                                    <tr><td>#{json|re}#{"a":"\d+","b":12,"c":"Abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>期望对象的值12不是str，不会进入新一轮文本验证，将直接与实际对象相应的值进行对比，而int不等于str，故匹配失败</td></tr>
-                                                    <tr><td>#{json|re}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td></td></tr>
-                                                    <tr><td>#{json|re[i]}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                                    <tr><td>#{json|re}#{"c":"#{re|i}#abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                                    <tr><td>#{json|re[i]}#{"c":"#{re}#abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>单独指定的正则匹配规则覆盖了默认的规则</td></tr>
-                                                    <tr><td>#{json|re}#{"c":"#{re|i}#abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td></td></tr>
-                                                    <tr><td>#{json|re[i,0]}#{"c":"#{re|i}#abc(\d+)"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>默认的re参数被覆盖，所以无返回</td></tr>
-                                                    <tr><td>#{json|re[i,0]}#{"c":"abc(\d+)"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>返回13</td></tr>
-                                                    <tr><td>#{json|re}#{"c":"#{re|i,0}#abc(\d+)"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">匹配</td><td>返回13</td></tr>
-                                                    <tr><td>#{json|re[i],l,d}#{"c":"abc\d+"}</td><td>[{"a":11,"b":"12","c":"Abc13"},{"a":21,"b":"22"}]</td><td class="middle">不匹配</td><td>不符合字典精确匹配</td></tr>
+                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+"}</td><td class="middle">匹配</td><td>匹配2处</td></tr>
+                                                    <tr><td>#{json|re}#{"a":"\d+","b":"\d+","c":"Abc\d+"}</td><td class="middle">匹配</td><td>匹配1处</td></tr>
+                                                    <tr><td>#{json|re}#{"a":11,"b":"\d+","c":"Abc\d+"}</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|re}#{"a":"\d+","b":12,"c":"Abc\d+"}</td><td class="middle">不匹配</td><td>期望对象的值12不是str，不会进入新一轮文本验证，将直接与实际对象相应的值进行对比，而int不等于str，故匹配失败</td></tr>
+                                                    <tr><td>#{json|re}#{"c":"abc\d+"}</td><td class="middle">不匹配</td><td></td></tr>
+                                                    <tr><td>#{json|re[i]}#{"c":"abc\d+"}</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|re}#{"c":"#{re|i}#abc\d+"}</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|re[i]}#{"c":"#{re}#abc\d+"}</td><td class="middle">不匹配</td><td>单独指定的正则匹配规则覆盖了默认的规则</td></tr>
+                                                    <tr><td>#{json|re}#{"c":"#{re|i}#abc\d+"}</td><td class="middle">匹配</td><td></td></tr>
+                                                    <tr><td>#{json|re[i,0]}#{"c":"#{re|i}#abc(\d+)"}</td><td class="middle">匹配</td><td>默认的re参数被覆盖，所以无返回</td></tr>
+                                                    <tr><td>#{json|re[i,0]}#{"c":"abc(\d+)"}</td><td class="middle">匹配</td><td>返回13</td></tr>
+                                                    <tr><td>#{json|re}#{"c":"#{re|i,0}#abc(\d+)"}</td><td class="middle">匹配</td><td>返回13</td></tr>
+                                                    <tr><td>#{json|re[i],l,d}#{"c":"abc\d+"}</td><td class="middle">不匹配</td><td>不符合字典精确匹配</td></tr>
                                                 </tbody>
                                             </table>
                                         </div>
@@ -975,6 +1014,37 @@
 &lt;/book&gt;</pre><td>匹配第2个</td></tr>
                                         <tr><td>#{xpath|0}#//book/a/text()</td><td class="middle">匹配</td><td>a no ns1</td><td>通过text()获取元素的值</td></tr>
                                         <tr><td>#{xpath|1}#//book/a/@class</td><td class="middle">匹配</td><td>4-2</td><td>通过@class获取元素的class属性</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="operate_replace" class="tab-pane" style="padding: 1em">
+                        <div>
+                            <p class="lead">对文本进行替换操作并返回操作后的值。接受1到4个参数。</p>
+                            <p class="font-weight-bold">参数1</p>
+                            <p>一个字符串，代表<span class="font-weight-bold">需要替换的字符</span>。</p>
+                            <p class="font-weight-bold">参数2</p>
+                            <p>一个字符串，代表<span class="font-weight-bold">替换后的字符，不提供或留空则删除需要替换的字符</span>。</p>
+                            <p class="font-weight-bold">参数3</p>
+                            <p>一个正整数，代表<span class="font-weight-bold">替换几次，不提供则全部替换</span>；默认为从左向右替换，如需从右向左，请使用参数4。</p>
+                            <p class="font-weight-bold">参数4</p>
+                            <p>可以是任意值，例如数字1，只要有值就代表<span class="font-weight-bold">从右向左替换</span>。</p>
+                            <p class="font-weight-bold">注意</p>
+                            <p>参数1及参数2的字符串如果需要使用逗号，需写作反斜杠逗号<span class="mark">\,</span>，如需使用反斜杠，则应写作2个反斜杠<span class="mark">\\</span>。</p>
+                            <div>
+                                <span>例：</span>
+                                <table class="table table-bordered table-sm">
+                                    <colgroup><col><col><col></colgroup>
+                                    <thead class="thead-light">
+                                        <tr><th>待处理文本</th><th>操作符</th><th>处理结果</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>1xyz,2xyz,3xyz\,4xyz\,5xyz</td><td>#{replace|xyz}#</td><td>1,2,3\,4\,5</td></tr>
+                                        <tr><td>1xyz,2xyz,3xyz\,4xyz\,5xyz</td><td>#{replace|xyz,abc}#</td><td>1abc,2abc,3abc\,4abc\,5abc</td></tr>
+                                        <tr><td>1xyz,2xyz,3xyz\,4xyz\,5xyz</td><td>#{replace|xyz,abc,2}#</td><td>1abc,2abc,3xyz\,4xyz\,5xyz</td></tr>
+                                        <tr><td>1xyz,2xyz,3xyz\,4xyz\,5xyz</td><td>#{replace|xyz,abc,2,1}#</td><td>1xyz,2xyz,3xyz\,4abc\,5abc</td></tr>
+                                        <tr><td>1xyz,2xyz,3xyz\,4xyz\,5xyz</td><td>#{replace|xyz\\\,,a\\b\,c|,1,1}#</td><td>1xyz,2xyz,3xyz\,4a\b,c|5xyz</td></tr>
                                     </tbody>
                                 </table>
                             </div>

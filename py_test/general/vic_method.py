@@ -79,7 +79,7 @@ def select_func(str_, variables, global_variables, logger=logging.getLogger('py_
             elif f == 'tst':
                 value = timestamp_to_time_str_func(parameter)
             elif f == 'uuid':
-                value = get_uuid()
+                value = get_uuid(parameter)
             elif f == 'slice':
                 value = get_slice(parameter)
             elif f == 'str':
@@ -213,14 +213,21 @@ def timestamp_to_time_str_func(str_):
 
 
 # 获取UUID
-def get_uuid():
-    return str(uuid.uuid1())
+def get_uuid(str_):
+    str_list = str_.split(sep=',', maxsplit=1)
+    if len(str_list) == 1 and str_list[0] == '1':
+        return str(uuid.uuid1())
+    elif len(str_list) == 2 and str_list[0] == '3':
+        return str(uuid.uuid3(uuid.NAMESPACE_URL, str_list[1]))
+    elif len(str_list) == 2 and str_list[0] == '5':
+        return str(uuid.uuid5(uuid.NAMESPACE_URL, str_list[1]))
+    else:
+        return str(uuid.uuid4())
 
 
 # 切片操作
 def get_slice(str_):
     str_list = str_.split(sep=',')
-
     try:
         if len(str_list) == 1:
             new_str = str_
