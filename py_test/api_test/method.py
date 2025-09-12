@@ -43,8 +43,8 @@ def send_http_request(vic_step):
 def verify_http_response(expect_status, expect, response, logger=logging.getLogger('py_test')):
     status_pass = False
     content_pass = False
-    pass_group_str = ''
-    fail_group_str = ''
+    pass_group_str = ""
+    fail_group_str = ""
     response_text = response.text
 
     if expect_status and expect_status != str(response.status_code):

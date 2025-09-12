@@ -779,34 +779,34 @@ def find_with_multiple_condition(condition, data, logger=logging.getLogger('py_t
     # logger = get_thread_logger()
     pass_group = []
     fail_group = []
-    is_pass = False
+    passed = False
     data_object = None
-    union_count = 0
+    condition_count = 0
     if condition == '':
-        is_pass = True
+        passed = True
     else:
         condition = condition.split(sep='#||#')
         for single_condition in condition:
             if remove_line_break_and_blank_from_both_ends(single_condition) == '':  # 无内容时跳过
                 continue
             else:
-                union_count += 1
+                condition_count += 1
                 single_condition = remove_line_break_from_both_ends(single_condition)  # 去掉两端换行，保留空格
-                _p, _f, _data_object = find_with_multiple_condition_intersection(single_condition, data, union_count,
+                _p, _f, _data_object = find_with_multiple_condition_intersection(single_condition, data, condition_count,
                                                                                  data_object, logger)
 
                 if data_object is None and _data_object is not None:
                     data_object = _data_object
                 if 0 == len(_f):
-                    pass_group.append([union_count, _p, _f])
-                    is_pass = True
+                    pass_group.append([condition_count, _p, _f])
+                    passed = True
                 else:
-                    fail_group.append([union_count, _p, _f])
+                    fail_group.append([condition_count, _p, _f])
     # logger.debug('Is Pass: %s' % is_pass)
     # logger.debug('Pass Group: %s' % pass_group)
     # logger.debug('Fail Group: %s' % fail_group)
-    # logger.debug('Union Count: %s' % union_count)
-    return is_pass, pass_group, fail_group, union_count, data_object
+    # logger.debug('Union Count: %s' % condition_count)
+    return passed, pass_group, fail_group, condition_count, data_object
 
 
 # 拆分“与”条件

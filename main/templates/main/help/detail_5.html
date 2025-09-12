@@ -54,11 +54,18 @@
                 if (success) {
                     if (data.state === 1) {
                         toastr.success('测试成功');
-                        result_div.append($("<pre>").addClass("text-success").text("输入的文本为：" + data.data.value));
-                        if (data.data.re_result) {
-                            result_div.append($("<pre>").addClass("text-success").text("处理后文本为：" + data.data.re_result));
+                        result_div.append($("<pre>").addClass("text-info").text("输入的文本为：" + data.data.value));
+                        let $is_pass = $("<pre>").text("验证结果为：" + data.data.passed);
+                        if (data.data.passed === true) {
+                            $is_pass.addClass("text-success")
+                        } else {
+                            $is_pass.addClass("text-warning")
                         }
-                        result_div.append($("<pre>").addClass("text-info").text("文本验证结果为：" + data.data.find_result));
+                        result_div.append($is_pass);
+                        if (data.data.re_result) {
+                            result_div.append($("<pre>").addClass("text-success").text("返回文本内容为：" + data.data.re_result));
+                        }
+                        result_div.append($("<pre>").addClass("text-info").text("验证详情：\n" + data.data.find_result));
                     } else {
                         toastr.error('测试出错');
                         let div = $("<pre>").addClass("text-danger").text(data.message);

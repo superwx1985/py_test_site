@@ -96,17 +96,81 @@ def text_verification_test(request):
             variables = get_variables(variable_group_pk)
             value = vic_method.replace_special_value(test_input, variables, logger=logger)
             expression = vic_method.replace_special_value(text_expression, variables, logger=logger)
-            find_result = vic_find_object.find_with_condition(expression, value, logger=logger)
+            passed, pass_group, fail_group, condition_count, data_object = vic_find_object.find_with_multiple_condition(expression, value, logger=logger)
             data['value'] = value
-            data['find_result'] = str(find_result)
-            data['re_result'] = find_result.re_result[0] if find_result.re_result else None
-            msg = '测试成功'
+            data['passed'] = passed
+
+            data['re_result'] = None
+            if passed and len(pass_group) == 1:
+                try:  # 先判断存在，再使用
+                    if len(pass_group[0][1]) == 1:
+                        data['re_result'] = pass_group[0][1][0][2].re_result[0]
+                except (IndexError, TypeError):
+                    # 路径不存在时的处理
+                    pass
+
+            pass_group_str = ""
+            fail_group_str = ""
+
+            def generate_keyword_str(result):
+                param = ""
+                expect_count = "n"
+                if result.operator_list:
+                    param = str(result.operator_list)
+                    if "count" in result.operator_list:
+                        expect_count = result.operator_list[1]
+                str_ = f"{result.condition_value}\nCount \t[{result.match_count}]\nExpect\t[{expect_count}]\nParam\t{param}\n"
+                return str_
+
+            if 0 < len(pass_group):
+                pass_group_str += f"\n===== Pass Group [{len(pass_group)}/{condition_count}] =====\n"
+                for group_i in pass_group:
+                    pass_group_str += f"----- Group {group_i[0]} -----\n"
+                    str_p = ""
+                    str_f = ""
+                    if 0 < len(group_i[1]):
+                        str_p = f"Pass keyword: [{len(group_i[1])}/{len(group_i[1])+len(group_i[2])}]"
+                        j = 0
+                        for v in group_i[1]:
+                            j += 1
+                            str_p += f"\n*** Keyword {str(j)} ***\n{generate_keyword_str(v[2])}"
+                    if 0 < len(group_i[2]):
+                        str_f = f"Fail keyword: [{len(group_i[2])}/{len(group_i[1])+len(group_i[2])}]"
+                        j = 0
+                        for v in group_i[2]:
+                            j += 1
+                            str_f += f"\n*** Keyword {str(j)} ***\n{generate_keyword_str(v[2])}"
+                    pass_group_str = pass_group_str + str_p + str_f
+
+            if 0 < len(fail_group):
+                fail_group_str += f"\n===== Fail Group [{len(fail_group)}/{condition_count}] =====\n"
+                for group_i in fail_group:
+                    fail_group_str += f"----- Group {group_i[0]} -----\n"
+                    str_p = ""
+                    str_f = ""
+                    if 0 < len(group_i[1]):
+                        str_p = f"Pass keyword: [{len(group_i[1])}/{len(group_i[1])+len(group_i[2])}]"
+                        j = 0
+                        for v in group_i[1]:
+                            j += 1
+                            str_p += f"\n*** Keyword {str(j)} ***\n{generate_keyword_str(v[2])}"
+                    if 0 < len(group_i[2]):
+                        str_f = f"Fail keyword: [{len(group_i[2])}/{len(group_i[1])+len(group_i[2])}]"
+                        j = 0
+                        for v in group_i[2]:
+                            j += 1
+                            str_f += f"\n*** Keyword {str(j)} ***\n{generate_keyword_str(v[2])}"
+                    fail_group_str = fail_group_str + str_p + str_f
+
+            data['find_result'] = pass_group_str + fail_group_str
+
+            msg = "测试成功"
             success = True
         except Exception as e:
             msg = '{}\n{}'.format(getattr(e, 'msg', str(e)), traceback.format_exc())
             traceback.format_exc()
     else:
-        msg = '无测试数据'
+        msg = "无测试数据"
 
     if success:
         return JsonResponse({'state': 1, 'message': msg, 'data': data})
