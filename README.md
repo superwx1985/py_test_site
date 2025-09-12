@@ -57,8 +57,10 @@ nginx -s reload
 ### 使用其他数据库
 #### 从sqlite3导出基础数据
 ```
-python -Xutf8 manage.py dumpdata -o db_data.json
+python -Xutf8 manage.py dumpdata -e main.caseresult -e main.stepresult -e main.suiteresult -e main.image -e contenttypes -o db_data.json
 ```
+参考： https://docs.djangoproject.com/en/5.0/ref/django-admin/#:~:text=dumpdata
+
 #### 在配置中启用其他数据库
 修改py_test_site/settings.py，注释sqlite3数据库配置，根据实际情况填写并启用其他数据库的配置  
 PS: 请确保其他数据库已启动，并且访问权限已正确配置
